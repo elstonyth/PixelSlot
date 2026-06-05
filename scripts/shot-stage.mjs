@@ -11,11 +11,13 @@ const img = page.locator('img[alt*="claw machine"]').first();
 await img.waitFor({ state: "visible", timeout: 8000 });
 const stage = img.locator("xpath=..");           // the stage div (frame)
 const b = await stage.boundingBox();
+if (!b) throw new Error("stage bounding box unavailable (element not visible/laid out)");
 await page.screenshot({
   path: `docs/research/packdetail/stage_${slug}.png`,
   clip: { x: b.x, y: b.y, width: b.width, height: b.height },
 });
 const ib = await img.boundingBox();
+if (!ib) throw new Error("machine bounding box unavailable");
 console.log(`stage ${Math.round(b.width)}x${Math.round(b.height)} (ar ${(b.width/b.height).toFixed(3)})  machine ${Math.round(ib.width)}x${Math.round(ib.height)} (ar ${(ib.width/ib.height).toFixed(3)})`);
 console.log(`machine fills: ${Math.round(ib.width/b.width*100)}% width, ${Math.round(ib.height/b.height*100)}% height`);
 await browser.close();

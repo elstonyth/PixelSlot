@@ -5,6 +5,8 @@ import os
 import pillow_avif  # noqa: F401
 from PIL import Image
 
+if len(sys.argv) != 3:
+    raise SystemExit("Usage: <venv>/python extract_frames.py <src> <outdir>")
 src, outdir = sys.argv[1], sys.argv[2]
 os.makedirs(outdir, exist_ok=True)
 im = Image.open(src)

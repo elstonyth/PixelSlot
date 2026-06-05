@@ -78,6 +78,9 @@ REG = {  # generous region; widest-run + label-mask isolate the text within it
 mode = sys.argv[1] if len(sys.argv) > 1 else "orig"
 bases = sys.argv[2:] or list(REG)
 for base in bases:
+    if base not in REG:
+        print(f"skip unknown base: {base}", file=sys.stderr)
+        continue
     path = f"public/images/claw/{base}-machine.webp"
     im = load_git("8543b8d", path) if mode == "orig" else Image.open(path).convert("RGB")
     bb = label_text_bbox(im, REG[base])

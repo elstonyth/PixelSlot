@@ -10,13 +10,13 @@ import { existsSync, mkdirSync, rmSync, readdirSync } from "node:fs";
 const DIR = "public/images/claw";
 const PATCH = "docs/research/packdetail/_patch";
 const TMP = "docs/research/packdetail/_frames";
-const PY = "C:/Users/PC/iopaint-venv/Scripts/python.exe";
+const PY = process.env.PYTHON ?? "C:/Users/PC/iopaint-venv/Scripts/python.exe"; // env override; default venv has pillow_avif + numpy
 const CRF = "30";
 const ENC = ["-c:v", "libsvtav1", "-crf", CRF, "-pix_fmt", "yuv420p"];
 const bases = process.argv.slice(2);
 if (!bases.length) { console.log("usage: rebake_ff.mjs <base...>"); process.exit(1); }
 
-execFileSync(PY, ["scripts/make_patch.py", ...bases], { stdio: "inherit" });
+execFileSync(PY, ["scripts/make_patch.py", ...bases], { stdio: "inherit", timeout: 120000 });
 
 // AVIFs carry a 1-frame still + the animated sequence; pick the video stream with the most frames.
 function animStream(src) {

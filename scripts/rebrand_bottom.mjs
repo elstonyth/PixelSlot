@@ -85,7 +85,14 @@ const page = await browser.newPage();
 await page.goto("about:blank");
 await page.addStyleTag({ content: "@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap');" });
 await page.waitForTimeout(1800);
-await page.evaluate(async () => { try { await document.fonts.load("700 40px Poppins"); await document.fonts.load("600 40px Poppins"); } catch {} });
+// Fail-fast if Poppins didn't load — a silent fallback to a default font would bake the brand text at
+// the wrong metrics/position. (Remote @import kept; this repo ships no local Poppins woff2.)
+await page.evaluate(async () => {
+  await document.fonts.ready;
+  const w700 = await document.fonts.load("700 40px Poppins");
+  const w600 = await document.fonts.load("600 40px Poppins");
+  if (!w700.length || !w600.length) throw new Error("Poppins failed to load (would fall back to wrong metrics)");
+});
 
 const results = await page.evaluate(async ({ jobs, imgs, OVERRIDES, ASC, STEP }) => {
   const load = (s) => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error("load")); im.src = s; });
@@ -232,7 +239,10 @@ for (const [base, r] of Object.entries(results)) {
 }
 // Merge into the overlay-coords JSON consumed by the component (so partial runs don't drop others).
 let existing = {};
-try { existing = JSON.parse(await readFile(OVERLAY_JSON, "utf8")); } catch {}
+// Missing file is fine (first run); a malformed JSON must NOT be silently dropped — that would
+// overwrite OVERLAY_JSON and lose every base not in this partial run.
+try { existing = JSON.parse(await readFile(OVERLAY_JSON, "utf8")); }
+catch (err) { if (err?.code !== "ENOENT") throw err; }
 await writeFile(OVERLAY_JSON, JSON.stringify({ ...existing, ...overlay }, null, 2));
 await browser.close();
 console.log(`\n${Object.keys(results).length} machines: baked "phygitals" blanked, edit-mask + overlay coords written -> ${OVERLAY_JSON}`);
