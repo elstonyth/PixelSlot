@@ -89,7 +89,7 @@ Pokenic_Game/                  ← git root = STOREFRONT (unchanged)
         ├── workflows/open-pack/← weighted seeded roll w/ per-step compensation
         ├── links/              ← one defineLink per file: pack↔product, card↔product
         ├── api/store/ + api/admin/
-        ├── admin/routes/packs/ + admin/widgets/pack-odds.tsx
+        ├── admin/routes/{packs,pulls}/ + admin/widgets/pack-odds.tsx
         ├── subscribers/pack-opened.ts
         ├── loaders/socket.ts   ← Socket.io on the Medusa HTTP server
         └── scripts/seed.ts
@@ -195,6 +195,10 @@ already installed in this repo**; consult them at build time rather than duplica
   widget `defineWidgetConfig({ zone: "product.details.after" })`, weights table in `@medusajs/ui`,
   live `pull chance % = weight / Σweights`. Saving = **POST** custom admin route → save-odds workflow;
   the widget’s display query loads on mount and is invalidated after the save.
+- **Admin Pull-ledger view (read-only):** a second UI route `backend/src/admin/routes/pulls/page.tsx`
+  (`defineRouteConfig`) renders the `Pull` ledger + a top-pullers / rarest-cards roll-up in a
+  `@medusajs/ui` `DataTable`, fed by a custom `GET /admin/pulls` (`query.graph` over `pull` — single
+  module, **read-only so no workflow**) called via `sdk.client.fetch`; its display query loads on mount.
 - **Realtime:** Medusa has **no built-in client WebSocket** — add Socket.io via a loader, a
   `pack.opened` subscriber emits to a room; Redis adapter only for prod/multi-process.
 
@@ -210,16 +214,41 @@ Render prices **as-is** (no ÷100).
 
 | File | Today | Rewire to |
 |---|---|---|
-| `src/app/marketplace/MarketplaceClient.tsx` | 16 hardcoded `CARDS`, 13 `CATEGORIES` | `sdk.store.product.list()` + `productCategory.list()` (price from variant; display metadata — fmv / grade / grader — from the Product's `metadata`, seeded in Phase 2) |
+| `src/app/marketplace/MarketplaceClient.tsx` | 16 hardcoded `CARDS`, 13 `CATEGORIES`, `FILTER_GROUPS` | listings via `sdk.store.product.list()` + `productCategory.list()` (price from variant; fmv/grade/grader from `Product.metadata`, seeded in Phase 2); filter rail → `product.list` query params; **buy → cart + checkout**; list/sell a card → custom `POST /store/listings` (deferred sub-feature) |
 | `src/components/OpenPacksSection.tsx` | 6 hardcoded categories | `GET /store/packs?group=category` |
-| `src/app/claw/page.tsx` | hardcoded packs; "Open" inert | list via `GET /store/packs`; **"Open" → `POST /store/packs/:id/open`** (customer JWT) → reveal animation from returned `Card`/`Pull` |
+| `src/app/claw/page.tsx` | hardcoded packs grid | list via `GET /store/packs` |
+| `src/app/claw/[slug]/PackDetailClient.tsx` | hardcoded pack; **`spin`/Open, quantity, "90% Buyback" are mock** | **the open UX lives here:** `GET /store/packs/:slug`; **Open → `POST /store/packs/:id/open`** (customer JWT, `quantity`) → reveal from returned `Card`/`Pull`; **Buyback → `POST /store/pulls/:id/sell-back`** (sell the won card back at 90%, via a workflow) |
+| `src/app/card/[id]/CardDetailClient.tsx` | hardcoded card | `sdk.store.product.retrieve()` (+ linked `Card` metadata); buy → cart/checkout |
+| `src/app/profile/[user]/ProfileClient.tsx` | hardcoded profile | read-only public stats from the `Pull` ledger + `customer` |
 | `src/components/RecentPullsSection.tsx` | 8 hardcoded pulls | initial `GET /store/pulls/recent`; live via **Socket.io** `pack.opened` |
 | `src/components/LeaderboardSection.tsx` + `src/app/leaderboard/page.tsx` | hardcoded entries/podium | `GET /store/leaderboard?period=weekly\|alltime` — aggregation over `Pull` ledger |
-| `src/components/SiteHeader.tsx` | inert Login/Sign Up | auth context → `sdk.auth.login/register`, reflect `customer.retrieve()` |
+| `src/app/login` + `src/app/signup` + `src/components/AuthForm.tsx` | demo form (fakes submit; Google/Discord) | `sdk.auth.register/login` (emailpass); redirect into `(account)` on success (social = later) |
+| `src/components/SiteHeader.tsx` | inert Login/Sign Up | auth context → reflect `sdk.store.customer.retrieve()`; links into `(account)` |
+| `src/app/(account)/orders` + `settings` | `MOCK_CARDS` rows / static | orders → `sdk.store.order.list()`; settings → `sdk.store.customer.update()` |
 | Hero / HowItWorks / Community / Cta / how-it-works / pack-party | static marketing | leave as-is (no backend data) |
 
 Honor Next 16: `await params`/`searchParams`; `fetch` uncached by default (use `<Suspense>` / `use cache`
 for live + leaderboard); add `loading.tsx` for `/marketplace`, `/leaderboard`, `/claw`.
+
+## Coverage boundary — what this plan deliberately does NOT wire
+
+The frontend clones **41 routes**; the map above wires the commerce + gacha **core** (11 routes). The
+rest is left alone on purpose — every remaining route appears in exactly one bucket below, so “is it
+covered?” has an explicit, checkable answer (11 wired + 13 deferred + 10 excluded + 7 static = 41):
+
+- **Extra gacha & account app-features — deferred, not v1 (13):** `/roulette`, `/lucky-draw`, `/repacks`,
+  `/free`, `/store`, `/clawmaker`, `/activity`, `/fairness`, `/series`, `/pokemon/generation/[gen]`, plus
+  `(account)/` `messages`, `achievements`, `submitcards` (vault submission). Each reuses an existing
+  pattern (a workflow + a custom route, or a read query) — add per demand once the core is live.
+- **Excluded by the no-real-money / no-crypto ground rule (10):** `(account)/` earnings, referrals,
+  vouchers, bank-withdrawal, borrow-lend, pokecoin, nbacoin, accelerate-claim; `/airdrop`,
+  `/launchpad/[brand]`. These stay **static visual clones** — wiring them means real balances / payouts /
+  tokens / on-chain mints, which this project explicitly does not do.
+- **Static content, no backend (7):** `/about`, `/contact` (the contact form stays a demo),
+  `/how-it-works`, `/pack-party` (live group opening — reassess after the core, per Risks), `/social`,
+  `/merchants`, `/30th`.
+
+Moving any of these in-scope later is an additive change, not a rework.
 
 ## Phased sequence (app stays runnable; each phase ends green via `npm run check`)
 
@@ -229,15 +258,22 @@ for live + leaderboard); add `loading.tsx` for `/marketplace`, `/leaderboard`, `
    returning the *current* hardcoded arrays; add `.env.local`. App runs identically.
 2. **Catalog.** Seed each card as a Product (price as a decimal; fmv/grade/grader on the Product's
    `metadata`) + categories; flip `lib/data/products.ts` to `sdk.store.product.list`; server-fetch in
-   `marketplace/page.tsx` and home `OpenPacksSection`. Marketplace is fully renderable here — the custom
-   `Card` model (Phase 4) adds odds/pull linkage, not display data.
-3. **Auth.** Storefront auth context + Login/Sign Up via `sdk.auth.*`; header reflects session.
+   `marketplace/page.tsx`. Marketplace is fully renderable here — the custom
+   `Card` model (Phase 4) adds odds/pull linkage, not display data. Wire the filter rail →
+   `product.list` query params and `/card/[id]` → `product.retrieve` here too.
+3. **Auth + account.** Auth context + the `/login` `/signup` pages (`AuthForm`) via `sdk.auth.*`; header
+   reflects `customer.retrieve()`; wire the `(account)` area — `orders` (`sdk.store.order.list`),
+   `settings` (`customer.update`) — and read-only `/profile/[user]`.
 4. **Packs module.** Models + service + links; `db:generate packs` + `db:migrate`; seed packs/odds;
-   `GET /store/packs`; wire `/claw` listing.
+   `GET /store/packs`; wire `/claw` listing + home `OpenPacksSection` (`GET /store/packs?group=category`).
 5. **open-pack workflow + Stripe.** Stripe test provider + region; workflow
    (validate → charge → weighted seeded roll → reserve inventory → write `Pull` → emit `pack.opened`),
-   each step with compensation; `POST /store/packs/:id/open`; wire claw "Open" → reveal.
-6. **Admin odds.** `/app/packs` route + odds widget with live pull-chance %; validate weights ≥0, Σ>0.
+   each step with compensation; `POST /store/packs/:id/open`. Wire **`/claw/[slug]` (`PackDetailClient`)**
+   "Open" (with `quantity`) → reveal; pack purchase + marketplace buy go through a Medusa cart → Stripe →
+   order. Add a **buyback** workflow (`POST /store/pulls/:id/sell-back`, pays out 90%, compensated).
+6. **Admin odds + ledger.** `/app/packs` route + odds widget with live pull-chance % (validate weights
+   ≥0, Σ>0); plus a **read-only `/app/pulls`** page — `Pull` ledger + top-pullers / rarest-cards in a
+   `DataTable` (`GET /admin/pulls`, single-module `query.graph`, no workflow).
 7. **Realtime + leaderboard.** Socket.io loader + `pack.opened` subscriber → room; `GET /store/pulls/recent`
    and `GET /store/leaderboard` (ledger aggregation); wire live feed + leaderboard tabs.
 8. **Polish/QA.** `loading.tsx`/error boundaries, realistic seed data, responsive QA, `npm run check` both apps.
@@ -249,7 +285,7 @@ for live + leaderboard); add `loading.tsx` for `/marketplace`, `/leaderboard`, `
 - **Phase 2/3:** marketplace + home render real Medusa data; register/login round-trips; header shows user.
 - **Phase 5 (critical):** logged-in user opens a pack → Stripe **test** payment → weighted card revealed →
   `Pull` row written. **Force a mid-workflow failure** and confirm the Stripe charge + inventory reserve
-  roll back (no orphaned charge, no lost card).
+  roll back (no orphaned charge, no lost card). Buyback sells the won card back at 90% (also compensated).
 - **Phase 7:** open a pack in tab A → live-pulls feed + leaderboard update in tab B.
 - **Hard rules:** Stripe stays `sk_test_`; all accounts/cards/packs/pulls are seeded/fake.
 
