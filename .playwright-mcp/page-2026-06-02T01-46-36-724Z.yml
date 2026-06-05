@@ -1,0 +1,544 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - link "Phygitals" [ref=e10] [cursor=pointer]:
+              - /url: /
+              - img "Phygitals" [ref=e11]
+            - navigation [ref=e12]:
+              - link "Packs NEW" [ref=e13] [cursor=pointer]:
+                - /url: /claw
+                - img [ref=e14]
+                - generic [ref=e18]: Packs
+                - generic [ref=e19]: NEW
+              - link "Pack Party" [ref=e20] [cursor=pointer]:
+                - /url: /pack-party
+                - img [ref=e21]
+                - generic [ref=e27]: Pack Party
+              - link "Marketplace" [ref=e28] [cursor=pointer]:
+                - /url: /marketplace
+                - img [ref=e29]
+                - generic [ref=e31]: Marketplace
+              - link "Leaderboard" [ref=e32] [cursor=pointer]:
+                - /url: /leaderboard
+                - img [ref=e33]
+                - generic [ref=e35]: Leaderboard
+              - button "More" [ref=e36] [cursor=pointer]:
+                - img [ref=e37]
+                - generic [ref=e39]: More
+                - img [ref=e40]
+          - generic [ref=e43]:
+            - link "How it works" [ref=e44] [cursor=pointer]:
+              - /url: /how-it-works
+              - img [ref=e45]
+              - generic [ref=e47]: How it works
+            - button "Login" [ref=e49] [cursor=pointer]:
+              - img [ref=e50]
+              - generic [ref=e53]: Login
+            - button "Sign Up" [ref=e54] [cursor=pointer]
+      - main [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e59]:
+            - generic [ref=e61]:
+              - img "Activity" [ref=e146]
+              - heading "Marketplace Activity" [level=1] [ref=e63]
+              - paragraph [ref=e64]: Track all marketplace activities and transactions in real-time
+              - generic [ref=e65]:
+                - generic [ref=e66]: 2.6M transactions
+                - generic [ref=e67]: •
+                - generic [ref=e68]:
+                  - generic [ref=e69]: $322.7MM
+                  - text: volume
+                - generic [ref=e70]: •
+                - generic [ref=e71]: 19.8K listings
+            - generic [ref=e72]:
+              - table [ref=e150]:
+                - rowgroup [ref=e151]:
+                  - row "Item Price Type From To Time" [ref=e152]:
+                    - columnheader "Item" [ref=e153]
+                    - columnheader "Price" [ref=e154]
+                    - columnheader "Type" [ref=e155]
+                    - columnheader "From" [ref=e156]
+                    - columnheader "To" [ref=e157]
+                    - columnheader "Time" [ref=e158]
+                    - columnheader [ref=e159]
+                - rowgroup [ref=e160]:
+                  - 'row "View details 2023 Bowman Chrome Atomic Refractor Gabriel Martinez PROSPECT AUTO /100 #CPA-GMA PSA 10 2023 Bowman Chrome Atomic Refractor Gabriel Martinez PROSPECT AUTO /100 #CPA-GMA PSA 10 View details $14.55 View details BUY View details LeafBreeder7485 View details Claw Machine View details 4m ago View details" [ref=e161] [cursor=pointer]':
+                    - 'cell "View details 2023 Bowman Chrome Atomic Refractor Gabriel Martinez PROSPECT AUTO /100 #CPA-GMA PSA 10 2023 Bowman Chrome Atomic Refractor Gabriel Martinez PROSPECT AUTO /100 #CPA-GMA PSA 10" [ref=e162]':
+                      - link "View details" [ref=e163]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - generic:
+                        - generic:
+                          - 'img "2023 Bowman Chrome Atomic Refractor Gabriel Martinez PROSPECT AUTO /100 #CPA-GMA PSA 10"'
+                        - generic:
+                          - paragraph: "2023 Bowman Chrome Atomic Refractor Gabriel Martinez PROSPECT AUTO /100 #CPA-GMA PSA 10"
+                    - cell "View details $14.55" [ref=e164]:
+                      - link "View details" [ref=e165]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - generic:
+                        - img
+                        - generic: $14.55
+                    - cell "View details BUY" [ref=e166]:
+                      - link "View details" [ref=e167]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - text: BUY
+                    - cell "View details LeafBreeder7485" [ref=e168]:
+                      - link "View details" [ref=e169]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - generic:
+                        - img
+                        - link "LeafBreeder7485" [ref=e171]:
+                          - /url: /u/LeafBreeder7485
+                    - cell "View details Claw Machine" [ref=e172]:
+                      - link "View details" [ref=e173]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - generic:
+                        - img
+                        - generic [ref=e174]: Claw Machine
+                    - cell "View details 4m ago" [ref=e175]:
+                      - link "View details" [ref=e176]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - text: 4m ago
+                    - cell "View details" [ref=e177]:
+                      - link "View details" [ref=e178]:
+                        - /url: /card/6ymCChTyWdYXD5QQ4d51gYpQ19utELzNKAhtMHdGWMiy
+                      - img
+                  - row "View details 2022 Pokemon Japanese SWSH VSTAR Universe Holo Charizard VSTAR CGC 9 MINT 2022 Pokemon Japanese SWSH VSTAR Universe Holo Charizard VSTAR CGC 9 MINT View details $25.00 View details CLAW View details Claw Machine View details ShadowSavior982 View details 4m ago View details" [ref=e179] [cursor=pointer]:
+                    - cell "View details 2022 Pokemon Japanese SWSH VSTAR Universe Holo Charizard VSTAR CGC 9 MINT 2022 Pokemon Japanese SWSH VSTAR Universe Holo Charizard VSTAR CGC 9 MINT" [ref=e180]:
+                      - link "View details" [ref=e181]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - generic:
+                        - generic:
+                          - img "2022 Pokemon Japanese SWSH VSTAR Universe Holo Charizard VSTAR CGC 9 MINT"
+                        - generic:
+                          - paragraph: 2022 Pokemon Japanese SWSH VSTAR Universe Holo Charizard VSTAR CGC 9 MINT
+                    - cell "View details $25.00" [ref=e182]:
+                      - link "View details" [ref=e183]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - generic:
+                        - img
+                        - generic: $25.00
+                    - cell "View details CLAW" [ref=e184]:
+                      - link "View details" [ref=e185]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - text: CLAW
+                    - cell "View details Claw Machine" [ref=e186]:
+                      - link "View details" [ref=e187]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - generic:
+                        - img
+                        - generic [ref=e188]: Claw Machine
+                    - cell "View details ShadowSavior982" [ref=e189]:
+                      - link "View details" [ref=e190]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - generic:
+                        - img
+                        - link "ShadowSavior982" [ref=e192]:
+                          - /url: /u/ShadowSavior982
+                    - cell "View details 4m ago" [ref=e193]:
+                      - link "View details" [ref=e194]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - text: 4m ago
+                    - cell "View details" [ref=e195]:
+                      - link "View details" [ref=e196]:
+                        - /url: /card/EGKVAqLMggdx36j1ciaPwCSmPPdntR48FMt15xGtxPun
+                      - img
+                  - 'row "View details 2023 Pokemon Japanese Scarlet & Violet Future Flash AR Iron Bundle #71 CGC 10 PRISTINE 2023 Pokemon Japanese Scarlet & Violet Future Flash AR Iron Bundle #71 CGC 10 PRISTINE View details $25.00 View details CLAW View details Claw Machine View details BugTrainer3278 View details 6m ago View details" [ref=e197] [cursor=pointer]':
+                    - 'cell "View details 2023 Pokemon Japanese Scarlet & Violet Future Flash AR Iron Bundle #71 CGC 10 PRISTINE 2023 Pokemon Japanese Scarlet & Violet Future Flash AR Iron Bundle #71 CGC 10 PRISTINE" [ref=e198]':
+                      - link "View details" [ref=e199]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - generic:
+                        - generic:
+                          - 'img "2023 Pokemon Japanese Scarlet & Violet Future Flash AR Iron Bundle #71 CGC 10 PRISTINE"'
+                        - generic:
+                          - paragraph: "2023 Pokemon Japanese Scarlet & Violet Future Flash AR Iron Bundle #71 CGC 10 PRISTINE"
+                    - cell "View details $25.00" [ref=e200]:
+                      - link "View details" [ref=e201]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - generic:
+                        - img
+                        - generic: $25.00
+                    - cell "View details CLAW" [ref=e202]:
+                      - link "View details" [ref=e203]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - text: CLAW
+                    - cell "View details Claw Machine" [ref=e204]:
+                      - link "View details" [ref=e205]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - generic:
+                        - img
+                        - generic [ref=e206]: Claw Machine
+                    - cell "View details BugTrainer3278" [ref=e207]:
+                      - link "View details" [ref=e208]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e210]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details 6m ago" [ref=e211]:
+                      - link "View details" [ref=e212]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - text: 6m ago
+                    - cell "View details" [ref=e213]:
+                      - link "View details" [ref=e214]:
+                        - /url: /card/CEzMhk5Ed4NxBoJgy6CbFTWaTtB8rtZmVrAwNQbRFKqk
+                      - img
+                  - 'row "View details 2023 Pokemon Japanese SV Triplet Beat AR Pyroar #77 CGC 10 PRISTINE 2023 Pokemon Japanese SV Triplet Beat AR Pyroar #77 CGC 10 PRISTINE View details $25.00 View details CLAW View details Claw Machine View details BugTrainer3278 View details 7m ago View details" [ref=e215] [cursor=pointer]':
+                    - 'cell "View details 2023 Pokemon Japanese SV Triplet Beat AR Pyroar #77 CGC 10 PRISTINE 2023 Pokemon Japanese SV Triplet Beat AR Pyroar #77 CGC 10 PRISTINE" [ref=e216]':
+                      - link "View details" [ref=e217]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - generic:
+                        - generic:
+                          - 'img "2023 Pokemon Japanese SV Triplet Beat AR Pyroar #77 CGC 10 PRISTINE"'
+                        - generic:
+                          - paragraph: "2023 Pokemon Japanese SV Triplet Beat AR Pyroar #77 CGC 10 PRISTINE"
+                    - cell "View details $25.00" [ref=e218]:
+                      - link "View details" [ref=e219]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - generic:
+                        - img
+                        - generic: $25.00
+                    - cell "View details CLAW" [ref=e220]:
+                      - link "View details" [ref=e221]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - text: CLAW
+                    - cell "View details Claw Machine" [ref=e222]:
+                      - link "View details" [ref=e223]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - generic:
+                        - img
+                        - generic [ref=e224]: Claw Machine
+                    - cell "View details BugTrainer3278" [ref=e225]:
+                      - link "View details" [ref=e226]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e228]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details 7m ago" [ref=e229]:
+                      - link "View details" [ref=e230]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - text: 7m ago
+                    - cell "View details" [ref=e231]:
+                      - link "View details" [ref=e232]:
+                        - /url: /card/A29HCkpLGSrqG1ba7kAQa1LdRepMEyGXydnhttx295f2
+                      - img
+                  - 'row "View details 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT View details $21.55 View details BUY View details BugTrainer3278 View details Claw Machine View details 7m ago View details" [ref=e233] [cursor=pointer]':
+                    - 'cell "View details 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT" [ref=e234]':
+                      - link "View details" [ref=e235]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - generic:
+                          - 'img "1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT"'
+                        - generic:
+                          - paragraph: "1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT"
+                    - cell "View details $21.55" [ref=e236]:
+                      - link "View details" [ref=e237]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - img
+                        - generic: $21.55
+                    - cell "View details BUY" [ref=e238]:
+                      - link "View details" [ref=e239]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - text: BUY
+                    - cell "View details BugTrainer3278" [ref=e240]:
+                      - link "View details" [ref=e241]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e243]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details Claw Machine" [ref=e244]:
+                      - link "View details" [ref=e245]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - img
+                        - generic [ref=e246]: Claw Machine
+                    - cell "View details 7m ago" [ref=e247]:
+                      - link "View details" [ref=e248]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - text: 7m ago
+                    - cell "View details" [ref=e249]:
+                      - link "View details" [ref=e250]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - img
+                  - 'row "View details 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT View details $25.00 View details CLAW View details Claw Machine View details BugTrainer3278 View details 8m ago View details" [ref=e251] [cursor=pointer]':
+                    - 'cell "View details 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT 1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT" [ref=e252]':
+                      - link "View details" [ref=e253]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - generic:
+                          - 'img "1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT"'
+                        - generic:
+                          - paragraph: "1999 Pokemon Jungle Vaporeon #28 CGC 8 NM-MT"
+                    - cell "View details $25.00" [ref=e254]:
+                      - link "View details" [ref=e255]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - img
+                        - generic: $25.00
+                    - cell "View details CLAW" [ref=e256]:
+                      - link "View details" [ref=e257]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - text: CLAW
+                    - cell "View details Claw Machine" [ref=e258]:
+                      - link "View details" [ref=e259]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - img
+                        - generic [ref=e260]: Claw Machine
+                    - cell "View details BugTrainer3278" [ref=e261]:
+                      - link "View details" [ref=e262]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e264]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details 8m ago" [ref=e265]:
+                      - link "View details" [ref=e266]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - text: 8m ago
+                    - cell "View details" [ref=e267]:
+                      - link "View details" [ref=e268]:
+                        - /url: /card/Euj2oeJXPpCaFYFYThYynhWhJ7wdTfECSd2z7wFFqSmB
+                      - img
+                  - 'row "View details 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT View details $21.48 View details BUY View details BugTrainer3278 View details Claw Machine View details 8m ago View details" [ref=e269] [cursor=pointer]':
+                    - 'cell "View details 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT" [ref=e270]':
+                      - link "View details" [ref=e271]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - generic:
+                          - 'img "2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT"'
+                        - generic:
+                          - paragraph: "2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT"
+                    - cell "View details $21.48" [ref=e272]:
+                      - link "View details" [ref=e273]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - img
+                        - generic: $21.48
+                    - cell "View details BUY" [ref=e274]:
+                      - link "View details" [ref=e275]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - text: BUY
+                    - cell "View details BugTrainer3278" [ref=e276]:
+                      - link "View details" [ref=e277]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e279]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details Claw Machine" [ref=e280]:
+                      - link "View details" [ref=e281]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - img
+                        - generic [ref=e282]: Claw Machine
+                    - cell "View details 8m ago" [ref=e283]:
+                      - link "View details" [ref=e284]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - text: 8m ago
+                    - cell "View details" [ref=e285]:
+                      - link "View details" [ref=e286]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - img
+                  - 'row "View details 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT View details $25.00 View details CLAW View details Claw Machine View details BugTrainer3278 View details 8m ago View details" [ref=e287] [cursor=pointer]':
+                    - 'cell "View details 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT 2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT" [ref=e288]':
+                      - link "View details" [ref=e289]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - generic:
+                          - 'img "2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT"'
+                        - generic:
+                          - paragraph: "2023 Pokemon Japanese Scarlet & Violet Black Flame Holo Radiant Charizard #1 CGC 10 GEM MINT"
+                    - cell "View details $25.00" [ref=e290]:
+                      - link "View details" [ref=e291]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - img
+                        - generic: $25.00
+                    - cell "View details CLAW" [ref=e292]:
+                      - link "View details" [ref=e293]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - text: CLAW
+                    - cell "View details Claw Machine" [ref=e294]:
+                      - link "View details" [ref=e295]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - img
+                        - generic [ref=e296]: Claw Machine
+                    - cell "View details BugTrainer3278" [ref=e297]:
+                      - link "View details" [ref=e298]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e300]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details 8m ago" [ref=e301]:
+                      - link "View details" [ref=e302]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - text: 8m ago
+                    - cell "View details" [ref=e303]:
+                      - link "View details" [ref=e304]:
+                        - /url: /card/54JRkauK42W15s5xjdKAQQx4Tp2dqCyya55QdCy9z7Pc
+                      - img
+                  - 'row "View details 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+ 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+ View details $28.08 View details BUY View details BugTrainer3278 View details Claw Machine View details 8m ago View details" [ref=e305] [cursor=pointer]':
+                    - 'cell "View details 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+ 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+" [ref=e306]':
+                      - link "View details" [ref=e307]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - generic:
+                          - 'img "2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+"'
+                        - generic:
+                          - paragraph: "2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+"
+                    - cell "View details $28.08" [ref=e308]:
+                      - link "View details" [ref=e309]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - img
+                        - generic: $28.08
+                    - cell "View details BUY" [ref=e310]:
+                      - link "View details" [ref=e311]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - text: BUY
+                    - cell "View details BugTrainer3278" [ref=e312]:
+                      - link "View details" [ref=e313]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e315]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details Claw Machine" [ref=e316]:
+                      - link "View details" [ref=e317]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - img
+                        - generic [ref=e318]: Claw Machine
+                    - cell "View details 8m ago" [ref=e319]:
+                      - link "View details" [ref=e320]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - text: 8m ago
+                    - cell "View details" [ref=e321]:
+                      - link "View details" [ref=e322]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - img
+                  - 'row "View details 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+ 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+ View details $25.00 View details CLAW View details Claw Machine View details BugTrainer3278 View details 8m ago View details" [ref=e323] [cursor=pointer]':
+                    - 'cell "View details 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+ 2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+" [ref=e324]':
+                      - link "View details" [ref=e325]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - generic:
+                          - 'img "2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+"'
+                        - generic:
+                          - paragraph: "2009 Pokemon Platinum Psyduck #87 CGC 7.5 NRMT+"
+                    - cell "View details $25.00" [ref=e326]:
+                      - link "View details" [ref=e327]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - img
+                        - generic: $25.00
+                    - cell "View details CLAW" [ref=e328]:
+                      - link "View details" [ref=e329]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - text: CLAW
+                    - cell "View details Claw Machine" [ref=e330]:
+                      - link "View details" [ref=e331]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - img
+                        - generic [ref=e332]: Claw Machine
+                    - cell "View details BugTrainer3278" [ref=e333]:
+                      - link "View details" [ref=e334]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - generic:
+                        - img
+                        - link "BugTrainer3278" [ref=e336]:
+                          - /url: /u/BugTrainer3278
+                    - cell "View details 8m ago" [ref=e337]:
+                      - link "View details" [ref=e338]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - text: 8m ago
+                    - cell "View details" [ref=e339]:
+                      - link "View details" [ref=e340]:
+                        - /url: /card/DRMGrHFgaSr93to6rkc5oHbXUimR89MzCY2RW22syJWQ
+                      - img
+              - generic [ref=e341]:
+                - generic [ref=e342]:
+                  - button "Previous" [disabled]
+                  - generic [ref=e343]:
+                    - button "1" [ref=e344] [cursor=pointer]
+                    - button "2" [ref=e345] [cursor=pointer]
+                    - button "3" [ref=e346] [cursor=pointer]
+                    - generic [ref=e347]: ⋯
+                  - button "Next" [ref=e348] [cursor=pointer]
+                - generic [ref=e349]: Showing 1 - 10 of 2,556,816 results
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - img "Phygitals" [ref=e86]
+                - paragraph [ref=e87]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+                - link "About Us" [ref=e89] [cursor=pointer]:
+                  - /url: /about
+                  - text: About Us
+                  - img [ref=e90]
+              - generic [ref=e93]:
+                - generic [ref=e94]:
+                  - heading "Quick Links" [level=3] [ref=e95]
+                  - list [ref=e96]:
+                    - listitem [ref=e97]:
+                      - link "Home" [ref=e98] [cursor=pointer]:
+                        - /url: /
+                        - generic [ref=e99]: Home
+                    - listitem [ref=e100]:
+                      - link "Marketplace" [ref=e101] [cursor=pointer]:
+                        - /url: /marketplace
+                        - generic [ref=e102]: Marketplace
+                    - listitem [ref=e103]:
+                      - link "Play the Claw" [ref=e104] [cursor=pointer]:
+                        - /url: /claw
+                        - generic [ref=e105]: Play the Claw
+                    - listitem [ref=e106]:
+                      - link "Leaderboard" [ref=e107] [cursor=pointer]:
+                        - /url: /leaderboard
+                        - generic [ref=e108]: Leaderboard
+                - generic [ref=e109]:
+                  - heading "Support" [level=3] [ref=e110]
+                  - list [ref=e111]:
+                    - listitem [ref=e112]:
+                      - link "Contact Us" [ref=e113] [cursor=pointer]:
+                        - /url: /contact
+                        - generic [ref=e114]: Contact Us
+                    - listitem [ref=e115]:
+                      - link "Documentation" [ref=e116] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com
+                        - generic [ref=e117]: Documentation
+                    - listitem [ref=e118]:
+                      - link "Terms of Service" [ref=e119] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                        - generic [ref=e120]: Terms of Service
+                    - listitem [ref=e121]:
+                      - link "Privacy Policy" [ref=e122] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                        - generic [ref=e123]: Privacy Policy
+                - generic [ref=e124]:
+                  - heading "Social Media" [level=3] [ref=e125]
+                  - paragraph [ref=e126]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                  - generic [ref=e127]:
+                    - link "Twitter" [ref=e128] [cursor=pointer]:
+                      - /url: https://x.com/phygitals
+                      - img [ref=e129]
+                    - link "Instagram" [ref=e131] [cursor=pointer]:
+                      - /url: https://www.instagram.com/phygitals
+                      - img [ref=e132]
+                    - link "Discord" [ref=e135] [cursor=pointer]:
+                      - /url: https://discord.gg/phygitals
+                      - img [ref=e136]
+                    - link "Telegram" [ref=e138] [cursor=pointer]:
+                      - /url: https://t.me/phygitals_bot
+                      - img [ref=e139]
+            - paragraph [ref=e144]: © 2025 Phygitals. All rights reserved.
+    - region "Notifications alt+T"
+  - alert [ref=e350]

@@ -1,0 +1,245 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Phygitals" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img "Phygitals" [ref=e11]
+          - navigation [ref=e12]:
+            - link "Packs NEW" [ref=e13] [cursor=pointer]:
+              - /url: /claw
+              - img [ref=e14]
+              - generic [ref=e18]: Packs
+              - generic [ref=e19]: NEW
+            - link "Pack Party" [ref=e20] [cursor=pointer]:
+              - /url: /pack-party
+              - img [ref=e21]
+              - generic [ref=e27]: Pack Party
+            - link "Marketplace" [ref=e28] [cursor=pointer]:
+              - /url: /marketplace
+              - img [ref=e29]
+              - generic [ref=e31]: Marketplace
+            - link "Leaderboard" [ref=e32] [cursor=pointer]:
+              - /url: /leaderboard
+              - img [ref=e33]
+              - generic [ref=e35]: Leaderboard
+            - button "More" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e39]: More
+              - img [ref=e40]
+        - generic [ref=e43]:
+          - link "How it works" [ref=e44] [cursor=pointer]:
+            - /url: /how-it-works
+            - img [ref=e45]
+            - generic [ref=e47]: How it works
+          - button "Login" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+            - generic [ref=e53]: Login
+          - button "Sign Up" [ref=e54] [cursor=pointer]
+    - main [ref=e56]:
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - img "rookie-pack" [ref=e67]
+              - generic [ref=e70]:
+                - heading "Top Hits" [level=3] [ref=e71]
+                - paragraph [ref=e72]: The top items available in this pack.
+            - generic [ref=e136]:
+              - generic [ref=e138]:
+                - heading "Rookie Pack" [level=1] [ref=e139]
+                - button "85% Buyback" [ref=e140] [cursor=pointer]:
+                  - text: 85% Buyback
+                  - img [ref=e141]
+              - generic [ref=e144]:
+                - generic [ref=e145]:
+                  - generic [ref=e146]: Category
+                  - button "Pokémon Pokémon" [ref=e147] [cursor=pointer]:
+                    - generic [ref=e148]:
+                      - img "Pokémon" [ref=e149]
+                      - generic [ref=e150]: Pokémon
+                    - img [ref=e151]
+                - generic [ref=e153]:
+                  - generic [ref=e154]: Pack
+                  - generic [ref=e155]:
+                    - link "Trainer Pack Trainer $10" [ref=e156] [cursor=pointer]:
+                      - /url: /claw/trainer-pack
+                      - img "Trainer Pack" [ref=e157]
+                      - generic [ref=e158]: Trainer
+                      - generic [ref=e159]: $10
+                    - link "Rookie Pack Rookie $25" [ref=e160] [cursor=pointer]:
+                      - /url: /claw/rookie-pack
+                      - img "Rookie Pack" [ref=e161]
+                      - generic [ref=e162]: Rookie
+                      - generic [ref=e163]: $25
+                    - link "Elite Pack Elite $50" [ref=e164] [cursor=pointer]:
+                      - /url: /claw/elite-pack
+                      - img "Elite Pack" [ref=e165]
+                      - generic [ref=e166]: Elite
+                      - generic [ref=e167]: $50
+                    - link "Sealed Pack Sealed $100" [ref=e168] [cursor=pointer]:
+                      - /url: /claw/sealed-pack
+                      - img "Sealed Pack" [ref=e169]
+                      - generic [ref=e170]: Sealed
+                      - generic [ref=e171]: $100
+                    - link "Legend Pack Legend $250" [ref=e172] [cursor=pointer]:
+                      - /url: /claw/legend-pack
+                      - img "Legend Pack" [ref=e173]
+                      - generic [ref=e174]: Legend
+                      - generic [ref=e175]: $250
+                    - link "Base Set Pack Base Set $500" [ref=e176] [cursor=pointer]:
+                      - /url: /claw/base-set-pack
+                      - img "Base Set Pack" [ref=e177]
+                      - generic [ref=e178]: Base Set
+                      - generic [ref=e179]: $500
+                    - link "Platinum Pack Platinum $500" [ref=e180] [cursor=pointer]:
+                      - /url: /claw/platinum-pack
+                      - img "Platinum Pack" [ref=e181]
+                      - generic [ref=e182]: Platinum
+                      - generic [ref=e183]: $500
+                    - link "Mythic Pack Mythic $1,000" [ref=e184] [cursor=pointer]:
+                      - /url: /claw/mythic-pack
+                      - img "Mythic Pack" [ref=e185]
+                      - generic [ref=e186]: Mythic
+                      - generic [ref=e187]: $1,000
+                    - link "Black Pack Black $2,500" [ref=e188] [cursor=pointer]:
+                      - /url: /claw/black-pack
+                      - img "Black Pack" [ref=e189]
+                      - generic [ref=e190]: Black
+                      - generic [ref=e191]: $2,500
+                    - link "Diamond Pack Diamond $5,000" [ref=e192] [cursor=pointer]:
+                      - /url: /claw/diamond-pack
+                      - img "Diamond Pack" [ref=e193]
+                      - generic [ref=e194]: Diamond
+                      - generic [ref=e195]: $5,000
+                - button "Expected Value $26 per pack ?" [ref=e196] [cursor=pointer]:
+                  - generic [ref=e197]: Expected Value
+                  - generic [ref=e198]:
+                    - generic [ref=e199]: $26
+                    - generic [ref=e200]: per pack
+                    - generic [ref=e201]: "?"
+                - generic [ref=e202]:
+                  - generic [ref=e203]:
+                    - generic [ref=e204]: Select Spice Level
+                    - button "?" [ref=e205] [cursor=pointer]
+                  - generic [ref=e206]:
+                    - link "🌶 Mild" [ref=e207] [cursor=pointer]:
+                      - /url: /claw/rookie-pack-0
+                      - generic [ref=e208]: 🌶
+                      - generic [ref=e209]: Mild
+                    - generic [ref=e210]:
+                      - generic [ref=e211]: 🌶🌶
+                      - generic [ref=e212]: Medium
+                    - link "🌶🌶🌶 Hot" [ref=e213] [cursor=pointer]:
+                      - /url: /claw/rookie-pack-1
+                      - generic [ref=e214]: 🌶🌶🌶
+                      - generic [ref=e215]: Hot
+                - generic [ref=e216]:
+                  - generic [ref=e217]:
+                    - generic [ref=e218]: Live Odds
+                    - button "?" [ref=e219] [cursor=pointer]
+                  - generic [ref=e220]:
+                    - generic [ref=e221]:
+                      - generic [ref=e222]: $13-$18
+                      - generic [ref=e223]: 50%
+                    - generic [ref=e224]:
+                      - generic [ref=e225]: $18-$25
+                      - generic [ref=e226]: 30%
+                    - generic [ref=e227]:
+                      - generic [ref=e228]: $25-$50
+                      - generic [ref=e229]: 15%
+                    - generic [ref=e230]:
+                      - generic [ref=e231]: $50-$150
+                      - generic [ref=e232]: 4%
+                    - generic [ref=e233]:
+                      - generic [ref=e234]: $150-$10,000
+                      - generic [ref=e235]: 1%
+              - generic [ref=e237]:
+                - button "Try a free demo spin" [ref=e238] [cursor=pointer]:
+                  - img [ref=e242]
+                  - generic [ref=e244]: Try a free demo spin
+                  - img [ref=e245]
+                - generic [ref=e247]:
+                  - button "Decrease quantity" [disabled] [ref=e248]:
+                    - img [ref=e249]
+                  - generic [ref=e250]: 1 Pack
+                  - button "Increase quantity" [ref=e251] [cursor=pointer]:
+                    - img [ref=e252]
+                  - button "Max" [ref=e253] [cursor=pointer]
+                - button "Open Pack +2,500 pts $25" [ref=e254] [cursor=pointer]:
+                  - generic [ref=e255]:
+                    - generic [ref=e256]: Open Pack
+                    - generic [ref=e257]: +2,500 pts
+                  - generic [ref=e258]:
+                    - generic [ref=e259]: $25
+                    - img [ref=e260]
+          - generic [ref=e263]:
+            - heading "Recent Pulls" [level=3] [ref=e264]
+            - paragraph [ref=e265]: Check what's being pulled - see the latest community wins and draws.
+        - generic [ref=e413]:
+          - generic [ref=e414]:
+            - generic [ref=e415]:
+              - img "Phygitals" [ref=e417]
+              - paragraph [ref=e418]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+              - link "About Us" [ref=e420] [cursor=pointer]:
+                - /url: /about
+                - text: About Us
+                - img [ref=e421]
+            - generic [ref=e424]:
+              - generic [ref=e425]:
+                - heading "Quick Links" [level=3] [ref=e426]
+                - list [ref=e427]:
+                  - listitem [ref=e428]:
+                    - link "Home" [ref=e429] [cursor=pointer]:
+                      - /url: /
+                      - generic [ref=e430]: Home
+                  - listitem [ref=e431]:
+                    - link "Marketplace" [ref=e432] [cursor=pointer]:
+                      - /url: /marketplace
+                      - generic [ref=e433]: Marketplace
+                  - listitem [ref=e434]:
+                    - link "Play the Claw" [ref=e435] [cursor=pointer]:
+                      - /url: /claw
+                      - generic [ref=e436]: Play the Claw
+                  - listitem [ref=e437]:
+                    - link "Leaderboard" [ref=e438] [cursor=pointer]:
+                      - /url: /leaderboard
+                      - generic [ref=e439]: Leaderboard
+              - generic [ref=e440]:
+                - heading "Support" [level=3] [ref=e441]
+                - list [ref=e442]:
+                  - listitem [ref=e443]:
+                    - link "Contact Us" [ref=e444] [cursor=pointer]:
+                      - /url: /contact
+                      - generic [ref=e445]: Contact Us
+                  - listitem [ref=e446]:
+                    - link "Documentation" [ref=e447] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com
+                      - generic [ref=e448]: Documentation
+                  - listitem [ref=e449]:
+                    - link "Terms of Service" [ref=e450] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                      - generic [ref=e451]: Terms of Service
+                  - listitem [ref=e452]:
+                    - link "Privacy Policy" [ref=e453] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                      - generic [ref=e454]: Privacy Policy
+              - generic [ref=e455]:
+                - heading "Social Media" [level=3] [ref=e456]
+                - paragraph [ref=e457]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                - generic [ref=e458]:
+                  - link "Twitter" [ref=e459] [cursor=pointer]:
+                    - /url: https://x.com/phygitals
+                    - img [ref=e460]
+                  - link "Instagram" [ref=e462] [cursor=pointer]:
+                    - /url: https://www.instagram.com/phygitals
+                    - img [ref=e463]
+                  - link "Discord" [ref=e466] [cursor=pointer]:
+                    - /url: https://discord.gg/phygitals
+                    - img [ref=e467]
+                  - link "Telegram" [ref=e469] [cursor=pointer]:
+                    - /url: https://t.me/phygitals_bot
+                    - img [ref=e470]
+          - paragraph [ref=e475]: © 2025 Phygitals. All rights reserved.
+  - region "Notifications alt+T"

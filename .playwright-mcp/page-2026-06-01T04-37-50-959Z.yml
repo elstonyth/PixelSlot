@@ -1,0 +1,601 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - link "Phygitals" [ref=e10] [cursor=pointer]:
+              - /url: /
+              - img "Phygitals" [ref=e11]
+            - navigation [ref=e12]:
+              - link "Packs NEW" [ref=e13] [cursor=pointer]:
+                - /url: /claw
+                - img [ref=e14]
+                - generic [ref=e18]: Packs
+                - generic [ref=e19]: NEW
+              - link "Pack Party" [ref=e20] [cursor=pointer]:
+                - /url: /pack-party
+                - img [ref=e21]
+                - generic [ref=e27]: Pack Party
+              - link "Marketplace" [ref=e28] [cursor=pointer]:
+                - /url: /marketplace
+                - img [ref=e29]
+                - generic [ref=e31]: Marketplace
+              - link "Leaderboard" [ref=e32] [cursor=pointer]:
+                - /url: /leaderboard
+                - img [ref=e33]
+                - generic [ref=e35]: Leaderboard
+              - button "More" [ref=e36] [cursor=pointer]:
+                - img [ref=e37]
+                - generic [ref=e39]: More
+                - img [ref=e40]
+          - generic [ref=e43]:
+            - link "How it works" [ref=e44] [cursor=pointer]:
+              - /url: /how-it-works
+              - img [ref=e45]
+              - generic [ref=e47]: How it works
+            - button "Login" [ref=e49] [cursor=pointer]:
+              - img [ref=e50]
+              - generic [ref=e53]: Login
+            - button "Sign Up" [ref=e54] [cursor=pointer]
+      - main [ref=e56]:
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e65]:
+              - generic [ref=e66]:
+                - heading "Pack Party BETA" [level=1] [ref=e67]:
+                  - text: Pack Party
+                  - generic [ref=e68]: BETA
+                - paragraph [ref=e69]: Rip packs with friends! Multiple players enter, one pack is opened, and cards are allocated to every player at random.
+                - generic [ref=e72]: = Entry < Avg (great deal!)
+              - link "Create Party" [ref=e74] [cursor=pointer]:
+                - /url: /pack-party/create
+                - button "Create Party" [ref=e75]:
+                  - img [ref=e76]
+                  - text: Create Party
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - button "Active" [ref=e79] [cursor=pointer]
+                - button "Completed" [ref=e80] [cursor=pointer]
+              - button "Players Needed (Low to High)" [ref=e81] [cursor=pointer]:
+                - generic [ref=e82]: Players Needed (Low to High)
+                - img [ref=e83]
+              - generic [ref=e85]:
+                - button [ref=e86] [cursor=pointer]:
+                  - img [ref=e87]
+                - button [ref=e92] [cursor=pointer]:
+                  - img [ref=e93]
+            - generic [ref=e321]:
+              - link "Pack Party 2d Great Deal! 2 Entry $117 Chase $139 Avg $130 1/2" [ref=e322] [cursor=pointer]:
+                - /url: /pack-party/807ffe9a-5eec-4c5e-a94c-66ccb0d0379d
+                - generic [ref=e325]:
+                  - generic [ref=e326]:
+                    - img "Pack Party" [ref=e327]
+                    - generic [ref=e330]: 2d
+                    - generic [ref=e335]:
+                      - img [ref=e336]
+                      - generic [ref=e338]: Great Deal!
+                    - generic [ref=e340]:
+                      - img [ref=e341]
+                      - generic [ref=e345]: "2"
+                  - generic [ref=e350]:
+                    - generic [ref=e351]:
+                      - generic [ref=e352]:
+                        - paragraph [ref=e353]: Entry
+                        - paragraph [ref=e354]: $117
+                      - generic [ref=e355]:
+                        - paragraph [ref=e356]: Chase
+                        - paragraph [ref=e357]: $139
+                      - generic [ref=e358]:
+                        - paragraph [ref=e359]: Avg
+                        - paragraph [ref=e360]: $130
+                    - generic [ref=e364]: 1/2
+              - link "Pack Party 6d 2 Entry $11 Chase $13 Avg $11 1/2" [ref=e365] [cursor=pointer]:
+                - /url: /pack-party/70ee8a00-d2f2-4a28-a340-2ac6cafaffb8
+                - generic [ref=e366]:
+                  - generic [ref=e367]:
+                    - img "Pack Party" [ref=e368]
+                    - generic [ref=e371]: 6d
+                    - generic [ref=e376]:
+                      - img [ref=e377]
+                      - generic [ref=e381]: "2"
+                  - generic [ref=e386]:
+                    - generic [ref=e387]:
+                      - generic [ref=e388]:
+                        - paragraph [ref=e389]: Entry
+                        - paragraph [ref=e390]: $11
+                      - generic [ref=e391]:
+                        - paragraph [ref=e392]: Chase
+                        - paragraph [ref=e393]: $13
+                      - generic [ref=e394]:
+                        - paragraph [ref=e395]: Avg
+                        - paragraph [ref=e396]: $11
+                    - generic [ref=e400]: 1/2
+              - link "Pack Party 4d 2 Entry $18 Chase $20 Avg $18 1/2" [ref=e401] [cursor=pointer]:
+                - /url: /pack-party/80252910-fed4-4bf7-9b3b-0eaaf09f3598
+                - generic [ref=e402]:
+                  - generic [ref=e403]:
+                    - img "Pack Party" [ref=e404]
+                    - generic [ref=e407]: 4d
+                    - generic [ref=e412]:
+                      - img [ref=e413]
+                      - generic [ref=e417]: "2"
+                  - generic [ref=e422]:
+                    - generic [ref=e423]:
+                      - generic [ref=e424]:
+                        - paragraph [ref=e425]: Entry
+                        - paragraph [ref=e426]: $18
+                      - generic [ref=e427]:
+                        - paragraph [ref=e428]: Chase
+                        - paragraph [ref=e429]: $20
+                      - generic [ref=e430]:
+                        - paragraph [ref=e431]: Avg
+                        - paragraph [ref=e432]: $18
+                    - generic [ref=e436]: 1/2
+              - link "Pack Party 3d Great Deal! 2 Entry $39 Chase $52 Avg $39 1/2" [ref=e437] [cursor=pointer]:
+                - /url: /pack-party/d6fc324f-336f-4b8c-9f4b-6a240ffe91e8
+                - generic [ref=e440]:
+                  - generic [ref=e441]:
+                    - img "Pack Party" [ref=e442]
+                    - generic [ref=e445]: 3d
+                    - generic [ref=e450]:
+                      - img [ref=e451]
+                      - generic [ref=e453]: Great Deal!
+                    - generic [ref=e455]:
+                      - img [ref=e456]
+                      - generic [ref=e460]: "2"
+                  - generic [ref=e465]:
+                    - generic [ref=e466]:
+                      - generic [ref=e467]:
+                        - paragraph [ref=e468]: Entry
+                        - paragraph [ref=e469]: $39
+                      - generic [ref=e470]:
+                        - paragraph [ref=e471]: Chase
+                        - paragraph [ref=e472]: $52
+                      - generic [ref=e473]:
+                        - paragraph [ref=e474]: Avg
+                        - paragraph [ref=e475]: $39
+                    - generic [ref=e479]: 1/2
+              - link "Pack Party Ended 2 Entry $83 Chase $115 Avg $72 1/2" [ref=e480] [cursor=pointer]:
+                - /url: /pack-party/98d71486-a21d-4055-9d1b-100ca5bbf063
+                - generic [ref=e481]:
+                  - generic [ref=e482]:
+                    - img "Pack Party" [ref=e484]
+                    - generic [ref=e487]: Ended
+                    - generic [ref=e489]:
+                      - img [ref=e490]
+                      - generic [ref=e494]: "2"
+                  - generic [ref=e500]:
+                    - generic [ref=e501]:
+                      - generic [ref=e502]:
+                        - paragraph [ref=e503]: Entry
+                        - paragraph [ref=e504]: $83
+                      - generic [ref=e505]:
+                        - paragraph [ref=e506]: Chase
+                        - paragraph [ref=e507]: $115
+                      - generic [ref=e508]:
+                        - paragraph [ref=e509]: Avg
+                        - paragraph [ref=e510]: $72
+                    - generic [ref=e514]: 1/2
+              - link "Pack Party Ended 2 Entry $108 Chase $108 Avg $102 1/2" [ref=e515] [cursor=pointer]:
+                - /url: /pack-party/d42d36df-2f71-42cf-bcb4-0d952f9956cf
+                - generic [ref=e516]:
+                  - generic [ref=e517]:
+                    - img "Pack Party" [ref=e519]
+                    - generic [ref=e522]: Ended
+                    - generic [ref=e524]:
+                      - img [ref=e525]
+                      - generic [ref=e529]: "2"
+                  - generic [ref=e535]:
+                    - generic [ref=e536]:
+                      - generic [ref=e537]:
+                        - paragraph [ref=e538]: Entry
+                        - paragraph [ref=e539]: $108
+                      - generic [ref=e540]:
+                        - paragraph [ref=e541]: Chase
+                        - paragraph [ref=e542]: $108
+                      - generic [ref=e543]:
+                        - paragraph [ref=e544]: Avg
+                        - paragraph [ref=e545]: $102
+                    - generic [ref=e549]: 1/2
+              - link "Pack Party 2d Great Deal! 2 Entry $31 Chase $51 Avg $32 1/2" [ref=e550] [cursor=pointer]:
+                - /url: /pack-party/e2ea1be7-667c-4b0c-8cae-376dba99990a
+                - generic [ref=e553]:
+                  - generic [ref=e554]:
+                    - img "Pack Party" [ref=e556]
+                    - generic [ref=e559]: 2d
+                    - generic [ref=e564]:
+                      - img [ref=e565]
+                      - generic [ref=e567]: Great Deal!
+                    - generic [ref=e569]:
+                      - img [ref=e570]
+                      - generic [ref=e574]: "2"
+                  - generic [ref=e580]:
+                    - generic [ref=e581]:
+                      - generic [ref=e582]:
+                        - paragraph [ref=e583]: Entry
+                        - paragraph [ref=e584]: $31
+                      - generic [ref=e585]:
+                        - paragraph [ref=e586]: Chase
+                        - paragraph [ref=e587]: $51
+                      - generic [ref=e588]:
+                        - paragraph [ref=e589]: Avg
+                        - paragraph [ref=e590]: $32
+                    - generic [ref=e594]: 1/2
+              - link "Pack Party Ended 2 Entry $42 Chase $53 Avg $32 1/2" [ref=e595] [cursor=pointer]:
+                - /url: /pack-party/b7a28b6e-385c-429d-9496-c413f4b4eab0
+                - generic [ref=e596]:
+                  - generic [ref=e597]:
+                    - img "Pack Party" [ref=e598]
+                    - generic [ref=e601]: Ended
+                    - generic [ref=e603]:
+                      - img [ref=e604]
+                      - generic [ref=e608]: "2"
+                  - generic [ref=e613]:
+                    - generic [ref=e614]:
+                      - generic [ref=e615]:
+                        - paragraph [ref=e616]: Entry
+                        - paragraph [ref=e617]: $42
+                      - generic [ref=e618]:
+                        - paragraph [ref=e619]: Chase
+                        - paragraph [ref=e620]: $53
+                      - generic [ref=e621]:
+                        - paragraph [ref=e622]: Avg
+                        - paragraph [ref=e623]: $32
+                    - generic [ref=e627]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $51 Chase $76 Avg $53 1/2" [ref=e628] [cursor=pointer]:
+                - /url: /pack-party/34e9b468-eed4-4355-a030-ebf172721984
+                - generic [ref=e631]:
+                  - generic [ref=e632]:
+                    - img "Pack Party" [ref=e633]
+                    - generic [ref=e636]: Ended
+                    - generic [ref=e638]:
+                      - img [ref=e639]
+                      - generic [ref=e641]: Great Deal!
+                    - generic [ref=e643]:
+                      - img [ref=e644]
+                      - generic [ref=e648]: "2"
+                  - generic [ref=e653]:
+                    - generic [ref=e654]:
+                      - generic [ref=e655]:
+                        - paragraph [ref=e656]: Entry
+                        - paragraph [ref=e657]: $51
+                      - generic [ref=e658]:
+                        - paragraph [ref=e659]: Chase
+                        - paragraph [ref=e660]: $76
+                      - generic [ref=e661]:
+                        - paragraph [ref=e662]: Avg
+                        - paragraph [ref=e663]: $53
+                    - generic [ref=e667]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $21 Chase $36 Avg $25 1/2" [ref=e668] [cursor=pointer]:
+                - /url: /pack-party/d7ee7e7d-6f57-4c97-9ed1-96e300e31aa3
+                - generic [ref=e671]:
+                  - generic [ref=e672]:
+                    - img "Pack Party" [ref=e673]
+                    - generic [ref=e676]: Ended
+                    - generic [ref=e678]:
+                      - img [ref=e679]
+                      - generic [ref=e681]: Great Deal!
+                    - generic [ref=e683]:
+                      - img [ref=e684]
+                      - generic [ref=e688]: "2"
+                  - generic [ref=e693]:
+                    - generic [ref=e694]:
+                      - generic [ref=e695]:
+                        - paragraph [ref=e696]: Entry
+                        - paragraph [ref=e697]: $21
+                      - generic [ref=e698]:
+                        - paragraph [ref=e699]: Chase
+                        - paragraph [ref=e700]: $36
+                      - generic [ref=e701]:
+                        - paragraph [ref=e702]: Avg
+                        - paragraph [ref=e703]: $25
+                    - generic [ref=e707]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $62 Chase $112 Avg $64 1/2" [ref=e708] [cursor=pointer]:
+                - /url: /pack-party/df78fa8c-1667-4ce5-91d8-3b13cc7f1ac4
+                - generic [ref=e711]:
+                  - generic [ref=e712]:
+                    - img "Pack Party" [ref=e713]
+                    - generic [ref=e716]: Ended
+                    - generic [ref=e718]:
+                      - img [ref=e719]
+                      - generic [ref=e721]: Great Deal!
+                    - generic [ref=e723]:
+                      - img [ref=e724]
+                      - generic [ref=e728]: "2"
+                  - generic [ref=e733]:
+                    - generic [ref=e734]:
+                      - generic [ref=e735]:
+                        - paragraph [ref=e736]: Entry
+                        - paragraph [ref=e737]: $62
+                      - generic [ref=e738]:
+                        - paragraph [ref=e739]: Chase
+                        - paragraph [ref=e740]: $112
+                      - generic [ref=e741]:
+                        - paragraph [ref=e742]: Avg
+                        - paragraph [ref=e743]: $64
+                    - generic [ref=e747]: 1/2
+              - link "Pack Party 1d Great Deal! 2 Entry $48 Chase $79 Avg $50 1/2" [ref=e748] [cursor=pointer]:
+                - /url: /pack-party/e32799b3-1264-4d04-a92c-979c2dff88bd
+                - generic [ref=e751]:
+                  - generic [ref=e752]:
+                    - img "Pack Party" [ref=e754]
+                    - generic [ref=e757]: 1d
+                    - generic [ref=e762]:
+                      - img [ref=e763]
+                      - generic [ref=e765]: Great Deal!
+                    - generic [ref=e767]:
+                      - img [ref=e768]
+                      - generic [ref=e772]: "2"
+                  - generic [ref=e778]:
+                    - generic [ref=e779]:
+                      - generic [ref=e780]:
+                        - paragraph [ref=e781]: Entry
+                        - paragraph [ref=e782]: $48
+                      - generic [ref=e783]:
+                        - paragraph [ref=e784]: Chase
+                        - paragraph [ref=e785]: $79
+                      - generic [ref=e786]:
+                        - paragraph [ref=e787]: Avg
+                        - paragraph [ref=e788]: $50
+                    - generic [ref=e792]: 1/2
+              - link "Pack Party 5d 2 Entry $11 Chase $15 Avg $11 1/2" [ref=e793] [cursor=pointer]:
+                - /url: /pack-party/1873a062-40fb-437e-91b8-63b9bd791030
+                - generic [ref=e794]:
+                  - generic [ref=e795]:
+                    - img "Pack Party" [ref=e796]
+                    - generic [ref=e799]: 5d
+                    - generic [ref=e804]:
+                      - img [ref=e805]
+                      - generic [ref=e809]: "2"
+                  - generic [ref=e814]:
+                    - generic [ref=e815]:
+                      - generic [ref=e816]:
+                        - paragraph [ref=e817]: Entry
+                        - paragraph [ref=e818]: $11
+                      - generic [ref=e819]:
+                        - paragraph [ref=e820]: Chase
+                        - paragraph [ref=e821]: $15
+                      - generic [ref=e822]:
+                        - paragraph [ref=e823]: Avg
+                        - paragraph [ref=e824]: $11
+                    - generic [ref=e828]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $48 Chase $77 Avg $52 1/2" [ref=e829] [cursor=pointer]:
+                - /url: /pack-party/d33564d5-5f42-4630-be23-ef4a0defba78
+                - generic [ref=e832]:
+                  - generic [ref=e833]:
+                    - img "Pack Party" [ref=e835]
+                    - generic [ref=e838]: Ended
+                    - generic [ref=e840]:
+                      - img [ref=e841]
+                      - generic [ref=e843]: Great Deal!
+                    - generic [ref=e845]:
+                      - img [ref=e846]
+                      - generic [ref=e850]: "2"
+                  - generic [ref=e856]:
+                    - generic [ref=e857]:
+                      - generic [ref=e858]:
+                        - paragraph [ref=e859]: Entry
+                        - paragraph [ref=e860]: $48
+                      - generic [ref=e861]:
+                        - paragraph [ref=e862]: Chase
+                        - paragraph [ref=e863]: $77
+                      - generic [ref=e864]:
+                        - paragraph [ref=e865]: Avg
+                        - paragraph [ref=e866]: $52
+                    - generic [ref=e870]: 1/2
+              - link "Pack Party Ended 2 Entry $41 Chase $50 Avg $40 1/2" [ref=e871] [cursor=pointer]:
+                - /url: /pack-party/554faf08-171b-4392-acd5-2ed0bb20ab4d
+                - generic [ref=e872]:
+                  - generic [ref=e873]:
+                    - img "Pack Party" [ref=e874]
+                    - generic [ref=e877]: Ended
+                    - generic [ref=e879]:
+                      - img [ref=e880]
+                      - generic [ref=e884]: "2"
+                  - generic [ref=e889]:
+                    - generic [ref=e890]:
+                      - generic [ref=e891]:
+                        - paragraph [ref=e892]: Entry
+                        - paragraph [ref=e893]: $41
+                      - generic [ref=e894]:
+                        - paragraph [ref=e895]: Chase
+                        - paragraph [ref=e896]: $50
+                      - generic [ref=e897]:
+                        - paragraph [ref=e898]: Avg
+                        - paragraph [ref=e899]: $40
+                    - generic [ref=e903]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $54 Chase $103 Avg $56 1/2" [ref=e904] [cursor=pointer]:
+                - /url: /pack-party/2c1a1f50-7488-4c31-a326-e1cdf19dedd2
+                - generic [ref=e907]:
+                  - generic [ref=e908]:
+                    - img "Pack Party" [ref=e909]
+                    - generic [ref=e912]: Ended
+                    - generic [ref=e914]:
+                      - img [ref=e915]
+                      - generic [ref=e917]: Great Deal!
+                    - generic [ref=e919]:
+                      - img [ref=e920]
+                      - generic [ref=e924]: "2"
+                  - generic [ref=e929]:
+                    - generic [ref=e930]:
+                      - generic [ref=e931]:
+                        - paragraph [ref=e932]: Entry
+                        - paragraph [ref=e933]: $54
+                      - generic [ref=e934]:
+                        - paragraph [ref=e935]: Chase
+                        - paragraph [ref=e936]: $103
+                      - generic [ref=e937]:
+                        - paragraph [ref=e938]: Avg
+                        - paragraph [ref=e939]: $56
+                    - generic [ref=e943]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $28 Chase $39 Avg $28 1/2" [ref=e944] [cursor=pointer]:
+                - /url: /pack-party/3c1291f7-bf87-43b2-9964-7605d0ea3045
+                - generic [ref=e947]:
+                  - generic [ref=e948]:
+                    - img "Pack Party" [ref=e949]
+                    - generic [ref=e952]: Ended
+                    - generic [ref=e954]:
+                      - img [ref=e955]
+                      - generic [ref=e957]: Great Deal!
+                    - generic [ref=e959]:
+                      - img [ref=e960]
+                      - generic [ref=e964]: "2"
+                  - generic [ref=e969]:
+                    - generic [ref=e970]:
+                      - generic [ref=e971]:
+                        - paragraph [ref=e972]: Entry
+                        - paragraph [ref=e973]: $28
+                      - generic [ref=e974]:
+                        - paragraph [ref=e975]: Chase
+                        - paragraph [ref=e976]: $39
+                      - generic [ref=e977]:
+                        - paragraph [ref=e978]: Avg
+                        - paragraph [ref=e979]: $28
+                    - generic [ref=e983]: 1/2
+              - link "Pack Party 3d 2 Entry $38 Chase $38 Avg $34 1/2" [ref=e984] [cursor=pointer]:
+                - /url: /pack-party/de7b9164-ea75-4991-9192-82f1143138c8
+                - generic [ref=e985]:
+                  - generic [ref=e986]:
+                    - img "Pack Party" [ref=e988]
+                    - generic [ref=e991]: 3d
+                    - generic [ref=e996]:
+                      - img [ref=e997]
+                      - generic [ref=e1001]: "2"
+                  - generic [ref=e1007]:
+                    - generic [ref=e1008]:
+                      - generic [ref=e1009]:
+                        - paragraph [ref=e1010]: Entry
+                        - paragraph [ref=e1011]: $38
+                      - generic [ref=e1012]:
+                        - paragraph [ref=e1013]: Chase
+                        - paragraph [ref=e1014]: $38
+                      - generic [ref=e1015]:
+                        - paragraph [ref=e1016]: Avg
+                        - paragraph [ref=e1017]: $34
+                    - generic [ref=e1021]: 1/2
+              - link "Pack Party Ended 2 Entry $24 Chase $37 Avg $23 1/2" [ref=e1022] [cursor=pointer]:
+                - /url: /pack-party/41734b2c-7fb6-4f45-9681-efbd8595ffcd
+                - generic [ref=e1023]:
+                  - generic [ref=e1024]:
+                    - img "Pack Party" [ref=e1025]
+                    - generic [ref=e1028]: Ended
+                    - generic [ref=e1030]:
+                      - img [ref=e1031]
+                      - generic [ref=e1035]: "2"
+                  - generic [ref=e1040]:
+                    - generic [ref=e1041]:
+                      - generic [ref=e1042]:
+                        - paragraph [ref=e1043]: Entry
+                        - paragraph [ref=e1044]: $24
+                      - generic [ref=e1045]:
+                        - paragraph [ref=e1046]: Chase
+                        - paragraph [ref=e1047]: $37
+                      - generic [ref=e1048]:
+                        - paragraph [ref=e1049]: Avg
+                        - paragraph [ref=e1050]: $23
+                    - generic [ref=e1054]: 1/2
+              - link "Pack Party Ended Great Deal! 2 Entry $11 Chase $15 Avg $12 1/2" [ref=e1055] [cursor=pointer]:
+                - /url: /pack-party/12f5eb5a-50f1-4a36-819c-eeaa494d90f2
+                - generic [ref=e1058]:
+                  - generic [ref=e1059]:
+                    - img "Pack Party" [ref=e1060]
+                    - generic [ref=e1063]: Ended
+                    - generic [ref=e1065]:
+                      - img [ref=e1066]
+                      - generic [ref=e1068]: Great Deal!
+                    - generic [ref=e1070]:
+                      - img [ref=e1071]
+                      - generic [ref=e1075]: "2"
+                  - generic [ref=e1080]:
+                    - generic [ref=e1081]:
+                      - generic [ref=e1082]:
+                        - paragraph [ref=e1083]: Entry
+                        - paragraph [ref=e1084]: $11
+                      - generic [ref=e1085]:
+                        - paragraph [ref=e1086]: Chase
+                        - paragraph [ref=e1087]: $15
+                      - generic [ref=e1088]:
+                        - paragraph [ref=e1089]: Avg
+                        - paragraph [ref=e1090]: $12
+                    - generic [ref=e1094]: 1/2
+            - generic [ref=e1095]:
+              - button "Previous" [disabled]
+              - generic [ref=e1096]: Page 1 of 4
+              - button "Next" [ref=e1097] [cursor=pointer]
+            - generic [ref=e1100]:
+              - generic [ref=e1101]:
+                - heading "Have cards to share?" [level=3] [ref=e1102]
+                - paragraph [ref=e1103]: Create your own party and let others join in
+              - link "Create Your Own Party" [ref=e1104] [cursor=pointer]:
+                - /url: /pack-party/create
+                - button "Create Your Own Party" [ref=e1105]:
+                  - text: Create Your Own Party
+                  - img [ref=e1106]
+          - generic [ref=e258]:
+            - generic [ref=e259]:
+              - generic [ref=e260]:
+                - img "Phygitals" [ref=e262]
+                - paragraph [ref=e263]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+                - link "About Us" [ref=e265] [cursor=pointer]:
+                  - /url: /about
+                  - text: About Us
+                  - img [ref=e266]
+              - generic [ref=e269]:
+                - generic [ref=e270]:
+                  - heading "Quick Links" [level=3] [ref=e271]
+                  - list [ref=e272]:
+                    - listitem [ref=e273]:
+                      - link "Home" [ref=e274] [cursor=pointer]:
+                        - /url: /
+                        - generic [ref=e275]: Home
+                    - listitem [ref=e276]:
+                      - link "Marketplace" [ref=e277] [cursor=pointer]:
+                        - /url: /marketplace
+                        - generic [ref=e278]: Marketplace
+                    - listitem [ref=e279]:
+                      - link "Play the Claw" [ref=e280] [cursor=pointer]:
+                        - /url: /claw
+                        - generic [ref=e281]: Play the Claw
+                    - listitem [ref=e282]:
+                      - link "Leaderboard" [ref=e283] [cursor=pointer]:
+                        - /url: /leaderboard
+                        - generic [ref=e284]: Leaderboard
+                - generic [ref=e285]:
+                  - heading "Support" [level=3] [ref=e286]
+                  - list [ref=e287]:
+                    - listitem [ref=e288]:
+                      - link "Contact Us" [ref=e289] [cursor=pointer]:
+                        - /url: /contact
+                        - generic [ref=e290]: Contact Us
+                    - listitem [ref=e291]:
+                      - link "Documentation" [ref=e292] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com
+                        - generic [ref=e293]: Documentation
+                    - listitem [ref=e294]:
+                      - link "Terms of Service" [ref=e295] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                        - generic [ref=e296]: Terms of Service
+                    - listitem [ref=e297]:
+                      - link "Privacy Policy" [ref=e298] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                        - generic [ref=e299]: Privacy Policy
+                - generic [ref=e300]:
+                  - heading "Social Media" [level=3] [ref=e301]
+                  - paragraph [ref=e302]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                  - generic [ref=e303]:
+                    - link "Twitter" [ref=e304] [cursor=pointer]:
+                      - /url: https://x.com/phygitals
+                      - img [ref=e305]
+                    - link "Instagram" [ref=e307] [cursor=pointer]:
+                      - /url: https://www.instagram.com/phygitals
+                      - img [ref=e308]
+                    - link "Discord" [ref=e311] [cursor=pointer]:
+                      - /url: https://discord.gg/phygitals
+                      - img [ref=e312]
+                    - link "Telegram" [ref=e314] [cursor=pointer]:
+                      - /url: https://t.me/phygitals_bot
+                      - img [ref=e315]
+            - paragraph [ref=e320]: © 2025 Phygitals. All rights reserved.
+    - region "Notifications alt+T"
+  - alert [ref=e1108]

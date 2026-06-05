@@ -1,0 +1,121 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Phygitals" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img "Phygitals" [ref=e11]
+          - navigation [ref=e12]:
+            - link "Packs NEW" [ref=e13] [cursor=pointer]:
+              - /url: /claw
+              - img [ref=e14]
+              - generic [ref=e18]: Packs
+              - generic [ref=e19]: NEW
+            - link "Pack Party" [ref=e20] [cursor=pointer]:
+              - /url: /pack-party
+              - img [ref=e21]
+              - generic [ref=e27]: Pack Party
+            - link "Marketplace" [ref=e28] [cursor=pointer]:
+              - /url: /marketplace
+              - img [ref=e29]
+              - generic [ref=e31]: Marketplace
+            - link "Leaderboard" [ref=e32] [cursor=pointer]:
+              - /url: /leaderboard
+              - img [ref=e33]
+              - generic [ref=e35]: Leaderboard
+            - button "More" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e39]: More
+              - img [ref=e40]
+        - generic [ref=e43]:
+          - link "How it works" [ref=e44] [cursor=pointer]:
+            - /url: /how-it-works
+            - img [ref=e45]
+            - generic [ref=e47]: How it works
+          - button "Login" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+            - generic [ref=e53]: Login
+          - button "Sign Up" [ref=e54] [cursor=pointer]
+    - main [ref=e56]:
+      - generic [ref=e57]:
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic:
+              - img "Activity"
+          - heading "Marketplace Activity" [level=1] [ref=e63]
+          - paragraph [ref=e64]: Track all marketplace activities and transactions in real-time
+          - generic [ref=e65]:
+            - generic [ref=e66]: 0 transactions
+            - generic [ref=e67]: •
+            - generic [ref=e68]:
+              - generic [ref=e69]: $0M
+              - text: volume
+            - generic [ref=e70]: •
+            - generic [ref=e71]: 0 listings
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - img "Phygitals" [ref=e86]
+              - paragraph [ref=e87]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+              - link "About Us" [ref=e89] [cursor=pointer]:
+                - /url: /about
+                - text: About Us
+                - img [ref=e90]
+            - generic [ref=e93]:
+              - generic [ref=e94]:
+                - heading "Quick Links" [level=3] [ref=e95]
+                - list [ref=e96]:
+                  - listitem [ref=e97]:
+                    - link "Home" [ref=e98] [cursor=pointer]:
+                      - /url: /
+                      - generic [ref=e99]: Home
+                  - listitem [ref=e100]:
+                    - link "Marketplace" [ref=e101] [cursor=pointer]:
+                      - /url: /marketplace
+                      - generic [ref=e102]: Marketplace
+                  - listitem [ref=e103]:
+                    - link "Play the Claw" [ref=e104] [cursor=pointer]:
+                      - /url: /claw
+                      - generic [ref=e105]: Play the Claw
+                  - listitem [ref=e106]:
+                    - link "Leaderboard" [ref=e107] [cursor=pointer]:
+                      - /url: /leaderboard
+                      - generic [ref=e108]: Leaderboard
+              - generic [ref=e109]:
+                - heading "Support" [level=3] [ref=e110]
+                - list [ref=e111]:
+                  - listitem [ref=e112]:
+                    - link "Contact Us" [ref=e113] [cursor=pointer]:
+                      - /url: /contact
+                      - generic [ref=e114]: Contact Us
+                  - listitem [ref=e115]:
+                    - link "Documentation" [ref=e116] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com
+                      - generic [ref=e117]: Documentation
+                  - listitem [ref=e118]:
+                    - link "Terms of Service" [ref=e119] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                      - generic [ref=e120]: Terms of Service
+                  - listitem [ref=e121]:
+                    - link "Privacy Policy" [ref=e122] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                      - generic [ref=e123]: Privacy Policy
+              - generic [ref=e124]:
+                - heading "Social Media" [level=3] [ref=e125]
+                - paragraph [ref=e126]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                - generic [ref=e127]:
+                  - link "Twitter" [ref=e128] [cursor=pointer]:
+                    - /url: https://x.com/phygitals
+                    - img [ref=e129]
+                  - link "Instagram" [ref=e131] [cursor=pointer]:
+                    - /url: https://www.instagram.com/phygitals
+                    - img [ref=e132]
+                  - link "Discord" [ref=e135] [cursor=pointer]:
+                    - /url: https://discord.gg/phygitals
+                    - img [ref=e136]
+                  - link "Telegram" [ref=e138] [cursor=pointer]:
+                    - /url: https://t.me/phygitals_bot
+                    - img [ref=e139]
+          - paragraph [ref=e144]: © 2025 Phygitals. All rights reserved.
+  - region "Notifications alt+T"

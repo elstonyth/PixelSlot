@@ -1,20 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Nekst Black — the display/heading font used on phygitals.com (self-hosted)
+const nekst = localFont({
+  src: "../../public/fonts/Nekst-Black.woff2",
+  variable: "--font-nekst",
+  weight: "900",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Website Clone",
-  description: "Pixel-perfect website clone",
+  title: "Phygitals — Your Gateway to Physical & Digital Collectibles",
+  description:
+    "Rip packs. Pull graded cards. Hold, trade, redeem, or sell back at up to 90% value.",
+  // Favicon + apple-touch icon come from the Next file convention (src/app/icon.png
+  // and src/app/apple-icon.png — the Pokenic badge).
 };
 
 export default function RootLayout({
@@ -25,9 +34,22 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // Browser extensions (e.g. Dark Reader) inject attributes like
+      // `data-darkreader-proxy-injected` onto <html>/<body> before React
+      // hydrates, which is a benign source of hydration mismatches. Suppressing
+      // here only ignores attribute diffs on these two root elements, not on the
+      // app's actual content.
+      suppressHydrationWarning
+      className={`dark ${geistSans.variable} ${nekst.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-neutral-900 text-neutral-50"
+      >
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+      </body>
     </html>
   );
 }

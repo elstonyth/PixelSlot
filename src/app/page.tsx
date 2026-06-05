@@ -1,9 +1,32 @@
+import HeroSection from "@/components/HeroSection";
+import OpenPacksSection from "@/components/OpenPacksSection";
+import RecentPullsSection from "@/components/RecentPullsSection";
+import HowItWorksSection from "@/components/HowItWorksSection";
+import CommunitySection from "@/components/CommunitySection";
+import LeaderboardSection from "@/components/LeaderboardSection";
+import CtaSection from "@/components/CtaSection";
+import Reveal from "@/components/Reveal";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">
-        Clone target not yet built. Run <code className="font-mono text-foreground">/clone-website</code> to start.
-      </p>
-    </main>
+    <div className="mx-auto w-full px-fluid py-4">
+      <HeroSection />
+      <Reveal>
+        <OpenPacksSection />
+      </Reveal>
+      <Reveal>
+        <RecentPullsSection />
+      </Reveal>
+      {/* HowItWorksSection has its own internal scroll-in animation */}
+      <HowItWorksSection />
+      <Reveal>
+        <CommunitySection />
+      </Reveal>
+      {/* LeaderboardSection has its own staggered row-reveal on scroll-in */}
+      <LeaderboardSection />
+      <Reveal>
+        <CtaSection />
+      </Reveal>
+    </div>
   );
 }

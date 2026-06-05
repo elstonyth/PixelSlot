@@ -1,0 +1,174 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Phygitals home" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Pokenic" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Packs NEW" [ref=e8] [cursor=pointer]:
+            - /url: /claw
+            - img [ref=e9]
+            - text: Packs
+            - generic [ref=e13]: NEW
+          - link "Pack Party" [ref=e14] [cursor=pointer]:
+            - /url: /pack-party
+            - img [ref=e15]
+            - text: Pack Party
+          - link "Marketplace" [ref=e21] [cursor=pointer]:
+            - /url: /marketplace
+            - img [ref=e22]
+            - text: Marketplace
+          - link "Leaderboard" [ref=e26] [cursor=pointer]:
+            - /url: /leaderboard
+            - img [ref=e27]
+            - text: Leaderboard
+          - button "More" [ref=e34]:
+            - img [ref=e35]
+            - text: More
+            - img [ref=e38]
+      - generic [ref=e40]:
+        - link "How it works" [ref=e41] [cursor=pointer]:
+          - /url: /how-it-works
+          - img [ref=e42]
+          - text: How it works
+        - button "Login" [ref=e45]:
+          - img [ref=e46]
+          - text: Login
+        - button "Sign Up" [ref=e49]
+  - main [ref=e50]:
+    - generic [ref=e51]:
+      - link "Marketplace" [ref=e52] [cursor=pointer]:
+        - /url: /marketplace
+        - img [ref=e53]
+        - text: Marketplace
+      - generic [ref=e55]:
+        - img "2021 Scarlet & Violet 151 Charizard ex PSA 10 GEM MINT" [ref=e59]
+        - generic [ref=e60]:
+          - generic [ref=e61]: Common
+          - heading "2021 Scarlet & Violet 151 Charizard ex PSA 10 GEM MINT" [level=1] [ref=e62]
+          - paragraph [ref=e63]: Scarlet & Violet 151
+          - generic [ref=e64]:
+            - generic [ref=e65]: PSA 10 GEM MINT
+            - generic [ref=e66]: "2021"
+            - generic [ref=e67]: +80 pts
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - paragraph [ref=e70]: Price
+              - paragraph [ref=e71]: $36.00
+            - generic [ref=e72]:
+              - paragraph [ref=e73]: Fair Market Value
+              - paragraph [ref=e74]: $40.00
+            - generic [ref=e75]:
+              - img [ref=e76]
+              - text: Buyback $35.00
+          - generic [ref=e79]:
+            - button "Buy now" [ref=e80]:
+              - img [ref=e81]
+              - text: Buy now
+            - button "Make offer" [ref=e85]:
+              - img [ref=e86]
+              - text: Make offer
+            - button "Sell" [ref=e92]:
+              - img [ref=e93]
+              - text: Sell
+          - generic [ref=e96]:
+            - link "Owned by PrinceOfDragons" [ref=e97] [cursor=pointer]:
+              - /url: /profile/PrinceOfDragons
+              - text: Owned by
+              - generic [ref=e98]: PrinceOfDragons
+            - generic [ref=e99]:
+              - img [ref=e100]
+              - text: Vaulted & insured · PSA
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - heading "Price history" [level=2] [ref=e105]
+              - generic [ref=e106]: demo data
+            - img [ref=e107]
+            - generic [ref=e109]:
+              - generic [ref=e110]: 24 sales
+              - generic [ref=e111]: "Last: $40.00"
+      - generic [ref=e112]:
+        - heading "More from Scarlet & Violet 151" [level=2] [ref=e113]
+        - generic [ref=e114]:
+          - link "2021 Scarlet & Violet 151 Greninja ex CGC 9.5 MINT+ CGC 9.5 MINT+ $513.00" [ref=e116] [cursor=pointer]:
+            - /url: /card/greninja-ex-scarlet-violet-151-11
+            - img "2021 Scarlet & Violet 151 Greninja ex CGC 9.5 MINT+" [ref=e118]
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: CGC 9.5 MINT+
+              - paragraph [ref=e121]: $513.00
+          - link "2021 Scarlet & Violet 151 Ho-Oh V Fanatics 10 GEM MINT Fanatics 10 GEM MINT $126.00" [ref=e123] [cursor=pointer]:
+            - /url: /card/ho-oh-v-scarlet-violet-151-21
+            - img "2021 Scarlet & Violet 151 Ho-Oh V Fanatics 10 GEM MINT" [ref=e125]
+            - generic [ref=e126]:
+              - paragraph [ref=e127]: Fanatics 10 GEM MINT
+              - paragraph [ref=e128]: $126.00
+          - link "2021 Scarlet & Violet 151 Charizard ex PSA 9.5 MINT+ PSA 9.5 MINT+ $603.00" [ref=e130] [cursor=pointer]:
+            - /url: /card/charizard-ex-scarlet-violet-151-31
+            - img "2021 Scarlet & Violet 151 Charizard ex PSA 9.5 MINT+" [ref=e132]
+            - generic [ref=e133]:
+              - paragraph [ref=e134]: PSA 9.5 MINT+
+              - paragraph [ref=e135]: $603.00
+          - link "2021 Scarlet & Violet 151 Greninja ex CGC 10 GEM MINT CGC 10 GEM MINT $216.00" [ref=e137] [cursor=pointer]:
+            - /url: /card/greninja-ex-scarlet-violet-151-41
+            - img "2021 Scarlet & Violet 151 Greninja ex CGC 10 GEM MINT" [ref=e139]
+            - generic [ref=e140]:
+              - paragraph [ref=e141]: CGC 10 GEM MINT
+              - paragraph [ref=e142]: $216.00
+  - contentinfo [ref=e143]:
+    - generic [ref=e144]:
+      - generic [ref=e145]:
+        - generic [ref=e147]:
+          - img "Pokenic" [ref=e148]
+          - paragraph [ref=e149]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e150] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e152]:
+          - generic [ref=e153]:
+            - heading "Quick Links" [level=3] [ref=e154]
+            - list [ref=e155]:
+              - listitem [ref=e156]:
+                - link "Home" [ref=e157] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e158]:
+                - link "Marketplace" [ref=e159] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e160]:
+                - link "Play the Claw" [ref=e161] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e162]:
+                - link "Leaderboard" [ref=e163] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e164]:
+            - heading "Support" [level=3] [ref=e165]
+            - list [ref=e166]:
+              - listitem [ref=e167]:
+                - link "Contact Us" [ref=e168] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e169]:
+                - link "Documentation" [ref=e170] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e171]:
+                - link "Terms of Service" [ref=e172] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e173]:
+                - link "Privacy Policy" [ref=e174] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e175]:
+            - heading "Social Media" [level=3] [ref=e176]
+            - generic [ref=e177]:
+              - link "Twitter" [ref=e178] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e179]
+              - link "Instagram" [ref=e181] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e182]
+              - link "Discord" [ref=e184] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e185]
+              - link "Telegram" [ref=e187] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e188]
+            - paragraph [ref=e190]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e192]: © 2025 Phygitals. All rights reserved.
+  - alert [ref=e193]

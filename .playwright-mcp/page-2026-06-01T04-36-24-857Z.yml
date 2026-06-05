@@ -1,0 +1,455 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Phygitals home" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Phygitals" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Packs NEW" [ref=e8] [cursor=pointer]:
+            - /url: /claw
+            - img [ref=e9]
+            - text: Packs
+            - generic [ref=e13]: NEW
+          - link "Pack Party" [ref=e14] [cursor=pointer]:
+            - /url: /pack-party
+            - img [ref=e15]
+            - text: Pack Party
+          - link "Marketplace" [ref=e21] [cursor=pointer]:
+            - /url: /marketplace
+            - img [ref=e22]
+            - text: Marketplace
+          - link "Leaderboard" [ref=e26] [cursor=pointer]:
+            - /url: /leaderboard
+            - img [ref=e27]
+            - text: Leaderboard
+          - button "More" [ref=e33]:
+            - img [ref=e34]
+            - text: More
+            - img [ref=e37]
+      - generic [ref=e39]:
+        - link "How it works" [ref=e40] [cursor=pointer]:
+          - /url: /how-it-works
+          - img [ref=e41]
+          - text: How it works
+        - button "Login" [ref=e44]:
+          - img [ref=e45]
+          - text: Login
+        - button "Sign Up" [ref=e48]
+  - main [ref=e49]:
+    - generic [ref=e50]:
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - button "All Packs" [pressed] [ref=e53]
+          - button "Pokémon" [ref=e54]
+          - button "One Piece" [ref=e55]
+          - button "Basketball" [ref=e56]
+          - button "Baseball" [ref=e57]
+          - button "Football" [ref=e58]
+          - button "Soccer" [ref=e59]
+          - button "Yu-Gi-Oh!" [ref=e60]
+          - button "Riftbound" [ref=e61]
+        - generic [ref=e62]:
+          - button "Most Popular" [ref=e63]:
+            - text: Most Popular
+            - img [ref=e64]
+          - button "Create Pack" [ref=e66]
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - heading "Pokémon Packs" [level=2] [ref=e70]
+            - img [ref=e71]
+          - generic [ref=e74]:
+            - generic [ref=e76]:
+              - generic [ref=e77]: +90% Buyback Boost
+              - img [ref=e78]
+              - img "Mythic Pack" [ref=e80]
+              - generic [ref=e81]:
+                - generic [ref=e82]: Mythic Pack
+                - generic [ref=e83]: $1,000
+              - generic [ref=e84]:
+                - button "Decrease Mythic Pack quantity" [disabled] [ref=e85]:
+                  - img [ref=e86]
+                - generic [ref=e87]: "1"
+                - button "Increase Mythic Pack quantity" [ref=e88]:
+                  - img [ref=e89]
+                - button "Set Mythic Pack to max quantity" [ref=e90]: Max
+              - button "Open" [ref=e91]
+            - generic [ref=e93]:
+              - generic [ref=e94]: +90% Buyback Boost
+              - img [ref=e95]
+              - img "Legend Pack" [ref=e97]
+              - generic [ref=e98]:
+                - generic [ref=e99]: Legend Pack
+                - generic [ref=e100]: $250
+              - generic [ref=e101]:
+                - button "Decrease Legend Pack quantity" [disabled] [ref=e102]:
+                  - img [ref=e103]
+                - generic [ref=e104]: "1"
+                - button "Increase Legend Pack quantity" [ref=e105]:
+                  - img [ref=e106]
+                - button "Set Legend Pack to max quantity" [ref=e107]: Max
+              - button "Open" [ref=e108]
+            - generic [ref=e110]:
+              - img [ref=e111]
+              - img "Elite Pack" [ref=e113]
+              - generic [ref=e114]:
+                - generic [ref=e115]: Elite Pack
+                - generic [ref=e116]: $50
+              - generic [ref=e117]:
+                - button "Decrease Elite Pack quantity" [disabled] [ref=e118]:
+                  - img [ref=e119]
+                - generic [ref=e120]: "1"
+                - button "Increase Elite Pack quantity" [ref=e121]:
+                  - img [ref=e122]
+                - button "Set Elite Pack to max quantity" [ref=e123]: Max
+              - button "Open" [ref=e124]
+            - generic [ref=e126]:
+              - generic [ref=e127]: +90% Buyback Boost
+              - img [ref=e128]
+              - img "Platinum Pack" [ref=e130]
+              - generic [ref=e131]:
+                - generic [ref=e132]: Platinum Pack
+                - generic [ref=e133]: $500
+              - generic [ref=e134]:
+                - button "Decrease Platinum Pack quantity" [disabled] [ref=e135]:
+                  - img [ref=e136]
+                - generic [ref=e137]: "1"
+                - button "Increase Platinum Pack quantity" [ref=e138]:
+                  - img [ref=e139]
+                - button "Set Platinum Pack to max quantity" [ref=e140]: Max
+              - button "Open" [ref=e141]
+            - generic [ref=e143]:
+              - img [ref=e144]
+              - img "Rookie Pack" [ref=e146]
+              - generic [ref=e147]:
+                - generic [ref=e148]: Rookie Pack
+                - generic [ref=e149]: $25
+              - generic [ref=e150]:
+                - button "Decrease Rookie Pack quantity" [disabled] [ref=e151]:
+                  - img [ref=e152]
+                - generic [ref=e153]: "1"
+                - button "Increase Rookie Pack quantity" [ref=e154]:
+                  - img [ref=e155]
+                - button "Set Rookie Pack to max quantity" [ref=e156]: Max
+              - button "Open" [ref=e157]
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - heading "One Piece Packs" [level=2] [ref=e160]
+            - img [ref=e161]
+          - generic [ref=e164]:
+            - generic [ref=e166]:
+              - generic [ref=e167]: +90% Buyback Boost
+              - img [ref=e168]
+              - img "Legend Pack" [ref=e170]
+              - generic [ref=e171]:
+                - generic [ref=e172]: Legend Pack
+                - generic [ref=e173]: $250
+              - generic [ref=e174]:
+                - button "Decrease Legend Pack quantity" [disabled] [ref=e175]:
+                  - img [ref=e176]
+                - generic [ref=e177]: "1"
+                - button "Increase Legend Pack quantity" [ref=e178]:
+                  - img [ref=e179]
+                - button "Set Legend Pack to max quantity" [ref=e180]: Max
+              - button "Open" [ref=e181]
+            - generic [ref=e183]:
+              - generic [ref=e184]: +90% Buyback Boost
+              - img [ref=e185]
+              - img "Platinum Pack" [ref=e187]
+              - generic [ref=e188]:
+                - generic [ref=e189]: Platinum Pack
+                - generic [ref=e190]: $500
+              - generic [ref=e191]:
+                - button "Decrease Platinum Pack quantity" [disabled] [ref=e192]:
+                  - img [ref=e193]
+                - generic [ref=e194]: "1"
+                - button "Increase Platinum Pack quantity" [ref=e195]:
+                  - img [ref=e196]
+                - button "Set Platinum Pack to max quantity" [ref=e197]: Max
+              - button "Open" [ref=e198]
+            - generic [ref=e200]:
+              - img [ref=e201]
+              - img "Elite Pack" [ref=e203]
+              - generic [ref=e204]:
+                - generic [ref=e205]: Elite Pack
+                - generic [ref=e206]: $50
+              - generic [ref=e207]:
+                - button "Decrease Elite Pack quantity" [disabled] [ref=e208]:
+                  - img [ref=e209]
+                - generic [ref=e210]: "1"
+                - button "Increase Elite Pack quantity" [ref=e211]:
+                  - img [ref=e212]
+                - button "Set Elite Pack to max quantity" [ref=e213]: Max
+              - button "Open" [ref=e214]
+            - generic [ref=e216]:
+              - img [ref=e217]
+              - img "Starter Pack" [ref=e219]
+              - generic [ref=e220]:
+                - generic [ref=e221]: Starter Pack
+                - generic [ref=e222]: $25
+              - generic [ref=e223]:
+                - button "Decrease Starter Pack quantity" [disabled] [ref=e224]:
+                  - img [ref=e225]
+                - generic [ref=e226]: "1"
+                - button "Increase Starter Pack quantity" [ref=e227]:
+                  - img [ref=e228]
+                - button "Set Starter Pack to max quantity" [ref=e229]: Max
+              - button "Open" [ref=e230]
+        - generic [ref=e231]:
+          - generic [ref=e232]:
+            - heading "Basketball Packs" [level=2] [ref=e233]
+            - img [ref=e234]
+          - generic [ref=e237]:
+            - generic [ref=e239]:
+              - generic [ref=e240]: +90% Buyback Boost
+              - img [ref=e241]
+              - img "Black Pack" [ref=e243]
+              - generic [ref=e244]:
+                - generic [ref=e245]: Black Pack
+                - generic [ref=e246]: $1,000
+              - generic [ref=e247]:
+                - button "Decrease Black Pack quantity" [disabled] [ref=e248]:
+                  - img [ref=e249]
+                - generic [ref=e250]: "1"
+                - button "Increase Black Pack quantity" [ref=e251]:
+                  - img [ref=e252]
+                - button "Set Black Pack to max quantity" [ref=e253]: Max
+              - button "Open" [ref=e254]
+            - generic [ref=e256]:
+              - generic [ref=e257]: +90% Buyback Boost
+              - img [ref=e258]
+              - img "Legend Pack" [ref=e260]
+              - generic [ref=e261]:
+                - generic [ref=e262]: Legend Pack
+                - generic [ref=e263]: $250
+              - generic [ref=e264]:
+                - button "Decrease Legend Pack quantity" [disabled] [ref=e265]:
+                  - img [ref=e266]
+                - generic [ref=e267]: "1"
+                - button "Increase Legend Pack quantity" [ref=e268]:
+                  - img [ref=e269]
+                - button "Set Legend Pack to max quantity" [ref=e270]: Max
+              - button "Open" [ref=e271]
+            - generic [ref=e273]:
+              - generic [ref=e274]: +90% Buyback Boost
+              - img [ref=e275]
+              - img "Platinum Pack" [ref=e277]
+              - generic [ref=e278]:
+                - generic [ref=e279]: Platinum Pack
+                - generic [ref=e280]: $500
+              - generic [ref=e281]:
+                - button "Decrease Platinum Pack quantity" [disabled] [ref=e282]:
+                  - img [ref=e283]
+                - generic [ref=e284]: "1"
+                - button "Increase Platinum Pack quantity" [ref=e285]:
+                  - img [ref=e286]
+                - button "Set Platinum Pack to max quantity" [ref=e287]: Max
+              - button "Open" [ref=e288]
+        - generic [ref=e289]:
+          - generic [ref=e290]:
+            - heading "Baseball Packs" [level=2] [ref=e291]
+            - img [ref=e292]
+          - generic [ref=e295]:
+            - generic [ref=e297]:
+              - img [ref=e298]
+              - img "Pro Pack" [ref=e300]
+              - generic [ref=e301]:
+                - generic [ref=e302]: Pro Pack
+                - generic [ref=e303]: $100
+              - generic [ref=e304]:
+                - button "Decrease Pro Pack quantity" [disabled] [ref=e305]:
+                  - img [ref=e306]
+                - generic [ref=e307]: "1"
+                - button "Increase Pro Pack quantity" [ref=e308]:
+                  - img [ref=e309]
+                - button "Set Pro Pack to max quantity" [ref=e310]: Max
+              - button "Open" [ref=e311]
+            - generic [ref=e313]:
+              - generic [ref=e314]: +90% Buyback Boost
+              - img [ref=e315]
+              - img "Legend Pack" [ref=e317]
+              - generic [ref=e318]:
+                - generic [ref=e319]: Legend Pack
+                - generic [ref=e320]: $250
+              - generic [ref=e321]:
+                - button "Decrease Legend Pack quantity" [disabled] [ref=e322]:
+                  - img [ref=e323]
+                - generic [ref=e324]: "1"
+                - button "Increase Legend Pack quantity" [ref=e325]:
+                  - img [ref=e326]
+                - button "Set Legend Pack to max quantity" [ref=e327]: Max
+              - button "Open" [ref=e328]
+            - generic [ref=e330]:
+              - img [ref=e331]
+              - img "Starter Pack" [ref=e333]
+              - generic [ref=e334]:
+                - generic [ref=e335]: Starter Pack
+                - generic [ref=e336]: $25
+              - generic [ref=e337]:
+                - button "Decrease Starter Pack quantity" [disabled] [ref=e338]:
+                  - img [ref=e339]
+                - generic [ref=e340]: "1"
+                - button "Increase Starter Pack quantity" [ref=e341]:
+                  - img [ref=e342]
+                - button "Set Starter Pack to max quantity" [ref=e343]: Max
+              - button "Open" [ref=e344]
+        - generic [ref=e345]:
+          - generic [ref=e346]:
+            - heading "Football Packs" [level=2] [ref=e347]
+            - img [ref=e348]
+          - generic [ref=e351]:
+            - generic [ref=e353]:
+              - img [ref=e354]
+              - img "Elite Pack" [ref=e356]
+              - generic [ref=e357]:
+                - generic [ref=e358]: Elite Pack
+                - generic [ref=e359]: $50
+              - generic [ref=e360]:
+                - button "Decrease Elite Pack quantity" [disabled] [ref=e361]:
+                  - img [ref=e362]
+                - generic [ref=e363]: "1"
+                - button "Increase Elite Pack quantity" [ref=e364]:
+                  - img [ref=e365]
+                - button "Set Elite Pack to max quantity" [ref=e366]: Max
+              - button "Open" [ref=e367]
+            - generic [ref=e369]:
+              - img [ref=e370]
+              - img "Starter Pack" [ref=e372]
+              - generic [ref=e373]:
+                - generic [ref=e374]: Starter Pack
+                - generic [ref=e375]: $25
+              - generic [ref=e376]:
+                - button "Decrease Starter Pack quantity" [disabled] [ref=e377]:
+                  - img [ref=e378]
+                - generic [ref=e379]: "1"
+                - button "Increase Starter Pack quantity" [ref=e380]:
+                  - img [ref=e381]
+                - button "Set Starter Pack to max quantity" [ref=e382]: Max
+              - button "Open" [ref=e383]
+            - generic [ref=e385]:
+              - generic [ref=e386]: +90% Buyback Boost
+              - img [ref=e387]
+              - img "Platinum Pack" [ref=e389]
+              - generic [ref=e390]:
+                - generic [ref=e391]: Platinum Pack
+                - generic [ref=e392]: $500
+              - generic [ref=e393]:
+                - button "Decrease Platinum Pack quantity" [disabled] [ref=e394]:
+                  - img [ref=e395]
+                - generic [ref=e396]: "1"
+                - button "Increase Platinum Pack quantity" [ref=e397]:
+                  - img [ref=e398]
+                - button "Set Platinum Pack to max quantity" [ref=e399]: Max
+              - button "Open" [ref=e400]
+        - generic [ref=e401]:
+          - generic [ref=e402]:
+            - heading "Soccer Packs" [level=2] [ref=e403]
+            - img [ref=e404]
+          - generic [ref=e409]:
+            - img [ref=e410]
+            - img "Pro Pack" [ref=e412]
+            - generic [ref=e413]:
+              - generic [ref=e414]: Pro Pack
+              - generic [ref=e415]: $100
+            - generic [ref=e416]:
+              - button "Decrease Pro Pack quantity" [disabled] [ref=e417]:
+                - img [ref=e418]
+              - generic [ref=e419]: "1"
+              - button "Increase Pro Pack quantity" [ref=e420]:
+                - img [ref=e421]
+              - button "Set Pro Pack to max quantity" [ref=e422]: Max
+            - button "Open" [ref=e423]
+        - generic [ref=e424]:
+          - generic [ref=e425]:
+            - heading "Yu-Gi-Oh! Packs" [level=2] [ref=e426]
+            - img [ref=e427]
+          - generic [ref=e432]:
+            - img [ref=e433]
+            - img "Pro Pack" [ref=e435]
+            - generic [ref=e436]:
+              - generic [ref=e437]: Pro Pack
+              - generic [ref=e438]: $25
+            - generic [ref=e439]:
+              - button "Decrease Pro Pack quantity" [disabled] [ref=e440]:
+                - img [ref=e441]
+              - generic [ref=e442]: "1"
+              - button "Increase Pro Pack quantity" [ref=e443]:
+                - img [ref=e444]
+              - button "Set Pro Pack to max quantity" [ref=e445]: Max
+            - button "Open" [ref=e446]
+        - generic [ref=e447]:
+          - generic [ref=e448]:
+            - heading "Riftbound Packs" [level=2] [ref=e449]
+            - img [ref=e450]
+          - generic [ref=e455]:
+            - img [ref=e456]
+            - img "Starter Pack" [ref=e458]
+            - generic [ref=e459]:
+              - generic [ref=e460]: Starter Pack
+              - generic [ref=e461]: $25
+            - generic [ref=e462]:
+              - button "Decrease Starter Pack quantity" [disabled] [ref=e463]:
+                - img [ref=e464]
+              - generic [ref=e465]: "1"
+              - button "Increase Starter Pack quantity" [ref=e466]:
+                - img [ref=e467]
+              - button "Set Starter Pack to max quantity" [ref=e468]: Max
+            - button "Open" [ref=e469]
+  - contentinfo [ref=e470]:
+    - generic [ref=e471]:
+      - generic [ref=e472]:
+        - generic [ref=e474]:
+          - img "Phygitals" [ref=e475]
+          - paragraph [ref=e476]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e477] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e479]:
+          - generic [ref=e480]:
+            - heading "Quick Links" [level=3] [ref=e481]
+            - list [ref=e482]:
+              - listitem [ref=e483]:
+                - link "Home" [ref=e484] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e485]:
+                - link "Marketplace" [ref=e486] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e487]:
+                - link "Play the Claw" [ref=e488] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e489]:
+                - link "Leaderboard" [ref=e490] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e491]:
+            - heading "Support" [level=3] [ref=e492]
+            - list [ref=e493]:
+              - listitem [ref=e494]:
+                - link "Contact Us" [ref=e495] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e496]:
+                - link "Documentation" [ref=e497] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e498]:
+                - link "Terms of Service" [ref=e499] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e500]:
+                - link "Privacy Policy" [ref=e501] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e502]:
+            - heading "Social Media" [level=3] [ref=e503]
+            - generic [ref=e504]:
+              - link "Twitter" [ref=e505] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e506]
+              - link "Instagram" [ref=e508] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e509]
+              - link "Discord" [ref=e511] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e512]
+              - link "Telegram" [ref=e514] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e515]
+            - paragraph [ref=e517]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e519]: © 2025 Phygitals. All rights reserved.
+  - alert [ref=e520]

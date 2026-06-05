@@ -1,0 +1,160 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Phygitals home" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img "Pokenic" [ref=e6]
+      - button "Open menu" [ref=e8]:
+        - img [ref=e9]
+    - navigation [ref=e10]:
+      - link "Packs NEW" [ref=e11] [cursor=pointer]:
+        - /url: /claw
+        - img [ref=e12]
+        - text: Packs
+        - generic [ref=e16]: NEW
+      - link "Pack Party" [ref=e17] [cursor=pointer]:
+        - /url: /pack-party
+        - img [ref=e18]
+        - text: Pack Party
+      - link "Marketplace" [ref=e24] [cursor=pointer]:
+        - /url: /marketplace
+        - img [ref=e25]
+        - text: Marketplace
+      - link "Leaderboard" [ref=e29] [cursor=pointer]:
+        - /url: /leaderboard
+        - img [ref=e30]
+        - text: Leaderboard
+      - button "More" [ref=e36]:
+        - generic [ref=e37]:
+          - img [ref=e38]
+          - text: More
+        - img [ref=e41]
+      - link "How it works" [ref=e43] [cursor=pointer]:
+        - /url: /how-it-works
+        - img [ref=e44]
+        - text: How it works
+      - generic [ref=e47]:
+        - link "Login" [ref=e48] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e49]
+          - text: Login
+        - link "Sign Up" [ref=e52] [cursor=pointer]:
+          - /url: /signup
+  - main [ref=e53]:
+    - generic [ref=e54]:
+      - heading "Pokémon Card Roulette" [level=1] [ref=e55]
+      - paragraph [ref=e56]: Test your luck and win exclusive cards!
+      - generic [ref=e57]:
+        - generic [ref=e58]: Legendary · 1%
+        - generic [ref=e60]: Rare · 9%
+        - generic [ref=e62]: Uncommon · 90%
+      - generic [ref=e66]:
+        - img "2023 Obsidian Flames Mewtwo ex Fanatics 9.5 MINT+" [ref=e69]
+        - img "2023 Eevee Heroes Mew ex CGC 9 MINT" [ref=e72]
+        - img "2023 Obsidian Flames Blastoise ex PSA 10 GEM MINT" [ref=e75]
+        - img "2023 Eevee Heroes Palkia VSTAR Fanatics 10 PRISTINE" [ref=e78]
+        - img "2023 Obsidian Flames Flareon ex CGC 9.5 MINT+" [ref=e81]
+        - img "2023 Eevee Heroes Trafalgar Law PSA 9 MINT" [ref=e84]
+        - img "2023 Obsidian Flames Mewtwo ex Fanatics 10 GEM MINT" [ref=e87]
+        - img "2023 Eevee Heroes Mew ex CGC 10 PRISTINE" [ref=e90]
+        - img "2023 Obsidian Flames Blastoise ex PSA 9.5 MINT+" [ref=e93]
+        - img "2023 Eevee Heroes Palkia VSTAR Fanatics 9 MINT" [ref=e96]
+        - img "2025 Surging Sparks Gengar VMAX CGC 10 GEM MINT" [ref=e99]
+        - img "2025 Wings of the Captain Lucario VSTAR PSA 10 PRISTINE" [ref=e102]
+        - img "2025 Surging Sparks Sylveon VMAX Fanatics 9.5 MINT+" [ref=e105]
+        - img "2025 Wings of the Captain Celebi V CGC 9 MINT" [ref=e108]
+        - img "2025 Surging Sparks Leafeon VSTAR PSA 10 GEM MINT" [ref=e111]
+        - img "2025 Wings of the Captain Boa Hancock Fanatics 10 PRISTINE" [ref=e114]
+        - img "2025 Surging Sparks Gengar VMAX CGC 9.5 MINT+" [ref=e117]
+        - img "2025 Wings of the Captain Lucario VSTAR PSA 9 MINT" [ref=e120]
+        - img "2025 Surging Sparks Sylveon VMAX Fanatics 10 GEM MINT" [ref=e123]
+        - img "2022 Crown Zenith Pikachu VMAX CGC 10 PRISTINE" [ref=e126]
+        - img "2022 VSTAR Universe Rayquaza VMAX PSA 9.5 MINT+" [ref=e129]
+        - img "2022 Crown Zenith Snorlax Fanatics 9 MINT" [ref=e132]
+        - img "2022 VSTAR Universe Dialga VSTAR CGC 10 GEM MINT" [ref=e135]
+        - img "2022 Crown Zenith Jolteon ex PSA 10 PRISTINE" [ref=e138]
+        - img "2022 VSTAR Universe Roronoa Zoro Fanatics 9.5 MINT+" [ref=e141]
+        - img "2022 Crown Zenith Pikachu VMAX CGC 9 MINT" [ref=e144]
+        - img "2022 VSTAR Universe Rayquaza VMAX PSA 10 GEM MINT" [ref=e147]
+        - img "2022 Crown Zenith Snorlax Fanatics 10 PRISTINE" [ref=e150]
+        - img "2022 VSTAR Universe Dialga VSTAR CGC 9.5 MINT+" [ref=e153]
+        - img "2024 Paradox Rift Umbreon VMAX PSA 9 MINT" [ref=e156]
+        - img "2024 Romance Dawn Giratina V Fanatics 10 GEM MINT" [ref=e159]
+        - img "2024 Paradox Rift Venusaur ex CGC 10 PRISTINE" [ref=e162]
+        - img "2024 Romance Dawn Darkrai VSTAR PSA 9.5 MINT+" [ref=e165]
+        - img "2024 Paradox Rift Glaceon ex Fanatics 9 MINT" [ref=e168]
+        - img "2024 Romance Dawn Nico Robin CGC 10 GEM MINT" [ref=e171]
+        - img "2024 Paradox Rift Umbreon VMAX PSA 10 PRISTINE" [ref=e174]
+        - img "2024 Romance Dawn Giratina V Fanatics 9.5 MINT+" [ref=e177]
+        - img "2024 Paradox Rift Venusaur ex CGC 9 MINT" [ref=e180]
+        - img "2021 Scarlet & Violet 151 Charizard ex PSA 10 GEM MINT" [ref=e183]
+        - img "2021 Twilight Masquerade Lugia V Fanatics 10 PRISTINE" [ref=e186]
+        - img "2021 Scarlet & Violet 151 Greninja ex CGC 9.5 MINT+" [ref=e189]
+        - img "2021 Twilight Masquerade Arceus VSTAR PSA 9 MINT" [ref=e192]
+        - img "2021 Scarlet & Violet 151 Ho-Oh V Fanatics 10 GEM MINT" [ref=e195]
+        - img "2021 Twilight Masquerade Monkey D. Luffy CGC 10 PRISTINE" [ref=e198]
+        - img "2021 Scarlet & Violet 151 Charizard ex PSA 9.5 MINT+" [ref=e201]
+        - img "2021 Twilight Masquerade Lugia V Fanatics 9 MINT" [ref=e204]
+        - img "2021 Scarlet & Violet 151 Greninja ex CGC 10 GEM MINT" [ref=e207]
+        - img "2021 Twilight Masquerade Arceus VSTAR PSA 10 PRISTINE" [ref=e210]
+      - button "Play Roulette" [ref=e211]:
+        - img [ref=e212]
+        - text: Play Roulette
+      - paragraph [ref=e215]: Demo only — real roulette & provably-fair odds arrive with the backend.
+  - contentinfo [ref=e216]:
+    - generic [ref=e217]:
+      - generic [ref=e218]:
+        - generic [ref=e220]:
+          - img "Pokenic" [ref=e221]
+          - paragraph [ref=e222]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e223] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - heading "Quick Links" [level=3] [ref=e227]
+            - list [ref=e228]:
+              - listitem [ref=e229]:
+                - link "Home" [ref=e230] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e231]:
+                - link "Marketplace" [ref=e232] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e233]:
+                - link "Play the Claw" [ref=e234] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e235]:
+                - link "Leaderboard" [ref=e236] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e237]:
+            - heading "Support" [level=3] [ref=e238]
+            - list [ref=e239]:
+              - listitem [ref=e240]:
+                - link "Contact Us" [ref=e241] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e242]:
+                - link "Documentation" [ref=e243] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e244]:
+                - link "Terms of Service" [ref=e245] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e246]:
+                - link "Privacy Policy" [ref=e247] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e248]:
+            - heading "Social Media" [level=3] [ref=e249]
+            - generic [ref=e250]:
+              - link "Twitter" [ref=e251] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e252]
+              - link "Instagram" [ref=e254] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e255]
+              - link "Discord" [ref=e257] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e258]
+              - link "Telegram" [ref=e260] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e261]
+            - paragraph [ref=e263]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e265]: © 2025 Phygitals. All rights reserved.
+  - alert [ref=e266]

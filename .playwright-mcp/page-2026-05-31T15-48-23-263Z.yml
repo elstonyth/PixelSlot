@@ -1,0 +1,286 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Phygitals home" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Phygitals" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Packs NEW" [ref=e8] [cursor=pointer]:
+            - /url: /claw
+            - img [ref=e9]
+            - text: Packs
+            - generic [ref=e13]: NEW
+          - link "Pack Party" [ref=e14] [cursor=pointer]:
+            - /url: /pack-party
+            - img [ref=e15]
+            - text: Pack Party
+          - link "Marketplace" [ref=e21] [cursor=pointer]:
+            - /url: /marketplace
+            - img [ref=e22]
+            - text: Marketplace
+          - link "Leaderboard" [ref=e26] [cursor=pointer]:
+            - /url: /leaderboard
+            - img [ref=e27]
+            - text: Leaderboard
+          - button "More" [ref=e33]:
+            - img [ref=e34]
+            - text: More
+            - img [ref=e37]
+      - generic [ref=e39]:
+        - link "How it works" [ref=e40] [cursor=pointer]:
+          - /url: /how-it-works
+          - img [ref=e41]
+          - text: How it works
+        - button "Login" [ref=e44]:
+          - img [ref=e45]
+          - text: Login
+        - button "Sign Up" [ref=e48]
+  - main [ref=e49]:
+    - generic [ref=e50]:
+      - generic [ref=e51]:
+        - img
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - paragraph [ref=e54]: Trusted by 100,000+ collectors
+            - heading "Real Cards, Owned Digitally" [level=1] [ref=e55]
+            - paragraph [ref=e56]: Open packs of real graded cards, own them instantly, and ship to your door or sell on the marketplace.
+            - generic [ref=e57]:
+              - link "Start Opening Packs" [ref=e58] [cursor=pointer]:
+                - /url: /claw
+              - link "Browse Marketplace" [ref=e59] [cursor=pointer]:
+                - /url: /marketplace
+          - generic [ref=e61]:
+            - img [ref=e62]
+            - img [ref=e63]
+            - img "Phygitals trading card pack" [ref=e64]
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: 1.9M
+            - generic [ref=e68]: Transactions
+          - generic [ref=e69]:
+            - generic [ref=e70]: $167.9M
+            - generic [ref=e71]: Volume traded
+          - generic [ref=e72]:
+            - generic [ref=e73]: 24K
+            - generic [ref=e74]: Active listings
+      - generic [ref=e75]:
+        - generic [ref=e77]:
+          - heading "How It Works" [level=2] [ref=e78]
+          - paragraph [ref=e79]: From purchase to ownership in three simple steps.
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]: "1"
+              - heading "Open a pack" [level=3] [ref=e84]
+            - paragraph [ref=e85]: Choose from Pokemon, One Piece, sports, and more. Every pack contains a random graded card with live odds and provably fair pulls powered by public VRF.
+            - generic [ref=e86]:
+              - img [ref=e87]
+              - img "Trading card pack" [ref=e88]
+              - img [ref=e89]
+            - link "View all packs Browse every category and rip" [ref=e90] [cursor=pointer]:
+              - /url: /claw
+              - img [ref=e91]
+              - generic [ref=e92]:
+                - generic [ref=e93]: View all packs
+                - generic [ref=e94]: Browse every category and rip
+              - img [ref=e95]
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - generic [ref=e99]: "2"
+              - heading "Reveal your card" [level=3] [ref=e100]
+            - paragraph [ref=e101]: Tap to reveal what you pulled. Every card is real, vaulted by PSA, Fanatics, and Alt, and fully insured from the moment you own it.
+            - img "Graded card revealed from a ripped pack" [ref=e103]
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e106]: 85-90% instant cash back
+                - generic [ref=e107]: Don't like your pull? Sell it back instantly
+              - button "How instant buyback works" [ref=e108]:
+                - img [ref=e109]
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - generic [ref=e114]: "3"
+              - heading "Keep, ship, or sell for 90% cash back" [level=3] [ref=e115]
+            - paragraph [ref=e116]: Hold your card in the vault, flip it on the marketplace, trade with collectors, or redeem and we'll ship the physical slab to your door.
+            - img "Trade, sell, or ship your cards worldwide" [ref=e118]
+            - generic [ref=e119]:
+              - img [ref=e121]
+              - generic [ref=e124]:
+                - generic [ref=e125]: Ships worldwide
+                - generic [ref=e126]: Fully tracked and insured to your door
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - heading "See It in Action" [level=2] [ref=e129]
+          - paragraph [ref=e130]: Watch a pack opening from start to finish.
+        - generic "Pack opening demo" [ref=e132]
+      - generic [ref=e133]:
+        - generic [ref=e135]:
+          - heading "Vault & Security" [level=2] [ref=e136]
+          - paragraph [ref=e137]: Every card is stored in insured, climate-controlled facilities managed by industry leaders.
+        - generic [ref=e138]:
+          - generic [ref=e140]:
+            - img [ref=e142]
+            - heading "Choose Your Vault" [level=3] [ref=e153]
+            - paragraph [ref=e154]: Cards stored at PSA, Alt, or Fanatics facilities
+          - generic [ref=e156]:
+            - img [ref=e158]
+            - heading "Fully Insured" [level=3] [ref=e161]
+            - paragraph [ref=e162]: Complete coverage on every card from day one
+          - generic [ref=e164]:
+            - img [ref=e166]
+            - heading "Climate Controlled" [level=3] [ref=e168]
+            - paragraph [ref=e169]: Optimal conditions for long-term preservation
+          - generic [ref=e171]:
+            - img [ref=e173]
+            - heading "Ship Anytime" [level=3] [ref=e178]
+            - paragraph [ref=e179]: Redeem your cards with worldwide tracked delivery
+        - generic [ref=e180]:
+          - img "PSA" [ref=e181]
+          - img "Fanatics" [ref=e182]
+          - img "Alt" [ref=e183]
+      - generic [ref=e184]:
+        - generic [ref=e186]:
+          - heading "What Collectors Are Saying" [level=2] [ref=e187]
+          - paragraph [ref=e188]: Real feedback from the Phygitals community.
+        - generic [ref=e189]:
+          - generic [ref=e192]:
+            - paragraph [ref=e193]: LFG my claim from @phygitals came it look how nice those slabs are. Thank you again one love
+            - generic [ref=e194]:
+              - img "Mikerow" [ref=e195]
+              - generic [ref=e196]:
+                - generic [ref=e197]: Mikerow
+                - generic [ref=e198]: "@Mikerow01"
+          - generic [ref=e201]:
+            - paragraph [ref=e202]: Digital to physical in just under 2 weeks super cool! Thanks @phygitals for creating unique way to trade!
+            - generic [ref=e203]:
+              - img "Lynch" [ref=e204]
+              - generic [ref=e205]:
+                - generic [ref=e206]: Lynch
+                - generic [ref=e207]: "@_LYNCHY__"
+          - generic [ref=e210]:
+            - paragraph [ref=e211]: Mail day here in the gallery. @phygitals made it REAL!!
+            - generic [ref=e212]:
+              - img "James Pleiades Hawkins" [ref=e213]
+              - generic [ref=e214]:
+                - generic [ref=e215]: James Pleiades Hawkins
+                - generic [ref=e216]: "@PleiadesHawkin"
+      - generic [ref=e217]:
+        - generic [ref=e219]:
+          - heading "What You Can Do" [level=2] [ref=e220]
+          - paragraph [ref=e221]: Everything you need to collect, compete, and trade
+        - generic [ref=e222]:
+          - generic [ref=e224]:
+            - img [ref=e226]
+            - heading "Open Packs" [level=3] [ref=e230]
+            - paragraph [ref=e231]: Hundreds of packs across Pokemon, sports, TCG, and more. New drops every week.
+          - generic [ref=e233]:
+            - img [ref=e235]
+            - heading "Marketplace" [level=3] [ref=e239]
+            - paragraph [ref=e240]: Buy and sell cards with other collectors. Real cards, real ownership, instant transfers.
+          - generic [ref=e242]:
+            - img [ref=e244]
+            - heading "Games" [level=3] [ref=e246]
+            - paragraph [ref=e247]: Pack Party, Duel, Draft. Compete with friends and other collectors for real cards.
+          - generic [ref=e249]:
+            - img [ref=e251]
+            - heading "Leaderboard" [level=3] [ref=e257]
+            - paragraph [ref=e258]: Earn points on every purchase. Top collectors win weekly prizes and exclusive rewards.
+      - generic [ref=e259]:
+        - generic [ref=e261]:
+          - heading "Frequently Asked Questions" [level=2] [ref=e262]
+          - paragraph [ref=e263]: Everything you need to know before you rip.
+        - generic [ref=e265]:
+          - generic [ref=e266]:
+            - button "Are these real physical cards?" [expanded] [ref=e267]:
+              - text: Are these real physical cards?
+              - img [ref=e268]
+            - paragraph [ref=e272]: Yes. Every card on Phygitals is a real, professionally graded physical card stored in secure vault facilities. When you open a pack, you receive ownership of a specific physical slab that exists in a PSA, Fanatics, or Alt vault. You can ship it to your door at any time.
+          - generic [ref=e273]:
+            - button "How does shipping work?" [ref=e274]:
+              - text: How does shipping work?
+              - img [ref=e275]
+            - paragraph [ref=e277]: When you request a shipment, your card is pulled from the vault, carefully packaged, and shipped via fully tracked and insured delivery. We ship worldwide, and most domestic orders arrive within 5-7 business days. International shipping typically takes 10-14 days.
+          - generic [ref=e278]:
+            - button "What if I don't like my pull?" [ref=e279]:
+              - text: What if I don't like my pull?
+              - img [ref=e280]
+            - paragraph [ref=e282]: You can sell any card back instantly for 85-90% of its market value, or list it on the marketplace at your own price. Many collectors also trade cards with each other directly on the platform.
+          - generic [ref=e283]:
+            - button "How are pulls determined? Is it fair?" [ref=e284]:
+              - text: How are pulls determined? Is it fair?
+              - img [ref=e285]
+            - paragraph [ref=e287]: Every pull is determined by a provably fair system using public VRF (Verifiable Random Function). The odds for each pack are published transparently, and every result can be independently verified on-chain. No one, including us, can influence the outcome.
+          - generic [ref=e288]:
+            - button "Where are my cards stored?" [ref=e289]:
+              - text: Where are my cards stored?
+              - img [ref=e290]
+            - paragraph [ref=e292]: Cards are stored in climate-controlled, fully insured vault facilities operated by PSA, Fanatics, and Alt. These are the same facilities used by major auction houses and institutional collectors. Your cards are protected around the clock.
+          - generic [ref=e293]:
+            - button "Can I sell my cards?" [ref=e294]:
+              - text: Can I sell my cards?
+              - img [ref=e295]
+            - paragraph [ref=e297]: Absolutely. You can list any card on the Phygitals marketplace and set your own price. When it sells, funds are available immediately. You can also use the instant sell-back feature for a guaranteed payout at 85-90% of market value.
+      - generic [ref=e298]:
+        - heading "Ready to start collecting?" [level=2] [ref=e299]
+        - paragraph [ref=e300]: Join 100,000+ collectors opening packs and trading real cards every day.
+        - link "Open Your First Pack" [ref=e301] [cursor=pointer]:
+          - /url: /claw
+  - contentinfo [ref=e302]:
+    - generic [ref=e303]:
+      - generic [ref=e304]:
+        - generic [ref=e306]:
+          - img "Phygitals" [ref=e307]
+          - paragraph [ref=e308]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e309] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e311]:
+          - generic [ref=e312]:
+            - heading "Quick Links" [level=3] [ref=e313]
+            - list [ref=e314]:
+              - listitem [ref=e315]:
+                - link "Home" [ref=e316] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e317]:
+                - link "Marketplace" [ref=e318] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e319]:
+                - link "Play the Claw" [ref=e320] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e321]:
+                - link "Leaderboard" [ref=e322] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e323]:
+            - heading "Support" [level=3] [ref=e324]
+            - list [ref=e325]:
+              - listitem [ref=e326]:
+                - link "Contact Us" [ref=e327] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e328]:
+                - link "Documentation" [ref=e329] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e330]:
+                - link "Terms of Service" [ref=e331] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e332]:
+                - link "Privacy Policy" [ref=e333] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e334]:
+            - heading "Social Media" [level=3] [ref=e335]
+            - generic [ref=e336]:
+              - link "Twitter" [ref=e337] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e338]
+              - link "Instagram" [ref=e340] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e341]
+              - link "Discord" [ref=e343] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e344]
+              - link "Telegram" [ref=e346] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e347]
+            - paragraph [ref=e349]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e351]: © 2025 Phygitals. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e357] [cursor=pointer]:
+    - img [ref=e358]
+  - alert [ref=e361]

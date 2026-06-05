@@ -1,0 +1,132 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Phygitals" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img "Phygitals" [ref=e11]
+          - navigation [ref=e12]:
+            - link "Packs NEW" [ref=e13] [cursor=pointer]:
+              - /url: /claw
+              - img [ref=e14]
+              - generic [ref=e18]: Packs
+              - generic [ref=e19]: NEW
+            - link "Pack Party" [ref=e20] [cursor=pointer]:
+              - /url: /pack-party
+              - img [ref=e21]
+              - generic [ref=e27]: Pack Party
+            - link "Marketplace" [ref=e28] [cursor=pointer]:
+              - /url: /marketplace
+              - img [ref=e29]
+              - generic [ref=e31]: Marketplace
+            - link "Leaderboard" [ref=e32] [cursor=pointer]:
+              - /url: /leaderboard
+              - img [ref=e33]
+              - generic [ref=e35]: Leaderboard
+            - button "More" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e39]: More
+              - img [ref=e40]
+        - generic [ref=e43]:
+          - link "How it works" [ref=e44] [cursor=pointer]:
+            - /url: /how-it-works
+            - img [ref=e45]
+            - generic [ref=e47]: How it works
+          - button "Login" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+            - generic [ref=e53]: Login
+          - button "Sign Up" [ref=e54] [cursor=pointer]
+    - main [ref=e56]:
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - heading "Pack Party BETA" [level=1] [ref=e67]:
+                - text: Pack Party
+                - generic [ref=e68]: BETA
+              - paragraph [ref=e69]: Rip packs with friends! Multiple players enter, one pack is opened, and cards are allocated to every player at random.
+              - generic [ref=e72]: = Entry < Avg (great deal!)
+            - link "Create Party" [ref=e74] [cursor=pointer]:
+              - /url: /pack-party/create
+              - button "Create Party" [ref=e75]:
+                - img [ref=e76]
+                - text: Create Party
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - button "Active" [disabled] [ref=e79]
+              - button "Completed" [disabled] [ref=e80]
+            - button "Players Needed (Low to High)" [disabled] [ref=e81]:
+              - generic [ref=e82]: Players Needed (Low to High)
+              - img [ref=e83]
+            - generic [ref=e85]:
+              - button [disabled] [ref=e86]:
+                - img [ref=e87]
+              - button [disabled] [ref=e92]:
+                - img [ref=e93]
+        - generic [ref=e258]:
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - img "Phygitals" [ref=e262]
+              - paragraph [ref=e263]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+              - link "About Us" [ref=e265] [cursor=pointer]:
+                - /url: /about
+                - text: About Us
+                - img [ref=e266]
+            - generic [ref=e269]:
+              - generic [ref=e270]:
+                - heading "Quick Links" [level=3] [ref=e271]
+                - list [ref=e272]:
+                  - listitem [ref=e273]:
+                    - link "Home" [ref=e274] [cursor=pointer]:
+                      - /url: /
+                      - generic [ref=e275]: Home
+                  - listitem [ref=e276]:
+                    - link "Marketplace" [ref=e277] [cursor=pointer]:
+                      - /url: /marketplace
+                      - generic [ref=e278]: Marketplace
+                  - listitem [ref=e279]:
+                    - link "Play the Claw" [ref=e280] [cursor=pointer]:
+                      - /url: /claw
+                      - generic [ref=e281]: Play the Claw
+                  - listitem [ref=e282]:
+                    - link "Leaderboard" [ref=e283] [cursor=pointer]:
+                      - /url: /leaderboard
+                      - generic [ref=e284]: Leaderboard
+              - generic [ref=e285]:
+                - heading "Support" [level=3] [ref=e286]
+                - list [ref=e287]:
+                  - listitem [ref=e288]:
+                    - link "Contact Us" [ref=e289] [cursor=pointer]:
+                      - /url: /contact
+                      - generic [ref=e290]: Contact Us
+                  - listitem [ref=e291]:
+                    - link "Documentation" [ref=e292] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com
+                      - generic [ref=e293]: Documentation
+                  - listitem [ref=e294]:
+                    - link "Terms of Service" [ref=e295] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                      - generic [ref=e296]: Terms of Service
+                  - listitem [ref=e297]:
+                    - link "Privacy Policy" [ref=e298] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                      - generic [ref=e299]: Privacy Policy
+              - generic [ref=e300]:
+                - heading "Social Media" [level=3] [ref=e301]
+                - paragraph [ref=e302]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                - generic [ref=e303]:
+                  - link "Twitter" [ref=e304] [cursor=pointer]:
+                    - /url: https://x.com/phygitals
+                    - img [ref=e305]
+                  - link "Instagram" [ref=e307] [cursor=pointer]:
+                    - /url: https://www.instagram.com/phygitals
+                    - img [ref=e308]
+                  - link "Discord" [ref=e311] [cursor=pointer]:
+                    - /url: https://discord.gg/phygitals
+                    - img [ref=e312]
+                  - link "Telegram" [ref=e314] [cursor=pointer]:
+                    - /url: https://t.me/phygitals_bot
+                    - img [ref=e315]
+          - paragraph [ref=e320]: © 2025 Phygitals. All rights reserved.
+  - region "Notifications alt+T"

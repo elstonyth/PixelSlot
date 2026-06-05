@@ -1,0 +1,211 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Phygitals home" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Pokenic" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Packs NEW" [ref=e8] [cursor=pointer]:
+            - /url: /claw
+            - img [ref=e9]
+            - text: Packs
+            - generic [ref=e13]: NEW
+          - link "Pack Party" [ref=e14] [cursor=pointer]:
+            - /url: /pack-party
+            - img [ref=e15]
+            - text: Pack Party
+          - link "Marketplace" [ref=e21] [cursor=pointer]:
+            - /url: /marketplace
+            - img [ref=e22]
+            - text: Marketplace
+          - link "Leaderboard" [ref=e26] [cursor=pointer]:
+            - /url: /leaderboard
+            - img [ref=e27]
+            - text: Leaderboard
+          - button "More" [ref=e34]:
+            - img [ref=e35]
+            - text: More
+            - img [ref=e38]
+      - generic [ref=e40]:
+        - link "How it works" [ref=e41] [cursor=pointer]:
+          - /url: /how-it-works
+          - img [ref=e42]
+          - text: How it works
+        - link "Login" [ref=e45] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e46]
+          - text: Login
+        - link "Sign Up" [ref=e49] [cursor=pointer]:
+          - /url: /signup
+  - main [ref=e50]:
+    - generic [ref=e52]:
+      - complementary [ref=e53]:
+        - navigation [ref=e54]:
+          - link "Settings" [ref=e55] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e56]
+            - generic [ref=e59]: Settings
+          - link "Orders" [ref=e60] [cursor=pointer]:
+            - /url: /orders
+            - img [ref=e61]
+            - generic [ref=e65]: Orders
+          - link "Messages" [ref=e66] [cursor=pointer]:
+            - /url: /messages
+            - img [ref=e67]
+            - generic [ref=e69]: Messages
+          - link "Earnings" [ref=e70] [cursor=pointer]:
+            - /url: /earnings
+            - img [ref=e71]
+            - generic [ref=e74]: Earnings
+          - link "Referrals" [ref=e75] [cursor=pointer]:
+            - /url: /referrals
+            - img [ref=e76]
+            - generic [ref=e80]: Referrals
+          - link "Achievements" [ref=e81] [cursor=pointer]:
+            - /url: /achievements
+            - img [ref=e82]
+            - generic [ref=e85]: Achievements
+          - link "Vouchers" [ref=e86] [cursor=pointer]:
+            - /url: /vouchers
+            - img [ref=e87]
+            - generic [ref=e89]: Vouchers
+          - link "Submit Cards" [ref=e90] [cursor=pointer]:
+            - /url: /submitcards
+            - img [ref=e91]
+            - generic [ref=e94]: Submit Cards
+          - link "Withdraw" [ref=e95] [cursor=pointer]:
+            - /url: /bank-withdrawal
+            - img [ref=e96]
+            - generic [ref=e98]: Withdraw
+          - link "Borrow / Lend" [ref=e99] [cursor=pointer]:
+            - /url: /borrow-lend
+            - img [ref=e100]
+            - generic [ref=e106]: Borrow / Lend
+          - link "PokéCoin" [ref=e107] [cursor=pointer]:
+            - /url: /pokecoin
+            - img [ref=e108]
+            - generic [ref=e113]: PokéCoin
+          - link "NBACoin" [ref=e114] [cursor=pointer]:
+            - /url: /nbacoin
+            - img [ref=e115]
+            - generic [ref=e120]: NBACoin
+          - link "Accelerate Claim" [ref=e121] [cursor=pointer]:
+            - /url: /accelerate-claim
+            - img [ref=e122]
+            - generic [ref=e124]: Accelerate Claim
+      - main [ref=e125]:
+        - generic [ref=e126]:
+          - heading "Earnings" [level=1] [ref=e127]
+          - paragraph [ref=e128]: Sales, buybacks, and payouts.
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - paragraph [ref=e131]: Available
+            - paragraph [ref=e132]: $1,284.50
+          - generic [ref=e133]:
+            - paragraph [ref=e134]: Pending
+            - paragraph [ref=e135]: $312.00
+          - generic [ref=e136]:
+            - paragraph [ref=e137]: Lifetime
+            - paragraph [ref=e138]: $18,420.75
+          - generic [ref=e139]:
+            - paragraph [ref=e140]: This month
+            - paragraph [ref=e141]: $947.25
+            - paragraph [ref=e142]: +12% vs last
+        - table [ref=e145]:
+          - rowgroup [ref=e146]:
+            - row "Date Type Amount Status" [ref=e147]:
+              - columnheader "Date" [ref=e148]
+              - columnheader "Type" [ref=e149]
+              - columnheader "Amount" [ref=e150]
+              - columnheader "Status" [ref=e151]
+          - rowgroup [ref=e152]:
+            - row "2026-06-15 Buyback $120.00 Paid" [ref=e153]:
+              - cell "2026-06-15" [ref=e154]
+              - cell "Buyback" [ref=e155]
+              - cell "$120.00" [ref=e156]
+              - cell "Paid" [ref=e157]
+            - row "2026-05-15 Sale $167.50 Paid" [ref=e158]:
+              - cell "2026-05-15" [ref=e159]
+              - cell "Sale" [ref=e160]
+              - cell "$167.50" [ref=e161]
+              - cell "Paid" [ref=e162]
+            - row "2026-04-15 Referral $215.00 Paid" [ref=e163]:
+              - cell "2026-04-15" [ref=e164]
+              - cell "Referral" [ref=e165]
+              - cell "$215.00" [ref=e166]
+              - cell "Paid" [ref=e167]
+            - row "2026-03-15 Sale $262.50 Paid" [ref=e168]:
+              - cell "2026-03-15" [ref=e169]
+              - cell "Sale" [ref=e170]
+              - cell "$262.50" [ref=e171]
+              - cell "Paid" [ref=e172]
+            - row "2026-02-15 Buyback $310.00 Paid" [ref=e173]:
+              - cell "2026-02-15" [ref=e174]
+              - cell "Buyback" [ref=e175]
+              - cell "$310.00" [ref=e176]
+              - cell "Paid" [ref=e177]
+            - row "2026-01-15 Sale $357.50 Paid" [ref=e178]:
+              - cell "2026-01-15" [ref=e179]
+              - cell "Sale" [ref=e180]
+              - cell "$357.50" [ref=e181]
+              - cell "Paid" [ref=e182]
+        - button "Withdraw to bank" [ref=e183]
+        - paragraph [ref=e184]: Demo only — this account area connects to the backend in a later phase.
+  - contentinfo [ref=e185]:
+    - generic [ref=e186]:
+      - generic [ref=e187]:
+        - generic [ref=e189]:
+          - img "Pokenic" [ref=e190]
+          - paragraph [ref=e191]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e192] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - heading "Quick Links" [level=3] [ref=e196]
+            - list [ref=e197]:
+              - listitem [ref=e198]:
+                - link "Home" [ref=e199] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e200]:
+                - link "Marketplace" [ref=e201] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e202]:
+                - link "Play the Claw" [ref=e203] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e204]:
+                - link "Leaderboard" [ref=e205] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e206]:
+            - heading "Support" [level=3] [ref=e207]
+            - list [ref=e208]:
+              - listitem [ref=e209]:
+                - link "Contact Us" [ref=e210] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e211]:
+                - link "Documentation" [ref=e212] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e213]:
+                - link "Terms of Service" [ref=e214] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e215]:
+                - link "Privacy Policy" [ref=e216] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e217]:
+            - heading "Social Media" [level=3] [ref=e218]
+            - generic [ref=e219]:
+              - link "Twitter" [ref=e220] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e221]
+              - link "Instagram" [ref=e223] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e224]
+              - link "Discord" [ref=e226] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e227]
+              - link "Telegram" [ref=e229] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e230]
+            - paragraph [ref=e232]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e234]: © 2025 Phygitals. All rights reserved.
+  - alert [ref=e235]

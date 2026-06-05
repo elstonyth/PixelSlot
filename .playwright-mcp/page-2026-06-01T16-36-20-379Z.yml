@@ -1,0 +1,137 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Phygitals" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img "Phygitals" [ref=e11]
+          - navigation [ref=e12]:
+            - link "Packs NEW" [ref=e13] [cursor=pointer]:
+              - /url: /claw
+              - img [ref=e14]
+              - generic [ref=e18]: Packs
+              - generic [ref=e19]: NEW
+            - link "Pack Party" [ref=e20] [cursor=pointer]:
+              - /url: /pack-party
+              - img [ref=e21]
+              - generic [ref=e27]: Pack Party
+            - link "Marketplace" [ref=e28] [cursor=pointer]:
+              - /url: /marketplace
+              - img [ref=e29]
+              - generic [ref=e31]: Marketplace
+            - link "Leaderboard" [ref=e32] [cursor=pointer]:
+              - /url: /leaderboard
+              - img [ref=e33]
+              - generic [ref=e35]: Leaderboard
+            - button "More" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+              - generic [ref=e39]: More
+              - img [ref=e40]
+        - generic [ref=e43]:
+          - link "How it works" [ref=e44] [cursor=pointer]:
+            - /url: /how-it-works
+            - img [ref=e45]
+            - generic [ref=e47]: How it works
+          - button "Login" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+            - generic [ref=e53]: Login
+          - button "Sign Up" [ref=e54] [cursor=pointer]
+    - main [ref=e56]:
+      - generic [ref=e59]:
+        - link "Packs available now Rip packs. Pull graded cards. Choose to hold, trade, redeem, or sell it back to us at up to 90% value. Open Packs" [ref=e62] [cursor=pointer]:
+          - /url: /claw/rookie-pack
+          - generic [ref=e64]:
+            - paragraph [ref=e65]: Packs available now
+            - heading "Rip packs. Pull graded cards." [level=2] [ref=e66]
+            - paragraph [ref=e67]: Choose to hold, trade, redeem, or sell it back to us at up to 90% value.
+            - generic [ref=e69]: Open Packs
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - heading "Open Packs" [level=2] [ref=e87]
+            - button "85-90% instant buyback →" [ref=e88] [cursor=pointer]
+          - generic [ref=e89]:
+            - link "Pokémon Pokémon View Packs" [ref=e90] [cursor=pointer]:
+              - /url: /claw/rookie-pack
+              - img "Pokémon" [ref=e92]
+              - generic [ref=e93]:
+                - heading "Pokémon" [level=3] [ref=e94]
+                - generic [ref=e95]: View Packs
+            - link "Basketball Basketball View Packs" [ref=e96] [cursor=pointer]:
+              - /url: /claw/starter-pack-q4pux3
+              - img "Basketball" [ref=e98]
+              - generic [ref=e99]:
+                - heading "Basketball" [level=3] [ref=e100]
+                - generic [ref=e101]: View Packs
+            - link "Football Football View Packs" [ref=e102] [cursor=pointer]:
+              - /url: /claw/starter-football-pack
+              - img "Football" [ref=e104]
+              - generic [ref=e105]:
+                - heading "Football" [level=3] [ref=e106]
+                - generic [ref=e107]: View Packs
+            - link "One Piece One Piece View Packs" [ref=e108] [cursor=pointer]:
+              - /url: /claw/starter-one-piece-pack
+              - img "One Piece" [ref=e110]
+              - generic [ref=e111]:
+                - heading "One Piece" [level=3] [ref=e112]
+                - generic [ref=e113]: View Packs
+            - link "Baseball Baseball View Packs" [ref=e114] [cursor=pointer]:
+              - /url: /claw?category=baseball
+              - img "Baseball" [ref=e116]
+              - generic [ref=e117]:
+                - heading "Baseball" [level=3] [ref=e118]
+                - generic [ref=e119]: View Packs
+            - link "Yu-Gi-Oh! Yu-Gi-Oh! View Packs" [ref=e120] [cursor=pointer]:
+              - /url: /claw/yugioh-pro-pack
+              - img "Yu-Gi-Oh!" [ref=e122]
+              - generic [ref=e123]:
+                - heading "Yu-Gi-Oh!" [level=3] [ref=e124]
+                - generic [ref=e125]: View Packs
+        - generic [ref=e127]:
+          - paragraph [ref=e128]: Live from the claw
+          - heading "Recent Pulls" [level=2] [ref=e129]
+          - paragraph [ref=e130]: See what collectors are pulling right now.
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - heading "How It Works" [level=2] [ref=e133]
+            - link "Learn more about us →" [ref=e134] [cursor=pointer]:
+              - /url: /about
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - generic [ref=e138]: "1"
+                - heading "Open a pack" [level=3] [ref=e139]
+              - paragraph [ref=e140]: Choose from Pokemon, One Piece, sports, and more. Every pack contains a random graded card with live odds and provably fair pulls powered by public VRF.
+              - link "View all packs Browse every category and rip" [ref=e142] [cursor=pointer]:
+                - /url: /claw
+                - generic [ref=e143]:
+                  - paragraph [ref=e144]: View all packs
+                  - paragraph [ref=e145]: Browse every category and rip
+                - img [ref=e146]
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - generic [ref=e150]: "2"
+                - heading "Reveal your card" [level=3] [ref=e151]
+              - paragraph [ref=e152]: Tap to reveal what you pulled. Every card is real, vaulted by PSA, Fanatics, and Alt, and fully insured from the moment you own it.
+              - button "85-90% instant cash back Don't like your pull? Sell it back instantly ?" [ref=e154] [cursor=pointer]:
+                - generic [ref=e155]:
+                  - paragraph [ref=e156]: 85-90% instant cash back
+                  - paragraph [ref=e157]: Don't like your pull? Sell it back instantly
+                - generic [ref=e158]: "?"
+            - generic [ref=e159]:
+              - generic [ref=e160]:
+                - generic [ref=e161]: "3"
+                - heading "Keep, ship, or sell for 90% cash back" [level=3] [ref=e162]
+              - paragraph [ref=e163]: Hold your card in the vault, flip it on the marketplace, trade with collectors, or redeem and we'll ship the physical slab to your door.
+              - generic [ref=e166]:
+                - paragraph [ref=e167]: Ships worldwide
+                - paragraph [ref=e168]: Fully tracked and insured to your door
+        - link "Ready to start collecting? Open packs, pull graded cards, and build your collection today. Rip a pack" [ref=e170] [cursor=pointer]:
+          - /url: /claw
+          - generic [ref=e171]:
+            - heading "Ready to start collecting?" [level=2] [ref=e172]
+            - paragraph [ref=e173]: Open packs, pull graded cards, and build your collection today.
+            - generic [ref=e175]:
+              - text: Rip a pack
+              - img [ref=e176]
+  - region "Notifications alt+T"

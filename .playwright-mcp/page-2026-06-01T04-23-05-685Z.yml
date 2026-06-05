@@ -1,0 +1,571 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Phygitals home" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Phygitals" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Packs NEW" [ref=e8] [cursor=pointer]:
+            - /url: /claw
+            - img [ref=e9]
+            - text: Packs
+            - generic [ref=e13]: NEW
+          - link "Pack Party" [ref=e14] [cursor=pointer]:
+            - /url: /pack-party
+            - img [ref=e15]
+            - text: Pack Party
+          - link "Marketplace" [ref=e21] [cursor=pointer]:
+            - /url: /marketplace
+            - img [ref=e22]
+            - text: Marketplace
+          - link "Leaderboard" [ref=e26] [cursor=pointer]:
+            - /url: /leaderboard
+            - img [ref=e27]
+            - text: Leaderboard
+          - button "More" [ref=e33]:
+            - img [ref=e34]
+            - text: More
+            - img [ref=e37]
+      - generic [ref=e39]:
+        - link "How it works" [ref=e40] [cursor=pointer]:
+          - /url: /how-it-works
+          - img [ref=e41]
+          - text: How it works
+        - button "Login" [ref=e44]:
+          - img [ref=e45]
+          - text: Login
+        - button "Sign Up" [ref=e48]
+  - main [ref=e49]:
+    - generic [ref=e50]:
+      - link "Packs available now Rip packs. Pull graded cards. Choose to hold, trade, redeem, or sell it back to us at up to 90% value. Open Packs onepiece graded card" [ref=e644] [cursor=pointer]:
+        - /url: /claw
+        - img
+        - img
+        - img
+        - img
+        - img
+        - img
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - paragraph [ref=e55]: Packs available now
+            - heading "Rip packs. Pull graded cards." [level=2] [ref=e56]
+            - paragraph [ref=e57]: Choose to hold, trade, redeem, or sell it back to us at up to 90% value.
+            - generic [ref=e59]: Open Packs
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic:
+                - img
+                - img
+            - generic [ref=e639]:
+              - img "onepiece graded card" [ref=e640]
+              - img [ref=e641]
+            - generic [ref=e67]:
+              - generic:
+                - img
+                - img
+            - generic [ref=e68]:
+              - generic:
+                - img
+                - img
+            - generic [ref=e69]:
+              - generic:
+                - img
+                - img
+            - generic [ref=e70]:
+              - generic:
+                - img
+                - img
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Open Packs" [level=2] [ref=e74]
+          - button "85-90% instant buyback →" [ref=e75]
+        - generic [ref=e76]:
+          - link "Pokémon Pokémon View Packs" [ref=e77] [cursor=pointer]:
+            - /url: /claw/rookie-pack
+            - generic [ref=e78]:
+              - img "Pokémon" [ref=e79]
+              - img [ref=e80]
+            - generic [ref=e81]:
+              - generic [ref=e82]: Pokémon
+              - generic [ref=e83]: View Packs
+          - link "Basketball Basketball View Packs" [ref=e84] [cursor=pointer]:
+            - /url: /claw/starter-pack-q4pux3
+            - generic [ref=e85]:
+              - img "Basketball" [ref=e86]
+              - img [ref=e87]
+            - generic [ref=e88]:
+              - generic [ref=e89]: Basketball
+              - generic [ref=e90]: View Packs
+          - link "Football Football View Packs" [ref=e91] [cursor=pointer]:
+            - /url: /claw/starter-football-pack
+            - generic [ref=e92]:
+              - img "Football" [ref=e93]
+              - img [ref=e94]
+            - generic [ref=e95]:
+              - generic [ref=e96]: Football
+              - generic [ref=e97]: View Packs
+          - link "One Piece One Piece View Packs" [ref=e98] [cursor=pointer]:
+            - /url: /claw/starter-one-piece-pack
+            - generic [ref=e99]:
+              - img "One Piece" [ref=e100]
+              - img [ref=e101]
+            - generic [ref=e102]:
+              - generic [ref=e103]: One Piece
+              - generic [ref=e104]: View Packs
+          - link "Baseball Baseball View Packs" [ref=e105] [cursor=pointer]:
+            - /url: /claw?category=baseball
+            - generic [ref=e106]:
+              - img "Baseball" [ref=e107]
+              - img [ref=e108]
+            - generic [ref=e109]:
+              - generic [ref=e110]: Baseball
+              - generic [ref=e111]: View Packs
+          - link "Yu-Gi-Oh! Yu-Gi-Oh! View Packs" [ref=e112] [cursor=pointer]:
+            - /url: /claw/yugioh-pro-pack
+            - generic [ref=e113]:
+              - img "Yu-Gi-Oh!" [ref=e114]
+              - img [ref=e115]
+            - generic [ref=e116]:
+              - generic [ref=e117]: Yu-Gi-Oh!
+              - generic [ref=e118]: View Packs
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - paragraph [ref=e123]: Live from the claw
+          - heading "Recent Pulls" [level=2] [ref=e124]
+          - paragraph [ref=e125]: See what collectors are pulling right now.
+        - generic [ref=e126]:
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - generic [ref=e131]: 1m ago
+              - 'img "2021 Pokemon Japanese Sword & Shield Jet-Black Spirit Celebi V #3 CGC 10 GEM MINT" [ref=e132]'
+            - generic [ref=e133]:
+              - paragraph [ref=e134]: "2021 Pokemon Japanese Sword & Shield Jet-Black Spirit Celebi V #3 CGC 10 GEM MINT"
+              - generic [ref=e135]:
+                - img "Rookie Pack" [ref=e136]
+                - generic [ref=e137]:
+                  - generic [ref=e138]: Rookie Pack
+                  - generic [ref=e139]: Just revealed
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - generic [ref=e144]: 6m ago
+              - img "2025 Pokemon Japanese SV Glory Of Rocket Gang Holo Team Rockets Mewtwo ex CGC 10" [ref=e145]
+            - generic [ref=e146]:
+              - paragraph [ref=e147]: 2025 Pokemon Japanese SV Glory Of Rocket Gang Holo Team Rockets Mewtwo ex CGC 10
+              - generic [ref=e148]:
+                - img "Rookie Pack" [ref=e149]
+                - generic [ref=e150]:
+                  - generic [ref=e151]: Rookie Pack
+                  - generic [ref=e152]: Just revealed
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]: 15m ago
+              - 'img "2023 Pokemon Sword and Shield Crown Zenith Galarian Gallery Darkrai Vstar #GG50 PSA 10" [ref=e158]'
+            - generic [ref=e159]:
+              - paragraph [ref=e160]: "2023 Pokemon Sword and Shield Crown Zenith Galarian Gallery Darkrai Vstar #GG50 PSA 10"
+              - generic [ref=e161]:
+                - img "Elite Pack" [ref=e162]
+                - generic [ref=e163]:
+                  - generic [ref=e164]: Elite Pack
+                  - generic [ref=e165]: Just revealed
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - generic [ref=e170]: 15m ago
+              - 'img "2024 Pokemon Japanese Scarlet & Violet Terastal Fest ex Holo Jolteon ex #52 CGC 10 PRISTINE" [ref=e171]'
+            - generic [ref=e172]:
+              - paragraph [ref=e173]: "2024 Pokemon Japanese Scarlet & Violet Terastal Fest ex Holo Jolteon ex #52 CGC 10 PRISTINE"
+              - generic [ref=e174]:
+                - img "Elite Pack" [ref=e175]
+                - generic [ref=e176]:
+                  - generic [ref=e177]: Elite Pack
+                  - generic [ref=e178]: Just revealed
+          - generic [ref=e181]:
+            - generic [ref=e182]:
+              - generic [ref=e183]: 15m ago
+              - 'img "2022 Pokemon Japanese Sword & Shield Star Birth Holo Shaymin VSTAR #13 CGC 9.5 MINT+" [ref=e184]'
+            - generic [ref=e185]:
+              - paragraph [ref=e186]: "2022 Pokemon Japanese Sword & Shield Star Birth Holo Shaymin VSTAR #13 CGC 9.5 MINT+"
+              - generic [ref=e187]:
+                - img "Elite Pack" [ref=e188]
+                - generic [ref=e189]:
+                  - generic [ref=e190]: Elite Pack
+                  - generic [ref=e191]: Just revealed
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - generic [ref=e196]: 16m ago
+              - 'img "2025 Pokemon Japanese Mega Start Deck 100 Battle Collection Reverse Holo Rapidash #90 CGC 10" [ref=e197]'
+            - generic [ref=e198]:
+              - paragraph [ref=e199]: "2025 Pokemon Japanese Mega Start Deck 100 Battle Collection Reverse Holo Rapidash #90 CGC 10"
+              - generic [ref=e200]:
+                - img "Rookie Pack" [ref=e201]
+                - generic [ref=e202]:
+                  - generic [ref=e203]: Rookie Pack
+                  - generic [ref=e204]: Just revealed
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - generic [ref=e209]: 16m ago
+              - 'img "2022 Pokemon Japanese Sword & Shield Incandescent Arcana Ho-Oh V #55 CGC 10 GEM MINT" [ref=e210]'
+            - generic [ref=e211]:
+              - paragraph [ref=e212]: "2022 Pokemon Japanese Sword & Shield Incandescent Arcana Ho-Oh V #55 CGC 10 GEM MINT"
+              - generic [ref=e213]:
+                - img "Rookie Pack" [ref=e214]
+                - generic [ref=e215]:
+                  - generic [ref=e216]: Rookie Pack
+                  - generic [ref=e217]: Just revealed
+          - generic [ref=e220]:
+            - generic [ref=e221]:
+              - generic [ref=e222]: 16m ago
+              - 'img "2023 Pokemon Japanese Scarlet & Violet 151 Holo Gengar #94 CGC 10 GEM MINT" [ref=e223]'
+            - generic [ref=e224]:
+              - paragraph [ref=e225]: "2023 Pokemon Japanese Scarlet & Violet 151 Holo Gengar #94 CGC 10 GEM MINT"
+              - generic [ref=e226]:
+                - img "Rookie Pack" [ref=e227]
+                - generic [ref=e228]:
+                  - generic [ref=e229]: Rookie Pack
+                  - generic [ref=e230]: Just revealed
+      - generic [ref=e231]:
+        - generic [ref=e232]:
+          - heading "How It Works" [level=2] [ref=e233]
+          - link "Learn more about us →" [ref=e234] [cursor=pointer]:
+            - /url: /how-it-works
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - generic [ref=e237]:
+              - generic [ref=e238]: "1"
+              - heading "Open a pack" [level=3] [ref=e239]
+            - paragraph [ref=e240]: Choose from Pokemon, One Piece, sports, and more. Every pack contains a random graded card with live odds and provably fair pulls powered by public VRF.
+            - generic [ref=e241]:
+              - img [ref=e242]
+              - img "Trading card pack" [ref=e243]
+              - img [ref=e244]
+            - link "View all packs Browse every category and rip" [ref=e245] [cursor=pointer]:
+              - /url: /claw
+              - img [ref=e246]
+              - generic [ref=e247]:
+                - generic [ref=e248]: View all packs
+                - generic [ref=e249]: Browse every category and rip
+              - img [ref=e250]
+          - generic [ref=e252]:
+            - generic [ref=e253]:
+              - generic [ref=e254]: "2"
+              - heading "Reveal your card" [level=3] [ref=e255]
+            - paragraph [ref=e256]: Tap to reveal what you pulled. Every card is real, vaulted by PSA, Fanatics, and Alt, and fully insured from the moment you own it.
+            - img "Graded card revealed from a ripped pack" [ref=e258]
+            - generic [ref=e259]:
+              - generic [ref=e260]:
+                - generic [ref=e261]: 85-90% instant cash back
+                - generic [ref=e262]: Don't like your pull? Sell it back instantly
+              - button "How instant buyback works" [ref=e263]:
+                - img [ref=e264]
+          - generic [ref=e267]:
+            - generic [ref=e268]:
+              - generic [ref=e269]: "3"
+              - heading "Keep, ship, or sell for 90% cash back" [level=3] [ref=e270]
+            - paragraph [ref=e271]: Hold your card in the vault, flip it on the marketplace, trade with collectors, or redeem and we'll ship the physical slab to your door.
+            - img "Trade, sell, or ship your cards worldwide" [ref=e273]
+            - generic [ref=e274]:
+              - img [ref=e276]
+              - generic [ref=e279]:
+                - generic [ref=e280]: Ships worldwide
+                - generic [ref=e281]: Fully tracked and insured to your door
+      - generic [ref=e283]:
+        - generic [ref=e284]:
+          - paragraph [ref=e285]: 100,000+ collectors
+          - heading "Our Community" [level=2] [ref=e286]
+          - paragraph [ref=e287]: Join the largest collectibles community and see what people are pulling.
+        - generic [ref=e290]:
+          - link "I got this from a $25 pack AMA pominik pominik" [ref=e291] [cursor=pointer]:
+            - /url: https://x.com/pominik/status/1960039317956620617
+            - generic [ref=e293]:
+              - paragraph [ref=e294]: I got this from a $25 pack AMA
+              - generic [ref=e295]:
+                - img "pominik" [ref=e296]
+                - paragraph [ref=e298]: pominik
+                - img [ref=e300]
+          - link "Mail day here in the gallery 📬 @phygitals made it REAL!! 🤝 James Pleiades Hawkins James Pleiades Hawkins" [ref=e302] [cursor=pointer]:
+            - /url: https://x.com/PleiadesHawkin/status/1959021922383274245
+            - generic [ref=e304]:
+              - paragraph [ref=e305]: Mail day here in the gallery 📬 @phygitals made it REAL!! 🤝
+              - generic [ref=e306]:
+                - img "James Pleiades Hawkins" [ref=e307]
+                - paragraph [ref=e309]: James Pleiades Hawkins
+                - img [ref=e311]
+          - link "Phygitals is so much more fun than collecting as it has the ease of trading / buying on chain… but real demand off chain and can always redeem the actual card If you’re looking to collect Pokémons this is the team to reach out to. Don’t think what’s on their site is all they got - they’re directly linked to a bunch of marketplaces and just white glove acquired what I wanted DCF GOD DCF GOD" [ref=e313] [cursor=pointer]:
+            - /url: https://twitter.com/dcfgod/status/1953653730555179251
+            - generic [ref=e315]:
+              - paragraph [ref=e316]: Phygitals is so much more fun than collecting as it has the ease of trading / buying on chain… but real demand off chain and can always redeem the actual card If you’re looking to collect Pokémons this is the team to reach out to. Don’t think what’s on their site is all they got - they’re directly linked to a bunch of marketplaces and just white glove acquired what I wanted
+              - generic [ref=e317]:
+                - img "DCF GOD" [ref=e318]
+                - paragraph [ref=e320]: DCF GOD
+                - img [ref=e322]
+          - link "Slab delivery day Cale Cale" [ref=e324] [cursor=pointer]:
+            - /url: https://x.com/CaleCrypto/status/1951018112519712830
+            - generic [ref=e326]:
+              - paragraph [ref=e327]: Slab delivery day
+              - generic [ref=e328]:
+                - img "Cale" [ref=e329]
+                - paragraph [ref=e331]: Cale
+                - img [ref=e333]
+          - link "Thank you @phygitals Lebnani TCG Lebnani TCG" [ref=e335] [cursor=pointer]:
+            - /url: https://x.com/LebnaniTCG/status/1947359768730910937
+            - generic [ref=e337]:
+              - paragraph [ref=e338]: Thank you @phygitals
+              - generic [ref=e339]:
+                - img "Lebnani TCG" [ref=e340]
+                - paragraph [ref=e342]: Lebnani TCG
+                - img [ref=e344]
+          - link "LFG my claim from @phygitals came it look how nice those slabs are thank you again one love Mikerow Mikerow" [ref=e346] [cursor=pointer]:
+            - /url: https://x.com/Mikerow01/status/1940199479699022263
+            - generic [ref=e348]:
+              - paragraph [ref=e349]: LFG my claim from @phygitals came it look how nice those slabs are thank you again one love
+              - generic [ref=e350]:
+                - img "Mikerow" [ref=e351]
+                - paragraph [ref=e353]: Mikerow
+                - img [ref=e355]
+          - link "From Digital to Physical ✈️ I just received my first five @phygitals cards! Purchased or won on the platform using the Claw and the Lucky Draw, and delivered to my home in just a few days You guys are doing an amazing job! phygitals.com/invite/662b59 Brice Brice" [ref=e357] [cursor=pointer]:
+            - /url: https://x.com/ClmentHiggins/status/1937523748019527828
+            - generic [ref=e359]:
+              - paragraph [ref=e360]: From Digital to Physical ✈️ I just received my first five @phygitals cards! Purchased or won on the platform using the Claw and the Lucky Draw, and delivered to my home in just a few days You guys are doing an amazing job! phygitals.com/invite/662b59
+              - generic [ref=e361]:
+                - img "Brice" [ref=e362]
+                - paragraph [ref=e364]: Brice
+                - img [ref=e366]
+          - link "Digital to physical in just under 2 weeks super cool! Thanks @phygitals for creating unique way to trade! Lynch Lynch" [ref=e368] [cursor=pointer]:
+            - /url: https://x.com/_LYNCHY__/status/1937209444800004323
+            - generic [ref=e370]:
+              - paragraph [ref=e371]: Digital to physical in just under 2 weeks super cool! Thanks @phygitals for creating unique way to trade!
+              - generic [ref=e372]:
+                - img "Lynch" [ref=e373]
+                - paragraph [ref=e375]: Lynch
+                - img [ref=e377]
+          - link "I got this from a $25 pack AMA pominik pominik" [ref=e379] [cursor=pointer]:
+            - /url: https://x.com/pominik/status/1960039317956620617
+            - generic [ref=e381]:
+              - paragraph [ref=e382]: I got this from a $25 pack AMA
+              - generic [ref=e383]:
+                - img "pominik" [ref=e384]
+                - paragraph [ref=e386]: pominik
+                - img [ref=e388]
+          - link "Mail day here in the gallery 📬 @phygitals made it REAL!! 🤝 James Pleiades Hawkins James Pleiades Hawkins" [ref=e390] [cursor=pointer]:
+            - /url: https://x.com/PleiadesHawkin/status/1959021922383274245
+            - generic [ref=e392]:
+              - paragraph [ref=e393]: Mail day here in the gallery 📬 @phygitals made it REAL!! 🤝
+              - generic [ref=e394]:
+                - img "James Pleiades Hawkins" [ref=e395]
+                - paragraph [ref=e397]: James Pleiades Hawkins
+                - img [ref=e399]
+          - link "Phygitals is so much more fun than collecting as it has the ease of trading / buying on chain… but real demand off chain and can always redeem the actual card If you’re looking to collect Pokémons this is the team to reach out to. Don’t think what’s on their site is all they got - they’re directly linked to a bunch of marketplaces and just white glove acquired what I wanted DCF GOD DCF GOD" [ref=e401] [cursor=pointer]:
+            - /url: https://twitter.com/dcfgod/status/1953653730555179251
+            - generic [ref=e403]:
+              - paragraph [ref=e404]: Phygitals is so much more fun than collecting as it has the ease of trading / buying on chain… but real demand off chain and can always redeem the actual card If you’re looking to collect Pokémons this is the team to reach out to. Don’t think what’s on their site is all they got - they’re directly linked to a bunch of marketplaces and just white glove acquired what I wanted
+              - generic [ref=e405]:
+                - img "DCF GOD" [ref=e406]
+                - paragraph [ref=e408]: DCF GOD
+                - img [ref=e410]
+          - link "Slab delivery day Cale Cale" [ref=e412] [cursor=pointer]:
+            - /url: https://x.com/CaleCrypto/status/1951018112519712830
+            - generic [ref=e414]:
+              - paragraph [ref=e415]: Slab delivery day
+              - generic [ref=e416]:
+                - img "Cale" [ref=e417]
+                - paragraph [ref=e419]: Cale
+                - img [ref=e421]
+          - link "Thank you @phygitals Lebnani TCG Lebnani TCG" [ref=e423] [cursor=pointer]:
+            - /url: https://x.com/LebnaniTCG/status/1947359768730910937
+            - generic [ref=e425]:
+              - paragraph [ref=e426]: Thank you @phygitals
+              - generic [ref=e427]:
+                - img "Lebnani TCG" [ref=e428]
+                - paragraph [ref=e430]: Lebnani TCG
+                - img [ref=e432]
+          - link "LFG my claim from @phygitals came it look how nice those slabs are thank you again one love Mikerow Mikerow" [ref=e434] [cursor=pointer]:
+            - /url: https://x.com/Mikerow01/status/1940199479699022263
+            - generic [ref=e436]:
+              - paragraph [ref=e437]: LFG my claim from @phygitals came it look how nice those slabs are thank you again one love
+              - generic [ref=e438]:
+                - img "Mikerow" [ref=e439]
+                - paragraph [ref=e441]: Mikerow
+                - img [ref=e443]
+          - link "From Digital to Physical ✈️ I just received my first five @phygitals cards! Purchased or won on the platform using the Claw and the Lucky Draw, and delivered to my home in just a few days You guys are doing an amazing job! phygitals.com/invite/662b59 Brice Brice" [ref=e445] [cursor=pointer]:
+            - /url: https://x.com/ClmentHiggins/status/1937523748019527828
+            - generic [ref=e447]:
+              - paragraph [ref=e448]: From Digital to Physical ✈️ I just received my first five @phygitals cards! Purchased or won on the platform using the Claw and the Lucky Draw, and delivered to my home in just a few days You guys are doing an amazing job! phygitals.com/invite/662b59
+              - generic [ref=e449]:
+                - img "Brice" [ref=e450]
+                - paragraph [ref=e452]: Brice
+                - img [ref=e454]
+          - link "Digital to physical in just under 2 weeks super cool! Thanks @phygitals for creating unique way to trade! Lynch Lynch" [ref=e456] [cursor=pointer]:
+            - /url: https://x.com/_LYNCHY__/status/1937209444800004323
+            - generic [ref=e458]:
+              - paragraph [ref=e459]: Digital to physical in just under 2 weeks super cool! Thanks @phygitals for creating unique way to trade!
+              - generic [ref=e460]:
+                - img "Lynch" [ref=e461]
+                - paragraph [ref=e463]: Lynch
+                - img [ref=e465]
+      - generic [ref=e467]:
+        - generic [ref=e468]:
+          - heading "Weekly Leaderboard" [level=2] [ref=e469]
+          - link "View prizes →" [ref=e470] [cursor=pointer]:
+            - /url: /leaderboard?tab=prizes
+        - table [ref=e473]:
+          - rowgroup [ref=e474]:
+            - row "# Name Volume Claw Pulls Points" [ref=e475]:
+              - columnheader "#" [ref=e476]
+              - columnheader "Name" [ref=e477]
+              - columnheader "Volume" [ref=e478]
+              - columnheader "Claw Pulls" [ref=e479]
+              - columnheader "Points" [ref=e480]
+          - rowgroup [ref=e481]:
+            - row "1 FightingProdigy3098 FightingProdigy3098 $8,173,374.26 1403 812,296,655" [ref=e482]:
+              - cell "1" [ref=e483]
+              - cell "FightingProdigy3098 FightingProdigy3098" [ref=e484]:
+                - generic [ref=e485]:
+                  - img "FightingProdigy3098" [ref=e486]
+                  - generic [ref=e487]: FightingProdigy3098
+              - cell "$8,173,374.26" [ref=e488]
+              - cell "1403" [ref=e489]
+              - cell "812,296,655" [ref=e490]
+            - row "2 love love $4,293,513.36 232 428,287,429" [ref=e491]:
+              - cell "2" [ref=e492]
+              - cell "love love" [ref=e493]:
+                - generic [ref=e494]:
+                  - img "love" [ref=e495]
+                  - generic [ref=e496]: love
+              - cell "$4,293,513.36" [ref=e497]
+              - cell "232" [ref=e498]
+              - cell "428,287,429" [ref=e499]
+            - row "3 PsychicGuardian5685 PsychicGuardian5685 $1,399,630.64 723 139,937,985" [ref=e500]:
+              - cell "3" [ref=e501]
+              - cell "PsychicGuardian5685 PsychicGuardian5685" [ref=e502]:
+                - generic [ref=e503]:
+                  - img "PsychicGuardian5685" [ref=e504]
+                  - generic [ref=e505]: PsychicGuardian5685
+              - cell "$1,399,630.64" [ref=e506]
+              - cell "723" [ref=e507]
+              - cell "139,937,985" [ref=e508]
+            - row "4 HyperResearcher7463 HyperResearcher7463 $1,189,685.65 360 118,968,718" [ref=e509]:
+              - cell "4" [ref=e510]
+              - cell "HyperResearcher7463 HyperResearcher7463" [ref=e511]:
+                - generic [ref=e512]:
+                  - img "HyperResearcher7463" [ref=e513]
+                  - generic [ref=e514]: HyperResearcher7463
+              - cell "$1,189,685.65" [ref=e515]
+              - cell "360" [ref=e516]
+              - cell "118,968,718" [ref=e517]
+            - row "5 PrinceOfDragons PrinceOfDragons $469,126.15 827 46,912,908" [ref=e518]:
+              - cell "5" [ref=e519]
+              - cell "PrinceOfDragons PrinceOfDragons" [ref=e520]:
+                - generic [ref=e521]:
+                  - img "PrinceOfDragons" [ref=e522]
+                  - generic [ref=e523]: PrinceOfDragons
+              - cell "$469,126.15" [ref=e524]
+              - cell "827" [ref=e525]
+              - cell "46,912,908" [ref=e526]
+            - row "6 AncientMaster2024 AncientMaster2024 $392,343.09 41 39,234,328" [ref=e527]:
+              - cell "6" [ref=e528]
+              - cell "AncientMaster2024 AncientMaster2024" [ref=e529]:
+                - generic [ref=e530]:
+                  - img "AncientMaster2024" [ref=e531]
+                  - generic [ref=e532]: AncientMaster2024
+              - cell "$392,343.09" [ref=e533]
+              - cell "41" [ref=e534]
+              - cell "39,234,328" [ref=e535]
+            - row "7 RapidDefender3371 RapidDefender3371 $358,774.38 120 35,737,514" [ref=e536]:
+              - cell "7" [ref=e537]
+              - cell "RapidDefender3371 RapidDefender3371" [ref=e538]:
+                - generic [ref=e539]:
+                  - img "RapidDefender3371" [ref=e540]
+                  - generic [ref=e541]: RapidDefender3371
+              - cell "$358,774.38" [ref=e542]
+              - cell "120" [ref=e543]
+              - cell "35,737,514" [ref=e544]
+            - row "8 EnergyProdigy7233 EnergyProdigy7233 $298,032.28 33 29,803,240" [ref=e545]:
+              - cell "8" [ref=e546]
+              - cell "EnergyProdigy7233 EnergyProdigy7233" [ref=e547]:
+                - generic [ref=e548]:
+                  - img "EnergyProdigy7233" [ref=e549]
+                  - generic [ref=e550]: EnergyProdigy7233
+              - cell "$298,032.28" [ref=e551]
+              - cell "33" [ref=e552]
+              - cell "29,803,240" [ref=e553]
+            - row "9 RockHunter9181 RockHunter9181 $230,400 12 23,040,000" [ref=e554]:
+              - cell "9" [ref=e555]
+              - cell "RockHunter9181 RockHunter9181" [ref=e556]:
+                - generic [ref=e557]:
+                  - img "RockHunter9181" [ref=e558]
+                  - generic [ref=e559]: RockHunter9181
+              - cell "$230,400" [ref=e560]
+              - cell "12" [ref=e561]
+              - cell "23,040,000" [ref=e562]
+            - row "10 AquaCatcher6841 AquaCatcher6841 $214,782.06 82 21,478,238" [ref=e563]:
+              - cell "10" [ref=e564]
+              - cell "AquaCatcher6841 AquaCatcher6841" [ref=e565]:
+                - generic [ref=e566]:
+                  - img "AquaCatcher6841" [ref=e567]
+                  - generic [ref=e568]: AquaCatcher6841
+              - cell "$214,782.06" [ref=e569]
+              - cell "82" [ref=e570]
+              - cell "21,478,238" [ref=e571]
+      - link "Ready to start collecting? Open packs, pull graded cards, and build your collection today. Rip a pack" [ref=e574] [cursor=pointer]:
+        - /url: /claw
+        - generic [ref=e575]:
+          - heading "Ready to start collecting?" [level=2] [ref=e576]
+          - paragraph [ref=e577]: Open packs, pull graded cards, and build your collection today.
+          - generic [ref=e579]: Rip a pack
+  - contentinfo [ref=e588]:
+    - generic [ref=e589]:
+      - generic [ref=e590]:
+        - generic [ref=e592]:
+          - img "Phygitals" [ref=e593]
+          - paragraph [ref=e594]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e595] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e597]:
+          - generic [ref=e598]:
+            - heading "Quick Links" [level=3] [ref=e599]
+            - list [ref=e600]:
+              - listitem [ref=e601]:
+                - link "Home" [ref=e602] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e603]:
+                - link "Marketplace" [ref=e604] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e605]:
+                - link "Play the Claw" [ref=e606] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e607]:
+                - link "Leaderboard" [ref=e608] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e609]:
+            - heading "Support" [level=3] [ref=e610]
+            - list [ref=e611]:
+              - listitem [ref=e612]:
+                - link "Contact Us" [ref=e613] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e614]:
+                - link "Documentation" [ref=e615] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e616]:
+                - link "Terms of Service" [ref=e617] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e618]:
+                - link "Privacy Policy" [ref=e619] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e620]:
+            - heading "Social Media" [level=3] [ref=e621]
+            - generic [ref=e622]:
+              - link "Twitter" [ref=e623] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e624]
+              - link "Instagram" [ref=e626] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e627]
+              - link "Discord" [ref=e629] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e630]
+              - link "Telegram" [ref=e632] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e633]
+            - paragraph [ref=e635]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e637]: © 2025 Phygitals. All rights reserved.
+  - alert [ref=e642]

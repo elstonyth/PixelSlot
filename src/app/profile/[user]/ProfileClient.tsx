@@ -1,0 +1,148 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { Trophy, Layers, TrendingUp, CalendarDays, Award, Star, Flame, Crown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import Reveal from "@/components/Reveal";
+import { usd, num, compact } from "@/lib/format";
+import { type MockUser } from "@/lib/mock/users";
+
+const TABS = ["Collection", "Activity", "Achievements"] as const;
+type Tab = (typeof TABS)[number];
+
+const BADGES = [
+  { icon: Crown, label: "Top 100", tint: "text-amber-400" },
+  { icon: Flame, label: "100 Pulls", tint: "text-orange-400" },
+  { icon: Star, label: "First Legendary", tint: "text-fuchsia-400" },
+  { icon: Award, label: "Vault Veteran", tint: "text-sky-400" },
+];
+
+export default function ProfileClient({ user }: { user: MockUser }) {
+  const [tab, setTab] = useState<Tab>("Collection");
+  const stats = [
+    { icon: Trophy, label: "Rank", value: `#${num(user.rank)}` },
+    { icon: Star, label: "Points", value: compact(user.points) },
+    { icon: Layers, label: "Pulls", value: num(user.pulls) },
+    { icon: TrendingUp, label: "Volume", value: usd(user.volume) },
+  ];
+  const activity = useMemo(
+    () =>
+      user.collection.map((c, i) => ({
+        verb: ["pulled", "bought", "listed", "sold"][i % 4],
+        card: c,
+        time: `${(i + 1) * 3}h ago`,
+      })),
+    [user],
+  );
+
+  return (
+    <div className="mx-auto w-full px-fluid py-6">
+      {/* Header */}
+      <Reveal as="header" className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-neutral-950 p-6 sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/[0.06] to-transparent" />
+        <div className="relative flex flex-col items-center gap-5 sm:flex-row sm:items-end">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={user.pfp} alt={user.username} className="h-24 w-24 shrink-0 rounded-full object-cover ring-4 ring-white/10 sm:h-28 sm:w-28" />
+          <div className="min-w-0 flex-1 text-center sm:text-left">
+            <h1 className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">{user.username}</h1>
+            <p className="mt-1 flex items-center justify-center gap-1.5 text-[13px] text-white/45 sm:justify-start">
+              <CalendarDays className="h-3.5 w-3.5" aria-hidden /> Collecting since {user.joined}
+            </p>
+          </div>
+          <button type="button" className="rounded-xl bg-neutral-200 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white">
+            Follow
+          </button>
+        </div>
+
+        {/* stats */}
+        <div className="relative mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {stats.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div key={s.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center sm:text-left">
+                <div className="flex items-center justify-center gap-1.5 text-white/40 sm:justify-start">
+                  <Icon className="h-3.5 w-3.5" aria-hidden />
+                  <span className="text-[11px] uppercase tracking-wide">{s.label}</span>
+                </div>
+                <p className="mt-1 font-heading text-xl font-bold text-white">{s.value}</p>
+              </div>
+            );
+          })}
+        </div>
+      </Reveal>
+
+      {/* Tabs */}
+      <div role="tablist" className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-neutral-900 p-1 sm:inline-flex">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={cn(
+              "rounded-lg px-5 py-2 text-center text-sm font-medium transition-colors",
+              tab === t ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80",
+            )}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Panels */}
+      {tab === "Collection" && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {user.collection.map((c, i) => (
+            <Reveal key={c.id} delay={Math.min(i, 8) * 45} className="h-full">
+              <Link href={`/card/${c.id}`} className="group block h-full overflow-hidden rounded-2xl border border-white/10 bg-neutral-800 transition-all duration-300 hover:-translate-y-1 hover:border-white/20">
+                <div className="aspect-[3/4] w-full overflow-hidden bg-[radial-gradient(120%_80%_at_50%_15%,#2e2e2e_0%,#1c1c1c_55%,#141414_100%)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.04]" />
+                </div>
+                <div className="p-2.5">
+                  <p className="truncate text-[11px] text-white/60">{c.grader} {c.grade}</p>
+                  <p className="text-sm font-bold text-white">{usd(c.price)}</p>
+                </div>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      )}
+
+      {tab === "Activity" && (
+        <ul className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+          {activity.map((a, i) => (
+            <li key={i} className="flex items-center gap-3 border-b border-white/5 px-4 py-3 last:border-b-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={a.card.image} alt="" className="h-11 w-8 shrink-0 rounded object-contain" />
+              <p className="min-w-0 flex-1 truncate text-[13px] text-white/80">
+                <span className="text-white/50">{a.verb}</span>{" "}
+                <Link href={`/card/${a.card.id}`} className="font-medium text-white hover:underline">{a.card.name}</Link>
+              </p>
+              <span className="shrink-0 text-[12px] tabular-nums text-white/45">{usd(a.card.price)}</span>
+              <span className="hidden shrink-0 text-[11px] text-white/35 sm:inline">{a.time}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tab === "Achievements" && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {BADGES.map((b) => {
+            const Icon = b.icon;
+            return (
+              <div key={b.label} className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
+                  <Icon className={cn("h-6 w-6", b.tint)} aria-hidden />
+                </span>
+                <span className="text-[13px] font-medium text-white">{b.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

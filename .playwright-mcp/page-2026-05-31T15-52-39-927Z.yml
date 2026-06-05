@@ -1,0 +1,154 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - button "Open menu" [ref=e10] [cursor=pointer]:
+            - img [ref=e11]
+            - generic [ref=e12]: Open menu
+          - link "Logo" [ref=e13] [cursor=pointer]:
+            - /url: /
+            - img "Logo" [ref=e14]
+        - generic [ref=e15]:
+          - link [ref=e16] [cursor=pointer]:
+            - /url: /how-it-works
+            - img [ref=e17]
+          - button "Login" [ref=e19] [cursor=pointer]:
+            - img [ref=e20]
+            - generic [ref=e23]: Login
+          - button "Sign Up" [ref=e24] [cursor=pointer]
+    - main [ref=e26]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - button "Scroll categories left":
+              - img
+            - button "Scroll categories right":
+              - img
+            - generic [ref=e32]:
+              - button "Pokémon icon Pokémon" [ref=e33] [cursor=pointer]:
+                - img "Pokémon icon" [ref=e34]
+                - generic [ref=e35]: Pokémon
+              - button "One Piece icon One Piece" [ref=e36] [cursor=pointer]:
+                - img "One Piece icon" [ref=e37]
+                - generic [ref=e38]: One Piece
+              - button "Basketball icon Basketball" [ref=e39] [cursor=pointer]:
+                - img "Basketball icon" [ref=e40]
+                - generic [ref=e41]: Basketball
+              - button "Football icon Football" [ref=e42] [cursor=pointer]:
+                - img "Football icon" [ref=e43]
+                - generic [ref=e44]: Football
+              - button "Baseball icon Baseball" [ref=e45] [cursor=pointer]:
+                - img "Baseball icon" [ref=e46]
+                - generic [ref=e47]: Baseball
+              - button "Soccer icon Soccer" [ref=e48] [cursor=pointer]:
+                - img "Soccer icon" [ref=e49]
+                - generic [ref=e50]: Soccer
+              - button "Yu-Gi-Oh! icon Yu-Gi-Oh!" [ref=e51] [cursor=pointer]:
+                - img "Yu-Gi-Oh! icon" [ref=e52]
+                - generic [ref=e53]: Yu-Gi-Oh!
+              - button "Riftbound icon Riftbound" [ref=e54] [cursor=pointer]:
+                - img "Riftbound icon" [ref=e55]
+                - generic [ref=e56]: Riftbound
+              - button "Dragon Ball icon Dragon Ball" [ref=e57] [cursor=pointer]:
+                - img "Dragon Ball icon" [ref=e58]
+                - generic [ref=e59]: Dragon Ball
+              - button "Fwog icon Fwog" [ref=e60] [cursor=pointer]:
+                - img "Fwog icon" [ref=e61]
+                - generic [ref=e62]: Fwog
+              - button "NEUKO icon NEUKO" [ref=e63] [cursor=pointer]:
+                - img "NEUKO icon" [ref=e64]
+                - generic [ref=e65]: NEUKO
+              - button "Vibes icon Vibes" [ref=e66] [cursor=pointer]:
+                - img "Vibes icon" [ref=e67]
+                - generic [ref=e68]: Vibes
+              - button "Moonbirds icon Moonbirds" [ref=e69] [cursor=pointer]:
+                - img "Moonbirds icon" [ref=e70]
+                - generic [ref=e71]: Moonbirds
+          - generic [ref=e73]:
+            - button [ref=e74] [cursor=pointer]:
+              - img [ref=e75]
+            - generic [ref=e78]:
+              - img [ref=e79]
+              - textbox "Search cards..." [ref=e82]
+            - button [ref=e83] [cursor=pointer]:
+              - img [ref=e84]
+            - button [ref=e87] [cursor=pointer]:
+              - img [ref=e88]
+        - generic [ref=e311]:
+          - generic [ref=e312]:
+            - generic [ref=e313]:
+              - img "Phygitals" [ref=e315]
+              - paragraph [ref=e316]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+              - link "About Us" [ref=e318] [cursor=pointer]:
+                - /url: /about
+                - text: About Us
+                - img [ref=e319]
+            - generic [ref=e322]:
+              - generic [ref=e323]:
+                - heading "Quick Links" [level=3] [ref=e324]
+                - list [ref=e325]:
+                  - listitem [ref=e326]:
+                    - link "Home" [ref=e327] [cursor=pointer]:
+                      - /url: /
+                      - generic [ref=e328]: Home
+                  - listitem [ref=e329]:
+                    - link "Marketplace" [ref=e330] [cursor=pointer]:
+                      - /url: /marketplace
+                      - generic [ref=e331]: Marketplace
+                  - listitem [ref=e332]:
+                    - link "Play the Claw" [ref=e333] [cursor=pointer]:
+                      - /url: /claw
+                      - generic [ref=e334]: Play the Claw
+                  - listitem [ref=e335]:
+                    - link "Leaderboard" [ref=e336] [cursor=pointer]:
+                      - /url: /leaderboard
+                      - generic [ref=e337]: Leaderboard
+              - generic [ref=e338]:
+                - heading "Support" [level=3] [ref=e339]
+                - list [ref=e340]:
+                  - listitem [ref=e341]:
+                    - link "Contact Us" [ref=e342] [cursor=pointer]:
+                      - /url: /contact
+                      - generic [ref=e343]: Contact Us
+                  - listitem [ref=e344]:
+                    - link "Documentation" [ref=e345] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com
+                      - generic [ref=e346]: Documentation
+                  - listitem [ref=e347]:
+                    - link "Terms of Service" [ref=e348] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                      - generic [ref=e349]: Terms of Service
+                  - listitem [ref=e350]:
+                    - link "Privacy Policy" [ref=e351] [cursor=pointer]:
+                      - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                      - generic [ref=e352]: Privacy Policy
+              - generic [ref=e353]:
+                - heading "Social Media" [level=3] [ref=e354]
+                - paragraph [ref=e355]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                - generic [ref=e356]:
+                  - link "Twitter" [ref=e357] [cursor=pointer]:
+                    - /url: https://x.com/phygitals
+                    - img [ref=e358]
+                  - link "Instagram" [ref=e360] [cursor=pointer]:
+                    - /url: https://www.instagram.com/phygitals
+                    - img [ref=e361]
+                  - link "Discord" [ref=e364] [cursor=pointer]:
+                    - /url: https://discord.gg/phygitals
+                    - img [ref=e365]
+                  - link "Telegram" [ref=e367] [cursor=pointer]:
+                    - /url: https://t.me/phygitals_bot
+                    - img [ref=e368]
+          - paragraph [ref=e373]: © 2025 Phygitals. All rights reserved.
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+              - generic:
+                - paragraph: 0 items in cart
+                - paragraph: $0.00
+              - button "Checkout"
+              - button "Clear cart":
+                - img
+  - region "Notifications alt+T"

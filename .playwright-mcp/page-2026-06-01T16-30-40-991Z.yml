@@ -1,0 +1,318 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - link "Phygitals" [ref=e10] [cursor=pointer]:
+              - /url: /
+              - img "Phygitals" [ref=e11]
+            - navigation [ref=e12]:
+              - link "Packs NEW" [ref=e13] [cursor=pointer]:
+                - /url: /claw
+                - img [ref=e14]
+                - generic [ref=e18]: Packs
+                - generic [ref=e19]: NEW
+              - link "Pack Party" [ref=e20] [cursor=pointer]:
+                - /url: /pack-party
+                - img [ref=e21]
+                - generic [ref=e27]: Pack Party
+              - link "Marketplace" [ref=e28] [cursor=pointer]:
+                - /url: /marketplace
+                - img [ref=e29]
+                - generic [ref=e31]: Marketplace
+              - link "Leaderboard" [ref=e32] [cursor=pointer]:
+                - /url: /leaderboard
+                - img [ref=e33]
+                - generic [ref=e35]: Leaderboard
+              - button "More" [ref=e36] [cursor=pointer]:
+                - img [ref=e37]
+                - generic [ref=e39]: More
+                - img [ref=e40]
+          - generic [ref=e43]:
+            - link "How it works" [ref=e44] [cursor=pointer]:
+              - /url: /how-it-works
+              - img [ref=e45]
+              - generic [ref=e47]: How it works
+            - button "Login" [ref=e49] [cursor=pointer]:
+              - img [ref=e50]
+              - generic [ref=e53]: Login
+            - button "Sign Up" [ref=e54] [cursor=pointer]
+      - main [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e59]:
+            - generic [ref=e61]:
+              - generic [ref=e63]:
+                - img [ref=e64]
+                - generic [ref=e67]: "Winners picked in:"
+                - generic [ref=e68]:
+                  - generic [ref=e180]: 6d
+                  - generic [ref=e69]: 07h
+                  - generic [ref=e70]: 29m
+                  - generic [ref=e71]: 19s
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - img "4ECcTJNEBnRNZFqn8FmYMSj6fDsYDkgWZGzXV5nsRVtL" [ref=e186]
+                  - link "PrinceOfDragons" [ref=e188] [cursor=pointer]:
+                    - /url: /u/PrinceOfDragons
+                  - generic [ref=e189]:
+                    - generic [ref=e190]: 4,438,392
+                    - generic [ref=e191]: points
+                - generic [ref=e193]:
+                  - img "36UUBVgjxbj2HsEw8W5CNcnsk1vQfFAuTP5gpYA7jd5r" [ref=e196]
+                  - link "FightingProdigy3098" [ref=e198] [cursor=pointer]:
+                    - /url: /u/FightingProdigy3098
+                  - generic [ref=e199]:
+                    - generic [ref=e200]: 81,732,274
+                    - generic [ref=e201]: points
+                - generic [ref=e203]:
+                  - img "8tkjit94ans29GScs9QWmdxqvCvybxqZJjXo4foSQ9tL" [ref=e206]
+                  - link "PoisonTamer8656" [ref=e208] [cursor=pointer]:
+                    - /url: /u/PoisonTamer8656
+                  - generic [ref=e209]:
+                    - generic [ref=e210]: 3,880,725
+                    - generic [ref=e211]: points
+            - generic [ref=e85]:
+              - button [ref=e87] [cursor=pointer]:
+                - img [ref=e88]
+              - generic [ref=e91]:
+                - img [ref=e92]
+                - generic [ref=e98]: Win prizes!
+            - generic [ref=e100]:
+              - button "Weekly" [ref=e101] [cursor=pointer]
+              - button "All Time" [ref=e102] [cursor=pointer]
+              - button "Prizes" [ref=e103] [cursor=pointer]
+            - generic [ref=e106]:
+              - table [ref=e215]:
+                - rowgroup [ref=e216]:
+                  - row "# Name Volume Claw Pulls Points" [ref=e217]:
+                    - columnheader "#" [ref=e218]:
+                      - generic [ref=e220]: "#"
+                    - columnheader "Name" [ref=e221]:
+                      - generic [ref=e223]: Name
+                    - columnheader "Volume" [ref=e224]:
+                      - generic [ref=e226]: Volume
+                    - columnheader "Claw Pulls" [ref=e227]:
+                      - generic [ref=e229]: Claw Pulls
+                    - columnheader "Points" [ref=e230]:
+                      - generic [ref=e232]: Points
+                - rowgroup [ref=e233]:
+                  - row "1 36UUBVgjxbj2HsEw8W5CNcnsk1vQfFAuTP5gpYA7jd5r FightingProdigy3098 $817,322.36 87 81,732,274" [ref=e234] [cursor=pointer]:
+                    - cell "1" [ref=e235]
+                    - cell "36UUBVgjxbj2HsEw8W5CNcnsk1vQfFAuTP5gpYA7jd5r FightingProdigy3098" [ref=e236]:
+                      - generic [ref=e237]:
+                        - img "36UUBVgjxbj2HsEw8W5CNcnsk1vQfFAuTP5gpYA7jd5r" [ref=e239]
+                        - heading "FightingProdigy3098" [level=3] [ref=e241]:
+                          - link "FightingProdigy3098" [ref=e242]:
+                            - /url: /u/FightingProdigy3098
+                    - cell "$817,322.36" [ref=e243]:
+                      - generic [ref=e244]: $817,322.36
+                    - cell "87" [ref=e245]:
+                      - generic [ref=e246]: "87"
+                    - cell "81,732,274" [ref=e247]:
+                      - generic [ref=e248]: 81,732,274
+                  - row "2 4ECcTJNEBnRNZFqn8FmYMSj6fDsYDkgWZGzXV5nsRVtL PrinceOfDragons $44,133.65 53 4,438,392" [ref=e249] [cursor=pointer]:
+                    - cell "2" [ref=e250]
+                    - cell "4ECcTJNEBnRNZFqn8FmYMSj6fDsYDkgWZGzXV5nsRVtL PrinceOfDragons" [ref=e251]:
+                      - generic [ref=e252]:
+                        - img "4ECcTJNEBnRNZFqn8FmYMSj6fDsYDkgWZGzXV5nsRVtL" [ref=e254]
+                        - heading "PrinceOfDragons" [level=3] [ref=e256]:
+                          - link "PrinceOfDragons" [ref=e257]:
+                            - /url: /u/PrinceOfDragons
+                    - cell "$44,133.65" [ref=e258]:
+                      - generic [ref=e259]: $44,133.65
+                    - cell "53" [ref=e260]:
+                      - generic [ref=e261]: "53"
+                    - cell "4,438,392" [ref=e262]:
+                      - generic [ref=e263]: 4,438,392
+                  - row "3 8tkjit94ans29GScs9QWmdxqvCvybxqZJjXo4foSQ9tL PoisonTamer8656 $38,705.96 255 3,880,725" [ref=e264] [cursor=pointer]:
+                    - cell "3" [ref=e265]
+                    - cell "8tkjit94ans29GScs9QWmdxqvCvybxqZJjXo4foSQ9tL PoisonTamer8656" [ref=e266]:
+                      - generic [ref=e267]:
+                        - img "8tkjit94ans29GScs9QWmdxqvCvybxqZJjXo4foSQ9tL" [ref=e269]
+                        - heading "PoisonTamer8656" [level=3] [ref=e271]:
+                          - link "PoisonTamer8656" [ref=e272]:
+                            - /url: /u/PoisonTamer8656
+                    - cell "$38,705.96" [ref=e273]:
+                      - generic [ref=e274]: $38,705.96
+                    - cell "255" [ref=e275]:
+                      - generic [ref=e276]: "255"
+                    - cell "3,880,725" [ref=e277]:
+                      - generic [ref=e278]: 3,880,725
+                  - row "4 3mouFTBw71jBtV7CC5ueaMM1Cp1dJ6CtGJm5ZkjgXpDS kaoyan $22,219.81 338 2,222,149" [ref=e279] [cursor=pointer]:
+                    - cell "4" [ref=e280]
+                    - cell "3mouFTBw71jBtV7CC5ueaMM1Cp1dJ6CtGJm5ZkjgXpDS kaoyan" [ref=e281]:
+                      - generic [ref=e282]:
+                        - img "3mouFTBw71jBtV7CC5ueaMM1Cp1dJ6CtGJm5ZkjgXpDS" [ref=e284]
+                        - heading "kaoyan" [level=3] [ref=e286]:
+                          - link "kaoyan" [ref=e287]:
+                            - /url: /u/kaoyan
+                    - cell "$22,219.81" [ref=e288]:
+                      - generic [ref=e289]: $22,219.81
+                    - cell "338" [ref=e290]:
+                      - generic [ref=e291]: "338"
+                    - cell "2,222,149" [ref=e292]:
+                      - generic [ref=e293]: 2,222,149
+                  - row "5 8afxUyQLtmqsQwZkJCAGo6piWhtH2iUXcWgnZaiha3CV RockHunter5734 $22,073.1 123 2,207,364" [ref=e294] [cursor=pointer]:
+                    - cell "5" [ref=e295]
+                    - cell "8afxUyQLtmqsQwZkJCAGo6piWhtH2iUXcWgnZaiha3CV RockHunter5734" [ref=e296]:
+                      - generic [ref=e297]:
+                        - img "8afxUyQLtmqsQwZkJCAGo6piWhtH2iUXcWgnZaiha3CV" [ref=e299]
+                        - heading "RockHunter5734" [level=3] [ref=e301]:
+                          - link "RockHunter5734" [ref=e302]:
+                            - /url: /u/RockHunter5734
+                    - cell "$22,073.1" [ref=e303]:
+                      - generic [ref=e304]: $22,073.1
+                    - cell "123" [ref=e305]:
+                      - generic [ref=e306]: "123"
+                    - cell "2,207,364" [ref=e307]:
+                      - generic [ref=e308]: 2,207,364
+                  - row "6 P1svHSadSLVPhVsTxUPZPWRNSLMJg7nZo9SkTkRp2Vh FireKnight8258 $17,213.83 35 1,721,399" [ref=e309] [cursor=pointer]:
+                    - cell "6" [ref=e310]
+                    - cell "P1svHSadSLVPhVsTxUPZPWRNSLMJg7nZo9SkTkRp2Vh FireKnight8258" [ref=e311]:
+                      - generic [ref=e312]:
+                        - img "P1svHSadSLVPhVsTxUPZPWRNSLMJg7nZo9SkTkRp2Vh" [ref=e314]
+                        - heading "FireKnight8258" [level=3] [ref=e316]:
+                          - link "FireKnight8258" [ref=e317]:
+                            - /url: /u/FireKnight8258
+                    - cell "$17,213.83" [ref=e318]:
+                      - generic [ref=e319]: $17,213.83
+                    - cell "35" [ref=e320]:
+                      - generic [ref=e321]: "35"
+                    - cell "1,721,399" [ref=e322]:
+                      - generic [ref=e323]: 1,721,399
+                  - row "7 EWBvVgLPufenwi11BT7RdyuqKPUcA6KAYowZK8KJMYA5 PoisonExplorer2503 $17,193.88 300 1,719,532" [ref=e324] [cursor=pointer]:
+                    - cell "7" [ref=e325]
+                    - cell "EWBvVgLPufenwi11BT7RdyuqKPUcA6KAYowZK8KJMYA5 PoisonExplorer2503" [ref=e326]:
+                      - generic [ref=e327]:
+                        - img "EWBvVgLPufenwi11BT7RdyuqKPUcA6KAYowZK8KJMYA5" [ref=e329]
+                        - heading "PoisonExplorer2503" [level=3] [ref=e331]:
+                          - link "PoisonExplorer2503" [ref=e332]:
+                            - /url: /u/PoisonExplorer2503
+                    - cell "$17,193.88" [ref=e333]:
+                      - generic [ref=e334]: $17,193.88
+                    - cell "300" [ref=e335]:
+                      - generic [ref=e336]: "300"
+                    - cell "1,719,532" [ref=e337]:
+                      - generic [ref=e338]: 1,719,532
+                  - row "8 3fnqxatKFdeDcUeuYhR96buDtHjf7SBs2Fc3VcAE7Eyc PoisonTactician4598 $14,248.51 11 1,424,854" [ref=e339] [cursor=pointer]:
+                    - cell "8" [ref=e340]
+                    - cell "3fnqxatKFdeDcUeuYhR96buDtHjf7SBs2Fc3VcAE7Eyc PoisonTactician4598" [ref=e341]:
+                      - generic [ref=e342]:
+                        - img "3fnqxatKFdeDcUeuYhR96buDtHjf7SBs2Fc3VcAE7Eyc" [ref=e344]
+                        - heading "PoisonTactician4598" [level=3] [ref=e346]:
+                          - link "PoisonTactician4598" [ref=e347]:
+                            - /url: /u/PoisonTactician4598
+                    - cell "$14,248.51" [ref=e348]:
+                      - generic [ref=e349]: $14,248.51
+                    - cell "11" [ref=e350]:
+                      - generic [ref=e351]: "11"
+                    - cell "1,424,854" [ref=e352]:
+                      - generic [ref=e353]: 1,424,854
+                  - row "9 HCftHHJKpNQRYym2gMVUufHnPPyA8FydB4GF2f6Sejhp CrystalRanger9084 $14,136.69 3 1,413,671" [ref=e354] [cursor=pointer]:
+                    - cell "9" [ref=e355]
+                    - cell "HCftHHJKpNQRYym2gMVUufHnPPyA8FydB4GF2f6Sejhp CrystalRanger9084" [ref=e356]:
+                      - generic [ref=e357]:
+                        - img "HCftHHJKpNQRYym2gMVUufHnPPyA8FydB4GF2f6Sejhp" [ref=e359]
+                        - heading "CrystalRanger9084" [level=3] [ref=e361]:
+                          - link "CrystalRanger9084" [ref=e362]:
+                            - /url: /u/CrystalRanger9084
+                    - cell "$14,136.69" [ref=e363]:
+                      - generic [ref=e364]: $14,136.69
+                    - cell "3" [ref=e365]:
+                      - generic [ref=e366]: "3"
+                    - cell "1,413,671" [ref=e367]:
+                      - generic [ref=e368]: 1,413,671
+                  - row "10 2KhPGEFw2qtJCuJgckXndjUh5YJBde4zMGShndN8yjDK SolarVoyager6287 $13,840.84 41 1,384,105" [ref=e369] [cursor=pointer]:
+                    - cell "10" [ref=e370]
+                    - cell "2KhPGEFw2qtJCuJgckXndjUh5YJBde4zMGShndN8yjDK SolarVoyager6287" [ref=e371]:
+                      - generic [ref=e372]:
+                        - img "2KhPGEFw2qtJCuJgckXndjUh5YJBde4zMGShndN8yjDK" [ref=e374]
+                        - heading "SolarVoyager6287" [level=3] [ref=e376]:
+                          - link "SolarVoyager6287" [ref=e377]:
+                            - /url: /u/SolarVoyager6287
+                    - cell "$13,840.84" [ref=e378]:
+                      - generic [ref=e379]: $13,840.84
+                    - cell "41" [ref=e380]:
+                      - generic [ref=e381]: "41"
+                    - cell "1,384,105" [ref=e382]:
+                      - generic [ref=e383]: 1,384,105
+              - generic [ref=e385]:
+                - generic [ref=e387]: 1-10 of 341
+                - generic [ref=e388]:
+                  - button [disabled] [ref=e389]:
+                    - img [ref=e390]
+                  - generic [ref=e392]:
+                    - button "1" [ref=e393] [cursor=pointer]
+                    - button "2" [ref=e394] [cursor=pointer]
+                    - generic [ref=e395]: ⋯
+                    - button "35" [ref=e396] [cursor=pointer]
+                  - button [ref=e397] [cursor=pointer]:
+                    - img [ref=e398]
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]:
+                - img "Phygitals" [ref=e121]
+                - paragraph [ref=e122]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+                - link "About Us" [ref=e124] [cursor=pointer]:
+                  - /url: /about
+                  - text: About Us
+                  - img [ref=e125]
+              - generic [ref=e128]:
+                - generic [ref=e129]:
+                  - heading "Quick Links" [level=3] [ref=e130]
+                  - list [ref=e131]:
+                    - listitem [ref=e132]:
+                      - link "Home" [ref=e133] [cursor=pointer]:
+                        - /url: /
+                        - generic [ref=e134]: Home
+                    - listitem [ref=e135]:
+                      - link "Marketplace" [ref=e136] [cursor=pointer]:
+                        - /url: /marketplace
+                        - generic [ref=e137]: Marketplace
+                    - listitem [ref=e138]:
+                      - link "Play the Claw" [ref=e139] [cursor=pointer]:
+                        - /url: /claw
+                        - generic [ref=e140]: Play the Claw
+                    - listitem [ref=e141]:
+                      - link "Leaderboard" [ref=e142] [cursor=pointer]:
+                        - /url: /leaderboard
+                        - generic [ref=e143]: Leaderboard
+                - generic [ref=e144]:
+                  - heading "Support" [level=3] [ref=e145]
+                  - list [ref=e146]:
+                    - listitem [ref=e147]:
+                      - link "Contact Us" [ref=e148] [cursor=pointer]:
+                        - /url: /contact
+                        - generic [ref=e149]: Contact Us
+                    - listitem [ref=e150]:
+                      - link "Documentation" [ref=e151] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com
+                        - generic [ref=e152]: Documentation
+                    - listitem [ref=e153]:
+                      - link "Terms of Service" [ref=e154] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+                        - generic [ref=e155]: Terms of Service
+                    - listitem [ref=e156]:
+                      - link "Privacy Policy" [ref=e157] [cursor=pointer]:
+                        - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+                        - generic [ref=e158]: Privacy Policy
+                - generic [ref=e159]:
+                  - heading "Social Media" [level=3] [ref=e160]
+                  - paragraph [ref=e161]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+                  - generic [ref=e162]:
+                    - link "Twitter" [ref=e163] [cursor=pointer]:
+                      - /url: https://x.com/phygitals
+                      - img [ref=e164]
+                    - link "Instagram" [ref=e166] [cursor=pointer]:
+                      - /url: https://www.instagram.com/phygitals
+                      - img [ref=e167]
+                    - link "Discord" [ref=e170] [cursor=pointer]:
+                      - /url: https://discord.gg/phygitals
+                      - img [ref=e171]
+                    - link "Telegram" [ref=e173] [cursor=pointer]:
+                      - /url: https://t.me/phygitals_bot
+                      - img [ref=e174]
+            - paragraph [ref=e179]: © 2025 Phygitals. All rights reserved.
+    - region "Notifications alt+T"
+  - alert [ref=e400]

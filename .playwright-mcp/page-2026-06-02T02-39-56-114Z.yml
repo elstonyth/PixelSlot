@@ -1,0 +1,165 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Phygitals home" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img "Pokenic" [ref=e6]
+      - button "Open menu" [ref=e8]:
+        - img [ref=e9]
+    - navigation [ref=e10]:
+      - link "Packs NEW" [ref=e11] [cursor=pointer]:
+        - /url: /claw
+        - img [ref=e12]
+        - text: Packs
+        - generic [ref=e16]: NEW
+      - link "Pack Party" [ref=e17] [cursor=pointer]:
+        - /url: /pack-party
+        - img [ref=e18]
+        - text: Pack Party
+      - link "Marketplace" [ref=e24] [cursor=pointer]:
+        - /url: /marketplace
+        - img [ref=e25]
+        - text: Marketplace
+      - link "Leaderboard" [ref=e29] [cursor=pointer]:
+        - /url: /leaderboard
+        - img [ref=e30]
+        - text: Leaderboard
+      - button "More" [ref=e36]:
+        - generic [ref=e37]:
+          - img [ref=e38]
+          - text: More
+        - img [ref=e41]
+      - link "How it works" [ref=e43] [cursor=pointer]:
+        - /url: /how-it-works
+        - img [ref=e44]
+        - text: How it works
+      - generic [ref=e47]:
+        - link "Login" [ref=e48] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e49]
+          - text: Login
+        - link "Sign Up" [ref=e52] [cursor=pointer]:
+          - /url: /signup
+  - main [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e56]:
+        - img "Fwog" [ref=e57]
+        - paragraph [ref=e58]: Launchpad
+        - heading "Fwog" [level=1] [ref=e59]
+        - paragraph [ref=e60]: Next-generation entertainment collectibles
+      - generic [ref=e61]:
+        - generic [ref=e63]:
+          - heading "Single Box" [level=3] [ref=e64]
+          - paragraph [ref=e65]: $50
+          - paragraph [ref=e66]: 1 sealed box · 1 digital collectible
+          - button "Buy Now" [ref=e67]
+        - generic [ref=e69]:
+          - generic [ref=e70]: Popular
+          - heading "Collector Pack" [level=3] [ref=e71]
+          - paragraph [ref=e72]: $250
+          - paragraph [ref=e73]: 5 boxes · boosted chase odds
+          - button "Buy Now" [ref=e74]
+        - generic [ref=e76]:
+          - heading "Whale Pack" [level=3] [ref=e77]
+          - paragraph [ref=e78]: $1,000
+          - paragraph [ref=e79]: 20 boxes · guaranteed grail + perks
+          - button "Buy Now" [ref=e80]
+      - generic [ref=e81]:
+        - heading "Built for What's Next" [level=2] [ref=e83]
+        - generic [ref=e84]:
+          - generic [ref=e86]:
+            - img [ref=e88]
+            - heading "Blockchain-verified" [level=3] [ref=e91]
+            - paragraph [ref=e92]: Every collectible is verifiable on-chain from the moment it's minted.
+          - generic [ref=e94]:
+            - img [ref=e96]
+            - heading "Minted instantly" [level=3] [ref=e98]
+            - paragraph [ref=e99]: Your digital item is created the second you purchase — no waiting.
+          - generic [ref=e101]:
+            - img [ref=e103]
+            - heading "Physically backed" [level=3] [ref=e113]
+            - paragraph [ref=e114]: Each digital collectible is redeemable for a real, vaulted physical item.
+          - generic [ref=e116]:
+            - img [ref=e118]
+            - heading "Trade anytime" [level=3] [ref=e123]
+            - paragraph [ref=e124]: List on the marketplace or trade peer-to-peer with zero friction.
+      - generic [ref=e125]:
+        - heading "Frequently Asked Questions" [level=2] [ref=e127]
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - button "What is Fwog?" [expanded] [ref=e131]:
+              - text: What is Fwog?
+              - img [ref=e132]
+            - paragraph [ref=e136]: Fwog is a digital collectible series backed by a real physical item that you can redeem at any time.
+          - generic [ref=e137]:
+            - button "What do I receive with my purchase?" [ref=e138]:
+              - text: What do I receive with my purchase?
+              - img [ref=e139]
+            - paragraph [ref=e141]: A blockchain-verified digital collectible, minted instantly, plus the physical item shipped to you on request.
+          - generic [ref=e142]:
+            - button "When will I receive my physical item?" [ref=e143]:
+              - text: When will I receive my physical item?
+              - img [ref=e144]
+            - paragraph [ref=e146]: Redeem whenever you like — physical items ship fully tracked and insured, typically within 5–7 business days.
+          - generic [ref=e147]:
+            - button "Can I trade my Fwog collectible?" [ref=e148]:
+              - text: Can I trade my Fwog collectible?
+              - img [ref=e149]
+            - paragraph [ref=e151]: Yes. List it on the Pokenic marketplace or trade peer-to-peer with other collectors instantly.
+  - contentinfo [ref=e152]:
+    - generic [ref=e153]:
+      - generic [ref=e154]:
+        - generic [ref=e156]:
+          - img "Pokenic" [ref=e157]
+          - paragraph [ref=e158]: Discover the world's first Pokémon marketplace where digitized cards can be bought, sold, traded, vaulted, and earn income, instantaneously, all in one seamless platform.
+          - link "About Us" [ref=e159] [cursor=pointer]:
+            - /url: /about
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - heading "Quick Links" [level=3] [ref=e163]
+            - list [ref=e164]:
+              - listitem [ref=e165]:
+                - link "Home" [ref=e166] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e167]:
+                - link "Marketplace" [ref=e168] [cursor=pointer]:
+                  - /url: /marketplace
+              - listitem [ref=e169]:
+                - link "Play the Claw" [ref=e170] [cursor=pointer]:
+                  - /url: /claw
+              - listitem [ref=e171]:
+                - link "Leaderboard" [ref=e172] [cursor=pointer]:
+                  - /url: /leaderboard
+          - generic [ref=e173]:
+            - heading "Support" [level=3] [ref=e174]
+            - list [ref=e175]:
+              - listitem [ref=e176]:
+                - link "Contact Us" [ref=e177] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e178]:
+                - link "Documentation" [ref=e179] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com
+              - listitem [ref=e180]:
+                - link "Terms of Service" [ref=e181] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/terms-of-service
+              - listitem [ref=e182]:
+                - link "Privacy Policy" [ref=e183] [cursor=pointer]:
+                  - /url: https://docs.phygitals.com/user-agreements/privacy-policy
+          - generic [ref=e184]:
+            - heading "Social Media" [level=3] [ref=e185]
+            - generic [ref=e186]:
+              - link "Twitter" [ref=e187] [cursor=pointer]:
+                - /url: https://x.com/phygitals
+                - img [ref=e188]
+              - link "Instagram" [ref=e190] [cursor=pointer]:
+                - /url: https://www.instagram.com/phygitals
+                - img [ref=e191]
+              - link "Discord" [ref=e193] [cursor=pointer]:
+                - /url: https://discord.gg/phygitals
+                - img [ref=e194]
+              - link "Telegram" [ref=e196] [cursor=pointer]:
+                - /url: https://t.me/phygitals_bot
+                - img [ref=e197]
+            - paragraph [ref=e199]: Follow us on social media for the latest updates, exclusive offers, and community highlights.
+      - paragraph [ref=e201]: © 2025 Phygitals. All rights reserved.
+  - alert [ref=e202]
