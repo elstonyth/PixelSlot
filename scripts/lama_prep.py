@@ -2,16 +2,23 @@
 # PNG (LaMa input) and a precise wordmark mask (white=erase) via black-hat/top-hat
 # local-contrast detection, confined to the wordmark band so it never hits the pack name.
 import os
+import sys
 import numpy as np
 import pillow_avif  # noqa: F401 — registers AVIF codec in Pillow
 from PIL import Image
 import cv2
 from lama_config import JOBS, DIR, LAMA_IN, LAMA_MASK, LAMA_OUT
 
+ONLY = set(sys.argv[1:])   # optional: process only the named bases (re-derive one machine)
+
 for d in (LAMA_IN, LAMA_MASK, LAMA_OUT):
     os.makedirs(d, exist_ok=True)
 
+processed = 0
 for base, cfg in JOBS.items():
+    if ONLY and base not in ONLY:
+        continue
+    processed += 1
     rgb = np.array(Image.open(f"{DIR}/{cfg['src']}").convert("RGB"))
     H, W = rgb.shape[:2]
     Image.fromarray(rgb).save(f"{LAMA_IN}/{base}.png")
@@ -31,4 +38,4 @@ for base, cfg in JOBS.items():
     Image.fromarray(mask).save(f"{LAMA_MASK}/{base}.png")
     print(f"{base}: {W}x{H} mask_px={int((mask>0).sum())}")
 
-print(f"\nprepared {len(JOBS)} images + masks")
+print(f"\nprepared {processed} images + masks")
