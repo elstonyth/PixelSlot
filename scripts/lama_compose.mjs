@@ -22,6 +22,8 @@ const ALL_BASES = [
 ];
 // optional argv filter: process only the named bases (so re-deriving one machine doesn't touch others)
 const ONLY = process.argv.slice(2);
+const UNKNOWN = ONLY.filter((b) => !ALL_BASES.includes(b));
+if (UNKNOWN.length) throw new Error(`Unknown base(s): ${UNKNOWN.join(", ")}`);
 const BASES = ONLY.length ? ALL_BASES.filter((b) => ONLY.includes(b)) : ALL_BASES;
 // Match the phygitals wordmark style: LOWERCASE "pokenic" (originals are lowercase), in
 // Poppins 700 (the phygitals face), sized to the wordmark's LETTER HEIGHT (not stretched to

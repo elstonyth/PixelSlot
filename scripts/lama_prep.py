@@ -14,9 +14,11 @@ ONLY = set(sys.argv[1:])   # optional: process only the named bases (re-derive o
 for d in (LAMA_IN, LAMA_MASK, LAMA_OUT):
     os.makedirs(d, exist_ok=True)
 
+processed = 0
 for base, cfg in JOBS.items():
     if ONLY and base not in ONLY:
         continue
+    processed += 1
     rgb = np.array(Image.open(f"{DIR}/{cfg['src']}").convert("RGB"))
     H, W = rgb.shape[:2]
     Image.fromarray(rgb).save(f"{LAMA_IN}/{base}.png")
@@ -36,4 +38,4 @@ for base, cfg in JOBS.items():
     Image.fromarray(mask).save(f"{LAMA_MASK}/{base}.png")
     print(f"{base}: {W}x{H} mask_px={int((mask>0).sum())}")
 
-print(f"\nprepared {len(JOBS)} images + masks")
+print(f"\nprepared {processed} images + masks")
