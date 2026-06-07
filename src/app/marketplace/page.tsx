@@ -11,8 +11,12 @@ export const metadata: Metadata = {
     "Buy and sell real graded cards with other collectors. Real cards, real ownership, instant transfers.",
 };
 
-export default function MarketplacePage() {
-  const cards = getMarketplaceCards();
+// Cards are read live from the Store API per request (reflects live inventory and
+// avoids a build-time dependency on a running backend). Category tabs are static.
+export const dynamic = "force-dynamic";
+
+export default async function MarketplacePage() {
+  const cards = await getMarketplaceCards();
   const categories = getMarketplaceCategories();
   return <MarketplaceClient cards={cards} categories={categories} />;
 }

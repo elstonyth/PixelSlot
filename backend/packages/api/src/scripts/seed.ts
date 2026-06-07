@@ -15,7 +15,6 @@ import {
 import {
   createApiKeysWorkflow,
   createInventoryLevelsWorkflow,
-  createProductCategoriesWorkflow,
   createProductsWorkflow,
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
@@ -23,11 +22,13 @@ import {
   createShippingProfilesWorkflow,
   createStockLocationsWorkflow,
   createTaxRegionsWorkflow,
+  deleteProductsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresStep,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { MercurModules, SellerStatus } from "@mercurjs/types";
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -56,6 +57,289 @@ const updateStoreCurrencies = createWorkflow(
     return new WorkflowResponse(stores);
   }
 );
+
+// ---------------------------------------------------------------------------
+// Pokénic card catalog — the single source of truth for the marketplace.
+//
+// Seeded as products owned by a "house" seller because Mercur's store API only
+// surfaces a product when it is linked to a seller whose status is "open"
+// (see @mercurjs/core store/products `applyVisibleSellerIdsFilter`). The
+// storefront reads these back through the Store API; `handle` doubles as the
+// `/card/<slug>` route id, and `metadata` carries the card-specific facts
+// (fmv/points/grade/grader/set/rarity/year) that are not first-class Medusa
+// product fields. Images are local assets under the storefront's
+// public/cdn/cards/ and are stored as site-relative URLs.
+// ---------------------------------------------------------------------------
+const HOUSE_SELLER = {
+  name: "House",
+  handle: "house",
+  email: "house@pokenic.local",
+} as const;
+
+// Only 7 real graded-slab images were harvested from the live site; the 16
+// listings intentionally reuse them (matching the original clone's static data).
+// Each id maps to an existing public/cdn/cards/<id>.webp — adding a new card
+// without a real image should reuse one of these, not invent a missing filename.
+const CARD_IMG = {
+  celebi: "FQEYWuGiKTkJpZSG6XqGHDBmH6EmxctEqk1kAT2MYzHc",
+  mewtwo: "9kRLkdbbvzm335GBvraQrWrNVs72gzEzynvP1RPvftTx",
+  darkrai: "4h13RDtFX4MWNYjvgMPeBS1hcL4AewupiFzDvyFUUTkd",
+  jolteon: "BEnddEeBXBHyL5qWXCg6sKS5VmUbUtZaKJ1aVB8yCWHN",
+  rapidash: "FFbo5jfXHHQWN8bmc88UDYSDP5QzYCCj6RwUkiWYyffC",
+  hooh: "FjAJZ7en585MpnoLUGbuALHEmbBAPd61EZCefQzFMmRX",
+  gengar: "6noxMybjBLtLqicAUTrG63VhWG2FgWzDBsQGnnZEyNCG",
+} as const;
+
+const cardImage = (id: string) => `/cdn/cards/${id}.webp`;
+
+type CardSeed = {
+  handle: string;
+  title: string;
+  price: number; // USD listing price
+  fmv: number; // USD fair-market value
+  points: number;
+  grade: string;
+  grader: string;
+  set: string;
+  rarity: string;
+  year: number;
+  image: string;
+};
+
+const CARD_PRODUCTS: CardSeed[] = [
+  {
+    handle: "celebi",
+    title:
+      "2021 Pokemon Japanese Sword & Shield Jet-Black Spirit Celebi V #3 CGC 10 GEM MINT",
+    price: 18.4,
+    fmv: 19.2,
+    points: 93,
+    grade: "10 GEM MINT",
+    grader: "CGC",
+    set: "Jet-Black Spirit",
+    rarity: "Rare",
+    year: 2021,
+    image: cardImage(CARD_IMG.celebi),
+  },
+  {
+    handle: "mewtwo",
+    title:
+      "2025 Pokemon Japanese SV Glory Of Rocket Gang Holo Team Rockets Mewtwo ex CGC 10",
+    price: 24.75,
+    fmv: 23.9,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "CGC",
+    set: "Glory of Team Rocket",
+    rarity: "Rare",
+    year: 2025,
+    image: cardImage(CARD_IMG.mewtwo),
+  },
+  {
+    handle: "darkrai-gg",
+    title:
+      "2023 Pokemon Sword and Shield Crown Zenith Galarian Gallery Darkrai Vstar #GG50 PSA 10",
+    price: 41.2,
+    fmv: 39.8,
+    points: 100,
+    grade: "10",
+    grader: "PSA",
+    set: "Crown Zenith",
+    rarity: "Epic",
+    year: 2023,
+    image: cardImage(CARD_IMG.darkrai),
+  },
+  {
+    handle: "jolteon",
+    title:
+      "2024 Pokemon Japanese Scarlet & Violet Terastal Fest ex Holo Jolteon ex #52 CGC 10 PRISTINE",
+    price: 15.6,
+    fmv: 16.1,
+    points: 96,
+    grade: "10 PRISTINE",
+    grader: "CGC",
+    set: "Terastal Festival ex",
+    rarity: "Uncommon",
+    year: 2024,
+    image: cardImage(CARD_IMG.jolteon),
+  },
+  {
+    handle: "shaymin",
+    title:
+      "2022 Pokemon Japanese Sword & Shield Star Birth Holo Shaymin VSTAR #13 CGC 9.5 MINT+",
+    price: 12.9,
+    fmv: 13.4,
+    points: 95,
+    grade: "9.5 MINT+",
+    grader: "CGC",
+    set: "Star Birth",
+    rarity: "Uncommon",
+    year: 2022,
+    image: cardImage(CARD_IMG.celebi),
+  },
+  {
+    handle: "rapidash",
+    title:
+      "2025 Pokemon Japanese Mega Start Deck 100 Battle Collection Reverse Holo Rapidash #90 CGC 10",
+    price: 8.45,
+    fmv: 8.9,
+    points: 92,
+    grade: "10",
+    grader: "CGC",
+    set: "Battle Collection",
+    rarity: "Common",
+    year: 2025,
+    image: cardImage(CARD_IMG.rapidash),
+  },
+  {
+    handle: "hooh",
+    title:
+      "2022 Pokemon Japanese Sword & Shield Incandescent Arcana Ho-Oh V #55 CGC 10 GEM MINT",
+    price: 21.3,
+    fmv: 20.5,
+    points: 98,
+    grade: "10 GEM MINT",
+    grader: "CGC",
+    set: "Incandescent Arcana",
+    rarity: "Rare",
+    year: 2022,
+    image: cardImage(CARD_IMG.hooh),
+  },
+  {
+    handle: "gengar",
+    title:
+      "2023 Pokemon Japanese Scarlet & Violet 151 Holo Gengar #94 CGC 10 GEM MINT",
+    price: 29.99,
+    fmv: 31.2,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "CGC",
+    set: "Scarlet & Violet 151",
+    rarity: "Epic",
+    year: 2023,
+    image: cardImage(CARD_IMG.gengar),
+  },
+  {
+    handle: "espathra",
+    title:
+      "2023 Pokemon Scarlet & Violet Paradox Rift Reverse Holo Espathra #081 CGC 8.5 NM-MT+",
+    price: 9.59,
+    fmv: 9.96,
+    points: 90,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Paradox Rift",
+    rarity: "Common",
+    year: 2023,
+    image: cardImage(CARD_IMG.gengar),
+  },
+  {
+    handle: "mimikyu",
+    title:
+      "2021 Pokemon Japanese SWSH VMAX Climax Mimikyu VMAX #77 CGC 8.5 NM-MT+",
+    price: 9.33,
+    fmv: 9.96,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "VMAX Climax",
+    rarity: "Common",
+    year: 2021,
+    image: cardImage(CARD_IMG.celebi),
+  },
+  {
+    handle: "lycanroc",
+    title:
+      "2016 Pokemon Japanese Sun & Moon Rockruff Full Power Deck Holo Lycanroc GX #9 CGC 5.5",
+    price: 7.8,
+    fmv: 8.4,
+    points: 92,
+    grade: "5.5",
+    grader: "CGC",
+    set: "Sun & Moon",
+    rarity: "Common",
+    year: 2016,
+    image: cardImage(CARD_IMG.rapidash),
+  },
+  {
+    handle: "garchomp",
+    title:
+      "2025 Pokemon Japanese Mega Dream ex Holo Cynthia's Garchomp ex #90 CGC 8.5 NM-MT+",
+    price: 9.1,
+    fmv: 9.5,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Mega Dream ex",
+    rarity: "Common",
+    year: 2025,
+    image: cardImage(CARD_IMG.mewtwo),
+  },
+  {
+    handle: "ribombee",
+    title:
+      "2025 Pokemon Scarlet & Violet Journey Together Holo Lillie's Ribombee #67 CGC 9.5 MINT",
+    price: 11.2,
+    fmv: 10.8,
+    points: 97,
+    grade: "9.5 MINT",
+    grader: "CGC",
+    set: "Journey Together",
+    rarity: "Uncommon",
+    year: 2025,
+    image: cardImage(CARD_IMG.jolteon),
+  },
+  {
+    handle: "obstagoon",
+    title:
+      "2023 Pokemon Sword & Shield Fusion Strike K.O. Collection Galarian Obstagoon #161 CGC 9",
+    price: 12.0,
+    fmv: 11.5,
+    points: 100,
+    grade: "9",
+    grader: "CGC",
+    set: "Fusion Strike",
+    rarity: "Uncommon",
+    year: 2023,
+    image: cardImage(CARD_IMG.hooh),
+  },
+  {
+    handle: "darkrai-tot",
+    title:
+      "2024 Pokemon Scarlet & Violet Obsidian Flames Trick Or Trade Holo Darkrai #136 CGC 9.5",
+    price: 13.4,
+    fmv: 12.9,
+    points: 100,
+    grade: "9.5",
+    grader: "CGC",
+    set: "Obsidian Flames",
+    rarity: "Uncommon",
+    year: 2024,
+    image: cardImage(CARD_IMG.darkrai),
+  },
+  {
+    handle: "dustox",
+    title: "2025 Pokemon Japanese Mega Dream ex AR Dustox #195 CGC 9 MINT",
+    price: 10.2,
+    fmv: 9.25,
+    points: 100,
+    grade: "9 MINT",
+    grader: "CGC",
+    set: "Mega Dream ex",
+    rarity: "Common",
+    year: 2025,
+    image: cardImage(CARD_IMG.celebi),
+  },
+];
+
+const CARD_HANDLES = CARD_PRODUCTS.map((c) => c.handle);
+// Handle = the storefront's /card/<slug> id and the seed's idempotency key, so a
+// duplicate would silently drop a card (the existing-handle guard dedupes it).
+// Fail fast at load instead of seeding a short catalog.
+if (new Set(CARD_HANDLES).size !== CARD_HANDLES.length) {
+  throw new Error("CARD_PRODUCTS contains duplicate handles");
+}
+const DEMO_APPAREL_HANDLES = ["t-shirt", "sweatshirt", "sweatpants", "shorts"];
 
 export default async function seedDemoData({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -167,6 +451,35 @@ export default async function seedDemoData({ container }: ExecArgs) {
       },
     });
     region = regionResult[0];
+  }
+
+  // USD region — the storefront prices and displays cards in USD, so it queries
+  // `/store/products` with this region's id to resolve `calculated_price` in USD
+  // (card variants carry USD prices). Guarded by currency so re-runs are no-ops.
+  const allRegions = await regionModuleService.listRegions({});
+  let usdRegion = allRegions.find((r) => r.currency_code === "usd");
+  if (!usdRegion) {
+    // Only claim "us" if no existing region already has it (countries are unique
+    // to one region); a USD region with no country still resolves USD prices.
+    const usdCountries = assignedCountries.has("us") ? [] : ["us"];
+    const { result: usdRegionResult } = await createRegionsWorkflow(
+      container
+    ).run({
+      input: {
+        regions: [
+          {
+            name: "United States",
+            currency_code: "usd",
+            countries: usdCountries,
+            payment_providers: ["pp_system_default"],
+          },
+        ],
+      },
+    });
+    usdRegion = usdRegionResult[0];
+    logger.info(`Created USD region (${usdRegion.id}).`);
+  } else {
+    logger.info("USD region already exists, skipping.");
   }
   logger.info("Finished seeding regions.");
 
@@ -477,549 +790,105 @@ export default async function seedDemoData({ container }: ExecArgs) {
   }
   logger.info("Finished seeding publishable API key data.");
 
-  logger.info("Seeding product data...");
+  logger.info("Seeding marketplace catalog...");
 
-  const productCategoryModule = container.resolve(Modules.PRODUCT);
-  const categoryNames = ["Shirts", "Sweatshirts", "Pants", "Merch"];
-  const existingCategories = await productCategoryModule.listProductCategories({
-    name: categoryNames,
+  const productModule = container.resolve(Modules.PRODUCT);
+
+  // House seller — Mercur's store/products filter only surfaces products linked
+  // to a seller whose status is "open", so the catalog needs one owner. Guarded
+  // by handle (name/email/handle are unique) so re-runs are idempotent.
+  const sellerService = container.resolve(MercurModules.SELLER);
+  const existingSellers = await sellerService.listSellers({
+    handle: HOUSE_SELLER.handle,
   });
 
-  let categoryResult;
-  if (existingCategories.length === categoryNames.length) {
-    categoryResult = existingCategories;
-    logger.info("Product categories already exist, skipping.");
-  } else {
-    const categoriesToCreate = categoryNames.filter(
-      (name) => !existingCategories.find((c) => c.name === name)
-    );
-    const { result: newCategories } = await createProductCategoriesWorkflow(
-      container
-    ).run({
-      input: {
-        product_categories: categoriesToCreate.map((name) => ({
-          name,
-          is_active: true,
-        })),
+  let houseSeller = existingSellers[0];
+  if (!houseSeller) {
+    const [created] = await sellerService.createSellers([
+      {
+        ...HOUSE_SELLER,
+        currency_code: "usd",
+        status: SellerStatus.OPEN,
+        metadata: { house: true },
       },
-    });
-    categoryResult = [...existingCategories, ...newCategories];
+    ]);
+    houseSeller = created;
+    logger.info(`Created house seller (${houseSeller.id}).`);
+  } else {
+    logger.info("House seller already exists, skipping.");
   }
 
-  const productHandles = ["t-shirt", "sweatshirt", "sweatpants", "shorts"];
-  const existingProducts = await productCategoryModule.listProducts({
-    handle: productHandles,
+  // Purge the 4 default Medusa demo apparel products for a clean card catalog
+  // (best-effort: they are invisible anyway with no seller link).
+  const apparelProducts = await productModule.listProducts({
+    handle: DEMO_APPAREL_HANDLES,
   });
+  if (apparelProducts.length) {
+    try {
+      await deleteProductsWorkflow(container).run({
+        input: { ids: apparelProducts.map((p) => p.id) },
+      });
+      logger.info(`Purged ${apparelProducts.length} demo apparel product(s).`);
+    } catch (error: unknown) {
+      logger.warn(
+        `Could not purge demo apparel products: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
 
-  if (existingProducts.length === productHandles.length) {
-    logger.info("Products already exist, skipping.");
+  // Seed the 16 cards as house-seller products (guarded by handle). The
+  // createProductsWorkflow `productsCreated` hook reads `additional_data.seller_id`
+  // and creates the product->seller (+ inventory->seller) links automatically.
+  const existingCards = await productModule.listProducts({
+    handle: CARD_HANDLES,
+  });
+  const existingCardHandles = new Set(existingCards.map((p) => p.handle));
+  const cardsToCreate = CARD_PRODUCTS.filter(
+    (c) => !existingCardHandles.has(c.handle)
+  );
+
+  if (cardsToCreate.length === 0) {
+    logger.info("Card products already exist, skipping.");
   } else {
     await createProductsWorkflow(container).run({
       input: {
-        products: [
-          {
-            title: "Medusa T-Shirt",
-            category_ids: [
-              categoryResult.find((cat: { name: string }) => cat.name === "Shirts")!.id,
-            ],
-            description:
-              "Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.",
-            handle: "t-shirt",
-            weight: 400,
-            status: ProductStatus.PUBLISHED,
-            shipping_profile_id: shippingProfile.id,
-            images: [
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-front.png",
-              },
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-back.png",
-              },
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-front.png",
-              },
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-back.png",
-              },
-            ],
-            options: [
-              {
-                title: "Size",
-                values: ["S", "M", "L", "XL"],
-              },
-              {
-                title: "Color",
-                values: ["Black", "White"],
-              },
-            ],
-            variants: [
-              {
-                title: "S / Black",
-                sku: "SHIRT-S-BLACK",
-                options: {
-                  Size: "S",
-                  Color: "Black",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "S / White",
-                sku: "SHIRT-S-WHITE",
-                options: {
-                  Size: "S",
-                  Color: "White",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "M / Black",
-                sku: "SHIRT-M-BLACK",
-                options: {
-                  Size: "M",
-                  Color: "Black",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "M / White",
-                sku: "SHIRT-M-WHITE",
-                options: {
-                  Size: "M",
-                  Color: "White",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "L / Black",
-                sku: "SHIRT-L-BLACK",
-                options: {
-                  Size: "L",
-                  Color: "Black",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "L / White",
-                sku: "SHIRT-L-WHITE",
-                options: {
-                  Size: "L",
-                  Color: "White",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "XL / Black",
-                sku: "SHIRT-XL-BLACK",
-                options: {
-                  Size: "XL",
-                  Color: "Black",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "XL / White",
-                sku: "SHIRT-XL-WHITE",
-                options: {
-                  Size: "XL",
-                  Color: "White",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-            ],
-            sales_channels: [
-              {
-                id: defaultSalesChannel[0].id,
-              },
-            ],
+        products: cardsToCreate.map((card) => ({
+          title: card.title,
+          handle: card.handle,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          thumbnail: card.image,
+          images: [{ url: card.image }],
+          options: [{ title: "Format", values: ["Slab"] }],
+          variants: [
+            {
+              title: "Slab",
+              sku: `CARD-${card.handle.toUpperCase()}`,
+              manage_inventory: true,
+              options: { Format: "Slab" },
+              prices: [{ currency_code: "usd", amount: card.price }],
+            },
+          ],
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+          metadata: {
+            fmv: card.fmv,
+            points: card.points,
+            grade: card.grade,
+            grader: card.grader,
+            set: card.set,
+            rarity: card.rarity,
+            year: card.year,
           },
-          {
-            title: "Medusa Sweatshirt",
-            category_ids: [
-              categoryResult.find((cat: { name: string }) => cat.name === "Sweatshirts")!.id,
-            ],
-            description:
-              "Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.",
-            handle: "sweatshirt",
-            weight: 400,
-            status: ProductStatus.PUBLISHED,
-            shipping_profile_id: shippingProfile.id,
-            images: [
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png",
-              },
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-back.png",
-              },
-            ],
-            options: [
-              {
-                title: "Size",
-                values: ["S", "M", "L", "XL"],
-              },
-            ],
-            variants: [
-              {
-                title: "S",
-                sku: "SWEATSHIRT-S",
-                options: {
-                  Size: "S",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "M",
-                sku: "SWEATSHIRT-M",
-                options: {
-                  Size: "M",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "L",
-                sku: "SWEATSHIRT-L",
-                options: {
-                  Size: "L",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "XL",
-                sku: "SWEATSHIRT-XL",
-                options: {
-                  Size: "XL",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-            ],
-            sales_channels: [
-              {
-                id: defaultSalesChannel[0].id,
-              },
-            ],
-          },
-          {
-            title: "Medusa Sweatpants",
-            category_ids: [
-              categoryResult.find((cat: { name: string }) => cat.name === "Pants")!.id,
-            ],
-            description:
-              "Reimagine the feeling of classic sweatpants. With our cotton sweatpants, everyday essentials no longer have to be ordinary.",
-            handle: "sweatpants",
-            weight: 400,
-            status: ProductStatus.PUBLISHED,
-            shipping_profile_id: shippingProfile.id,
-            images: [
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png",
-              },
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-back.png",
-              },
-            ],
-            options: [
-              {
-                title: "Size",
-                values: ["S", "M", "L", "XL"],
-              },
-            ],
-            variants: [
-              {
-                title: "S",
-                sku: "SWEATPANTS-S",
-                options: {
-                  Size: "S",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "M",
-                sku: "SWEATPANTS-M",
-                options: {
-                  Size: "M",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "L",
-                sku: "SWEATPANTS-L",
-                options: {
-                  Size: "L",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "XL",
-                sku: "SWEATPANTS-XL",
-                options: {
-                  Size: "XL",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-            ],
-            sales_channels: [
-              {
-                id: defaultSalesChannel[0].id,
-              },
-            ],
-          },
-          {
-            title: "Medusa Shorts",
-            category_ids: [
-              categoryResult.find((cat: { name: string }) => cat.name === "Merch")!.id,
-            ],
-            description:
-              "Reimagine the feeling of classic shorts. With our cotton shorts, everyday essentials no longer have to be ordinary.",
-            handle: "shorts",
-            weight: 400,
-            status: ProductStatus.PUBLISHED,
-            shipping_profile_id: shippingProfile.id,
-            images: [
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png",
-              },
-              {
-                url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-back.png",
-              },
-            ],
-            options: [
-              {
-                title: "Size",
-                values: ["S", "M", "L", "XL"],
-              },
-            ],
-            variants: [
-              {
-                title: "S",
-                sku: "SHORTS-S",
-                options: {
-                  Size: "S",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "M",
-                sku: "SHORTS-M",
-                options: {
-                  Size: "M",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "L",
-                sku: "SHORTS-L",
-                options: {
-                  Size: "L",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-              {
-                title: "XL",
-                sku: "SHORTS-XL",
-                options: {
-                  Size: "XL",
-                },
-                prices: [
-                  {
-                    amount: 10,
-                    currency_code: "eur",
-                  },
-                  {
-                    amount: 15,
-                    currency_code: "usd",
-                  },
-                ],
-              },
-            ],
-            sales_channels: [
-              {
-                id: defaultSalesChannel[0].id,
-              },
-            ],
-          },
-        ],
+        })),
+        additional_data: { seller_id: houseSeller.id },
       },
     });
+    logger.info(`Seeded ${cardsToCreate.length} card product(s).`);
   }
-  logger.info("Finished seeding product data.");
 
-  const { data: _seededProducts } = await query.graph({
-    entity: "product",
-    fields: ["id"],
-    filters: {
-      handle: productHandles,
-    },
-  });
+  logger.info("Finished seeding marketplace catalog.");
 
   logger.info("Seeding inventory levels.");
 
@@ -1038,8 +907,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   for (const inventoryItem of inventoryItems) {
     if (!existingItemIds.has(inventoryItem.id)) {
       const inventoryLevel = {
-        location_id: stockLocation.
-          id,
+        location_id: stockLocation.id,
         stocked_quantity: 1000000,
         inventory_item_id: inventoryItem.id,
       };

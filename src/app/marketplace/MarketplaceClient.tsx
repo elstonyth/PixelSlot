@@ -333,14 +333,24 @@ export default function MarketplaceClient({
             </button>
           </div>
 
-          {/* Card grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {cards.map((card, i) => (
-              <Reveal key={card.id} delay={Math.min(i, 11) * 45} className="h-full">
-                <MarketCard card={card} />
-              </Reveal>
-            ))}
-          </div>
+          {/* Card grid (or empty state when the catalog can't be loaded) */}
+          {cards.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.02] py-20 text-center">
+              <Store className="h-8 w-8 text-white/30" aria-hidden />
+              <p className="text-sm font-medium text-white/70">
+                No cards available right now
+              </p>
+              <p className="text-[13px] text-white/40">Check back shortly.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {cards.map((card, i) => (
+                <Reveal key={card.id} delay={Math.min(i, 11) * 45} className="h-full">
+                  <MarketCard card={card} />
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
