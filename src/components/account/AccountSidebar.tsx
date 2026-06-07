@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Settings, Package, MessageSquare, TrendingUp, Gift, Award, Ticket,
-  Send, Landmark, HandCoins, Coins, Zap, type LucideIcon,
+  Landmark, HandCoins, Coins, Zap, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,6 @@ export const ACCOUNT_NAV: { label: string; href: string; icon: LucideIcon }[] = 
   { label: "Referrals", href: "/referrals", icon: Gift },
   { label: "Achievements", href: "/achievements", icon: Award },
   { label: "Vouchers", href: "/vouchers", icon: Ticket },
-  { label: "Submit Cards", href: "/submitcards", icon: Send },
   { label: "Withdraw", href: "/bank-withdrawal", icon: Landmark },
   { label: "Borrow / Lend", href: "/borrow-lend", icon: HandCoins },
   { label: "PokéCoin", href: "/pokecoin", icon: Coins },
