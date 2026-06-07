@@ -19,13 +19,10 @@ const FOCUSABLE =
  * (WCAG 2.4.3 Focus Order, 2.1.2 No Keyboard Trap). Esc and backdrop click also close.
  */
 export default function AuthModal() {
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const onOpen = (e: Event) => {
@@ -78,7 +75,9 @@ export default function AuthModal() {
     };
   }, [open]);
 
-  if (!mounted || !open) return null;
+  // `open` only flips true via a client event (post-hydration), so createPortal is
+  // never reached during SSR — no separate mounted gate needed.
+  if (!open) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
