@@ -2,13 +2,18 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import PacksModuleService from "../../../../modules/packs/service";
 import { PACKS_MODULE } from "../../../../modules/packs";
 
-// GET /store/packs/:slug — one active pack plus its gacha odds, each joined to
-// the referenced Card (the prize pool behind /claw/[slug]'s Top Hits + Pull
-// Odds). A plain Medusa store route (publishable-key scoped, NOT subject to
-// Mercur's seller-visibility product middleware), so no house-seller link is
-// needed. 404 when the slug is unknown or inactive. The join is in-module by
-// stable business keys (Pack.slug, Card.handle); presentation aggregation
-// (top hits, rarity %, dot colors) lives in the storefront seam.
+// GET /store/packs/:slug — one active pack plus its prize pool (each odds row
+// joined to the referenced Card), behind /claw/[slug]'s Top Hits. A plain Medusa
+// store route (publishable-key scoped, NOT subject to Mercur's seller-visibility
+// product middleware), so no house-seller link is needed. 404 when the slug is
+// unknown or inactive. The join is in-module by stable business keys (Pack.slug,
+// Card.handle).
+//
+// 🔒 SECRET ODDS (Phase 6): the per-card `weight` is the real, admin-tuned win
+// rate and is DELIBERATELY OMITTED from this public response — it must never
+// reach the customer (visible in the network tab under the publishable key).
+// Customers see a separate, static published-odds display. Only non-secret card
+// display fields (incl. market_value, which drives Top Hits) are exposed here.
 export async function GET(
   req: MedusaRequest,
   res: MedusaResponse
@@ -56,7 +61,7 @@ export async function GET(
         // number; it's a USD decimal, never cents.
         market_value: Number(card.market_value),
         image: card.image,
-        weight: o.weight,
+        // NOTE: o.weight (the secret win rate) is intentionally NOT included.
       };
     })
     .filter((e): e is NonNullable<typeof e> => e !== null);

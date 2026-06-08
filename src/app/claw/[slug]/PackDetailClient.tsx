@@ -131,15 +131,16 @@ export default function PackDetailClient({
     () => Array.from({ length: 48 }, (_, i) => CARD_POOL[(i * 3 + 1) % CARD_POOL.length]),
     [],
   );
-  // Top Hits + Pull Odds come from the backend gacha pool. In 5a the pool is
-  // pool-wide (identical across packs), so it applies regardless of the selected
-  // sibling; both fall back to the static mock pools when the backend is down.
+  // Top Hits come from the backend prize pool (highest market_value). In 5a the
+  // pool is pool-wide (identical across packs), so it applies regardless of the
+  // selected sibling; it falls back to the static mock pool when the backend is
+  // down. Pull Odds are the SECRET-decoupled, statically-published `ODDS` — they
+  // never reflect the admin-tuned win rates (see packs.ts / route.ts).
   const mockTopHits = useMemo(
     () => [...CARD_POOL].sort((a, b) => priceNumber(b.value) - priceNumber(a.value)).slice(0, 5),
     [],
   );
   const topHits = detail?.topHits ?? mockTopHits;
-  const rarityOdds = detail?.rarityOdds ?? ODDS;
 
   const setQ = (n: number) => setQty(Math.min(99, Math.max(1, n)));
 
@@ -497,7 +498,7 @@ export default function PackDetailClient({
             <h2 className="font-heading text-lg font-bold tracking-tight text-white">Pull Odds (by rarity)</h2>
           </div>
           <ul className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-            {rarityOdds.map((o) => (
+            {ODDS.map((o) => (
               <li key={o.rarity} className="flex items-center justify-between border-b border-white/5 px-4 py-3 last:border-b-0">
                 <span className="flex items-center gap-2.5 text-[13px] font-medium text-white">
                   <span className={cn("h-2.5 w-2.5 rounded-full", o.dot)} />

@@ -16,7 +16,7 @@
 
 import { sdk } from "@/lib/medusa";
 import { logger } from "@/lib/logger";
-import { RARITIES, isRarity, formatValue } from "@/lib/packs-format";
+import { isRarity, formatValue } from "@/lib/packs-format";
 import {
   CATEGORIES as MOCK_CATEGORIES,
   type Pack,
@@ -91,52 +91,38 @@ export async function getPackCategories(): Promise<PackCategory[]> {
 
 // --- Pack detail: Top Hits + Pull Odds (GET /store/packs/:slug) -------------
 
-// One joined odds row from the detail route (card display fields + its weight).
+// One joined odds row from the detail route — card display fields ONLY.
+//
+// 🔒 SECRET ODDS (Phase 6): the per-card `weight` is the real, admin-tuned win
+// rate and is NOT exposed by the backend route, so it is absent here by design.
+// The customer-facing Pull Odds are a SEPARATE, static published display (the
+// `ODDS` constant in packs-data.ts) — never derived from these weights. Only
+// non-secret card fields (incl. market_value, which drives Top Hits) arrive.
 interface BackendOddsEntry {
   handle: string;
   name: string;
   rarity: string;
   market_value: number;
   image: string;
-  weight: number;
-}
-
-export interface RarityOdd {
-  rarity: Rarity;
-  chance: string;
-  dot: string;
 }
 
 export interface PackDetail {
   topHits: PackCard[];
-  rarityOdds: RarityOdd[];
 }
 
-// Rarest-first dot colors (presentational). The rarest-first ORDER (RARITIES),
-// the isRarity guard, and formatValue come from the shared packs-format module.
-const RARITY_DOT: Record<Rarity, string> = {
-  Legendary: "bg-amber-400",
-  Epic: "bg-fuchsia-400",
-  Rare: "bg-sky-400",
-  Uncommon: "bg-emerald-400",
-  Common: "bg-neutral-400",
-};
-
-// Pull chance -> "8.9%" / "30%" (drop a trailing ".0", matching the mock odds).
-const formatChance = (pct: number): string => {
-  const s = pct.toFixed(1);
-  return `${s.endsWith(".0") ? s.slice(0, -2) : s}%`;
-};
-
 /**
- * Pack detail for /claw/[slug]: the highest-value cards (Top Hits) and the
- * pull-chance-by-rarity table, both derived from the backend gacha odds
- * (`GET /store/packs/:slug`). Returns null on any backend failure or empty
- * odds so the detail page falls back to its static mock pools.
+ * Pack detail for /claw/[slug]: the highest-value cards (Top Hits), derived
+ * from the backend prize pool (`GET /store/packs/:slug`). Returns null on any
+ * backend failure or empty pool so the detail page falls back to its static
+ * mock Top Hits.
+ *
+ * The customer-facing Pull Odds are intentionally NOT computed here — they are
+ * decoupled from the secret per-card weights and rendered from the static
+ * published `ODDS` display in packs-data.ts (see PackDetailClient).
  *
  * Phase 5a: every pack draws from one shared card pool, so this detail is
  * pool-wide (identical across packs) — the storefront reuses it when the user
- * switches sibling packs. Per-pack pools + live Recent Pulls arrive in 5b.
+ * switches sibling packs.
  */
 export async function getPackDetail(slug: string): Promise<PackDetail | null> {
   try {
@@ -146,14 +132,13 @@ export async function getPackDetail(slug: string): Promise<PackDetail | null> {
     if (!Array.isArray(odds) || odds.length === 0) return null;
 
     // The fetch generic is a type assertion, not a runtime guard — drop rows
-    // with an unknown rarity or non-finite numbers so the UI can't render NaN.
+    // with an unknown rarity or non-finite value so the UI can't render NaN.
     const valid = odds.filter(
       (o) =>
         o &&
         typeof o.handle === "string" &&
         isRarity(o.rarity) &&
-        Number.isFinite(o.market_value) &&
-        Number.isFinite(o.weight),
+        Number.isFinite(o.market_value),
     );
     if (valid.length === 0) return null;
 
@@ -168,25 +153,7 @@ export async function getPackDetail(slug: string): Promise<PackDetail | null> {
         rarity: o.rarity as Rarity,
       }));
 
-    // Aggregate weight per rarity -> chance % = Σweight(rarity) / Σweight(all).
-    const total = valid.reduce((sum, o) => sum + o.weight, 0);
-    const weightByRarity = new Map<Rarity, number>();
-    for (const o of valid) {
-      const r = o.rarity as Rarity;
-      weightByRarity.set(r, (weightByRarity.get(r) ?? 0) + o.weight);
-    }
-    const rarityOdds: RarityOdd[] = RARITIES.filter((r) =>
-      weightByRarity.has(r),
-    ).map((r) => ({
-      rarity: r,
-      chance:
-        total > 0
-          ? formatChance((weightByRarity.get(r)! / total) * 100)
-          : "0%",
-      dot: RARITY_DOT[r],
-    }));
-
-    return { topHits, rarityOdds };
+    return { topHits };
   } catch (error) {
     logger.error(`[packs] failed to load pack detail for '${slug}':`, error);
     return null;
