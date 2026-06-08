@@ -1132,4 +1132,98 @@ export default async function seedDemoData({ container }: ExecArgs) {
     logger.info(`Seeded ${oddsToCreate.length} pack-odds row(s).`);
   }
   logger.info("Finished seeding gacha cards + odds.");
+
+  // Demo gacha activity (Phase 7) — a roster of demo collectors + a deterministic,
+  // rarity-realistic spread of Pull rows so the PUBLIC leaderboard, the live
+  // "Recent Pulls" feed, and the admin pull-ledger render real, populated data on
+  // a fresh clone. Idempotent: guarded by the demo emails AND by whether those
+  // collectors already have pulls, so re-runs never pile up more rows.
+  logger.info("Seeding demo gacha activity...");
+  const customerModuleService = container.resolve(Modules.CUSTOMER);
+
+  const DEMO_COLLECTORS = [
+    { first_name: "Kenji", email: "demo-collector-1@pokenic.local" },
+    { first_name: "Mira", email: "demo-collector-2@pokenic.local" },
+    { first_name: "Diego", email: "demo-collector-3@pokenic.local" },
+    { first_name: "Anaya", email: "demo-collector-4@pokenic.local" },
+    { first_name: "Leo", email: "demo-collector-5@pokenic.local" },
+    { first_name: "Sora", email: "demo-collector-6@pokenic.local" },
+    { first_name: "Bianca", email: "demo-collector-7@pokenic.local" },
+    { first_name: "Ravi", email: "demo-collector-8@pokenic.local" },
+  ];
+  const demoEmails = DEMO_COLLECTORS.map((c) => c.email);
+  const existingDemoCustomers = await customerModuleService.listCustomers(
+    { email: demoEmails },
+    { take: demoEmails.length }
+  );
+  const existingDemoEmails = new Set(existingDemoCustomers.map((c) => c.email));
+  const demoToCreate = DEMO_COLLECTORS.filter(
+    (c) => !existingDemoEmails.has(c.email)
+  );
+  const createdDemoCustomers = demoToCreate.length
+    ? await customerModuleService.createCustomers(demoToCreate)
+    : [];
+
+  // Order by the roster (createCustomers needn't preserve input order) so the
+  // descending activity assignment below is stable.
+  const demoByEmail = new Map(
+    [...existingDemoCustomers, ...createdDemoCustomers].map((c) => [c.email, c])
+  );
+  const orderedDemo = DEMO_COLLECTORS.map((d) => demoByEmail.get(d.email)).filter(
+    (c): c is NonNullable<typeof c> => !!c
+  );
+
+  const demoIds = orderedDemo.map((c) => c.id);
+  const existingDemoPulls = demoIds.length
+    ? await packsModuleService.listPulls(
+        { customer_id: demoIds },
+        { select: ["id"], take: 1 }
+      )
+    : [];
+
+  if (existingDemoPulls.length > 0) {
+    logger.info("Demo gacha pulls already exist, skipping.");
+  } else if (orderedDemo.length > 0) {
+    // Rarity-realistic deterministic bag (commons frequent, legendaries rare),
+    // reusing the same RARITY_WEIGHT the odds table uses.
+    const BAG_SCALE = 25;
+    const cardBag: string[] = CARD_PRODUCTS.flatMap((c) =>
+      Array<string>(
+        Math.max(1, Math.round((RARITY_WEIGHT[c.rarity] ?? 100) / BAG_SCALE))
+      ).fill(c.handle)
+    );
+    const WEEK_MIN = 7 * 24 * 60;
+    const now = Date.now();
+    const pullsToCreate: {
+      customer_id: string;
+      pack_id: string;
+      card_id: string;
+      order_id: null;
+      rolled_at: Date;
+    }[] = [];
+    let counter = 0;
+    orderedDemo.forEach((cust, idx) => {
+      // Descending activity: rank 1 (idx 0) is the most active collector.
+      const count = Math.max(2, 22 - idx * 3);
+      for (let k = 0; k < count; k++) {
+        const card_id = cardBag[(counter * 7 + 3) % cardBag.length];
+        const pack = PACK_SEED[(idx * 5 + k) % PACK_SEED.length];
+        // Spread within the last ~6 days so the weekly window includes them.
+        const minutesAgo = ((counter * 53) % (WEEK_MIN - 1440)) + 30;
+        pullsToCreate.push({
+          customer_id: cust.id,
+          pack_id: pack.slug,
+          card_id,
+          order_id: null,
+          rolled_at: new Date(now - minutesAgo * 60 * 1000),
+        });
+        counter++;
+      }
+    });
+    await packsModuleService.createPulls(pullsToCreate);
+    logger.info(
+      `Seeded ${pullsToCreate.length} demo pull(s) across ${orderedDemo.length} collector(s).`
+    );
+  }
+  logger.info("Finished seeding demo gacha activity.");
 }
