@@ -3,5 +3,38 @@
     "title": "Custom Fields",
     "description": "Manage your custom fields and configurations",
     "noFields": "No custom fields configured yet"
+  },
+  "packs": {
+    "title": "Gacha Packs",
+    "subtitle": "Tune the secret per-card win rates. Customer-facing published odds stay static and are never affected.",
+    "list": {
+      "pack": "Pack",
+      "category": "Category",
+      "status": "Status",
+      "price": "Price",
+      "action": "Win rates",
+      "edit": "Edit",
+      "empty": "No packs found.",
+      "loadError": "Could not load packs."
+    },
+    "editor": {
+      "title": "Win rates",
+      "subtitle": "Lock a card to pin its win rate; unlocked cards split the remainder evenly. These weights are secret — customers never see them.",
+      "card": "Card",
+      "rarity": "Rarity",
+      "value": "Value",
+      "current": "Now",
+      "lock": "Lock",
+      "winRate": "Win rate (%)",
+      "result": "After save",
+      "lockedTotal": "Locked total",
+      "newTotal": "New total",
+      "save": "Save win rates",
+      "saving": "Saving…",
+      "saved": "Win rates saved.",
+      "back": "All packs",
+      "loadError": "Could not load pack odds.",
+      "flattenWarning": "No cards are locked — saving will reset every card to an even {{pct}}%. Lock the cards you want to preserve first."
+    }
   }
 }

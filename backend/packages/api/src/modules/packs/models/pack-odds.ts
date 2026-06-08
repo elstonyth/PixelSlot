@@ -11,7 +11,15 @@ export const PackOdds = model.define("pack_odds", {
   id: model.id().primaryKey(),
   pack_id: model.text(), // = Pack.slug
   card_id: model.text(), // = Card.handle
+  // Relative pull weight: roll chance = weight / Σ(weights in the pack), so the
+  // roll is scale-invariant (the seed ships rarity-relative weights that need
+  // not sum to anything in particular). The admin win-rate editor (Phase 6b)
+  // NORMALIZES a pack to BASIS POINTS on save (Σweight = 10000), so afterwards
+  // weight/100 reads back as the exact win % the operator set.
   weight: model.number(),
+  // locked rows keep their admin-set % verbatim on every save; unlocked rows
+  // split the remaining (10000 − Σlocked) bps evenly. Phase 6b.
+  locked: model.boolean().default(false),
 });
 
 export default PackOdds;
