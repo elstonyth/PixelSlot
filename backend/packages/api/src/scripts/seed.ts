@@ -917,7 +917,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
         metadata: { house: true },
       },
     ]);
-    houseSeller = created;
+    // createSellers returns a SellerDTO (no member_invites relation); widen it
+    // to the listSellers element type so the assignment type-checks (only .id is
+    // used below — safe at runtime).
+    houseSeller = created as (typeof existingSellers)[number];
     logger.info(`Created house seller (${houseSeller.id}).`);
   } else {
     logger.info("House seller already exists, skipping.");
@@ -1082,7 +1085,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     set: c.set,
     grader: c.grader,
     grade: c.grade,
-    rarity: c.rarity,
+    rarity: c.rarity as "Legendary" | "Epic" | "Rare" | "Uncommon" | "Common",
     market_value: c.fmv, // USD decimal — stored as-is, never cents.
     image: c.image,
   }));

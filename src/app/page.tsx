@@ -22,8 +22,10 @@ export default function Home() {
       <Reveal>
         <CommunitySection />
       </Reveal>
-      {/* LeaderboardSection has its own staggered row-reveal on scroll-in */}
-      <LeaderboardSection />
+      {/* LeaderboardSection has its own staggered row-reveal on scroll-in.
+          `live` swaps the mock teaser for the live weekly board on mount
+          (keeps this page statically rendered; see /api/leaderboard). */}
+      <LeaderboardSection live />
       <Reveal>
         <CtaSection />
       </Reveal>

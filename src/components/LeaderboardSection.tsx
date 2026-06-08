@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useInView, usePrefersReducedMotion } from '@/lib/use-reveal';
@@ -22,16 +23,41 @@ function Avatar({ src, name }: { src: string; name: string }) {
 export default function LeaderboardSection({
   showHeading = true,
   entries = MOCK_LEADERBOARD,
+  live = false,
 }: {
   showHeading?: boolean;
-  /** Live leaderboard rows; defaults to the static mock board. */
+  /** Leaderboard rows; defaults to the static mock board. */
   entries?: LeaderboardEntry[];
+  /** When set, fetch the live weekly board on mount and swap it in (used on the
+   *  static homepage so the teaser is live without making the page dynamic).
+   *  Leave false when `entries` is already supplied live (e.g. /leaderboard). */
+  live?: boolean;
 }) {
   // Rows stagger-fade-up when the leaderboard scrolls into view (the "leaderboard
   // goes in" animation). Fires once; respects prefers-reduced-motion.
   const [ref, shown] = useInView<HTMLDivElement>();
   const reduced = usePrefersReducedMotion();
   const show = shown || reduced;
+
+  // Live teaser: poll the same-origin route once on mount (a direct :9000 call
+  // is CORS-blocked) and swap the mock board for the live one; keep the current
+  // rows on error/empty so it never blanks.
+  const [rows, setRows] = useState<LeaderboardEntry[]>(entries);
+  useEffect(() => {
+    if (!live) return;
+    let active = true;
+    fetch('/api/leaderboard', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (active && Array.isArray(d?.entries) && d.entries.length > 0) {
+          setRows(d.entries);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [live]);
 
   return (
     <div ref={ref} className="mt-10 sm:mt-14">
@@ -55,7 +81,7 @@ export default function LeaderboardSection({
       <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900">
         {/* Mobile list */}
         <div className="block divide-y divide-neutral-800 sm:hidden">
-          {entries.map((e, i) => (
+          {rows.map((e, i) => (
             <div
               key={e.rank}
               style={{ transitionDelay: show && !reduced ? `${i * 45}ms` : "0ms" }}
@@ -105,7 +131,7 @@ export default function LeaderboardSection({
               </tr>
             </thead>
             <tbody>
-              {entries.map((e, i) => (
+              {rows.map((e, i) => (
                 <tr
                   key={e.rank}
                   style={{ transitionDelay: show && !reduced ? `${i * 45}ms` : "0ms" }}

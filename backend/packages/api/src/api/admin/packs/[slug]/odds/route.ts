@@ -52,24 +52,23 @@ export async function GET(
 
   const total = odds.reduce((sum, o) => sum + o.weight, 0) || 1;
 
-  const rows: OddsRow[] = odds
-    .map((o) => {
-      const card = cardByHandle.get(o.card_id);
-      if (!card) return null;
-      return {
-        card_id: card.handle,
-        name: card.name,
-        image: card.image,
-        rarity: card.rarity,
-        market_value: Number(card.market_value),
-        weight: o.weight,
-        locked: o.locked,
-        pct: round2((o.weight / total) * 100),
-      } satisfies OddsRow;
-    })
-    .filter((r): r is OddsRow => r !== null)
-    // Rarest-by-value first so the high-value cards sit at the top of the form.
-    .sort((a, b) => b.market_value - a.market_value);
+  const rows: OddsRow[] = [];
+  for (const o of odds) {
+    const card = cardByHandle.get(o.card_id);
+    if (!card) continue; // drop odds whose card is missing
+    rows.push({
+      card_id: card.handle,
+      name: card.name,
+      image: card.image,
+      rarity: card.rarity,
+      market_value: Number(card.market_value),
+      weight: o.weight,
+      locked: o.locked,
+      pct: round2((o.weight / total) * 100),
+    });
+  }
+  // Rarest-by-value first so the high-value cards sit at the top of the form.
+  rows.sort((a, b) => b.market_value - a.market_value);
 
   res.json({
     pack: {

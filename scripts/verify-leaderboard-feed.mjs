@@ -74,6 +74,17 @@ const apiFeed = await page.evaluate(async () => {
 });
 ok("home_feed_poll_endpoint", Array.isArray(apiFeed) && apiFeed.length > 0, `len ${apiFeed?.length}`);
 ok("home_feed_live_pack_present", liveOnlyPack);
+
+// Home "Weekly Leaderboard" teaser must swap its mock board for the live one on
+// mount (via /api/leaderboard) — same live-without-dynamic pattern as the feed.
+const homeHtml = await page.content();
+ok("home_leaderboard_live", topName && homeHtml.includes(topName), `expected "${topName}"`);
+ok("home_leaderboard_not_mock", !homeHtml.includes("FightingProdigy3098"));
+const apiLb = await page.evaluate(async () => {
+  const res = await fetch("/api/leaderboard", { cache: "no-store" });
+  return res.ok ? (await res.json()).entries : null;
+});
+ok("home_leaderboard_poll_endpoint", Array.isArray(apiLb) && apiLb.length > 0, `len ${apiLb?.length}`);
 await page.screenshot({ path: `${OUT}/07-home-live-feed.png`, fullPage: true });
 
 await browser.close();
