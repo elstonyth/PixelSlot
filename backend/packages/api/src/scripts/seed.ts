@@ -1050,8 +1050,86 @@ export default async function seedDemoData({ container }: ExecArgs) {
   if (packsToCreate.length === 0) {
     logger.info("Gacha packs already exist, skipping.");
   } else {
+    // No `status` field on seed packs is intentional: Pack.status defaults to
+    // "active" (the correct production state). The /store/packs[/:slug] routes
+    // filter status:"active", so a future draft pack would 404 → mock fallback.
     await packsModuleService.createPacks(packsToCreate);
     logger.info(`Seeded ${packsToCreate.length} gacha pack(s).`);
   }
   logger.info("Finished seeding gacha packs.");
+
+  // Gacha cards + odds (Phase 5a) — the prize pool + weighted table behind the
+  // /claw/[slug] Top Hits and Pull Odds panels. Guarded by handle (cards) and
+  // pack_id (odds) so re-runs are no-ops. The pool is the same localized graded
+  // card art seeded as products in Phase 2; here it's the canonical gacha `Card`
+  // record (the card->product link for inventory/checkout lands in Phase 5b).
+  logger.info("Seeding gacha cards + odds...");
+
+  // CARD_HANDLES is declared at module scope (shared with the Phase 2 card
+  // products check above); reuse it rather than redeclaring.
+  const existingGachaCards = await packsModuleService.listCards(
+    { handle: CARD_HANDLES },
+    { select: ["handle"], take: CARD_HANDLES.length }
+  );
+  const existingGachaCardHandles = new Set(
+    existingGachaCards.map((c) => c.handle)
+  );
+  const gachaCardsToCreate = CARD_PRODUCTS.filter(
+    (c) => !existingGachaCardHandles.has(c.handle)
+  ).map((c) => ({
+    handle: c.handle,
+    name: c.title,
+    set: c.set,
+    grader: c.grader,
+    grade: c.grade,
+    rarity: c.rarity,
+    market_value: c.fmv, // USD decimal — stored as-is, never cents.
+    image: c.image,
+  }));
+
+  if (gachaCardsToCreate.length === 0) {
+    logger.info("Gacha cards already exist, skipping.");
+  } else {
+    await packsModuleService.createCards(gachaCardsToCreate);
+    logger.info(`Seeded ${gachaCardsToCreate.length} gacha card(s).`);
+  }
+
+  // Relative pull weight per rarity: pull chance = weight / Σ(weights in pack),
+  // so rarer tiers carry less weight. Every pack draws from the full card pool
+  // (matching the storefront's prior mock), so the aggregated rarity odds are
+  // identical across packs in 5a — per-pack pools are a documented later
+  // enhancement, not a 5a requirement.
+  const RARITY_WEIGHT: Record<string, number> = {
+    Legendary: 5,
+    Epic: 45,
+    Rare: 150,
+    Uncommon: 300,
+    Common: 500,
+  };
+
+  const existingOdds = await packsModuleService.listPackOdds(
+    { pack_id: PACK_SLUGS },
+    // +1 headroom over the full odds-table size: if a framework page cap ever
+    // truncated this read, a pack would look odds-less and get re-inserted,
+    // doubling its weights and skewing the aggregated pull %.
+    { select: ["pack_id"], take: PACK_SLUGS.length * CARD_HANDLES.length + 1 }
+  );
+  const packsWithOdds = new Set(existingOdds.map((o) => o.pack_id));
+  const oddsToCreate = PACK_SEED.filter(
+    (p) => !packsWithOdds.has(p.slug)
+  ).flatMap((pack) =>
+    CARD_PRODUCTS.map((card) => ({
+      pack_id: pack.slug,
+      card_id: card.handle,
+      weight: RARITY_WEIGHT[card.rarity] ?? 100,
+    }))
+  );
+
+  if (oddsToCreate.length === 0) {
+    logger.info("Gacha pack odds already exist, skipping.");
+  } else {
+    await packsModuleService.createPackOdds(oddsToCreate);
+    logger.info(`Seeded ${oddsToCreate.length} pack-odds row(s).`);
+  }
+  logger.info("Finished seeding gacha cards + odds.");
 }

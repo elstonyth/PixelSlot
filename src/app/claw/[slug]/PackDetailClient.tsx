@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/lib/use-reveal";
 import Reveal from "@/components/Reveal";
+import type { PackDetail } from "@/lib/data/packs";
 import {
   type Pack,
   type ResolvedPack,
@@ -86,9 +87,12 @@ function CardThumb({ card, w }: { card: PackCard; w?: number }) {
 export default function PackDetailClient({
   pack,
   siblings,
+  detail,
 }: {
   pack: ResolvedPack;
   siblings: Pack[];
+  /** Backend gacha pool (Top Hits + Pull Odds); null when the backend is down. */
+  detail: PackDetail | null;
 }) {
   const reduced = usePrefersReducedMotion();
   const [active, setActive] = useState<Pack>(pack);
@@ -110,10 +114,15 @@ export default function PackDetailClient({
     () => Array.from({ length: 48 }, (_, i) => CARD_POOL[(i * 3 + 1) % CARD_POOL.length]),
     [],
   );
-  const topHits = useMemo(
+  // Top Hits + Pull Odds come from the backend gacha pool. In 5a the pool is
+  // pool-wide (identical across packs), so it applies regardless of the selected
+  // sibling; both fall back to the static mock pools when the backend is down.
+  const mockTopHits = useMemo(
     () => [...CARD_POOL].sort((a, b) => priceNumber(b.value) - priceNumber(a.value)).slice(0, 5),
     [],
   );
+  const topHits = detail?.topHits ?? mockTopHits;
+  const rarityOdds = detail?.rarityOdds ?? ODDS;
 
   const setQ = (n: number) => setQty(Math.min(99, Math.max(1, n)));
 
@@ -410,7 +419,7 @@ export default function PackDetailClient({
             <h2 className="font-heading text-lg font-bold tracking-tight text-white">Pull Odds (by rarity)</h2>
           </div>
           <ul className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-            {ODDS.map((o) => (
+            {rarityOdds.map((o) => (
               <li key={o.rarity} className="flex items-center justify-between border-b border-white/5 px-4 py-3 last:border-b-0">
                 <span className="flex items-center gap-2.5 text-[13px] font-medium text-white">
                   <span className={cn("h-2.5 w-2.5 rounded-full", o.dot)} />

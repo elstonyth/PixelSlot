@@ -20,6 +20,8 @@ import {
   CATEGORIES as MOCK_CATEGORIES,
   type Pack,
   type PackCategory,
+  type PackCard,
+  type Rarity,
 } from "@/app/claw/packs-data";
 
 // Shape of a pack row from GET /store/packs (backend Pack model).
@@ -83,5 +85,124 @@ export async function getPackCategories(): Promise<PackCategory[]> {
   } catch (error) {
     logger.error("[packs] failed to load packs from backend:", error);
     return MOCK_CATEGORIES;
+  }
+}
+
+// --- Pack detail: Top Hits + Pull Odds (GET /store/packs/:slug) -------------
+
+// One joined odds row from the detail route (card display fields + its weight).
+interface BackendOddsEntry {
+  handle: string;
+  name: string;
+  rarity: string;
+  market_value: number;
+  image: string;
+  weight: number;
+}
+
+export interface RarityOdd {
+  rarity: Rarity;
+  chance: string;
+  dot: string;
+}
+
+export interface PackDetail {
+  topHits: PackCard[];
+  rarityOdds: RarityOdd[];
+}
+
+// Rarest-first display order + dot colors (mirrors the mock ODDS in packs-data).
+const RARITY_ORDER: Rarity[] = [
+  "Legendary",
+  "Epic",
+  "Rare",
+  "Uncommon",
+  "Common",
+];
+const RARITY_DOT: Record<Rarity, string> = {
+  Legendary: "bg-amber-400",
+  Epic: "bg-fuchsia-400",
+  Rare: "bg-sky-400",
+  Uncommon: "bg-emerald-400",
+  Common: "bg-neutral-400",
+};
+const RARITY_SET = new Set<string>(RARITY_ORDER);
+const isRarity = (r: string): r is Rarity => RARITY_SET.has(r);
+
+// Card market value -> "$39.80" (2 decimals, matching the mock card values).
+const formatValue = (mv: number): string =>
+  `$${mv.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+// Pull chance -> "8.9%" / "30%" (drop a trailing ".0", matching the mock odds).
+const formatChance = (pct: number): string => {
+  const s = pct.toFixed(1);
+  return `${s.endsWith(".0") ? s.slice(0, -2) : s}%`;
+};
+
+/**
+ * Pack detail for /claw/[slug]: the highest-value cards (Top Hits) and the
+ * pull-chance-by-rarity table, both derived from the backend gacha odds
+ * (`GET /store/packs/:slug`). Returns null on any backend failure or empty
+ * odds so the detail page falls back to its static mock pools.
+ *
+ * Phase 5a: every pack draws from one shared card pool, so this detail is
+ * pool-wide (identical across packs) — the storefront reuses it when the user
+ * switches sibling packs. Per-pack pools + live Recent Pulls arrive in 5b.
+ */
+export async function getPackDetail(slug: string): Promise<PackDetail | null> {
+  try {
+    const { odds } = await sdk.client.fetch<{ odds: BackendOddsEntry[] }>(
+      `/store/packs/${encodeURIComponent(slug)}`,
+    );
+    if (!Array.isArray(odds) || odds.length === 0) return null;
+
+    // The fetch generic is a type assertion, not a runtime guard — drop rows
+    // with an unknown rarity or non-finite numbers so the UI can't render NaN.
+    const valid = odds.filter(
+      (o) =>
+        o &&
+        typeof o.handle === "string" &&
+        isRarity(o.rarity) &&
+        Number.isFinite(o.market_value) &&
+        Number.isFinite(o.weight),
+    );
+    if (valid.length === 0) return null;
+
+    const topHits: PackCard[] = [...valid]
+      .sort((a, b) => b.market_value - a.market_value)
+      .slice(0, 5)
+      .map((o) => ({
+        id: o.handle,
+        name: o.name,
+        image: o.image,
+        value: formatValue(o.market_value),
+        rarity: o.rarity as Rarity,
+      }));
+
+    // Aggregate weight per rarity -> chance % = Σweight(rarity) / Σweight(all).
+    const total = valid.reduce((sum, o) => sum + o.weight, 0);
+    const weightByRarity = new Map<Rarity, number>();
+    for (const o of valid) {
+      const r = o.rarity as Rarity;
+      weightByRarity.set(r, (weightByRarity.get(r) ?? 0) + o.weight);
+    }
+    const rarityOdds: RarityOdd[] = RARITY_ORDER.filter((r) =>
+      weightByRarity.has(r),
+    ).map((r) => ({
+      rarity: r,
+      chance:
+        total > 0
+          ? formatChance((weightByRarity.get(r)! / total) * 100)
+          : "0%",
+      dot: RARITY_DOT[r],
+    }));
+
+    return { topHits, rarityOdds };
+  } catch (error) {
+    logger.error(`[packs] failed to load pack detail for '${slug}':`, error);
+    return null;
   }
 }

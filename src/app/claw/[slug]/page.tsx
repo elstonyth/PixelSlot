@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ALL_PACKS, findPack, findCategory } from "../packs-data";
+import { findPack, findCategory } from "../packs-data";
+import { getPackDetail } from "@/lib/data/packs";
 import PackDetailClient from "./PackDetailClient";
 
-// Prerender one page per pack slug.
-export function generateStaticParams() {
-  return ALL_PACKS.map((p) => ({ slug: p.id }));
-}
+// Pack detail is backend-driven (Top Hits + Pull Odds via GET /store/packs/:slug),
+// so render per request — keeps odds fresh and frees the build from a live
+// backend (the fetch degrades to mock pools when unreachable).
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -16,7 +17,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const pack = findPack(slug);
   return {
-    title: pack ? `${pack.name} — ${pack.categoryName} | Pokenic` : "Pack | Pokenic",
+    title: pack
+      ? `${pack.name} — ${pack.categoryName} | Pokenic`
+      : "Pack | Pokenic",
   };
 }
 
@@ -29,5 +32,12 @@ export default async function PackDetailPage({
   const pack = findPack(slug);
   const category = findCategory(slug);
   if (!pack || !category) notFound();
-  return <PackDetailClient pack={pack} siblings={category.packs} />;
+
+  // Base pack art/price/siblings stay static (packs-data); only the gacha depth
+  // (Top Hits + Pull Odds) comes from the backend, with a graceful null fallback.
+  const detail = await getPackDetail(slug);
+
+  return (
+    <PackDetailClient pack={pack} siblings={category.packs} detail={detail} />
+  );
 }
