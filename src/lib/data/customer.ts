@@ -36,7 +36,12 @@ export async function clearAuthToken(): Promise<void> {
   store.delete(AUTH_COOKIE);
 }
 
-async function getAuthToken(): Promise<string | undefined> {
+/**
+ * The raw customer JWT from the httpOnly cookie, or undefined when logged out.
+ * Server-only — used by data getters and server actions to send an explicit
+ * `Authorization: Bearer` to the backend (browser auth is CORS-blocked at :4000).
+ */
+export async function getAuthToken(): Promise<string | undefined> {
   const store = await cookies();
   return store.get(AUTH_COOKIE)?.value;
 }

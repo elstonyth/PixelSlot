@@ -206,3 +206,75 @@ export async function getPackDetail(slug: string): Promise<PackDetail | null> {
     return null;
   }
 }
+
+// --- Recent Pulls: the live ledger feed (GET /store/pulls/recent) -----------
+
+// One row from the public recent-pulls feed (won card + when, no customer PII).
+interface BackendRecentPull {
+  handle: string;
+  name: string;
+  image: string;
+  market_value: number;
+  rarity: string;
+  rolled_at: string;
+}
+
+export interface RecentPull {
+  id: string;
+  name: string;
+  image: string;
+  value: string;
+  rarity: Rarity;
+  /** Relative timestamp, e.g. "4m ago" (computed at render). */
+  agoLabel: string;
+}
+
+// rolled_at -> "just now" / "4m ago" / "2h ago" / "3d ago".
+function relativeTime(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return "just now";
+  const secs = Math.max(0, Math.floor((Date.now() - then) / 1000));
+  if (secs < 60) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+/**
+ * The most recent pulls across all packs, for the /claw/[slug] "Recent Pulls"
+ * feed. Returns `[]` (not mock) on any backend failure or empty ledger — an
+ * empty feed is a meaningful, truthful state for a live ledger (the component
+ * renders a "no pulls yet" empty state), unlike the catalog/detail getters that
+ * fall back to mock to keep the page populated.
+ */
+export async function getRecentPulls(): Promise<RecentPull[]> {
+  try {
+    const { pulls } = await sdk.client.fetch<{ pulls: BackendRecentPull[] }>(
+      "/store/pulls/recent"
+    );
+    if (!Array.isArray(pulls)) return [];
+
+    return pulls
+      .filter(
+        (p) =>
+          p &&
+          typeof p.handle === "string" &&
+          typeof p.name === "string" &&
+          isRarity(p.rarity) &&
+          Number.isFinite(p.market_value)
+      )
+      .map((p, i) => ({
+        id: `${p.handle}-${p.rolled_at}-${i}`,
+        name: p.name,
+        image: p.image,
+        value: formatValue(p.market_value),
+        rarity: p.rarity as Rarity,
+        agoLabel: relativeTime(p.rolled_at),
+      }));
+  } catch (error) {
+    logger.error("[packs] failed to load recent pulls:", error);
+    return [];
+  }
+}

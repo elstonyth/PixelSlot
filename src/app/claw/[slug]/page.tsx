@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { findPack, findCategory } from "../packs-data";
-import { getPackDetail } from "@/lib/data/packs";
+import { getPackDetail, getRecentPulls } from "@/lib/data/packs";
 import PackDetailClient from "./PackDetailClient";
 
 // Pack detail is backend-driven (Top Hits + Pull Odds via GET /store/packs/:slug),
@@ -33,11 +33,21 @@ export default async function PackDetailPage({
   const category = findCategory(slug);
   if (!pack || !category) notFound();
 
-  // Base pack art/price/siblings stay static (packs-data); only the gacha depth
-  // (Top Hits + Pull Odds) comes from the backend, with a graceful null fallback.
-  const detail = await getPackDetail(slug);
+  // Base pack art/price/siblings stay static (packs-data); the gacha depth
+  // (Top Hits + Pull Odds) and the live Recent Pulls feed come from the backend.
+  // Fetch both in parallel — independent reads, no waterfall — each degrading on
+  // its own (detail → null → mock pools; recent pulls → [] → empty state).
+  const [detail, recentPulls] = await Promise.all([
+    getPackDetail(slug),
+    getRecentPulls(),
+  ]);
 
   return (
-    <PackDetailClient pack={pack} siblings={category.packs} detail={detail} />
+    <PackDetailClient
+      pack={pack}
+      siblings={category.packs}
+      detail={detail}
+      recentPulls={recentPulls}
+    />
   );
 }

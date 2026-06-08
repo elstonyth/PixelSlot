@@ -15,8 +15,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/lib/use-reveal";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { openAuth } from "@/components/AuthButton";
 import Reveal from "@/components/Reveal";
-import type { PackDetail } from "@/lib/data/packs";
+import type { PackDetail, RecentPull } from "@/lib/data/packs";
+import { openPack } from "@/lib/actions/packs";
 import {
   type Pack,
   type ResolvedPack,
@@ -88,19 +91,33 @@ export default function PackDetailClient({
   pack,
   siblings,
   detail,
+  recentPulls,
 }: {
   pack: ResolvedPack;
   siblings: Pack[];
   /** Backend gacha pool (Top Hits + Pull Odds); null when the backend is down. */
   detail: PackDetail | null;
+  /** Live pull ledger feed; empty array when there are no pulls / backend down. */
+  recentPulls: RecentPull[];
 }) {
   const reduced = usePrefersReducedMotion();
+  const { customer } = useAuth();
   const [active, setActive] = useState<Pack>(pack);
   const [qty, setQty] = useState(1);
   const [spice, setSpice] = useState<Spice>("Medium");
   const [phase, setPhase] = useState<"idle" | "spinning" | "done">("idle");
   const [offset, setOffset] = useState(0);
   const [won, setWon] = useState<PackCard | null>(null);
+  // Real-open state. `realWinner` is the backend-won card injected at WIN_INDEX
+  // for a real open (null for a demo spin); `opening` guards the async server
+  // round-trip; `openError` surfaces a friendly failure inline.
+  const [realWinner, setRealWinner] = useState<PackCard | null>(null);
+  const [opening, setOpening] = useState(false);
+  const [openError, setOpenError] = useState<string | null>(null);
+  // Live Recent Pulls: seeded from the server snapshot, then optimistically
+  // prepended on each successful open so the feed reflects this session's pulls
+  // without a navigation round-trip.
+  const [recent, setRecent] = useState<RecentPull[]>(recentPulls);
   const windowRef = useRef<HTMLDivElement>(null);
 
   const claw = clawMachine(active);
@@ -126,9 +143,19 @@ export default function PackDetailClient({
 
   const setQ = (n: number) => setQty(Math.min(99, Math.max(1, n)));
 
-  function spin() {
-    if (phase === "spinning") return;
-    const winner = strip[WIN_INDEX];
+  // The strip with the real winner injected at the landing index (WIN_INDEX).
+  // For a demo spin `realWinner` is null, so this is just `strip` unchanged.
+  const displayStrip = useMemo(() => {
+    if (!realWinner) return strip;
+    const copy = [...strip];
+    copy[WIN_INDEX] = realWinner;
+    return copy;
+  }, [strip, realWinner]);
+
+  // Shared reveal: render `winner` at WIN_INDEX, then animate the strip to land
+  // on it. Under reduced motion, skip the animation and reveal immediately.
+  function runReveal(winner: PackCard, isReal: boolean) {
+    setRealWinner(isReal ? winner : null);
     if (reduced) {
       setWon(winner);
       setPhase("done");
@@ -143,10 +170,52 @@ export default function PackDetailClient({
     requestAnimationFrame(() => requestAnimationFrame(() => setOffset(-(target + jitter))));
   }
 
+  // Free demo spin — mock winner from the static pool. No backend, no auth.
+  function demoSpin() {
+    if (phase === "spinning" || opening) return;
+    setOpenError(null);
+    runReveal(strip[WIN_INDEX], false);
+  }
+
+  // Real open — auth-gated. Awaits the server action (the customer id is derived
+  // from the token server-side, never sent), then reveals the actual won card.
+  // Logged-out users get the login modal instead of a call.
+  async function handleOpenPack() {
+    if (phase === "spinning" || opening) return;
+    if (!customer) {
+      openAuth("login");
+      return;
+    }
+    setOpenError(null);
+    setOpening(true);
+    try {
+      const res = await openPack(active.id);
+      if (!res.ok) {
+        if (res.needsAuth) openAuth("login");
+        else setOpenError(res.error);
+        return;
+      }
+      runReveal(res.card, true);
+      const justPulled: RecentPull = {
+        id: `${res.card.id}-${Date.now()}`,
+        name: res.card.name,
+        image: res.card.image,
+        value: res.card.value,
+        rarity: res.card.rarity,
+        agoLabel: "just now",
+      };
+      setRecent((prev) => [justPulled, ...prev].slice(0, 12));
+    } finally {
+      setOpening(false);
+    }
+  }
+
   function reset() {
     setPhase("idle");
     setWon(null);
     setOffset(0);
+    setRealWinner(null);
+    setOpenError(null);
   }
 
   return (
@@ -197,12 +266,12 @@ export default function PackDetailClient({
                     style={{ transform: `translateX(${offset}px)` }}
                     onTransitionEnd={() => {
                       if (phase === "spinning") {
-                        setWon(strip[WIN_INDEX]);
+                        setWon(displayStrip[WIN_INDEX]);
                         setPhase("done");
                       }
                     }}
                   >
-                    {strip.map((c, i) => (
+                    {displayStrip.map((c, i) => (
                       <CardThumb key={i} card={c} w={ITEM_W} />
                     ))}
                   </div>
@@ -215,8 +284,8 @@ export default function PackDetailClient({
                   <p className="text-sm" style={{ color: `rgb(${RARITY_RING[won.rarity]})` }}>
                     {won.rarity} · {won.value}
                   </p>
-                  <button type="button" onClick={spin} className="mt-2 inline-flex h-10 items-center justify-center rounded-xl bg-neutral-200 px-5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white">
-                    Open another
+                  <button type="button" onClick={handleOpenPack} disabled={opening} className="mt-2 inline-flex h-10 items-center justify-center rounded-xl bg-neutral-200 px-5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white disabled:opacity-60">
+                    {opening ? "Opening…" : "Open another"}
                   </button>
                 </div>
               )}
@@ -359,8 +428,8 @@ export default function PackDetailClient({
               {/* Demo spin */}
               <button
                 type="button"
-                onClick={spin}
-                disabled={phase === "spinning"}
+                onClick={demoSpin}
+                disabled={phase === "spinning" || opening}
                 className="flex h-11 items-center justify-between rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 text-sm font-medium text-emerald-200 transition-colors hover:bg-emerald-500/20 disabled:opacity-60"
               >
                 <span className="flex items-center gap-2">
@@ -391,12 +460,12 @@ export default function PackDetailClient({
             <div className="border-t border-white/10 p-4">
               <button
                 type="button"
-                onClick={spin}
-                disabled={phase === "spinning"}
+                onClick={handleOpenPack}
+                disabled={phase === "spinning" || opening}
                 className="flex h-12 w-full items-center justify-between rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 px-5 text-sm font-bold text-white shadow-lg shadow-emerald-900/30 transition-opacity hover:opacity-95 disabled:opacity-60"
               >
                 <span className="flex items-center gap-2">
-                  Open Pack
+                  {opening ? "Opening…" : customer ? "Open Pack" : "Log in to open"}
                   <span className="rounded-md bg-black/20 px-1.5 py-0.5 text-[11px] font-semibold">+{points.toLocaleString("en-US")} pts</span>
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -404,8 +473,17 @@ export default function PackDetailClient({
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </span>
               </button>
+              {openError && (
+                <p role="alert" className="mt-2 text-center text-[11px] text-red-300">
+                  {openError}
+                </p>
+              )}
+              {/* The quantity selector + total are the live site's purchase framing
+                  (cosmetic in this preview); a real open rolls ONE pack for free and
+                  records it to your account. Charging, quantity & provably-fair pulls
+                  arrive with the payment endpoint. */}
               <p className="mt-2 text-center text-[11px] text-white/35">
-                Demo only — real opening, charging &amp; provably-fair pulls arrive with the backend.
+                Opening is free in this preview — one pack per open, recorded to your account.
               </p>
             </div>
           </div>
@@ -438,15 +516,21 @@ export default function PackDetailClient({
             <h2 className="font-heading text-lg font-bold tracking-tight text-white">Recent Pulls</h2>
           </div>
           <ul className="divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-            {CARD_POOL.slice(0, 5).map((c, i) => (
-              <li key={c.id} className="flex items-center gap-3 px-4 py-2.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={c.image} alt="" className="h-10 w-8 shrink-0 rounded object-contain" />
-                <span className="min-w-0 flex-1 truncate text-[13px] text-white/80">{c.name}</span>
-                <span className="shrink-0 text-[12px] tabular-nums text-white/45">{c.value}</span>
-                <span className="hidden shrink-0 text-[11px] text-white/35 sm:inline">{(i + 1) * 2}m ago</span>
+            {recent.length === 0 ? (
+              <li className="px-4 py-8 text-center text-[13px] text-white/40">
+                No pulls yet — be the first to open a pack.
               </li>
-            ))}
+            ) : (
+              recent.map((c) => (
+                <li key={c.id} className="flex items-center gap-3 px-4 py-2.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.image} alt="" className="h-10 w-8 shrink-0 rounded object-contain" />
+                  <span className="min-w-0 flex-1 truncate text-[13px] text-white/80">{c.name}</span>
+                  <span className="shrink-0 text-[12px] tabular-nums text-white/45">{c.value}</span>
+                  <span className="hidden shrink-0 text-[11px] text-white/35 sm:inline">{c.agoLabel}</span>
+                </li>
+              ))
+            )}
           </ul>
         </Reveal>
       </div>
