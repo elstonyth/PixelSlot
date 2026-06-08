@@ -13,13 +13,20 @@ type PackCategory = {
 
 // Each category card is a layered composition on the live site: a graded slab
 // sitting BEHIND a ripped pack in the foreground (the card "comes out of" the pack).
+//
+// This section is intentionally curated/static (fixed categories + local art) to
+// keep the home page a static server component. The tiles route into the
+// backend-driven /claw listing via `?category=<key>`, where <key> matches the
+// backend Pack `category` (and ClawClient's tab id), so each tile deep-links to
+// the real, live pack catalog for that category. It is NOT content-driven by the
+// backend — only the destination is.
 const CATEGORIES: PackCategory[] = [
-  { label: 'Pokémon', slab: '/home/hero/slabs/pokemon1.webp', pack: '/home/hero/ripped-packs/pokemon.webp', href: '/claw/rookie-pack' },
-  { label: 'Basketball', slab: '/home/hero/slabs/basketball2.webp', pack: '/home/hero/ripped-packs/basketball.webp', href: '/claw/starter-pack-q4pux3' },
-  { label: 'Football', slab: '/home/hero/slabs/football3.webp', pack: '/home/hero/ripped-packs/football.webp', href: '/claw/starter-football-pack' },
-  { label: 'One Piece', slab: '/home/hero/slabs/onepiece4.webp', pack: '/home/hero/ripped-packs/onepiece.webp', href: '/claw/starter-one-piece-pack' },
+  { label: 'Pokémon', slab: '/home/hero/slabs/pokemon1.webp', pack: '/home/hero/ripped-packs/pokemon.webp', href: '/claw?category=pokemon' },
+  { label: 'Basketball', slab: '/home/hero/slabs/basketball2.webp', pack: '/home/hero/ripped-packs/basketball.webp', href: '/claw?category=basketball' },
+  { label: 'Football', slab: '/home/hero/slabs/football3.webp', pack: '/home/hero/ripped-packs/football.webp', href: '/claw?category=football' },
+  { label: 'One Piece', slab: '/home/hero/slabs/onepiece4.webp', pack: '/home/hero/ripped-packs/onepiece.webp', href: '/claw?category=one-piece' },
   { label: 'Baseball', slab: '/home/hero/slabs/baseball1.webp', pack: '/home/hero/ripped-packs/baseball.webp', href: '/claw?category=baseball' },
-  { label: 'Yu-Gi-Oh!', slab: '/home/hero/slabs/yugioh2.webp', pack: '/home/hero/ripped-packs/yugioh.webp', href: '/claw/yugioh-pro-pack' },
+  { label: 'Yu-Gi-Oh!', slab: '/home/hero/slabs/yugioh2.webp', pack: '/home/hero/ripped-packs/yugioh.webp', href: '/claw?category=yugioh' },
 ];
 
 export default function OpenPacksSection() {

@@ -29,6 +29,8 @@ import {
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 import { MercurModules, SellerStatus } from "@mercurjs/types";
+import PacksModuleService from "../modules/packs/service";
+import { PACKS_MODULE } from "../modules/packs";
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -340,6 +342,109 @@ if (new Set(CARD_HANDLES).size !== CARD_HANDLES.length) {
   throw new Error("CARD_PRODUCTS contains duplicate handles");
 }
 const DEMO_APPAREL_HANDLES = ["t-shirt", "sweatshirt", "sweatpants", "shorts"];
+
+// ---------------------------------------------------------------------------
+// Gacha pack catalog (Phase 4) — mirrors the storefront's
+// src/app/claw/packs-data.ts so /claw and the home "Open Packs" tiles can read
+// real backend packs. `slug` matches the storefront pack id (= /claw/<slug>
+// route), `category` is a stable key the storefront maps to labels/icons, and
+// `rank` is the display order within a category. Prices are whole-dollar USD
+// decimals (Medusa stores prices as-is, never cents). Backend & storefront are
+// separate workspaces so the list is duplicated by design (as CARD_PRODUCTS is
+// vs. the storefront CARD_POOL); the storefront also keeps these as its
+// backend-down fallback.
+// ---------------------------------------------------------------------------
+type PackSeed = {
+  slug: string;
+  title: string;
+  price: number;
+  image: string;
+  category: string;
+  rank: number;
+  boost: boolean;
+};
+
+const clawIcon = (base: string) => `/images/claw/${base}-icon.webp`;
+
+const PACK_SEED_GROUPS: {
+  category: string;
+  packs: { slug: string; title: string; price: number; image: string; boost?: boolean }[];
+}[] = [
+  {
+    category: "pokemon",
+    packs: [
+      { slug: "pokemon-mythic", title: "Mythic Pack", price: 1000, image: clawIcon("mythic-pack"), boost: true },
+      { slug: "pokemon-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-pack"), boost: true },
+      { slug: "pokemon-elite", title: "Elite Pack", price: 50, image: clawIcon("elite-pack") },
+      { slug: "pokemon-platinum", title: "Platinum Pack", price: 500, image: clawIcon("platinum-pack"), boost: true },
+      { slug: "pokemon-rookie", title: "Rookie Pack", price: 25, image: clawIcon("rookie-pack") },
+    ],
+  },
+  {
+    category: "one-piece",
+    packs: [
+      { slug: "onepiece-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-one-piece-pack"), boost: true },
+      { slug: "onepiece-platinum", title: "Platinum Pack", price: 500, image: clawIcon("one-piece-platinum-pack"), boost: true },
+      { slug: "onepiece-elite", title: "Elite Pack", price: 50, image: clawIcon("elite-one-piece-pack") },
+      { slug: "onepiece-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-one-piece-pack") },
+    ],
+  },
+  {
+    category: "basketball",
+    packs: [
+      { slug: "nba-black", title: "Black Pack", price: 1000, image: clawIcon("black-pack-jjnfuk"), boost: true },
+      { slug: "nba-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-pack-1dpaec"), boost: true },
+      { slug: "nba-platinum", title: "Platinum Pack", price: 500, image: clawIcon("modern-grails-noafw0"), boost: true },
+    ],
+  },
+  {
+    category: "baseball",
+    packs: [
+      { slug: "baseball-pro", title: "Pro Pack", price: 100, image: clawIcon("pro-baseball-pack") },
+      { slug: "baseball-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-baseball-pack"), boost: true },
+      { slug: "baseball-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-baseball-pack") },
+    ],
+  },
+  {
+    category: "football",
+    packs: [
+      { slug: "football-elite", title: "Elite Pack", price: 50, image: clawIcon("elite-football-pack") },
+      { slug: "football-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-football-pack") },
+      { slug: "football-platinum", title: "Platinum Pack", price: 500, image: clawIcon("platinum-football-pack"), boost: true },
+    ],
+  },
+  {
+    category: "soccer",
+    packs: [{ slug: "soccer-pro", title: "Pro Pack", price: 100, image: clawIcon("pro-soccer-pack") }],
+  },
+  {
+    category: "yugioh",
+    packs: [{ slug: "yugioh-pro", title: "Pro Pack", price: 25, image: clawIcon("yugioh-pro-pack") }],
+  },
+  {
+    category: "riftbound",
+    packs: [{ slug: "riftbound-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-riftbound-pack") }],
+  },
+];
+
+const PACK_SEED: PackSeed[] = PACK_SEED_GROUPS.flatMap((group) =>
+  group.packs.map((pack, index) => ({
+    slug: pack.slug,
+    title: pack.title,
+    price: pack.price,
+    image: pack.image,
+    category: group.category,
+    rank: index,
+    boost: pack.boost ?? false,
+  }))
+);
+
+const PACK_SLUGS = PACK_SEED.map((p) => p.slug);
+// slug is the storefront route id AND this seed's idempotency key, so a
+// duplicate would silently drop a pack — fail fast instead.
+if (new Set(PACK_SLUGS).size !== PACK_SLUGS.length) {
+  throw new Error("PACK_SEED contains duplicate slugs");
+}
 
 export default async function seedDemoData({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -926,4 +1031,27 @@ export default async function seedDemoData({ container }: ExecArgs) {
   }
 
   logger.info("Finished seeding inventory levels data.");
+
+  // Gacha packs (Phase 4) — guarded by slug so re-runs are no-ops. Independent
+  // of products/inventory: the Pack model is catalog-only this phase (the
+  // pack->product checkout link + odds land in Phase 5).
+  logger.info("Seeding gacha packs...");
+  const packsModuleService: PacksModuleService =
+    container.resolve(PACKS_MODULE);
+  const existingPacks = await packsModuleService.listPacks(
+    { slug: PACK_SLUGS },
+    { select: ["slug"], take: PACK_SLUGS.length }
+  );
+  const existingPackSlugs = new Set(existingPacks.map((p) => p.slug));
+  const packsToCreate = PACK_SEED.filter(
+    (p) => !existingPackSlugs.has(p.slug)
+  );
+
+  if (packsToCreate.length === 0) {
+    logger.info("Gacha packs already exist, skipping.");
+  } else {
+    await packsModuleService.createPacks(packsToCreate);
+    logger.info(`Seeded ${packsToCreate.length} gacha pack(s).`);
+  }
+  logger.info("Finished seeding gacha packs.");
 }

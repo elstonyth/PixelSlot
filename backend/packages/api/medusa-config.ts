@@ -25,6 +25,11 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/rbac",
     },
     {
+      // Custom gacha Packs module — Phase 4 ships the Pack catalog model; the
+      // gacha internals (odds/pulls) land in Phase 5. See src/modules/packs.
+      resolve: "./src/modules/packs",
+    },
+    {
       resolve: '@mercurjs/core/modules/admin-ui',
       options: {
         appDir: path.join(__dirname, '../../apps/admin'),
