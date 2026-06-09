@@ -11,11 +11,13 @@ import {
   Input,
   StatusBadge,
   Badge,
+  FocusModal,
+  Checkbox,
   toast,
   clx,
 } from "@medusajs/ui";
 import { ArrowLeft } from "@medusajs/icons";
-import { packsApi } from "../../../lib/packs-api";
+import { packsApi, type AdminCard } from "../../../lib/packs-api";
 import { computeOdds, type OddsInput } from "../../../lib/odds-math";
 
 // One editable row: the immutable card facts + its current saved %, plus the
@@ -72,6 +74,75 @@ const PackOddsEditorPage = () => {
       active = false;
     };
   }, [slug]);
+
+  // Reload the pool after a membership change (no mount guard — still mounted).
+  const reloadOdds = async () => {
+    try {
+      const res = await packsApi.admin.packs.$slug.odds.query({ $slug: slug });
+      setPackTitle(res.pack.title);
+      setPackStatus(res.pack.status);
+      setRows(
+        res.odds.map((o) => ({
+          card_id: o.card_id,
+          name: o.name,
+          image: o.image,
+          rarity: o.rarity,
+          market_value: o.market_value,
+          currentPct: o.pct,
+          locked: o.locked,
+          pctInput: String(o.pct),
+        })),
+      );
+    } catch {
+      toast.error(t("packs.editor.loadError"));
+    }
+  };
+
+  // Prize-pool membership — which cards belong to this pack.
+  const [poolOpen, setPoolOpen] = useState(false);
+  const [allCards, setAllCards] = useState<AdminCard[] | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [savingMembers, setSavingMembers] = useState(false);
+
+  const openPool = async () => {
+    setSelected(new Set((rows ?? []).map((r) => r.card_id)));
+    setPoolOpen(true);
+    if (allCards === null) {
+      try {
+        const res = await packsApi.admin.cards.query();
+        setAllCards(res.cards);
+      } catch {
+        toast.error(t("packs.pool.loadError"));
+      }
+    }
+  };
+
+  const toggleCard = (handle: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(handle)) next.delete(handle);
+      else next.add(handle);
+      return next;
+    });
+
+  const saveMembers = async () => {
+    setSavingMembers(true);
+    try {
+      const res = await packsApi.admin.packs.$slug.members.mutate({
+        $slug: slug,
+        card_ids: Array.from(selected),
+      });
+      toast.success(
+        t("packs.pool.saved", { added: res.added, removed: res.removed }),
+      );
+      setPoolOpen(false);
+      await reloadOdds();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSavingMembers(false);
+    }
+  };
 
   // Live preview — the SAME even-split math the save workflow runs, so what the
   // operator sees in "After save" is exactly what gets persisted.
@@ -168,6 +239,14 @@ const PackOddsEditorPage = () => {
             {t("packs.editor.subtitle")}
           </Text>
         </div>
+        <Button
+          size="small"
+          variant="secondary"
+          onClick={openPool}
+          disabled={rows === null}
+        >
+          {t("packs.pool.manage")}
+        </Button>
       </div>
 
       {rows === null ? (
@@ -288,6 +367,75 @@ const PackOddsEditorPage = () => {
           </div>
         </>
       )}
+
+      <FocusModal
+        open={poolOpen}
+        onOpenChange={(open) => {
+          if (!open) setPoolOpen(false);
+        }}
+      >
+        <FocusModal.Content>
+          <FocusModal.Header>
+            <div className="flex items-center justify-end gap-x-2">
+              <Button
+                size="small"
+                variant="secondary"
+                onClick={() => setPoolOpen(false)}
+              >
+                {t("packs.pool.cancel")}
+              </Button>
+              <Button size="small" onClick={saveMembers} isLoading={savingMembers}>
+                {t("packs.pool.save")}
+              </Button>
+            </div>
+          </FocusModal.Header>
+          <FocusModal.Body className="flex flex-col items-center overflow-auto p-10">
+            <div className="flex w-full max-w-[640px] flex-col gap-y-4">
+              <div>
+                <FocusModal.Title asChild>
+                  <Heading level="h2">{t("packs.pool.title")}</Heading>
+                </FocusModal.Title>
+                <FocusModal.Description asChild>
+                  <Text className="text-ui-fg-subtle mt-1" size="small">
+                    {t("packs.pool.subtitle", { count: selected.size })}
+                  </Text>
+                </FocusModal.Description>
+              </div>
+              {allCards === null ? (
+                <Text className="text-ui-fg-subtle">…</Text>
+              ) : allCards.length === 0 ? (
+                <Text className="text-ui-fg-subtle">{t("packs.pool.noCards")}</Text>
+              ) : (
+                <div className="divide-y rounded-lg border">
+                  {allCards.map((c) => (
+                    <label
+                      key={c.handle}
+                      className="hover:bg-ui-bg-base-hover flex cursor-pointer items-center gap-3 px-4 py-2"
+                    >
+                      <Checkbox
+                        checked={selected.has(c.handle)}
+                        onCheckedChange={() => toggleCard(c.handle)}
+                      />
+                      <img
+                        src={c.image}
+                        alt=""
+                        className="h-9 w-7 shrink-0 rounded object-contain"
+                      />
+                      <div className="flex flex-1 flex-col">
+                        <span className="truncate text-sm font-medium">{c.name}</span>
+                        <span className="text-ui-fg-subtle text-xs">
+                          {c.rarity} · $
+                          {c.market_value.toLocaleString("en-US")}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </FocusModal.Body>
+        </FocusModal.Content>
+      </FocusModal>
     </Container>
   );
 };
