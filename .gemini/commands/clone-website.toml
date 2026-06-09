@@ -14,6 +14,16 @@ When multiple URLs are provided, process them independently and in parallel wher
 
 This is not a two-phase process (inspect then build). You are a **foreman walking the job site** — as you inspect each section of the page, you write a detailed specification to a file, then hand that file to a specialist builder agent with everything they need. Extraction and construction happen in parallel, but extraction is meticulous and produces auditable artifacts.
 
+## Operating Rules (read before Phase 1 — these prevent the costliest loops)
+
+These are the non-negotiables distilled from real clones. The full reasoning for each is in **Field-Tested Lessons** below; internalize these five before you start:
+
+1. **Measure, never eyeball.** Every "it's still wrong" is resolved by numbers, not guesses. Capture `getBoundingClientRect()` + `getComputedStyle()` from BOTH sites at the same viewport and match the pixels. (Tailwind v4 stores transforms in `translate`/`scale`/`rotate` — not `transform` — when you probe.)
+2. **Verify with headless Playwright, not the live browser tab.** Screenshot to `docs/research/*.png` and read them. The live browser MCP caches stale state across port changes and will make a correct clone look broken.
+3. **Run the production server for review** (`next build` + `next start`), pin ONE port, and never change it mid-session. Dev servers serve images slowly under load and look "broken."
+4. **Capture motion frame-by-frame before coding it.** Carousels, scroll-entry, and hover are one-shot or stateful — film 30–80 frames + per-frame transforms and decide slide/rotate/fade/stack from DATA. Find the real scroll container (often an inner `overflow-y-auto`, not `window`).
+5. **Match responsive reality at every breakpoint including 4K.** Test 390 / 768 / 1440 / 1920 / 2560 / 3840. Mirror the original's width behavior (cap vs fluid); never leave empty desktop margins or horizontal overflow.
+
 ## Scope Defaults
 
 The target is whatever page `{{args}}` resolves to. Clone exactly what's visible at that URL. Unless the user specifies otherwise, use these defaults:
@@ -27,11 +37,15 @@ If the user provides additional instructions (specific fidelity level, customiza
 
 ## Pre-Flight
 
-1. **Browser automation is required.** Check for available browser MCP tools (Chrome MCP, Playwright MCP, Browserbase MCP, Puppeteer MCP, etc.). Use whichever is available — if multiple exist, prefer Chrome MCP. If none are detected, ask the user which browser tool they have and how to connect it. This skill cannot work without browser automation.
-2. Parse `{{args}}` as one or more URLs. Normalize and validate each URL; if any are invalid, ask the user to correct them before proceeding. For each valid URL, verify it is accessible via your browser MCP tool.
+1. **Browser automation is required** for two distinct jobs:
+   - *Extraction* (driving the live site, clicking, hovering): use a browser MCP — Chrome MCP, Playwright MCP, etc. Prefer Chrome MCP if several exist.
+   - *Verification* (screenshotting your clone, measuring layout/animation): use **headless Playwright** via `scripts/verify-clone.mjs`, NOT the live browser tab. The live tab caches stale state across port changes and will make a correct clone look broken. Install once: `npm i -D playwright && npx playwright install chromium`.
+   If no browser automation is available at all, ask the user how to connect one. This skill cannot work without it.
+2. Parse `{{args}}` as one or more URLs. Normalize and validate each; if any are invalid, ask the user to correct them. Verify each is reachable.
 3. Verify the base project builds: `npm run build`. The Next.js + shadcn/ui + Tailwind v4 scaffold should already be in place. If not, tell the user to set it up first.
-4. Create the output directories if they don't exist: `docs/research/`, `docs/research/components/`, `docs/design-references/`, `scripts/`. For multiple clones, also prepare per-site folders like `docs/research/<hostname>/` and `docs/design-references/<hostname>/`.
-5. When working with multiple sites in one command, optionally confirm whether to run them in parallel (recommended, if resources allow) or sequentially to avoid overload.
+4. Create the output directories if they don't exist: `docs/research/`, `docs/research/components/`, `docs/design-references/`, `scripts/`. For multiple clones, also prepare per-site folders like `docs/research/<hostname>/`.
+5. **Copy the bundled primitives into the project** (see Bundled Resources): `assets/use-reveal.ts` → `src/lib/`, `assets/Reveal.tsx` → `src/components/`, and the `scripts/*.mjs` helpers → `scripts/`. These save you from re-writing scroll-entry, verification, and asset-validation code per clone.
+6. When cloning multiple sites in one command, optionally confirm parallel (recommended) vs sequential to avoid overload.
 
 ## Guiding Principles
 
@@ -58,6 +72,10 @@ Extract the actual text, images, videos, and SVGs from the live site. This is a 
 ### 4. Foundation First
 
 Nothing can be built until the foundation exists: global CSS with the target site's design tokens (colors, fonts, spacing), TypeScript types for the content structures, and global assets (fonts, favicons). This is sequential and non-negotiable. Everything after this can be parallel.
+
+**Build shared primitives during the foundation pass**, so every builder reuses them instead of re-inventing:
+- A **`<Reveal>`** scroll-entry wrapper (IntersectionObserver `{threshold: 0.15, rootMargin: "0px 0px -8% 0px"}`, fire-once + unobserve) + a `usePrefersReducedMotion` hook. Wrap sections/cards and stagger siblings with `transitionDelay: i * ~110ms`. Always render visible instantly under reduced-motion.
+- A **fluid gutter utility** for dynamic width: `padding-inline: clamp(1rem, 1.6vw, 4.5rem)` — tightens when the window is minimized, breathes (not stretched) at 4K, no breakpoint jumps. Apply to every page/section/header/footer wrapper. (Only add this if the original is fluid/full-bleed; if it caps, mirror the cap instead.)
 
 ### 5. Extract How It Looks AND How It Behaves
 
@@ -123,9 +141,10 @@ Every builder agent must verify `npx tsc --noEmit` passes before finishing. Afte
 Navigate to the target URL with browser MCP.
 
 ### Screenshots
-- Take **full-page screenshots** at desktop (1440px) and mobile (390px) viewports
+- Take **full-page screenshots** at mobile (390px), tablet (768px), desktop (1440px), wide (1920px), and **4K (3840px)** viewports — wide/4K reveal empty-margin and sparse-layout problems you won't see at 1440.
 - Save to `docs/design-references/` with descriptive names
 - These are your master reference — builders will receive section-specific crops/screenshots later
+- **Use headless Playwright for all screenshots and verification** (see "Field-Tested Lessons"). It's cacheless and measurable; the live browser MCP caches stale state and will mislead you.
 
 ### Global Extraction
 Extract these from the page before doing anything else:
@@ -444,6 +463,26 @@ Before dispatching ANY builder agent, verify you can check every box. If you can
 - [ ] Text content is verbatim from the site, not paraphrased
 - [ ] The builder prompt is under ~150 lines of spec; if over, the section needs to be split
 
+## Bundled Resources
+
+This skill ships drop-in code and tools that earlier clones had to write from
+scratch every time. Use them instead of reinventing:
+
+**`assets/`** — copy into the target project:
+- `use-reveal.ts` → `src/lib/use-reveal.ts` (IntersectionObserver + reduced-motion hooks)
+- `Reveal.tsx` → `src/components/Reveal.tsx` (scroll-entry wrapper; wrap sections/cards, stagger with `delay={i*110}`)
+- `fluid-width.css` → paste `.px-fluid` into `globals.css` `@layer utilities` (full-bleed sites only)
+
+**`scripts/`** — run with `node` from the project root (needs `npm i -D playwright && npx playwright install chromium`):
+- `verify-clone.mjs <url>` — responsive overflow + broken-image + entry-animation audit at 390→3840 (incl. 4K), saves screenshots. This is your verification harness — use it instead of the live browser.
+- `film-motion.mjs <url> "<selector>"` — capture any animation/carousel frame-by-frame with per-frame transforms, so you build motion from data not guesses.
+- `validate-assets.mjs` — validate + repair downloaded image bytes (truncated/0-byte files; set `REMOTE_HOST`).
+
+**`references/field-notes.md`** — the deep "why" behind the Operating Rules and the
+long tail of failure modes (scroll-container detection, Tailwind v4 transform props,
+runaway-process recovery, content re-extraction, etc.). **Read it before starting** —
+each note prevented hours of rework on a real clone.
+
 ## What NOT to Do
 
 These are lessons from previous failed clones — each one cost hours of rework:
@@ -461,6 +500,11 @@ These are lessons from previous failed clones — each one cost hours of rework:
 - **Don't skip responsive extraction.** If you only inspect at desktop width, the clone will break at tablet and mobile. Test at 1440, 768, and 390 during extraction.
 - **Don't forget smooth scroll libraries.** Check for Lenis (`.lenis` class), Locomotive Scroll, or similar. Default browser scrolling feels noticeably different and the user will spot it immediately.
 - **Don't dispatch builders without a spec file.** The spec file forces exhaustive extraction and creates an auditable artifact. Skipping it means the builder gets whatever you can fit in a prompt from memory.
+- **Don't verify with the live browser tab or change ports mid-session.** Both make a correct clone look broken via stale cache. Verify with `scripts/verify-clone.mjs` (headless Playwright) on one pinned port. *(See references/field-notes.md §1.)*
+- **Don't impose a width the original doesn't have.** No `max-width` cap on a full-bleed original (empty 4K margins); no fixed gutter that's cramped when minimized. Match the original; use the fluid clamp gutter when it's full-bleed. *(§3.)*
+- **Don't assume `window` scrolls or that motion is what it looks like.** Many sites scroll inside an inner `overflow-y-auto`; carousels masquerade as single cards. Find the real scroller and film motion frame-by-frame before coding. *(§2.)*
+- **Don't leave `output: "standalone"` in next.config if you run `next start`.** It serves a STALE build, so your edits silently don't appear and you'll chase ghosts of old code. Remove it (or run the standalone server). *(§5.)*
+- **Don't duplicate a section that appears on two routes, or skip its small affordances.** Homepage teaser + dedicated page should share ONE component; reproduce each pill's exact icon/arrow/"?"-modal — inspect with `:scope` so you read the element's own children, not a parent's. *(§7.)*
 
 ## Completion
 
@@ -471,6 +515,8 @@ When done, report:
 - Total assets downloaded (images, videos, SVGs, fonts)
 - Build status (`npm run build` result)
 - Visual QA results (any remaining discrepancies)
+- **Responsive QA: confirmed at 390 / 768 / 1440 / 1920 / 2560 / 3840 (4K) with zero horizontal overflow**
+- **Animation QA: entry/hover/carousel verified firing (measured, not eyeballed) and reduced-motion respected**
 - Any known gaps or limitations
 
 '''
