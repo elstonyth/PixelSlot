@@ -1,6 +1,8 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import PacksModuleService from "../../../modules/packs/service";
 import { PACKS_MODULE } from "../../../modules/packs";
+import { createPackWorkflow } from "../../../workflows/create-pack";
+import { coercePackBody } from "./validate";
 
 // GET /admin/packs — the pack selector list for the win-rate editor. An admin
 // route, so it is auto-protected by Medusa's admin auth (session/bearer); no
@@ -28,6 +30,21 @@ export async function GET(
       rank: p.rank,
       price: p.price,
       image: p.image,
+      boost: p.boost,
     })),
   });
+}
+
+// POST /admin/packs — create a pack listing. A new pack starts with an empty
+// prize pool; cards are assigned via the membership editor.
+export async function POST(
+  req: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const slug = typeof body.slug === "string" ? body.slug.trim() : "";
+  const input = coercePackBody(body, slug);
+
+  const { result } = await createPackWorkflow(req.scope).run({ input });
+  res.status(201).json({ pack: result });
 }
