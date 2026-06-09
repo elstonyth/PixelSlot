@@ -14,6 +14,10 @@
     "@mercurjs/admin": "2.1.6"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1"
+    "@medusajs/ui-preset": "2.15.5",
+    "@types/node": "^24.10.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
   }
 }

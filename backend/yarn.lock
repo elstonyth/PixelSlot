@@ -10,8 +10,12 @@ __metadata:
   resolution: "@acme/admin@workspace:apps/admin"
   dependencies:
     "@acme/api": "workspace:*"
+    "@medusajs/ui-preset": "npm:2.15.5"
     "@mercurjs/admin": "npm:2.1.6"
     "@types/node": "npm:^24.10.1"
+    autoprefixer: "npm:^10.4.20"
+    postcss: "npm:^8.4.49"
+    tailwindcss: "npm:^3.4.17"
   languageName: unknown
   linkType: soft
 
@@ -3186,6 +3190,18 @@ __metadata:
     vite:
       optional: true
   checksum: 10c0/a70ca8277e9d3b443d73ef2180f473834632ae6f2cc1c0812a0ffaca975b979750e3b0e0064ef233c9e8f7ddeb9f9f9c7246b6ec808ffb05c7dd5cd19db05b46
+  languageName: node
+  linkType: hard
+
+"@medusajs/ui-preset@npm:2.15.5":
+  version: 2.15.5
+  resolution: "@medusajs/ui-preset@npm:2.15.5"
+  dependencies:
+    "@tailwindcss/forms": "npm:^0.5.3"
+    tailwindcss-animate: "npm:^1.0.6"
+  peerDependencies:
+    tailwindcss: ^3.4.3
+  checksum: 10c0/039884f33f3fd6fa7835531cb0ed1ae3723b5e3f3a04099f2130eab494a3873af9bd7ba521d3d2b459eefa4cc453f0e710e544fcfffdf47d0e376cdefad965fc
   languageName: node
   linkType: hard
 
@@ -6524,6 +6540,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/forms@npm:^0.5.3":
+  version: 0.5.11
+  resolution: "@tailwindcss/forms@npm:0.5.11"
+  dependencies:
+    mini-svg-data-uri: "npm:^1.2.3"
+  peerDependencies:
+    tailwindcss: ">=3.0.0 || >= 3.0.0-alpha.1 || >= 4.0.0-alpha.20 || >= 4.0.0-beta.1"
+  checksum: 10c0/6bf5679384ffbcc5ac0b331127bb5b2f058a49d80f660f4af0b1cbcffe2b0b829f83ea66aabd580ca21168a6b8f021dc6d19816a71c84416660dbbb1197c0f9c
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.101.0":
   version: 5.101.0
   resolution: "@tanstack/query-core@npm:5.101.0"
@@ -7566,7 +7593,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:^10.4.19":
+"autoprefixer@npm:^10.4.19, autoprefixer@npm:^10.4.20":
   version: 10.5.0
   resolution: "autoprefixer@npm:10.5.0"
   dependencies:
@@ -12146,6 +12173,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mini-svg-data-uri@npm:^1.2.3":
+  version: 1.4.4
+  resolution: "mini-svg-data-uri@npm:1.4.4"
+  bin:
+    mini-svg-data-uri: cli.js
+  checksum: 10c0/24545fa30b5a45449241bf19c25b8bc37594b63ec06401b3d563bd1c2e8a6abb7c18741f8b354e0064baa63c291be214154bf3a66f201ae71dfab3cc1a5e3191
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^10.0.1, minimatch@npm:^10.1.1, minimatch@npm:^10.2.2":
   version: 10.2.5
   resolution: "minimatch@npm:10.2.5"
@@ -13232,7 +13268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.38, postcss@npm:^8.4.43, postcss@npm:^8.4.47":
+"postcss@npm:^8.4.38, postcss@npm:^8.4.43, postcss@npm:^8.4.47, postcss@npm:^8.4.49":
   version: 8.5.15
   resolution: "postcss@npm:8.5.15"
   dependencies:
@@ -14763,7 +14799,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwindcss@npm:^3.4.3":
+"tailwindcss-animate@npm:^1.0.6":
+  version: 1.0.7
+  resolution: "tailwindcss-animate@npm:1.0.7"
+  peerDependencies:
+    tailwindcss: "*"
+  checksum: 10c0/ec7dbd1631076b97d66a1fbaaa06e0725fccfa63119221e8d87a997b02dcede98ad88bb1ef6665b968f5d260fcefb10592e0299ca70208d365b37761edf5e19a
+  languageName: node
+  linkType: hard
+
+"tailwindcss@npm:^3.4.17, tailwindcss@npm:^3.4.3":
   version: 3.4.19
   resolution: "tailwindcss@npm:3.4.19"
   dependencies:
