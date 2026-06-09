@@ -6,16 +6,62 @@
   },
   "packs": {
     "title": "Gacha Packs",
-    "subtitle": "Tune the secret per-card win rates. Customer-facing published odds stay static and are never affected.",
+    "subtitle": "Create and manage gacha packs — listing details, status, and prize pools. Open a pack to edit its prize pool and win rates.",
+    "new": "New pack",
     "list": {
       "pack": "Pack",
       "category": "Category",
       "status": "Status",
       "price": "Price",
       "action": "Win rates",
+      "actions": "Actions",
+      "winRates": "Pool & odds",
       "edit": "Edit",
+      "delete": "Delete",
       "empty": "No packs found.",
       "loadError": "Could not load packs."
+    },
+    "form": {
+      "createTitle": "New pack",
+      "editTitle": "Edit pack",
+      "subtitle": "Sets the pack's storefront listing. A new pack starts with an empty prize pool — open it afterwards to add cards.",
+      "image": "Image",
+      "uploadImage": "Upload image",
+      "imageUrlPlaceholder": "Image URL or /storefront/path.webp",
+      "slug": "Slug",
+      "slugHint": "Unique, lowercase, kebab-case. Permanent — it keys the pack and its /claw URL.",
+      "titleField": "Title",
+      "category": "Category",
+      "statusField": "Status",
+      "active": "Active",
+      "draft": "Draft",
+      "price": "Price (USD)",
+      "rank": "Rank (sort order)",
+      "boost": "Boost",
+      "boostHint": "Flags the pack as boosted/featured on the storefront.",
+      "poolHint": "After creating, open the pack to add cards to its prize pool.",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "delete": {
+      "title": "Delete pack?",
+      "description": "This permanently removes \"{{title}}\" and its prize-pool membership. Cards and past pulls are kept. This cannot be undone.",
+      "confirm": "Delete pack"
+    },
+    "toast": {
+      "created": "Pack created.",
+      "updated": "Pack updated.",
+      "deleted": "Pack deleted."
+    },
+    "pool": {
+      "manage": "Manage cards",
+      "title": "Prize pool",
+      "subtitle": "Pick the cards in this pack. {{count}} selected. New cards start at an even weight — tune the win rates below after saving.",
+      "save": "Save pool",
+      "cancel": "Cancel",
+      "saved": "Pool updated ({{added}} added, {{removed}} removed).",
+      "loadError": "Could not load the card catalog.",
+      "noCards": "No cards exist yet. Create cards first."
     },
     "editor": {
       "title": "Win rates",
@@ -35,6 +81,58 @@
       "back": "All packs",
       "loadError": "Could not load pack odds.",
       "flattenWarning": "No cards are locked — saving will reset every card to an even {{pct}}%. Lock the cards you want to preserve first."
+    }
+  },
+  "cards": {
+    "title": "Gacha Cards",
+    "subtitle": "The card catalog — gacha prizes and standalone marketplace listings. Editing a card updates its marketplace listing automatically.",
+    "new": "New card",
+    "list": {
+      "card": "Card",
+      "rarity": "Rarity",
+      "value": "FMV",
+      "price": "Price",
+      "status": "Marketplace",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "listed": "Listed",
+      "hidden": "Hidden",
+      "empty": "No cards yet. Create one to get started.",
+      "loadError": "Could not load cards."
+    },
+    "form": {
+      "createTitle": "New card",
+      "editTitle": "Edit card",
+      "subtitle": "Sets the gacha prize details and the standalone marketplace listing (same card, one record).",
+      "image": "Image",
+      "uploadImage": "Upload image",
+      "imageUrlPlaceholder": "Image URL or /storefront/path.webp",
+      "uploadHint": "Upload a file, or paste a storefront-relative path (e.g. /cdn/cards/x.webp).",
+      "handle": "Handle",
+      "handleHint": "Unique, lowercase, kebab-case. Permanent — it keys the card everywhere.",
+      "name": "Name",
+      "set": "Set",
+      "rarity": "Rarity",
+      "grader": "Grader",
+      "grade": "Grade",
+      "marketValue": "Fair-market value (USD)",
+      "price": "Sale price (USD)",
+      "pricePlaceholder": "Defaults to FMV",
+      "forSale": "List on marketplace",
+      "forSaleHint": "When off, the card stays a pack prize but is hidden from the store.",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "created": "Card created.",
+      "updated": "Card updated.",
+      "deleted": "Card deleted."
+    },
+    "delete": {
+      "title": "Delete card?",
+      "description": "This permanently removes \"{{name}}\", its marketplace listing, and its membership in every pack. Past pulls are kept. This cannot be undone.",
+      "confirm": "Delete card"
     }
   },
   "pulls": {

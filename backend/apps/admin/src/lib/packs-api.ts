@@ -20,6 +20,49 @@ export interface AdminPack {
   rank: number;
   price: number;
   image: string;
+  boost: boolean;
+}
+
+// Create/update payload. `slug` is sent on create only (immutable thereafter —
+// on update it travels as the `$slug` path param, not the body).
+export interface AdminPackWrite {
+  slug?: string;
+  title: string;
+  category: string;
+  price: number;
+  image: string;
+  boost: boolean;
+  rank: number;
+  status: "active" | "draft";
+}
+
+export interface AdminCard {
+  handle: string;
+  name: string;
+  set: string;
+  grader: string;
+  grade: string;
+  rarity: string;
+  market_value: number;
+  image: string;
+  /** Stored sale price; `null` means "use FMV (market_value)". */
+  price: number | null;
+  for_sale: boolean;
+}
+
+// Create/update payload. `handle` is sent on create only (immutable thereafter —
+// on update it travels as the `$handle` path param, not the body).
+export interface AdminCardWrite {
+  handle?: string;
+  name: string;
+  set: string;
+  grader: string;
+  grade: string;
+  rarity: string;
+  market_value: number;
+  image: string;
+  price?: number;
+  for_sale: boolean;
 }
 
 export interface OddsRow {
@@ -79,7 +122,12 @@ type PacksApi = {
   admin: {
     packs: {
       query: () => Promise<{ packs: AdminPack[] }>;
+      mutate: (input: AdminPackWrite) => Promise<{ pack: { slug: string } }>;
       $slug: {
+        query: (input: { $slug: string }) => Promise<{ pack: AdminPack }>;
+        mutate: (
+          input: { $slug: string } & AdminPackWrite
+        ) => Promise<{ pack: { slug: string } }>;
         odds: {
           query: (input: { $slug: string }) => Promise<PackOddsResponse>;
           mutate: (input: {
@@ -87,10 +135,34 @@ type PacksApi = {
             entries: OddsInput[];
           }) => Promise<{ odds: ComputedOdd[] }>;
         };
+        members: {
+          query: (input: { $slug: string }) => Promise<{ members: string[] }>;
+          mutate: (input: {
+            $slug: string;
+            card_ids: string[];
+          }) => Promise<{
+            pack_id: string;
+            members: string[];
+            added: number;
+            removed: number;
+          }>;
+        };
       };
     };
     pulls: {
       query: () => Promise<PullsResponse>;
+    };
+    cards: {
+      query: () => Promise<{ cards: AdminCard[] }>;
+      mutate: (input: AdminCardWrite) => Promise<{
+        card: { handle: string; productId: string };
+      }>;
+      $handle: {
+        query: (input: { $handle: string }) => Promise<{ card: AdminCard }>;
+        mutate: (
+          input: { $handle: string } & AdminCardWrite
+        ) => Promise<{ card: { handle: string; productId: string } }>;
+      };
     };
   };
 };
