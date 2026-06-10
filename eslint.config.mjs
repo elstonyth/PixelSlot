@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // The Medusa + Mercur backend is a separate project with its own toolchain.
     "backend/**",
+    // Claude Code session worktrees are full repo copies nested under the
+    // project root; without this their backend/ files leak past the ignore
+    // above (different path prefix) and fail lint mid-session.
+    ".claude/worktrees/**",
   ]),
 ]);
 
