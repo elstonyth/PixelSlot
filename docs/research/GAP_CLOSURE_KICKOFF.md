@@ -1,29 +1,26 @@
-# Gap-Closure Kickoff — branch `feat/gap-closure`
+# Gap-Closure Kickoff — runs on `master` in the main checkout
 
-> Written 2026-06-10 after the housekeeping pass (tree clean, all branches pushed,
-> stash rescued + archived as tag `archive/stash-epitaxy-2026-06-10`). This worktree
-> (`Pokenic_Game-gap-closure`, branched from `clone/phygitals-v2` @ `8a7a772`) batches
-> the remaining verified-open items. Every claim below was code-verified on 2026-06-10
-> by a 5-agent audit — trust this brief over older docs (HANDOFF.md is stale).
+> Written 2026-06-10 after the housekeeping pass (tree clean, everything pushed,
+> stash rescued + archived as tag `archive/stash-epitaxy-2026-06-10`). Every claim
+> below was code-verified on 2026-06-10 by a 5-agent audit — trust this brief over
+> older docs (HANDOFF.md is stale).
+>
+> **2026-06-10 update:** branches were consolidated and the dedicated worktree was
+> removed (user prefers one branch, one folder). All tasks below happen in
+> `C:\Users\PC\Desktop\Projects\Pokenic_Game` directly on **`master`** — commit per
+> task, push to origin/master.
 
-## Worktree environment rules (read first)
+## Environment rules (read first)
 
-- **Shared infra with the main checkout** (`C:\Users\PC\Desktop\Projects\Pokenic_Game`):
-  Docker `pokenic-postgres` (PG16) + `pokenic-redis` (R7), and usually a running
-  backend on **:9000** and prod storefront on **:4000** started from the MAIN checkout.
-  **Do NOT start a second backend on :9000.** Reuse the running one, or stop it by PID
-  first (`Get-NetTCPConnection -LocalPort 9000`). The DB is shared — seeds/data changes
-  affect both checkouts.
-- **Storefront verification in THIS worktree: use port :4100** (avoid clashing with the
-  main checkout's :4000): `npm run build` then `npx next start -p 4100`. Never verify
+- Backend on **:9000** (Docker `pokenic-postgres` PG16 + `pokenic-redis` R7); prod
+  storefront verification on **:4000**: `npm run build` then `npx next start -p 4000`.
+  Kill a stale :4000/:9000 listener **by PID** (`Get-NetTCPConnection -LocalPort 4000`),
+  NEVER `Get-Process node | Stop-Process` (it kills the backend too). Never verify
   against `next dev` (slow images make a correct build look broken). `:3000` is occupied
   by an unrelated Docker container — never use it.
 - Verify with **Playwright scripts in `scripts/*.mjs`, not Chrome MCP**. Screenshots go
-  to `docs/research/`. Kill node **by PID only**, never `Get-Process node | Stop-Process`
-  (it kills the backend too).
-- `.env.local` (root) and `backend/packages/api/.env` were copied from the main checkout
-  (gitignored — never commit them). `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` lives in
-  `.env.local`; `/store/*` 400s without it.
+  to `docs/research/`.
+- `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` lives in `.env.local`; `/store/*` 400s without it.
 - Quality gates: storefront `npm run check`; backend `corepack yarn build` from
   `backend/` (turbo; `medusa develop` is transpile-only and proves nothing).
 
@@ -52,7 +49,7 @@ PAYMENT SEAM in `src/workflows/open-pack.ts:29-35`; no inventory decrement eithe
 
 **Verify:** `corepack yarn build` green → run backend → curl the open endpoint with a
 session AND a bearer token: expect 200s up to the limit, then 429, then recovery after
-the window. Confirm the storefront pack-open flow on :4100 still works under the limit.
+the window. Confirm the storefront pack-open flow on :4000 still works under the limit.
 TDD per repo rules — this is genuine backend logic (integration test of the middleware).
 
 ---
@@ -140,6 +137,6 @@ skips packs that already have odds; out-of-stock packs may stay draft/odds-less.
 - `npm run check` green (storefront) + `corepack yarn build` green (backend).
 - Every route disposition recorded in `AUDIT_PUNCHLIST.md`.
 - One conventional commit per task (`fix(api): rate-limit pack opens`,
-  `docs(research): route audit wave 2`, …); push `feat/gap-closure` and PR into
-  `master` (branches were consolidated 2026-06-10 — master is now the single
-  line of history; `clone/phygitals-v2` and `feat/backend-medusa-mercur` are gone).
+  `docs(research): route audit wave 2`, …) directly on `master`, pushed to
+  origin/master (branches were consolidated 2026-06-10 — master is the single
+  line of history).
