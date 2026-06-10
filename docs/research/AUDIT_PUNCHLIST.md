@@ -218,7 +218,7 @@ most were fabricated from interpretation.
 | /free | BLOCKER | fabricated marketing page vs live anonymous signup overlay over dimmed packs grid; benefit-card hierarchy inverted; missing consent line; clone-only pack fan | OPEN |
 | /lucky-draw | BLOCKER | route doesn't exist on live (hard 404 with custom vault-slab 404 page) — delete clone route, build `not-found.tsx` clone | ✅ FIXED (slice 1) |
 | /roulette | BLOCKER | live = banner panel + 3 rarity sections (Uncommon/Rare/Legendary, 4 tiles each: Eevee GX/Pikachu VMAX/Charizard GX #1-4, per-tile Play buttons); clone = fabricated carousel + odds chips + gradient CTA; "Pokemon" unaccented on live | OPEN |
-| /clawmaker | BLOCKER | live (anon) = in-place "Access Restricted / Please login to view this page." amber-glow wall, no footer; clone = fabricated logged-in builder | OPEN |
+| /clawmaker | BLOCKER | live (anon) = in-place "Access Restricted / Please login to view this page." amber-glow wall, no footer; clone = fabricated logged-in builder | ✅ wall FIXED (slice 2); footer chrome-gate still open |
 | /airdrop | BLOCKER | live = chrome-less splash (floating collection icons top/bottom, centered logo + green progress bar + "PREPARING POKEMON CARD AIRDROP" + green gradient pill `#1aa87a→green-500`); clone = invented hero+avatar-wall marketing page | OPEN |
 | /social | MAJOR | right page, simplified components: missing search bar; compact list tiles vs live large profile cards (Lvl badge, rank trophy, online dot, stats, in-card actions); 3-col vs live 4-col; several UNVERIFIED | OPEN |
 | /orders | BLOCKER | clone redirects to home+modal; live stays on /orders with red error card (measured: rounded-2xl, dark-maroon `bg-red-50/dark`, "Failed to Load Orders / Authentication required / Try Again") | OPEN |
@@ -238,4 +238,5 @@ most were fabricated from interpretation.
   are public — earlier assumptions that all account routes auth-wall anonymously were wrong.
 
 ### Wave-2 fix progress
+- **Slice 2 (2026-06-10):** /clawmaker fabricated builder replaced with live's in-place anonymous auth wall (amber glow + Access Restricted + Please login copy); verified vs live-1440. Footer suppression (live shows none here) waits on the chrome-gate.
 - **Slice 1 (2026-06-10):** shared SiteHeader mobile-390 (hamburger LEFT w/ bg, smaller logo, ?-icon + Login + Sign Up visible — systemic finding 2 DONE for anonymous state); SiteFooter Twitter bird + social column order (finding 3 partial — chrome gate still open); /lucky-draw deleted + custom 404 cloned as src/app/not-found.tsx (finding 4 DONE). Verified: clean build + 390 re-capture vs live (shots/lucky-draw/clone-390.png).
