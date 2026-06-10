@@ -91,16 +91,29 @@ export default function SiteHeader() {
   return (
     <header className="px-fluid sticky top-0 z-50 border-b border-neutral-800 bg-neutral-900 py-3 transition-all duration-300">
       <div className="flex items-center justify-between gap-4">
-        {/* Left cluster: logo + desktop nav, left-aligned together (matches the live site) */}
-        <div className="flex min-w-0 items-center gap-3 lg:gap-5">
-          <Link href="/" className="flex shrink-0 items-center" aria-label="Phygitals home">
+        {/* Left cluster: hamburger (mobile, far LEFT per live) + logo + desktop nav */}
+        <div className="flex min-w-0 items-center gap-2 lg:gap-5">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-neutral-200 transition-all duration-200 hover:bg-white/10 hover:text-white lg:hidden"
+          >
+            {menuOpen ? (
+              <X className="h-5 w-5" aria-hidden />
+            ) : (
+              <Menu className="h-5 w-5" aria-hidden />
+            )}
+          </button>
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Pokenic home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={LOGO_SRC}
               alt="Pokenic"
               width={88}
               height={44}
-              className="h-10 w-auto object-contain lg:h-11"
+              className="h-7 w-auto object-contain lg:h-11"
             />
           </Link>
 
@@ -160,16 +173,25 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* Right cluster: actions (desktop) + mobile hamburger. shrink-0 so it never clips. */}
-        <div className="flex shrink-0 items-center gap-2">
-          {/* "How it works" only appears once there's room, so the bar never overflows
-              in the cramped ~1024–1100px band. */}
+        {/* Right cluster: help + auth actions. On mobile live keeps ?, Login and
+            Sign Up visible in the bar (wave-2 audit, measured at 390). shrink-0
+            so it never clips. */}
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {/* Full "How it works" once there's room; icon-only below ~1120px so
+              the cramped 1024–1100px band and mobile match live's ? button. */}
           <a
             href="/how-it-works"
             className="hidden h-10 items-center gap-2 rounded-lg bg-white/5 px-3.5 text-base font-normal text-neutral-300 transition-all duration-200 hover:bg-white/10 hover:text-white min-[1120px]:flex"
           >
             <HelpCircle className="h-4 w-4 text-neutral-400" aria-hidden />
             How it works
+          </a>
+          <a
+            href="/how-it-works"
+            aria-label="How it works"
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-neutral-300 transition-all duration-200 hover:bg-white/10 hover:text-white min-[1120px]:hidden"
+          >
+            <HelpCircle className="h-4 w-4 text-neutral-400" aria-hidden />
           </a>
           {customer ? (
             <div className="hidden lg:block">
@@ -180,7 +202,7 @@ export default function SiteHeader() {
               <button
                 type="button"
                 onClick={() => openAuth('login')}
-                className="hidden h-10 items-center gap-2 rounded-lg bg-white/5 px-3.5 text-sm font-medium text-neutral-50 transition-all duration-200 ease-in-out hover:bg-white/10 lg:flex"
+                className="flex h-10 items-center gap-2 rounded-lg bg-white/5 px-3 text-sm font-medium text-neutral-50 transition-all duration-200 ease-in-out hover:bg-white/10 sm:px-3.5"
               >
                 <LogIn className="h-4 w-4" aria-hidden />
                 Login
@@ -188,27 +210,12 @@ export default function SiteHeader() {
               <button
                 type="button"
                 onClick={() => openAuth('signup')}
-                className="hidden h-10 items-center justify-center whitespace-nowrap rounded-lg bg-gradient-to-r from-white/90 via-white to-white/90 px-4 text-sm font-medium text-black transition-all duration-300 hover:opacity-90 lg:inline-flex"
+                className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-lg bg-gradient-to-r from-white/90 via-white to-white/90 px-3.5 text-sm font-medium text-black transition-all duration-300 hover:opacity-90 sm:px-4"
               >
                 Sign Up
               </button>
             </>
           )}
-
-          {/* mobile hamburger */}
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label="Open menu"
-            aria-expanded={menuOpen}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-200 transition-all duration-200 hover:bg-white/5 hover:text-white lg:hidden"
-          >
-            {menuOpen ? (
-              <X className="h-5 w-5" aria-hidden />
-            ) : (
-              <Menu className="h-5 w-5" aria-hidden />
-            )}
-          </button>
         </div>
       </div>
 

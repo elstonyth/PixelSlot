@@ -32,15 +32,21 @@ const SUPPORT_LINKS: FooterLink[] = [
 type IconProps = { className?: string };
 
 function TwitterIcon({ className }: IconProps) {
+  // Live still shows the legacy Twitter BIRD (stroke outline), not the X glyph
+  // (wave-2 audit, /contact footer). Feather/Lucide twitter path.
   return (
     <svg
       role="img"
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
       aria-hidden="true"
     >
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
     </svg>
   );
 }
@@ -168,6 +174,11 @@ export default function SiteFooter() {
                 <h3 className="text-sm font-semibold text-white">
                   Social Media
                 </h3>
+                {/* Live order: heading -> paragraph -> icon row (wave-2 audit) */}
+                <p className="mx-auto mt-4 max-w-[240px] text-sm text-neutral-400 sm:mx-0">
+                  Follow us on social media for the latest updates, exclusive
+                  offers, and community highlights.
+                </p>
                 <div className="mt-4 flex items-center justify-center gap-3 sm:justify-start">
                   {SOCIALS.map(({ label, href, Icon, iconClass }) => (
                     <a
@@ -187,10 +198,6 @@ export default function SiteFooter() {
                     </a>
                   ))}
                 </div>
-                <p className="mx-auto mt-4 max-w-[240px] text-sm text-neutral-400 sm:mx-0">
-                  Follow us on social media for the latest updates, exclusive
-                  offers, and community highlights.
-                </p>
               </div>
             </div>
           </div>

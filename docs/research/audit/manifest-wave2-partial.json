@@ -1,0 +1,30 @@
+[
+  {
+    "site": "clone",
+    "path": "/lucky-draw",
+    "files": {
+      "390": "docs/research/audit/shots/lucky-draw/clone-390.png",
+      "1440": "docs/research/audit/shots/lucky-draw/clone-1440.png",
+      "3840": "docs/research/audit/shots/lucky-draw/clone-3840.png"
+    },
+    "heights": {
+      "390": 1782,
+      "1440": 1356
+    },
+    "errors": []
+  },
+  {
+    "site": "clone",
+    "path": "/contact",
+    "files": {
+      "390": "docs/research/audit/shots/contact/clone-390.png",
+      "1440": "docs/research/audit/shots/contact/clone-1440.png",
+      "3840": "docs/research/audit/shots/contact/clone-3840.png"
+    },
+    "heights": {
+      "390": 2061,
+      "1440": 1272
+    },
+    "errors": []
+  }
+]

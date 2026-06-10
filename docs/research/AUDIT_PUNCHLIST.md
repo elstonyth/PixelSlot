@@ -216,7 +216,7 @@ most were fabricated from interpretation.
 | /series | BLOCKER | fabricated 8-tile card grid vs live 16-series accordion index (Scarlet & Violet → Base) with real set/card counts + search/US-JP-KR toolbar; clone-only page header + "Demo catalog" line | OPEN |
 | /30th | BLOCKER | fabricated dark marketing page vs live standalone chrome-less scene: blurred `pallet.png` game world + white retro OS dialog (Press Start 2P), PokeAPI sprites row, Discord-blurple CTA + `discord.gg/phygitals` caption | OPEN |
 | /free | BLOCKER | fabricated marketing page vs live anonymous signup overlay over dimmed packs grid; benefit-card hierarchy inverted; missing consent line; clone-only pack fan | OPEN |
-| /lucky-draw | BLOCKER | route doesn't exist on live (hard 404 with custom vault-slab 404 page) — delete clone route, build `not-found.tsx` clone | OPEN |
+| /lucky-draw | BLOCKER | route doesn't exist on live (hard 404 with custom vault-slab 404 page) — delete clone route, build `not-found.tsx` clone | ✅ FIXED (slice 1) |
 | /roulette | BLOCKER | live = banner panel + 3 rarity sections (Uncommon/Rare/Legendary, 4 tiles each: Eevee GX/Pikachu VMAX/Charizard GX #1-4, per-tile Play buttons); clone = fabricated carousel + odds chips + gradient CTA; "Pokemon" unaccented on live | OPEN |
 | /clawmaker | BLOCKER | live (anon) = in-place "Access Restricted / Please login to view this page." amber-glow wall, no footer; clone = fabricated logged-in builder | OPEN |
 | /airdrop | BLOCKER | live = chrome-less splash (floating collection icons top/bottom, centered logo + green progress bar + "PREPARING POKEMON CARD AIRDROP" + green gradient pill `#1aa87a→green-500`); clone = invented hero+avatar-wall marketing page | OPEN |
@@ -236,3 +236,6 @@ most were fabricated from interpretation.
   hung an uncapped loop; even a bare `page.screenshot` times out there).
 - Live `/lucky-draw` 404s; live `/earnings`/`/referrals`/`/pokecoin`/`/nbacoin`/`/accelerate-claim`
   are public — earlier assumptions that all account routes auth-wall anonymously were wrong.
+
+### Wave-2 fix progress
+- **Slice 1 (2026-06-10):** shared SiteHeader mobile-390 (hamburger LEFT w/ bg, smaller logo, ?-icon + Login + Sign Up visible — systemic finding 2 DONE for anonymous state); SiteFooter Twitter bird + social column order (finding 3 partial — chrome gate still open); /lucky-draw deleted + custom 404 cloned as src/app/not-found.tsx (finding 4 DONE). Verified: clean build + 390 re-capture vs live (shots/lucky-draw/clone-390.png).
