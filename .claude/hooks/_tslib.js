@@ -1,8 +1,9 @@
+﻿/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS Node hook script */
 // Shared typecheck runner for the Claude Code hooks.
 //
 // Runs `tsc --noEmit` for a project with a node-enforced timeout (Windows lacks
 // a reliable `timeout` in the hook shell, and an unbounded tsc would orphan /
-// pile up — see .claude/rules/web/hooks.md). Incremental + a dedicated
+// pile up â€” see .claude/rules/web/hooks.md). Incremental + a dedicated
 // tsBuildInfo cache keep re-runs to ~1-3s. Never throws.
 const { spawnSync } = require("node:child_process");
 const path = require("node:path");
@@ -56,7 +57,7 @@ function runTsc(key, { incremental = true, timeoutMs = 90000 } = {}) {
   });
   if (res.status === 0) return { status: "pass", label: p.label, output: "" };
   // spawnSync sets `signal` when it kills the child on timeout; `error` on a
-  // spawn failure. Either is inconclusive — never block on those.
+  // spawn failure. Either is inconclusive â€” never block on those.
   if (res.signal || res.error) {
     return { status: "timeout", label: p.label, output: "" };
   }

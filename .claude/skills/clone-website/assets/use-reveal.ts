@@ -3,19 +3,27 @@
 // Drop-in scroll-entry + reduced-motion hooks. Copy into the target project at
 // src/lib/use-reveal.ts. Pair with assets/Reveal.tsx.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-/** SSR-safe `prefers-reduced-motion` listener. */
+const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(onChange: () => void) {
+  const mql = window.matchMedia(REDUCED_QUERY);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+
+/**
+ * SSR-safe `prefers-reduced-motion` listener. Backed by `useSyncExternalStore` so
+ * there's no setState-in-effect; the server snapshot is always `false`, matching the
+ * client's first paint (no hydration flash).
+ */
 export function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mql.matches);
-    const onChange = () => setReduced(mql.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    () => window.matchMedia(REDUCED_QUERY).matches,
+    () => false,
+  );
 }
 
 /**
@@ -28,12 +36,15 @@ export function usePrefersReducedMotion(): boolean {
 export function useInView<T extends HTMLElement = HTMLDivElement>() {
   const ref = useRef<T>(null);
   const [shown, setShown] = useState(false);
+
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    // If IntersectionObserver is unavailable (legacy / SSR-only), reveal on the next
+    // tick — deferred via setTimeout so we never setState synchronously in the effect.
     if (typeof IntersectionObserver === "undefined") {
-      setShown(true);
-      return;
+      const id = setTimeout(() => setShown(true), 0);
+      return () => clearTimeout(id);
     }
     const obs = new IntersectionObserver(
       (entries) => {
@@ -49,5 +60,6 @@ export function useInView<T extends HTMLElement = HTMLDivElement>() {
     obs.observe(node);
     return () => obs.disconnect();
   }, []);
+
   return [ref, shown] as const;
 }

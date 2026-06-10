@@ -1,4 +1,5 @@
-// Stop hook — the enforced "builds green" gate (Audit fix 1).
+﻿/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS Node hook script */
+// Stop hook â€” the enforced "builds green" gate (Audit fix 1).
 //
 // `medusa develop`/`medusa exec`/`next dev` are SWC transpile-only and DO NOT
 // type-check, so a red build can survive an entire session unseen (it did once).
@@ -6,7 +7,7 @@
 // (exit 2) and surface them so they get fixed before the session ends.
 //
 // Loop-safe: if the stop is already a continuation of a prior stop-hook block
-// (`stop_hook_active`), let it through — one firm nudge, never an unfixable trap.
+// (`stop_hook_active`), let it through â€” one firm nudge, never an unfixable trap.
 const { runTsc, errorLines } = require("./_tslib.js");
 
 let input = "";
@@ -28,13 +29,13 @@ process.stdin.on("end", () => {
   const blocks = failed
     .map((r) => {
       const errs = errorLines(r.output).map((e) => "    " + e);
-      return `• ${r.label} typecheck FAILED:\n${errs.join("\n")}`;
+      return `â€¢ ${r.label} typecheck FAILED:\n${errs.join("\n")}`;
     })
     .join("\n\n");
   console.error(
-    `[stop-verify] Type errors are present — fix before finishing ` +
+    `[stop-verify] Type errors are present â€” fix before finishing ` +
       `(dev servers don't type-check, so probes can't catch these):\n\n${blocks}\n\n` +
-      `Run: npm run typecheck  ·  (backend) corepack yarn build`,
+      `Run: npm run typecheck  Â·  (backend) corepack yarn build`,
   );
   process.exit(2); // block this stop so the errors get addressed
 });
