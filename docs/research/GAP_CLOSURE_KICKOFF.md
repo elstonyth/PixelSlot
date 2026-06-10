@@ -141,4 +141,5 @@ skips packs that already have odds; out-of-stock packs may stay draft/odds-less.
 - Every route disposition recorded in `AUDIT_PUNCHLIST.md`.
 - One conventional commit per task (`fix(api): rate-limit pack opens`,
   `docs(research): route audit wave 2`, …); push `feat/gap-closure` and PR into
-  `clone/phygitals-v2` (NOT master).
+  `master` (branches were consolidated 2026-06-10 — master is now the single
+  line of history; `clone/phygitals-v2` and `feat/backend-medusa-mercur` are gone).
