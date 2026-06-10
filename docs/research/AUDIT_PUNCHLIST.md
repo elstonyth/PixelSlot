@@ -174,3 +174,65 @@ modern-grails-noafw0), pro-soccer-pack, and starter-riftbound-pack. `CLAW_NO_MAC
 - 3 out-of-stock Pokémon tiers not added (Trainer $10, Sealed $100, Base Set $500) — need an out-of-stock tile state.
 - **Dragon Ball IS a live category** (confirmed in the live chip rail on 2026-06-08) — clone lacks it.
 - Live buyback is now **90%** (clone shows 85% in places).
+
+---
+
+## Wave 2 — the 17 "NOT YET DIFFED" routes (triaged 2026-06-10, fixes PENDING)
+
+**Method:** `scripts/capture-wave2.mjs` (tall-viewport full-content capture — fixes the wave-1
+below-fold blindness; live scrolls in `main.overflow-y-auto`) → per-route triage + adversarial
+verification (computed-style probes for measurable claims). Full evidence:
+`docs/research/audit/WAVE2_TRIAGE_DIGEST.md` (+ `wave2-triage.json` / `wave2-verify.json`, raw
+shots under `docs/research/audit/shots/<slug>/`). 63 verified-CONFIRMED gaps; a minority of
+small gaps remain UNVERIFIED (verify stage was interrupted; digest marks them).
+
+**Result: 13 BLOCKER / 4 MAJOR / 0 match.** None of these routes was cloned from measurement —
+most were fabricated from interpretation.
+
+### Systemic findings (fix once, pays off everywhere)
+1. **Wrong auth-gating (architectural):** live serves `/earnings`, `/referrals`, `/pokecoin`,
+   `/nbacoin`, `/accelerate-claim` **publicly** (anonymous header shows Login/Sign Up); the clone's
+   `(account)/layout.tsx` `redirect("/?auth=login")` bounces all of them to home+modal. `/orders`
+   on live stays on-URL with a red "Failed to Load Orders / Authentication required" error card.
+   Fix = move those 5 routes out of `(account)` and build their public pages; keep gating only
+   where live gates (e.g. `/clawmaker` shows "Access Restricted" — in-place, not a redirect).
+2. **Mobile header (390) wrong on every route:** live = hamburger far-LEFT (40×40 @x=17), logo
+   mark, `?` help button (40×40 @x=136), `Login` (91×40 @x=184), `Sign Up` (90×40 @x=283); clone =
+   wordmark left + bare hamburger right only. One `SiteHeader.tsx` fix.
+3. **Footer module:** live shows the footer only on some routes — absent on `/30th`, `/airdrop`,
+   `/clawmaker`, `/social`, `/free` (likely; flagged) → needs a route-allowlist chrome gate.
+   Also: first social icon is the legacy Twitter BIRD (clone has X), and the Social Media column
+   order is heading→paragraph→icons (clone has icons before paragraph).
+4. **No custom 404:** live `/lucky-draw` is a hard 404 rendering phygitals' custom 404 page
+   (vault-slab "NO CARD ON FILE / SLOT EMPTY" graphic). Clone has a fabricated "Live Draws" page
+   and no `not-found.tsx` at all.
+5. **Accent drift:** live consistently uses unaccented "Pokemon" in copy (`/roulette` heading +
+   subtitle, `/airdrop` label/button); clone writes "Pokémon".
+
+### Per-route dispositions (verdict · headline gap · fix state)
+| Route | Verdict | Headline | State |
+|---|---|---|---|
+| /contact | MAJOR | right content, wrong structure: missing "Support team online" pill; hero wrongly carded; 2-col grid vs live stacked column; vault cards fabricated ("Operational/5–7 day" vs live "DE/OR, USA · 2 business days · 2-7 business days"); FAQ pills vs accordion | OPEN |
+| /series | BLOCKER | fabricated 8-tile card grid vs live 16-series accordion index (Scarlet & Violet → Base) with real set/card counts + search/US-JP-KR toolbar; clone-only page header + "Demo catalog" line | OPEN |
+| /30th | BLOCKER | fabricated dark marketing page vs live standalone chrome-less scene: blurred `pallet.png` game world + white retro OS dialog (Press Start 2P), PokeAPI sprites row, Discord-blurple CTA + `discord.gg/phygitals` caption | OPEN |
+| /free | BLOCKER | fabricated marketing page vs live anonymous signup overlay over dimmed packs grid; benefit-card hierarchy inverted; missing consent line; clone-only pack fan | OPEN |
+| /lucky-draw | BLOCKER | route doesn't exist on live (hard 404 with custom vault-slab 404 page) — delete clone route, build `not-found.tsx` clone | OPEN |
+| /roulette | BLOCKER | live = banner panel + 3 rarity sections (Uncommon/Rare/Legendary, 4 tiles each: Eevee GX/Pikachu VMAX/Charizard GX #1-4, per-tile Play buttons); clone = fabricated carousel + odds chips + gradient CTA; "Pokemon" unaccented on live | OPEN |
+| /clawmaker | BLOCKER | live (anon) = in-place "Access Restricted / Please login to view this page." amber-glow wall, no footer; clone = fabricated logged-in builder | OPEN |
+| /airdrop | BLOCKER | live = chrome-less splash (floating collection icons top/bottom, centered logo + green progress bar + "PREPARING POKEMON CARD AIRDROP" + green gradient pill `#1aa87a→green-500`); clone = invented hero+avatar-wall marketing page | OPEN |
+| /social | MAJOR | right page, simplified components: missing search bar; compact list tiles vs live large profile cards (Lvl badge, rank trophy, online dot, stats, in-card actions); 3-col vs live 4-col; several UNVERIFIED | OPEN |
+| /orders | BLOCKER | clone redirects to home+modal; live stays on /orders with red error card (measured: rounded-2xl, dark-maroon `bg-red-50/dark`, "Failed to Load Orders / Authentication required / Try Again") | OPEN |
+| /messages | MAJOR | **live uncapturable headless** (page pegs renderer — busy JS loop; documented limitation); clone's redirect-to-home still wrong vs sibling account-route pattern (in-place anonymous state) | OPEN |
+| /earnings | BLOCKER | live is a PUBLIC demo-data "Earnings Dashboard" ($24,567.89 etc.); clone gated + hidden page is a different fabricated design | OPEN |
+| /referrals | BLOCKER | live is a PUBLIC landing: badge-art background grid, "Invite Friends, Earn Together" glass panel, yellow CTA, Top Referrers table (11969/2146/1626/...); clone gated | OPEN |
+| /pokecoin | BLOCKER | live is a PUBLIC "Pokécoin Market" Gen-1 grid (2-col @390, 7-col @1440/3840, live market values — snapshot static); clone gated + fabricated balance page | OPEN |
+| /nbacoin | BLOCKER | live is a PUBLIC "NBA RWA Index Fund" (15 player cards, LeBron $9.58 +3.52%, SUPPLY/MKT stats, sparklines); clone gated + fabricated balance page | OPEN |
+| /accelerate-claim | BLOCKER | live keeps anon on-route: co-branded claim landing over dimmed pack-grid with "Sign Up or Login to Claim"; clone gated + fabricated queue page | OPEN |
+| /pokemon/generation/1 | MAJOR | structure/order/content match (all 151, National-Dex order); typography (Nekst vs live plain semibold), grid density (~228px vs ~194px row pitch), sprite size, `Nidoran-f/-m`/`Mr-mime` literals, clone-only PokeAPI caption; mostly UNVERIFIED measurements | OPEN |
+
+### Capture-tooling lessons (wave 2)
+- `scripts/capture-wave2.mjs` is the new reference capture (tall-viewport = real full-content live
+  shots). Scroll loops MUST be tick-capped (live `/messages` grows `scrollHeight` indefinitely —
+  hung an uncapped loop; even a bare `page.screenshot` times out there).
+- Live `/lucky-draw` 404s; live `/earnings`/`/referrals`/`/pokecoin`/`/nbacoin`/`/accelerate-claim`
+  are public — earlier assumptions that all account routes auth-wall anonymously were wrong.
