@@ -24,3 +24,5 @@ build
 !.yarn/versions
 
 .medusa
+# runtime uploads served at /static (restore via scripts/restore-backend-static.mjs)
+/static

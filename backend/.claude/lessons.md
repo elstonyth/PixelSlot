@@ -24,6 +24,19 @@ compiled `.medusa/server/medusa-config.js`). For a quick restore without a full
 rebuild you can also patch that built file, but always make the change in the
 `medusa-config.ts` source too.
 
+### Uploaded /static files are transient — a rebuild can wipe them while the DB keeps the URLs
+The local file provider stores uploads in `<cwd>/static` and the DB keeps ABSOLUTE
+`http://localhost:9000/static/<epoch>-<name>` URLs. After a backend rebuild the
+static dir was gone → every referenced image 404'd (storefront showed broken
+card/pack art) while the DB rows still looked fine. `reupload-images.ts` does NOT
+self-heal this: it skips rows whose image is already an absolute URL.
+
+**Fix:** `node scripts/restore-backend-static.mjs` (repo root) — queries the DB for
+every referenced `/static/` URL, maps `<epoch>-<basename>` back to the source file
+under the storefront's `public/`, and copies it into `backend/packages/api/static/`
+(idempotent). The dir is gitignored (runtime data). Sanity probe:
+`GET :9000/static/<file>` → 200, and the home page audit reports `broken=0`.
+
 ### Backend build + restart pattern
 - Build from the **backend root**: `corepack yarn build` (turbo builds
   `packages/api` + `apps/*` together). The admin step finishes slightly after
