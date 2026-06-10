@@ -1,4 +1,0 @@
-[    1268ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/contact?_rsc=1r34m:0
-[    1275ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/about?_rsc=1r34m:0
-[   18279ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/contact?_rsc=1r34m:0
-[   18280ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/about?_rsc=1r34m:0
