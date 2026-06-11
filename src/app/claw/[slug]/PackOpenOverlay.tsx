@@ -53,6 +53,12 @@ const PACK_W = 196;
 const PACK_H = 304;
 const RADIUS = 188;
 
+// Keep/sell decision window at the reveal, in seconds. Expiry auto-keeps the
+// card in the vault, where later sells pay the flat rate instead of the pack's
+// instant rate. Mirrors (with grace) the server window in
+// backend/packages/api/src/modules/packs/buyback-rate.ts.
+const SELL_COUNTDOWN_SECS = 30;
+
 type Stage = "packs" | "slab" | "metadata" | "pull" | "card";
 
 // Full-screen pack-opening, frame-matched to the live phygitals flow: an interactive
@@ -81,7 +87,8 @@ export default function PackOpenOverlay({
   reduced: boolean;
   opening: boolean;
   /** Instant sell-back offer for THIS pull; null for demo spins. vaultPercent
-   *  is the (usually lower) rate that applies to later sells from the vault. */
+   *  is the flat (usually lower) rate that applies to later sells from the
+   *  vault. The offer is only good during the 30s countdown at the reveal. */
   buyback?: {
     pullId: string;
     percent: number;
@@ -106,8 +113,21 @@ export default function PackOpenOverlay({
     | { phase: "error"; message: string }
   >({ phase: "idle" });
 
+  // The keep/sell offer expires 30s after the card is revealed — expiry keeps
+  // the card (every pull is vaulted until sold), where the flat vault rate
+  // applies. The server enforces its own window with grace on top, so this
+  // countdown is UX, not the security gate.
+  const [secondsLeft, setSecondsLeft] = useState(SELL_COUNTDOWN_SECS);
+  const sellExpired = secondsLeft <= 0;
+  useEffect(() => {
+    if (stage !== "card" || !buyback) return;
+    if (sell.phase === "sold" || sellExpired) return;
+    const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [stage, buyback, sell.phase, sellExpired]);
+
   async function handleSellBack() {
-    if (!buyback || !onSellBack || sell.phase === "selling" || sell.phase === "sold") return;
+    if (!buyback || !onSellBack || sellExpired || sell.phase === "selling" || sell.phase === "sold") return;
     setSell({ phase: "selling" });
     try {
       const res = await onSellBack(buyback.pullId);
@@ -464,11 +484,12 @@ export default function PackOpenOverlay({
                 <span className="text-[13px] text-white/70">Value: <span className="font-bold text-white">{card.value}</span>{!isReal && " · demo"}</span>
               </div>
               <div className="mt-3 flex flex-col items-center gap-2">
-                {/* Instant sell-back: pull → site credit at the pack's buyback %.
-                    Sold state replaces the button with the credited confirmation;
-                    "Continue" then keeps/sends the card to the vault implicitly
-                    (every pull is vaulted until sold). Demo spins have no offer. */}
-                {buyback && sell.phase !== "sold" && (
+                {/* Instant sell-back: pull → site credit at the pack's buyback %,
+                    offered only while the 30s countdown runs. Sold state replaces
+                    the button with the credited confirmation; expiry (or
+                    "Continue") keeps the card in the vault implicitly (every pull
+                    is vaulted until sold). Demo spins have no offer. */}
+                {buyback && sell.phase !== "sold" && !sellExpired && (
                   <button
                     type="button"
                     onClick={handleSellBack}
@@ -477,7 +498,7 @@ export default function PackOpenOverlay({
                   >
                     {sell.phase === "selling"
                       ? "Selling…"
-                      : `Sell back for $${buyback.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${buyback.percent}%)`}
+                      : `Sell back for $${buyback.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${buyback.percent}%) · ${secondsLeft}s`}
                   </button>
                 )}
                 {sell.phase === "sold" && (
@@ -486,17 +507,19 @@ export default function PackOpenOverlay({
                     {sell.balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 )}
-                {sell.phase === "error" && (
+                {sell.phase === "error" && !sellExpired && (
                   <p className="max-w-[300px] text-center text-[12px] font-medium text-red-400">{sell.message}</p>
                 )}
                 <button type="button" onClick={onClose} className="inline-flex h-12 w-[300px] items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 text-sm font-bold text-white shadow-lg shadow-emerald-900/30 transition-opacity hover:opacity-95">
-                  {buyback && sell.phase !== "sold" ? "Keep in vault" : "Continue"}
+                  {buyback && sell.phase !== "sold" && !sellExpired ? "Keep in vault" : "Continue"}
                 </button>
-                {/* The spot rate is only good NOW — vaulted cards sell at the
-                    pack's vault rate. Shown only when the rates differ. */}
-                {buyback && sell.phase !== "sold" && buyback.vaultPercent !== buyback.percent && (
+                {/* The spot rate is only good during the countdown — vaulted cards
+                    sell at the flat rate. */}
+                {buyback && sell.phase !== "sold" && (
                   <p className="max-w-[300px] text-center text-[11px] text-white/45">
-                    Vaulted cards sell back later at {buyback.vaultPercent}%.
+                    {sellExpired
+                      ? `Offer expired — the card is in your vault and sells back anytime at ${buyback.vaultPercent}%.`
+                      : `Cards in your vault sell back later at the flat ${buyback.vaultPercent}% rate.`}
                   </p>
                 )}
                 <button type="button" onClick={onOpenAnother} disabled={opening} className="inline-flex h-10 items-center justify-center rounded-xl px-5 text-[13px] font-semibold text-white/60 transition-colors hover:text-white disabled:opacity-60">

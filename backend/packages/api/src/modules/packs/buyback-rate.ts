@@ -4,9 +4,11 @@
 // credit another.
 //
 // Model: a sell-back within the INSTANT WINDOW after the pull gets the pack's
-// instant rate (buyback_percent — the "sell on the spot" offer at the reveal);
-// after the window it gets vault_buyback_percent. Time-based so the better
-// rate can't be claimed later by replaying the reveal's API call.
+// instant rate (buyback_percent — the "sell on the spot" offer behind the
+// 30-second keep/sell countdown at the reveal); after the window — i.e. the
+// moment the card sits in the vault/inventory — every sell is at the FLAT
+// rate. Time-based so the better rate can't be claimed later by replaying the
+// reveal's API call.
 
 export type BuybackRateType = "instant" | "vault";
 
@@ -16,11 +18,16 @@ export type BuybackRate = {
   rate_type: BuybackRateType;
 };
 
-// Default when the source pack was deleted after the pull — matches the seed's
-// Pack.buyback_percent default.
-const FALLBACK_PERCENT = 90;
+// The site-wide FLAT buyback rate: applied to every sell from the
+// vault/inventory, and the floor a pack's instant rate must beat (admin
+// validation rejects buyback_percent below it). Also the fallback when the
+// source pack was deleted after the pull.
+export const FLAT_PERCENT = 90;
 
-const DEFAULT_WINDOW_MS = 10 * 60 * 1000;
+// The on-screen keep/sell countdown is 30s, but the server clock starts at
+// rolled_at — before the open-pack animation plays — so the window carries
+// grace for the animation and network on top of the visible 30s.
+const DEFAULT_WINDOW_MS = 90 * 1000;
 
 // Env-tunable like the rate limits; invalid values fall back, never 0 (a 0ms
 // window would silently kill the instant rate).
@@ -39,24 +46,19 @@ const sanePercent = (value: unknown): number | null => {
 };
 
 export function resolveBuybackRate(
-  pack:
-    | { buyback_percent: unknown; vault_buyback_percent: unknown }
-    | undefined
-    | null,
+  pack: { buyback_percent: unknown } | undefined | null,
   rolledAt: Date | string,
   nowMs: number = Date.now()
 ): BuybackRate {
   const rolledMs = new Date(rolledAt).getTime();
-  // An unparsable rolled_at counts as outside the window — the vault rate is
+  // An unparsable rolled_at counts as outside the window — the flat rate is
   // the conservative default.
   const isInstant =
     Number.isFinite(rolledMs) && nowMs - rolledMs <= instantBuybackWindowMs();
 
   const percent = isInstant
-    ? sanePercent(pack?.buyback_percent) ?? FALLBACK_PERCENT
-    : sanePercent(pack?.vault_buyback_percent) ??
-      sanePercent(pack?.buyback_percent) ??
-      FALLBACK_PERCENT;
+    ? sanePercent(pack?.buyback_percent) ?? FLAT_PERCENT
+    : FLAT_PERCENT;
 
   return { percent, rate_type: isInstant ? "instant" : "vault" };
 }

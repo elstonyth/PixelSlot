@@ -115,7 +115,7 @@ export default function VaultClient({ initial }: { initial: VaultResult }) {
       )}
 
       <p className="mt-5 text-[12px] text-white/35">
-        Sell-back credits your site balance instantly at the pack&apos;s buyback rate.
+        Sell-back credits your site balance instantly at the flat 90% buyback rate.
         Physical shipping of vaulted cards arrives with checkout.
       </p>
     </>

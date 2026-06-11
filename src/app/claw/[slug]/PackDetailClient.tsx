@@ -492,8 +492,9 @@ export default function PackDetailClient({
                   percent: active.buybackPercent ?? 90,
                   amount:
                     Math.round(reveal.marketValue * (active.buybackPercent ?? 90)) / 100,
-                  vaultPercent:
-                    active.vaultBuybackPercent ?? active.buybackPercent ?? 90,
+                  // Sells from the vault always pay the site-wide flat rate,
+                  // never a per-pack one (matches the server's FLAT_PERCENT).
+                  vaultPercent: 90,
                 }
               : null
           }

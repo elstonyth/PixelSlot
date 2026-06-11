@@ -1,5 +1,6 @@
 import { MedusaError } from "@medusajs/framework/utils";
 import type { PackWriteInput } from "../../../workflows/steps/create-pack";
+import { FLAT_PERCENT } from "../../../modules/packs/buyback-rate";
 
 const HANDLE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_TEXT = 512;
@@ -54,16 +55,14 @@ export function coercePackBody(raw: unknown, slug: string): PackWriteInput {
 
   const status = b.status === "draft" ? "draft" : "active";
 
-  // Buyback %s: integers 0–100; default to the model's 90. `buyback_percent`
-  // is the INSTANT (on-the-spot) rate, `vault_buyback_percent` applies to later
-  // sells from the vault.
-  const buybackPercent = Math.trunc(num(b, "buyback_percent", 90));
-  if (buybackPercent > 100) {
-    bad("'buyback_percent' must be between 0 and 100.");
-  }
-  const vaultBuybackPercent = Math.trunc(num(b, "vault_buyback_percent", 90));
-  if (vaultBuybackPercent > 100) {
-    bad("'vault_buyback_percent' must be between 0 and 100.");
+  // Buyback %: the INSTANT (on-the-spot) rate. Omitted → the flat rate (90).
+  // A set rate may never undercut the flat rate — vault/inventory sells always
+  // pay flat, so an instant rate below it would invert the keep/sell incentive.
+  const buybackPercent = Math.trunc(num(b, "buyback_percent", FLAT_PERCENT));
+  if (buybackPercent < FLAT_PERCENT || buybackPercent > 100) {
+    bad(
+      `'buyback_percent' must be between the flat rate (${FLAT_PERCENT}) and 100.`
+    );
   }
 
   return {
@@ -73,7 +72,6 @@ export function coercePackBody(raw: unknown, slug: string): PackWriteInput {
     price: num(b, "price", 0),
     image: imageStr(b, "image"),
     buyback_percent: buybackPercent,
-    vault_buyback_percent: vaultBuybackPercent,
     boost: b.boost === true,
     rank: Math.trunc(num(b, "rank", 0)),
     status,

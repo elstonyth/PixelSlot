@@ -20,10 +20,9 @@ export interface AdminPack {
   rank: number;
   price: number;
   image: string;
-  /** Instant ("sell on the spot") rate — 0–100, % of FMV. */
+  /** Instant ("sell on the spot") rate — flat rate (90) to 100, % of FMV.
+   *  Later sells from the vault always pay the flat rate. */
   buyback_percent: number;
-  /** Rate for later sells from the vault — 0–100, % of FMV. */
-  vault_buyback_percent: number;
   boost: boolean;
 }
 
@@ -36,7 +35,6 @@ export interface AdminPackWrite {
   price: number;
   image: string;
   buyback_percent: number;
-  vault_buyback_percent: number;
   boost: boolean;
   rank: number;
   status: "active" | "draft";
