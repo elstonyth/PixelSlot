@@ -36,7 +36,6 @@ interface BackendPack {
   boost: boolean;
   rank: number;
   buyback_percent?: number;
-  vault_buyback_percent?: number;
   in_stock?: boolean;
 }
 
@@ -51,8 +50,6 @@ const toPack = (p: BackendPack): Pack => ({
   image: p.image,
   boost: p.boost || undefined,
   buybackPercent: typeof p.buyback_percent === "number" ? p.buyback_percent : undefined,
-  vaultBuybackPercent:
-    typeof p.vault_buyback_percent === "number" ? p.vault_buyback_percent : undefined,
   inStock: p.in_stock === false ? false : undefined,
 });
 

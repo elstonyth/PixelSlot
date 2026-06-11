@@ -27,7 +27,6 @@ export async function GET(
       price: pack.price,
       image: pack.image,
       buyback_percent: pack.buyback_percent,
-      vault_buyback_percent: pack.vault_buyback_percent,
       boost: pack.boost,
       rank: pack.rank,
       status: pack.status,

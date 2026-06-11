@@ -10,16 +10,17 @@ jest.setTimeout(240 * 1000);
 
 const PASSWORD = "vb-test-password-1";
 
-// Fixture constants — FMV 50: the INSTANT rate (80%) must credit exactly 40.00
-// inside the post-pull window; the VAULT rate (60%) credits 30.00 once the
-// pull is older than the window (default 10 min — see buyback-rate.ts).
+// Fixture constants — FMV 50: the pack's INSTANT rate (96%) must credit
+// exactly 48.00 inside the post-pull window; once the pull is older than the
+// window (default 90s — see buyback-rate.ts) the sell pays the FLAT rate
+// (90%, no per-pack vault rate), crediting 45.00.
 const PACK_SLUG = "vb-pack";
 const CARD_HANDLE = "vb-card";
 const FMV = 50;
-const INSTANT_PERCENT = 80;
-const INSTANT_AMOUNT = 40;
-const VAULT_PERCENT = 60;
-const VAULT_AMOUNT = 30;
+const INSTANT_PERCENT = 96;
+const INSTANT_AMOUNT = 48;
+const FLAT_PERCENT = 90;
+const FLAT_AMOUNT = 45;
 const STOCKED = 5;
 
 medusaIntegrationTestRunner({
@@ -54,7 +55,6 @@ medusaIntegrationTestRunner({
             price: 10,
             image: "/cdn/test-pack.webp",
             buyback_percent: INSTANT_PERCENT,
-            vault_buyback_percent: VAULT_PERCENT,
           },
         ]);
         await packs.createCards([
@@ -274,9 +274,10 @@ medusaIntegrationTestRunner({
         expect(repeat.status).toBe(400);
         expect(repeat.data.message).toMatch(/already sold back/i);
 
-        // 10. VAULT RATE: a pull OLDER than the instant window sells at the
-        //     pack's vault %. Open again, then backdate rolled_at past the
-        //     window (default 10 min) via the module service.
+        // 10. FLAT RATE: a pull OLDER than the instant window sells at the
+        //     site-wide flat % regardless of the pack's rate. Open again, then
+        //     backdate rolled_at past the window (default 90s) via the module
+        //     service.
         const open2 = await request(
           "post",
           `/store/packs/${PACK_SLUG}/open`,
@@ -291,12 +292,12 @@ medusaIntegrationTestRunner({
           { id: pull2Id, rolled_at: new Date(Date.now() - 11 * 60 * 1000) },
         ]);
 
-        // The vault now quotes the vault rate for it…
+        // The vault now quotes the flat rate for it…
         const vault2 = await request("get", "/store/vault", authed(tokenA));
         expect(vault2.data.items).toHaveLength(1);
         expect(vault2.data.items[0].buyback).toMatchObject({
-          percent: VAULT_PERCENT,
-          amount: VAULT_AMOUNT,
+          percent: FLAT_PERCENT,
+          amount: FLAT_AMOUNT,
           rate_type: "vault",
         });
 
@@ -309,10 +310,10 @@ medusaIntegrationTestRunner({
         expect(buyback2.status).toBe(200);
         expect(buyback2.data).toMatchObject({
           pull_id: pull2Id,
-          amount: VAULT_AMOUNT,
-          percent: VAULT_PERCENT,
+          amount: FLAT_AMOUNT,
+          percent: FLAT_PERCENT,
           rate_type: "vault",
-          balance: INSTANT_AMOUNT + VAULT_AMOUNT,
+          balance: INSTANT_AMOUNT + FLAT_AMOUNT,
         });
         expect(await stockedQuantity()).toBe(STOCKED);
 

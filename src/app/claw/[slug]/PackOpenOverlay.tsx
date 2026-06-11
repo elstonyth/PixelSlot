@@ -32,6 +32,11 @@ import {
   SLAB_RISE,
 } from "@/lib/motion";
 import type { PackCard } from "../packs-data";
+import {
+  SELL_COUNTDOWN_SECS,
+  sellOfferDeadlineMs,
+  sellSecondsLeft,
+} from "@/lib/sell-countdown";
 
 // Rarity → rgb (shared with the detail-page rings) drives the glow, pill, and the
 // Pull-celebration ribbon color.
@@ -52,6 +57,7 @@ const STEP = 360 / SLOTS; // 60°
 const PACK_W = 196;
 const PACK_H = 304;
 const RADIUS = 188;
+
 
 type Stage = "packs" | "slab" | "metadata" | "pull" | "card";
 
@@ -81,12 +87,15 @@ export default function PackOpenOverlay({
   reduced: boolean;
   opening: boolean;
   /** Instant sell-back offer for THIS pull; null for demo spins. vaultPercent
-   *  is the (usually lower) rate that applies to later sells from the vault. */
+   *  is the flat (usually lower) rate that applies to later sells from the
+   *  vault. The offer is only good during the 30s countdown at the reveal. */
   buyback?: {
     pullId: string;
     percent: number;
     amount: number;
     vaultPercent: number;
+    /** Epoch ms when the open call resolved — anchors the offer's hard cap. */
+    openedAtMs: number;
   } | null;
   onSellBack?: (
     pullId: string
@@ -106,8 +115,35 @@ export default function PackOpenOverlay({
     | { phase: "error"; message: string }
   >({ phase: "idle" });
 
+  // The keep/sell offer expires 30s after the card is revealed — expiry keeps
+  // the card (every pull is vaulted until sold), where the flat vault rate
+  // applies. Wall-clock (deadline) based, not tick based, so background-tab
+  // interval throttling can't stretch it; hard-capped from the open call so a
+  // user lingering on the tap-gated stages never sees a quote the server
+  // window no longer honors (timing math + tests: src/lib/sell-countdown.ts).
+  // The server enforces its own window with grace on top, so this countdown
+  // is UX, not the security gate.
+  const sellDeadline = useRef<number | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(SELL_COUNTDOWN_SECS);
+  const sellExpired = secondsLeft <= 0;
+  useEffect(() => {
+    if (stage !== "card" || !buyback) return;
+    if (sellDeadline.current === null) {
+      sellDeadline.current = sellOfferDeadlineMs(Date.now(), buyback.openedAtMs);
+    }
+    if (sell.phase === "sold" || sellExpired) return;
+    const tick = () => {
+      const deadline = sellDeadline.current;
+      if (deadline === null) return;
+      setSecondsLeft(sellSecondsLeft(deadline, Date.now()));
+    };
+    tick();
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [stage, buyback, sell.phase, sellExpired]);
+
   async function handleSellBack() {
-    if (!buyback || !onSellBack || sell.phase === "selling" || sell.phase === "sold") return;
+    if (!buyback || !onSellBack || sellExpired || sell.phase === "selling" || sell.phase === "sold") return;
     setSell({ phase: "selling" });
     try {
       const res = await onSellBack(buyback.pullId);
@@ -464,11 +500,14 @@ export default function PackOpenOverlay({
                 <span className="text-[13px] text-white/70">Value: <span className="font-bold text-white">{card.value}</span>{!isReal && " · demo"}</span>
               </div>
               <div className="mt-3 flex flex-col items-center gap-2">
-                {/* Instant sell-back: pull → site credit at the pack's buyback %.
-                    Sold state replaces the button with the credited confirmation;
-                    "Continue" then keeps/sends the card to the vault implicitly
-                    (every pull is vaulted until sold). Demo spins have no offer. */}
-                {buyback && sell.phase !== "sold" && (
+                {/* Instant sell-back: pull → site credit at the pack's buyback %,
+                    offered only while the 30s countdown runs. Sold state replaces
+                    the button with the credited confirmation; expiry (or
+                    "Continue") keeps the card in the vault implicitly (every pull
+                    is vaulted until sold). Demo spins have no offer. */}
+                {/* Keep an in-flight "Selling…" visible past expiry — the server
+                    (with grace) decides; hiding it would orphan the request. */}
+                {buyback && sell.phase !== "sold" && (!sellExpired || sell.phase === "selling") && (
                   <button
                     type="button"
                     onClick={handleSellBack}
@@ -477,7 +516,7 @@ export default function PackOpenOverlay({
                   >
                     {sell.phase === "selling"
                       ? "Selling…"
-                      : `Sell back for $${buyback.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${buyback.percent}%)`}
+                      : `Sell back for $${buyback.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${buyback.percent}%) · ${secondsLeft}s`}
                   </button>
                 )}
                 {sell.phase === "sold" && (
@@ -490,13 +529,15 @@ export default function PackOpenOverlay({
                   <p className="max-w-[300px] text-center text-[12px] font-medium text-red-400">{sell.message}</p>
                 )}
                 <button type="button" onClick={onClose} className="inline-flex h-12 w-[300px] items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 text-sm font-bold text-white shadow-lg shadow-emerald-900/30 transition-opacity hover:opacity-95">
-                  {buyback && sell.phase !== "sold" ? "Keep in vault" : "Continue"}
+                  {buyback && sell.phase !== "sold" && !sellExpired ? "Keep in vault" : "Continue"}
                 </button>
-                {/* The spot rate is only good NOW — vaulted cards sell at the
-                    pack's vault rate. Shown only when the rates differ. */}
-                {buyback && sell.phase !== "sold" && buyback.vaultPercent !== buyback.percent && (
+                {/* The spot rate is only good during the countdown — vaulted cards
+                    sell at the flat rate. */}
+                {buyback && sell.phase !== "sold" && (
                   <p className="max-w-[300px] text-center text-[11px] text-white/45">
-                    Vaulted cards sell back later at {buyback.vaultPercent}%.
+                    {sellExpired
+                      ? `Offer expired — the card is in your vault and sells back anytime at ${buyback.vaultPercent}%.`
+                      : `Cards in your vault sell back later at the flat ${buyback.vaultPercent}% rate.`}
                   </p>
                 )}
                 <button type="button" onClick={onOpenAnother} disabled={opening} className="inline-flex h-10 items-center justify-center rounded-xl px-5 text-[13px] font-semibold text-white/60 transition-colors hover:text-white disabled:opacity-60">

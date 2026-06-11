@@ -14,7 +14,6 @@ type PackSnapshot = {
   price: number;
   image: string;
   buyback_percent: number;
-  vault_buyback_percent: number;
   boost: boolean;
   rank: number;
   status: "active" | "draft";
@@ -41,7 +40,6 @@ export const updatePackStep = createStep(
       price: pack.price,
       image: pack.image,
       buyback_percent: pack.buyback_percent,
-      vault_buyback_percent: pack.vault_buyback_percent,
       boost: pack.boost,
       rank: pack.rank,
       status: pack.status,
@@ -55,7 +53,6 @@ export const updatePackStep = createStep(
         price: input.price,
         image: input.image,
         buyback_percent: input.buyback_percent,
-        vault_buyback_percent: input.vault_buyback_percent,
         boost: input.boost,
         rank: input.rank,
         status: input.status,
