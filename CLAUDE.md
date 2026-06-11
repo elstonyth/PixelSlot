@@ -50,9 +50,7 @@ Sections with their **own** internal scroll animation — `HowItWorksSection` (v
 
 Reverse-engineering is measurement-driven, not eyeballed: `scripts/*.mjs` are one-off Playwright capture/measure/QA scripts (e.g. `recon-howitworks.mjs`, `measure-hero*.mjs`, `qa-*.mjs`, `hover-audit*.mjs`) that read computed styles / `getBoundingClientRect` from the live site and the clone, dumping screenshots and JSON into `docs/research/`. Per-component specs (exact computed CSS, states, content, responsive breakpoints) go in `docs/research/components/*.spec.md`; builder sub-agents are dispatched from those spec files.
 
-**Two source-of-truth files regenerate platform copies — edit the source, then sync:**
-- `AGENTS.md` → `bash scripts/sync-agent-rules.sh`
-- `.claude/skills/clone-website/SKILL.md` → `node scripts/sync-skills.mjs`
+**`AGENTS.md` is a source-of-truth file that regenerates platform copies — edit it, then run `bash scripts/sync-agent-rules.sh`.** (The clone-website skill and its `sync-skills.mjs` pipeline were removed 2026-06-11.)
 
 ## graphify
 

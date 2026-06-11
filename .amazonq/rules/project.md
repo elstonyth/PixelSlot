@@ -10,7 +10,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # Website Reverse-Engineer Template
 
 ## What This Is
-A reusable template for reverse-engineering any website into a clean, modern Next.js codebase using AI coding agents. The Next.js + shadcn/ui + Tailwind v4 base is pre-scaffolded — just run `/clone-website <url1> [<url2> ...]`.
+A reusable template for reverse-engineering any website into a clean, modern Next.js codebase using AI coding agents. The Next.js + shadcn/ui + Tailwind v4 base is pre-scaffolded. (The `/clone-website` skill was removed 2026-06-11 — the clone is built; see CLAUDE.md for the measurement-driven workflow that remains in `scripts/*.mjs`.)
 
 ## Tech Stack
 - **Framework:** Next.js 16 (App Router, React 19, TypeScript strict)
@@ -63,8 +63,6 @@ scripts/            # Asset download scripts
 ## MOST IMPORTANT NOTES
 - When launching Claude Code agent teams, prefer giving each teammate its own worktree branch and merging at the end (you serve the orchestrator role with full context). **EXCEPTION for this repo:** the git root *is* this repo (no parent monorepo), so Agent worktree isolation **fails** — dispatch builder sub-agents **in-place** here, not in per-teammate worktrees. See CLAUDE.md / `.claude/rules/common/agents.md`.
 - After editing `AGENTS.md`, run `bash scripts/sync-agent-rules.sh` to regenerate platform-specific instruction files.
-- After editing `.claude/skills/clone-website/SKILL.md`, run `node scripts/sync-skills.mjs` to regenerate the skill for all platforms.
-
 # Website Inspection Guide
 
 ## How to Reverse-Engineer Any Website
