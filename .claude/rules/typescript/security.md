@@ -25,4 +25,4 @@ if (!apiKey) {
 
 ## Agent Support
 
-- Use the `ecc:security-reviewer` agent (or `/ecc:security-scan`) for comprehensive security audits
+- Run `/security-review` for comprehensive security audits

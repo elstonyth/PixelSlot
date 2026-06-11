@@ -1,23 +1,17 @@
 # Agent Orchestration
 
-## Available agents (plugin-provided)
+## Available review tooling
 
-These agents come from the **ECC plugin** and are invoked by their `ecc:`-prefixed
-`subagent_type` (e.g. `ecc:code-reviewer`), or via the matching `/ecc:*` slash
-command. They are **not** in `~/.claude/agents/` — that directory is empty, so the
-bare names will not resolve. Use the `ecc:` form.
+The ECC plugin was uninstalled (2026-06-11) — `ecc:*` agents and `/ecc:*` slash
+commands no longer resolve. Use these instead:
 
-| Agent (`subagent_type`) | Slash command | Purpose | When to use |
-|---|---|---|---|
-| `ecc:planner` | `/ecc:plan` | Implementation planning | Complex features, refactoring |
-| `ecc:architect` | — | System design | Architectural decisions |
-| `ecc:tdd-guide` | — | Test-driven development | New behavioral logic |
-| `ecc:code-reviewer` | `/ecc:code-review` | Code review | After writing code |
-| `ecc:security-reviewer` | `/ecc:security-scan` | Security analysis | Auth/input/secrets/endpoints |
-| `ecc:build-error-resolver` | `/ecc:build-fix` | Fix build errors | When a build/typecheck fails |
-| `ecc:e2e-runner` | — | E2E testing | Critical user flows |
-| `ecc:refactor-cleaner` | `/ecc:refactor-clean` | Dead-code cleanup | Code maintenance |
-| `ecc:doc-updater` | `/ecc:update-docs` | Documentation | Updating docs |
+| Tool | Purpose | When to use |
+|---|---|---|
+| `/code-review` (built-in skill) | Code review of the current diff | After writing substantive code |
+| `/security-review` (built-in skill) | Security review of pending changes | Auth/input/secrets/endpoints/payments |
+| `coderabbit:code-review` skill / `coderabbit:code-reviewer` agent | AI-powered review via CodeRabbit | Explicit review requests, PR reviews |
+| Built-in `Plan` agent | Implementation planning | Complex features, refactoring |
+| Built-in `Explore` agent | Read-only codebase exploration | Broad fan-out searches |
 
 > **This repo:** the git root *is* this repo (no parent monorepo), so Agent
 > worktree isolation fails — **dispatch builder sub-agents in-place**, not in
@@ -33,22 +27,21 @@ Be honest about the gates — the config must not imply automation that isn't th
   storefront + backend and blocks finishing on real type errors. `medusa develop`
   / `next dev` are transpile-only (no type-check), so this hook is the real
   "builds green" gate — it is the *only* automatic quality gate.
-- **Advisory / operator-invoked** (NOT auto-enforced): everything below. No hook
+- **Advisory / operator-invoked** (NOT auto-enforced): everything else. No hook
   forces a review, TDD, or security pass to run — you must invoke them. They are
   strong recommendations, not guarantees, so don't assume they ran.
 
-## Recommended agent usage (advisory)
+## Recommended usage (advisory)
 
 Invoke when the task warrants it — recommendations, not automatic triggers:
 
-1. Complex feature / refactor → `ecc:planner` (or `/ecc:plan`) before building.
-2. After writing substantive code → `ecc:code-reviewer` (or `/ecc:code-review`).
-3. New behavioral logic (utilities, hooks, backend) → `ecc:tdd-guide`.
+1. Complex feature / refactor → plan first (Plan agent or plan mode).
+2. After writing substantive code → `/code-review` or `coderabbit:code-review`.
+3. New behavioral logic (utilities, hooks, backend) → write tests first.
    Presentational/visual work is covered by the Playwright capture/compare loop
    instead — see web/testing.md.
-4. Architectural decision → `ecc:architect`.
-5. Security-sensitive change (auth, user input, secrets, endpoints, payments) →
-   `ecc:security-reviewer` (or `/ecc:security-scan`).
+4. Security-sensitive change (auth, user input, secrets, endpoints, payments) →
+   `/security-review`.
 
 ## Parallel Task execution
 

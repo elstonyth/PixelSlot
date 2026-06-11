@@ -13,9 +13,8 @@
 
 If a build or typecheck fails:
 
-1. Use the `ecc:build-error-resolver` agent (or `/ecc:build-fix`).
-2. Read the error messages; fix incrementally.
-3. Re-verify after each fix. The **Stop hook** (`.claude/settings.json` →
+1. Read the error messages; fix incrementally.
+2. Re-verify after each fix. The **Stop hook** (`.claude/settings.json` →
    `.claude/hooks/stop-verify.js`) re-type-checks storefront + backend at session
    end and blocks finishing on real type errors, so a red build can't slip
    through unnoticed (`medusa develop` / `next dev` are transpile-only).

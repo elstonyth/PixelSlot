@@ -11,12 +11,12 @@ Code review ensures quality, security, and maintainability before code is merged
 > typecheck (PostToolUse + Stop) hook in `.claude/settings.json`. Invoke a reviewer
 > yourself at the points below; don't assume one ran.
 
-**Recommended review triggers** (invoke `ecc:code-reviewer` / `/ecc:code-review`):
+**Recommended review triggers** (run `/code-review` or the CodeRabbit review skill):
 
 - After writing or modifying substantive code
 - Before any commit to shared branches
 - When security-sensitive code is changed (auth, payments, user data) — also run
-  `ecc:security-reviewer`
+  `/security-review`
 - When architectural changes are made
 - Before merging pull requests
 
@@ -44,7 +44,7 @@ Before marking code complete:
 
 ## Security Review Triggers
 
-Strongly recommended — invoke `ecc:security-reviewer` (or `/ecc:security-scan`) when:
+Strongly recommended — run `/security-review` when changes touch:
 
 - Authentication or authorization code
 - User input handling
@@ -63,20 +63,15 @@ Strongly recommended — invoke `ecc:security-reviewer` (or `/ecc:security-scan`
 | MEDIUM | Maintainability concern | **INFO** - Consider fixing |
 | LOW | Style or minor suggestion | **NOTE** - Optional |
 
-## Agent Usage
+## Review Tooling
 
-Use these agents for code review:
+Use these for code review:
 
-| Agent (`subagent_type`) | Purpose |
+| Tool | Purpose |
 |-------|---------|
-| `ecc:code-reviewer` | General code quality, patterns, best practices |
-| `ecc:security-reviewer` | Security vulnerabilities, OWASP Top 10 |
-| `ecc:typescript-reviewer` | TypeScript/JavaScript specific issues |
-| `ecc:python-reviewer` | Python specific issues |
-| `ecc:go-reviewer` | Go specific issues |
-| `ecc:rust-reviewer` | Rust specific issues |
-
-These are plugin-provided (`ecc:` prefix) — not in `~/.claude/agents/`.
+| `/code-review` (built-in skill) | General code quality, patterns, best practices |
+| `/security-review` (built-in skill) | Security vulnerabilities, OWASP Top 10 |
+| `coderabbit:code-review` skill / `coderabbit:code-reviewer` agent | AI-powered review via CodeRabbit |
 
 ## Review Workflow
 

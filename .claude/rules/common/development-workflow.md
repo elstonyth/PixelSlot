@@ -15,20 +15,19 @@ The Feature Implementation Workflow describes the development pipeline: research
    - Prefer adopting or porting a proven approach over writing net-new code when it meets the requirement.
 
 1. **Plan First**
-   - Use the `ecc:planner` agent (or `/ecc:plan`) to create implementation plan
+   - Use the built-in `Plan` agent (or plan mode) to create an implementation plan
    - Generate planning docs before coding: PRD, architecture, system_design, tech_doc, task_list
    - Identify dependencies and risks
    - Break down into phases
 
 2. **TDD Approach**
-   - Use the `ecc:tdd-guide` agent
    - Write tests first (RED)
    - Implement to pass tests (GREEN)
    - Refactor (IMPROVE)
    - Verify 80%+ coverage of genuine logic (presentational work uses the Playwright capture/compare loop — see web/testing.md)
 
 3. **Code Review**
-   - Use the `ecc:code-reviewer` agent (or `/ecc:code-review`) after writing code
+   - Run `/code-review` (or the CodeRabbit review skill) after writing code
    - Address CRITICAL and HIGH issues
    - Fix MEDIUM issues when possible
 

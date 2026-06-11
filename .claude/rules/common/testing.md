@@ -34,14 +34,9 @@ instead of TDD.
 
 ## Troubleshooting Test Failures
 
-1. Use the `ecc:tdd-guide` agent
-2. Check test isolation
-3. Verify mocks are correct
-4. Fix implementation, not tests (unless tests are wrong)
-
-## Agent Support
-
-- `ecc:tdd-guide` - use for new behavioral logic; enforces write-tests-first (advisory, not auto-run)
+1. Check test isolation
+2. Verify mocks are correct
+3. Fix implementation, not tests (unless tests are wrong)
 
 ## Test Structure (AAA Pattern)
 
