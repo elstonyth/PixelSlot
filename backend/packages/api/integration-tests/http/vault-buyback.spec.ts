@@ -315,6 +315,34 @@ medusaIntegrationTestRunner({
           balance: INSTANT_AMOUNT + VAULT_AMOUNT,
         });
         expect(await stockedQuantity()).toBe(STOCKED);
+
+        // 11. PHANTOM-RESTORE GUARD: a pull made at ZERO stock earmarks nothing,
+        //     so its buyback must NOT mint a unit back (stock stays 0 — the
+        //     credit itself still works).
+        const inventoryModule = getContainer().resolve(Modules.INVENTORY);
+        await inventoryModule.adjustInventory(
+          inventoryItemId,
+          stockLocationId,
+          -STOCKED
+        );
+        expect(await stockedQuantity()).toBe(0);
+
+        const open3 = await request(
+          "post",
+          `/store/packs/${PACK_SLUG}/open`,
+          authed(tokenA)
+        );
+        expect(open3.status).toBe(200);
+        expect(await stockedQuantity()).toBe(0); // nothing to earmark
+
+        const buyback3 = await request(
+          "post",
+          `/store/vault/${open3.data.pull.id}/buyback`,
+          authed(tokenA)
+        );
+        expect(buyback3.status).toBe(200);
+        expect(buyback3.data.amount).toBe(INSTANT_AMOUNT); // credit unaffected
+        expect(await stockedQuantity()).toBe(0); // and NO phantom unit restored
       });
     });
   },

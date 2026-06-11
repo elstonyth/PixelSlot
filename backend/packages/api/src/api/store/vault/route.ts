@@ -57,6 +57,9 @@ export async function GET(
     .map((p) => {
       const card = cardByHandle.get(p.card_id);
       if (!card) return null; // card unregistered since — cannot value/display
+      // Corrupt FMV → no offer can be quoted; drop the row like a missing card
+      // (the buyback workflow refuses these too, so quote and credit agree).
+      if (!Number.isFinite(Number(card.market_value))) return null;
       const pack = packBySlug.get(p.pack_id);
       const { percent, rate_type } = resolveBuybackRate(pack, p.rolled_at);
       const marketValue = Number(card.market_value);

@@ -4,14 +4,13 @@ import {
 } from "@medusajs/framework/http";
 import PacksModuleService from "../../../modules/packs/service";
 import { PACKS_MODULE } from "../../../modules/packs";
+import { creditBalance } from "../../../modules/packs/credit-balance";
 
 // GET /store/credits — the authenticated customer's site-credit balance
-// (Σ over the append-only ledger) plus their most recent transactions.
-// Spending credit on packs lands with the payment phase; until then the
-// balance only grows via buybacks.
+// (paged Σ over the append-only ledger — exact at any size) plus their most
+// recent transactions. Spending credit on packs lands with the payment phase;
+// until then the balance only grows via buybacks.
 const RECENT_TRANSACTIONS = 50;
-
-const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 export async function GET(
   req: AuthenticatedMedusaRequest,
@@ -20,18 +19,17 @@ export async function GET(
   const packs: PacksModuleService = req.scope.resolve(PACKS_MODULE);
   const customerId = req.auth_context.actor_id;
 
-  const transactions = await packs.listCreditTransactions(
-    { customer_id: customerId },
-    { order: { created_at: "DESC" }, take: 10000 }
-  );
-
-  const balance = round2(
-    transactions.reduce((sum, t) => sum + Number(t.amount), 0)
-  );
+  const [balance, transactions] = await Promise.all([
+    creditBalance(packs, customerId),
+    packs.listCreditTransactions(
+      { customer_id: customerId },
+      { order: { created_at: "DESC" }, take: RECENT_TRANSACTIONS }
+    ),
+  ]);
 
   res.json({
     balance,
-    transactions: transactions.slice(0, RECENT_TRANSACTIONS).map((t) => ({
+    transactions: transactions.map((t) => ({
       id: t.id,
       amount: Number(t.amount),
       reason: t.reason,

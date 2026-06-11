@@ -29,6 +29,9 @@ export default function VaultClient({ initial }: { initial: VaultResult }) {
       }
       setItems((prev) => prev.filter((i) => i.pullId !== item.pullId));
       setBalance(res.balance);
+    } catch {
+      // A transport-level throw must still surface feedback, not fail silently.
+      setError("Something went wrong. Please try again.");
     } finally {
       setSellingId(null);
     }

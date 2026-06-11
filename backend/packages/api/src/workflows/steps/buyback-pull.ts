@@ -7,6 +7,7 @@ import {
 import { PACKS_MODULE } from "../../modules/packs";
 import type PacksModuleService from "../../modules/packs/service";
 import { findCardInventoryTarget } from "../../modules/packs/card-stock";
+import { creditBalance } from "../../modules/packs/credit-balance";
 import {
   resolveBuybackRate,
   type BuybackRateType,
@@ -83,7 +84,17 @@ export const buybackPullStep = createStep(
     const [pack] = await packs.listPacks({ slug: pull.pack_id }, { take: 1 });
     const { percent, rate_type } = resolveBuybackRate(pack, pull.rolled_at);
 
-    const amount = round2((Number(card.market_value) * percent) / 100);
+    // A money amount must never be computed from a corrupt FMV — refuse rather
+    // than credit NaN/garbage (the column is NOT NULL numeric, so this only
+    // fires on real data corruption).
+    const marketValue = Number(card.market_value);
+    if (!Number.isFinite(marketValue) || marketValue < 0) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        "This card has no valid market value and cannot be sold back."
+      );
+    }
+    const amount = round2((marketValue * percent) / 100);
 
     // 1. Credit row first — the unique pull_id kills concurrent duplicates here.
     let creditTransactionId: string;
@@ -123,27 +134,43 @@ export const buybackPullStep = createStep(
         },
       ]);
     } catch (error) {
-      await packs.deleteCreditTransactions([creditTransactionId]);
+      // The undo itself failing leaves credit-without-flip — loud trail so the
+      // inconsistent pair (pull, txn) can be repaired by hand.
+      try {
+        await packs.deleteCreditTransactions([creditTransactionId]);
+      } catch (undoError) {
+        logger.error(
+          `buyback-pull: UNDO FAILED — credit txn '${creditTransactionId}' exists but pull '${pull.id}' was not flipped; repair manually. ${
+            undoError instanceof Error ? undoError.message : String(undoError)
+          }`
+        );
+      }
       throw error;
     }
 
-    // 3. Return the physical unit to stock — best-effort, exactly mirroring the
-    //    pull-time earmark (untracked products skip; errors only warn).
+    // 3. Return the physical unit to stock — ONLY if this pull actually took
+    //    one (stock_earmarked): a pull made at 0 stock / on an untracked
+    //    product never decremented, so restoring it would mint a phantom unit.
+    //    The flag clears with the restore (and compensation re-sets it) so the
+    //    earmark and the counter always agree. Best-effort: errors only warn.
     let stockTarget: { inventoryItemId: string; locationId: string } | null =
       null;
     try {
-      const target = await findCardInventoryTarget(container, pull.card_id);
-      if (target) {
-        const inventoryModule = container.resolve(Modules.INVENTORY);
-        await inventoryModule.adjustInventory(
-          target.inventoryItemId,
-          target.locationId,
-          1
-        );
-        stockTarget = {
-          inventoryItemId: target.inventoryItemId,
-          locationId: target.locationId,
-        };
+      if (pull.stock_earmarked) {
+        const target = await findCardInventoryTarget(container, pull.card_id);
+        if (target) {
+          const inventoryModule = container.resolve(Modules.INVENTORY);
+          await inventoryModule.adjustInventory(
+            target.inventoryItemId,
+            target.locationId,
+            1
+          );
+          await packs.updatePulls([{ id: pull.id, stock_earmarked: false }]);
+          stockTarget = {
+            inventoryItemId: target.inventoryItemId,
+            locationId: target.locationId,
+          };
+        }
       }
     } catch (error) {
       logger.warn(
@@ -153,14 +180,8 @@ export const buybackPullStep = createStep(
       );
     }
 
-    // New balance = Σ ledger (append-only; no mutable balance column to drift).
-    const transactions = await packs.listCreditTransactions(
-      { customer_id: input.customer_id },
-      { take: 10000 }
-    );
-    const balance = round2(
-      transactions.reduce((sum, t) => sum + Number(t.amount), 0)
-    );
+    // New balance = paged Σ ledger (append-only; exact at any ledger size).
+    const balance = await creditBalance(packs, input.customer_id);
 
     const result: BuybackResult = {
       pull_id: pull.id,
@@ -185,6 +206,9 @@ export const buybackPullStep = createStep(
         status: "vaulted" as const,
         buyback_amount: null,
         buyback_at: null,
+        // A restored unit goes back out and the earmark returns with it, so a
+        // later (re-)buyback of the re-vaulted pull restores correctly.
+        ...(data.stockTarget ? { stock_earmarked: true } : {}),
       },
     ]);
     if (data.stockTarget) {

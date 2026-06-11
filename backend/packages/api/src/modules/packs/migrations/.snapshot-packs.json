@@ -683,6 +683,16 @@
           "length": 6,
           "mappedType": "datetime"
         },
+        "stock_earmarked": {
+          "name": "stock_earmarked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
         "status": {
           "name": "status",
           "type": "text",

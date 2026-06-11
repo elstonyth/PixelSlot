@@ -15,6 +15,10 @@ export const Pull = model.define("pull", {
   card_id: model.text(), // = Card.handle (the won card)
   order_id: model.text().nullable(),
   rolled_at: model.dateTime(),
+  // TRUE only when this pull actually decremented physical stock (pulls at 0
+  // stock / untracked products don't). Buyback restores +1 ONLY when set —
+  // otherwise repeated 0-stock pull→sell cycles would mint phantom units.
+  stock_earmarked: model.boolean().default(false),
   // Vault lifecycle: every pull starts vaulted; instant buyback (at reveal or
   // later from the vault page) flips it to bought_back and credits the customer.
   status: model.enum(["vaulted", "bought_back"]).default("vaulted"),

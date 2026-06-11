@@ -1,9 +1,14 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
+import { PACKS_MODULE } from "../../modules/packs";
+import type PacksModuleService from "../../modules/packs/service";
 import { findCardInventoryTarget } from "../../modules/packs/card-stock";
 
 export type DecrementCardStockInput = {
   card_id: string; // = Card.handle (=== Product.handle)
+  // The pull this earmark belongs to — flagged stock_earmarked on success so
+  // buyback knows whether a unit was actually taken (and may be restored).
+  pull_id: string;
 };
 
 // What was adjusted, so compensation can put the unit back.
@@ -44,6 +49,12 @@ export const decrementCardStockStep = createStep(
           inventoryItemId: target.inventoryItemId,
           locationId: target.locationId,
         };
+        // Record that THIS pull took a unit — buyback only restores flagged
+        // pulls (a 0-stock pull must never mint a phantom unit on sell-back).
+        // If the flag write fails the counter errs LOW (no restore later) —
+        // the conservative direction — so warn rather than fail the pull.
+        const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
+        await packs.updatePulls([{ id: input.pull_id, stock_earmarked: true }]);
       }
     } catch (error) {
       logger.warn(

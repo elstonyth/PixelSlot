@@ -109,11 +109,16 @@ export default function PackOpenOverlay({
   async function handleSellBack() {
     if (!buyback || !onSellBack || sell.phase === "selling" || sell.phase === "sold") return;
     setSell({ phase: "selling" });
-    const res = await onSellBack(buyback.pullId);
-    if (res.ok) {
-      setSell({ phase: "sold", amount: res.amount, balance: res.balance });
-    } else {
-      setSell({ phase: "error", message: res.error });
+    try {
+      const res = await onSellBack(buyback.pullId);
+      if (res.ok) {
+        setSell({ phase: "sold", amount: res.amount, balance: res.balance });
+      } else {
+        setSell({ phase: "error", message: res.error });
+      }
+    } catch {
+      // A transport-level throw must never strand the button on "Selling…".
+      setSell({ phase: "error", message: "Something went wrong. Please try again." });
     }
   }
   const rgb = RARITY_RGB[card.rarity];

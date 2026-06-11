@@ -47,8 +47,13 @@ export const openPackWorkflow = createWorkflow(
 
     // 2b. Earmark one physical unit for the win (stock is a fulfillment
     //     COUNTER, never a gate — the step is best-effort and a 0-stock card
-    //     still wins fine: buyback fulfills it). Compensated by +1.
-    const stockInput = transform({ card }, (d) => ({ card_id: d.card.handle }));
+    //     still wins fine: buyback fulfills it). Flags the pull as
+    //     stock_earmarked on success so buyback knows whether to restore.
+    //     Compensated by +1.
+    const stockInput = transform({ card, pull }, (d) => ({
+      card_id: d.card.handle,
+      pull_id: d.pull.id,
+    }));
     decrementCardStockStep(stockInput);
 
     // 3. Emit pack.opened for the live-pulls feed / leaderboard subscribers. The
