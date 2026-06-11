@@ -360,27 +360,22 @@ function buildFailoverStore(
   );
 }
 
-interface EnvLimiterDefaults {
-  burstLimit: number;
-  burstWindowMs: number;
-  limit: number;
-  windowMs: number;
-}
+type EnvLimiterDefaults = typeof DEFAULTS;
 
 /**
- * Builds a burst + sustained limiter whose rules are env-tunable under a
- * shared naming scheme: `${envPrefix}_BURST_LIMIT`, `${envPrefix}_BURST_WINDOW_MS`,
- * `${envPrefix}_LIMIT`, `${envPrefix}_WINDOW_MS`. Every endpoint limiter below
- * is this with its own store namespace, connection name, and defaults.
+ * Builds a burst + sustained limiter for one endpoint family. Everything
+ * derives from `name` (kebab-case, e.g. "pack-open") so the three identities
+ * can never drift: env vars `<NAME>_RATE_{BURST_LIMIT,BURST_WINDOW_MS,LIMIT,
+ * WINDOW_MS}`, Redis connection name `<name>-rate-limit`, and store keyspace
+ * `rl:<name>:`.
  */
 function createEnvRateLimit(opts: {
-  envPrefix: string;
-  connectionName: string;
-  prefix: string;
+  name: string;
   message?: string;
   defaults: EnvLimiterDefaults;
 }): MiddlewareHandler {
-  const { envPrefix, defaults } = opts;
+  const { name, defaults } = opts;
+  const envPrefix = `${name.toUpperCase().replace(/-/g, "_")}_RATE`;
   const rules: RateLimitRule[] = [
     {
       limit: positiveIntFromEnv(`${envPrefix}_BURST_LIMIT`, defaults.burstLimit),
@@ -397,9 +392,9 @@ function createEnvRateLimit(opts: {
 
   const warn = throttledWarn(60_000);
   return createRateLimitMiddleware({
-    store: buildFailoverStore(opts.connectionName, warn),
+    store: buildFailoverStore(`${name}-rate-limit`, warn),
     rules,
-    prefix: opts.prefix,
+    prefix: `rl:${name}:`,
     message: opts.message,
     onError: (err) => warn("limiter error; request allowed through", err),
   });
@@ -412,12 +407,7 @@ function createEnvRateLimit(opts: {
  * PACK_OPEN_RATE_LIMIT / PACK_OPEN_RATE_WINDOW_MS (default 20/60s)
  */
 export function createPackOpenRateLimit(): MiddlewareHandler {
-  return createEnvRateLimit({
-    envPrefix: "PACK_OPEN_RATE",
-    connectionName: "pack-open-rate-limit",
-    prefix: "rl:pack-open:",
-    defaults: DEFAULTS,
-  });
+  return createEnvRateLimit({ name: "pack-open", defaults: DEFAULTS });
 }
 
 /**
@@ -429,9 +419,7 @@ export function createPackOpenRateLimit(): MiddlewareHandler {
  */
 export function createVaultBuybackRateLimit(): MiddlewareHandler {
   return createEnvRateLimit({
-    envPrefix: "VAULT_BUYBACK_RATE",
-    connectionName: "vault-buyback-rate-limit",
-    prefix: "rl:vault-buyback:",
+    name: "vault-buyback",
     message: "Too many buyback requests.",
     defaults: { burstLimit: 10, burstWindowMs: 10_000, limit: 30, windowMs: 60_000 },
   });
@@ -448,9 +436,7 @@ export function createVaultBuybackRateLimit(): MiddlewareHandler {
  */
 export function createAuthRateLimit(): MiddlewareHandler {
   return createEnvRateLimit({
-    envPrefix: "AUTH_RATE",
-    connectionName: "auth-rate-limit",
-    prefix: "rl:auth:",
+    name: "auth",
     message: "Too many sign-in attempts.",
     defaults: DEFAULTS,
   });
@@ -466,9 +452,7 @@ export function createAuthRateLimit(): MiddlewareHandler {
  */
 export function createStoreReadRateLimit(): MiddlewareHandler {
   return createEnvRateLimit({
-    envPrefix: "STORE_READ_RATE",
-    connectionName: "store-read-rate-limit",
-    prefix: "rl:store-read:",
+    name: "store-read",
     message: "Too many requests.",
     defaults: { burstLimit: 30, burstWindowMs: 10_000, limit: 120, windowMs: 60_000 },
   });

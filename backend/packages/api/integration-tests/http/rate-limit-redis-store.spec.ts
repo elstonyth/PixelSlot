@@ -7,17 +7,17 @@
 //
 // Deliberately FAILS (no silent skip) when Redis is unreachable: pokenic-redis
 // is part of this stack, and skipping would recreate the blind spot.
-import Redis from "ioredis";
+import type Redis from "ioredis";
 import {
   RedisSlidingWindowStore,
   InMemorySlidingWindowStore,
   type RateLimitRule,
   type RateLimitDecision,
 } from "../../src/api/utils/rate-limit";
+import { connectTestRedisOrFail } from "./utils";
 
 jest.setTimeout(30 * 1000);
 
-const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379";
 const T0 = 1_700_000_000_000;
 const RUN = `test:rl-parity:${Date.now().toString(36)}`;
 
@@ -31,23 +31,9 @@ const key = (name: string): string => {
 };
 
 beforeAll(async () => {
-  client = new Redis(REDIS_URL, {
-    lazyConnect: true,
-    connectTimeout: 2_000,
-    maxRetriesPerRequest: 1,
-    enableOfflineQueue: false,
-  });
-  client.on("error", () => {
-    /* assertions surface failures; avoid unhandled 'error' events */
-  });
-  try {
-    await client.connect();
-  } catch (err) {
-    throw new Error(
-      `Redis unreachable at ${REDIS_URL} — this suite must run against real Redis ` +
-        `(it guards the Lua/JS parity contract). Start it: docker start pokenic-redis. (${err})`
-    );
-  }
+  client = await connectTestRedisOrFail(
+    "this suite must run against real Redis (it guards the Lua/JS parity contract)"
+  );
 });
 
 afterAll(async () => {

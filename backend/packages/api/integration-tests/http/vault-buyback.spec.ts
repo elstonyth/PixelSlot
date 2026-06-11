@@ -5,6 +5,7 @@ import {
 } from "@medusajs/framework/utils";
 import { PACKS_MODULE } from "../../src/modules/packs";
 import type PacksModuleService from "../../src/modules/packs/service";
+import { unwrapResponse } from "./utils";
 
 jest.setTimeout(240 * 1000);
 
@@ -135,21 +136,15 @@ medusaIntegrationTestRunner({
         return Number(level.stocked_quantity);
       };
 
-      // Returns the axios response for both 2xx and error statuses.
       const request = (
         method: "get" | "post",
         path: string,
         headers: Record<string, string>
       ) =>
-        (method === "get"
-          ? api.get(path, { headers })
-          : api.post(path, {}, { headers })
-        ).then(
-          (r: { status: number }) => r,
-          (e: { response?: { status: number } }) => {
-            if (!e.response) throw e;
-            return e.response;
-          }
+        unwrapResponse(
+          method === "get"
+            ? api.get(path, { headers })
+            : api.post(path, {}, { headers })
         );
 
       const authed = (token: string): Record<string, string> => ({

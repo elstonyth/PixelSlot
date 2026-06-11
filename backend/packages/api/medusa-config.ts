@@ -3,14 +3,18 @@ import { DashboardModuleOptions } from '@mercurjs/types'
 import path from 'path'
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
-// The "supersecret" fallback is a dev convenience ONLY: these values sign every
-// admin/customer JWT and session cookie, so production booting on the known
-// default (or with the secret unset) silently voids all of that — fail at
-// startup instead, per the repo security rule "validate required secrets at
-// startup". Generation one-liner lives in .env.template's PROD CHECKLIST.
-const requiredSecret = (name: 'JWT_SECRET' | 'COOKIE_SECRET'): string => {
-  const value = process.env[name] || 'supersecret'
-  if (process.env.NODE_ENV === 'production' && value === 'supersecret') {
+// Secrets pass through UNDEFINED when unset so Medusa's own ConfigManager
+// gate stays live: it already fail-fasts in production on a missing
+// jwtSecret/cookieSecret and applies the "supersecret" dev default (with a
+// warning) otherwise — a local `|| "supersecret"` fallback here would feed it
+// a "found" value and mute that gate. The one case the framework can't catch
+// is a secret EXPLICITLY set to the known dev literal; reject that ourselves,
+// using the framework's own definition of production ("production" or
+// "prod"). Generation one-liner lives in .env.template's PROD CHECKLIST.
+const isProduction = ['production', 'prod'].includes(process.env.NODE_ENV || '')
+const secretFromEnv = (name: 'JWT_SECRET' | 'COOKIE_SECRET'): string | undefined => {
+  const value = process.env[name]
+  if (isProduction && value === 'supersecret') {
     throw new Error(
       `${name} must be set to a strong random value in production (see .env.template)`
     )
@@ -32,8 +36,8 @@ module.exports = defineConfig({
       authCors: process.env.AUTH_CORS!,
       // @ts-expect-error: vendorCors is not defined in medusa config module
       vendorCors: process.env.VENDOR_CORS!,
-      jwtSecret: requiredSecret('JWT_SECRET'),
-      cookieSecret: requiredSecret('COOKIE_SECRET'),
+      jwtSecret: secretFromEnv('JWT_SECRET'),
+      cookieSecret: secretFromEnv('COOKIE_SECRET'),
     }
   },
   featureFlags: {

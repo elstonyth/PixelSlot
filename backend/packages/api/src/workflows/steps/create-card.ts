@@ -9,6 +9,7 @@ import { MercurModules } from "@mercurjs/types";
 import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
 import { PACKS_MODULE } from "../../modules/packs";
 import type PacksModuleService from "../../modules/packs/service";
+import { insertOrMapDuplicate } from "./duplicate-race";
 
 // Inventory-first registration: the PRODUCT is the item, created in the product
 // catalog beforehand. Registering it as a gacha Card only records the gacha
@@ -44,54 +45,55 @@ export const registerCardInvoke = async (
   input: RegisterCardInput,
   { container }: { container: MedusaContainer }
 ) => {
-    const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
-    const productModule = container.resolve(Modules.PRODUCT);
+  const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
+  const productModule = container.resolve(Modules.PRODUCT);
 
-    const [product] = await productModule.listProducts(
-      { id: input.product_id },
-      { take: 1, relations: ["images"] }
+  const [product] = await productModule.listProducts(
+    { id: input.product_id },
+    { take: 1, relations: ["images"] }
+  );
+  if (!product) {
+    throw new MedusaError(
+      MedusaError.Types.NOT_FOUND,
+      `Product '${input.product_id}' not found — add the item to the inventory first.`
     );
-    if (!product) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Product '${input.product_id}' not found — add the item to the inventory first.`
-      );
-    }
-    if (!product.handle) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        `Product '${input.product_id}' has no handle.`
-      );
-    }
-
-    const image = product.thumbnail ?? product.images?.[0]?.url ?? "";
-    if (!image) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        `Product '${product.title}' has no image — upload one on the product before registering it as a card.`
-      );
-    }
-
-    // Handle is the unique business key shared by Card + Product + PackOdds.
-    const [existingCard] = await packs.listCards(
-      { handle: product.handle },
-      { take: 1 }
+  }
+  if (!product.handle) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `Product '${input.product_id}' has no handle.`
     );
-    if (existingCard) {
-      throw new MedusaError(
-        MedusaError.Types.DUPLICATE_ERROR,
-        `'${product.title}' is already registered as a gacha card.`
-      );
-    }
+  }
 
-    // The pre-check above is advisory only — two concurrent registrations of
-    // the same product both pass it. The handle's UNIQUE constraint is the
-    // real guard; map its violation to the same friendly duplicate error
-    // instead of letting a raw DB error surface as a 500 (mirror of the
-    // credit-row pattern in buyback-pull).
-    let card: Awaited<ReturnType<typeof packs.createCards>>[number];
-    try {
-      [card] = await packs.createCards([
+  const image = product.thumbnail ?? product.images?.[0]?.url ?? "";
+  if (!image) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `Product '${product.title}' has no image — upload one on the product before registering it as a card.`
+    );
+  }
+
+  const alreadyRegistered = () =>
+    new MedusaError(
+      MedusaError.Types.DUPLICATE_ERROR,
+      `'${product.title}' is already registered as a gacha card.`
+    );
+
+  // Handle is the unique business key shared by Card + Product + PackOdds.
+  // This pre-check is advisory (it keeps the common duplicate case cheap and
+  // friendly); two concurrent registrations both pass it, so the insert below
+  // also maps the handle UNIQUE constraint's violation to the same error.
+  const [existingCard] = await packs.listCards(
+    { handle: product.handle },
+    { take: 1 }
+  );
+  if (existingCard) {
+    throw alreadyRegistered();
+  }
+
+  const [card] = await insertOrMapDuplicate({
+    insert: () =>
+      packs.createCards([
         {
           handle: product.handle,
           name: product.title,
@@ -105,100 +107,83 @@ export const registerCardInvoke = async (
           price: null,
           for_sale: product.status === "published",
         },
-      ]);
-    } catch (error) {
-      // The recovery probe gets its own guard: if the insert failed because
-      // the DB is down, this re-list fails too, and ITS error must never
-      // replace the original fault — but it is logged, because a probe that
-      // fails for a DIFFERENT reason than the insert is a signal worth keeping.
-      let raced: unknown;
-      try {
-        [raced] = await packs.listCards(
-          { handle: product.handle },
-          { take: 1 }
-        );
-      } catch (probeError) {
-        const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
-        logger.warn(
-          `create-card: duplicate probe failed after insert error — surfacing the insert error. ${
-            probeError instanceof Error ? probeError.message : String(probeError)
-          }`
-        );
-        raced = undefined;
-      }
-      if (raced) {
+      ]),
+    probeDuplicate: async () => {
+      const [raced] = await packs.listCards(
+        { handle: product.handle },
+        { take: 1 }
+      );
+      return raced !== undefined;
+    },
+    duplicateError: alreadyRegistered,
+    logger: container.resolve(ContainerRegistrationKeys.LOGGER),
+    label: "create-card",
+  });
+
+  // Mirror the gacha facts onto the product metadata (the marketplace card
+  // page reads fmv/grade/grader/set from there) and make sure the product is
+  // LINKED to the house seller — Mercur's storefront product middleware hides
+  // seller-less products, so a hand-created catalog product would otherwise
+  // never show on /marketplace even when published. If any of this fails,
+  // undo the Card so the step is atomic (StepResponse compensation only
+  // covers later steps). The seller link is intentionally NOT compensated:
+  // every catalog product belongs to the house seller in this single-vendor
+  // store, so a kept link is the desired end state regardless.
+  const prevMetadata = (product.metadata ?? {}) as Record<string, unknown>;
+  try {
+    const query = container.resolve(ContainerRegistrationKeys.QUERY);
+    const { data: withSeller } = await query.graph({
+      entity: "product",
+      fields: ["id", "seller.id"],
+      filters: { id: product.id },
+    });
+    if (!withSeller[0]?.seller?.id) {
+      const sellerService = container.resolve(MercurModules.SELLER);
+      const [houseSeller] = await sellerService.listSellers({
+        handle: "house",
+      });
+      if (!houseSeller) {
         throw new MedusaError(
-          MedusaError.Types.DUPLICATE_ERROR,
-          `'${product.title}' is already registered as a gacha card.`
+          MedusaError.Types.NOT_FOUND,
+          "House seller not found — run the seed before managing the catalog."
         );
       }
-      throw error;
-    }
-
-    // Mirror the gacha facts onto the product metadata (the marketplace card
-    // page reads fmv/grade/grader/set from there) and make sure the product is
-    // LINKED to the house seller — Mercur's storefront product middleware hides
-    // seller-less products, so a hand-created catalog product would otherwise
-    // never show on /marketplace even when published. If any of this fails,
-    // undo the Card so the step is atomic (StepResponse compensation only
-    // covers later steps). The seller link is intentionally NOT compensated:
-    // every catalog product belongs to the house seller in this single-vendor
-    // store, so a kept link is the desired end state regardless.
-    const prevMetadata = (product.metadata ?? {}) as Record<string, unknown>;
-    try {
-      const query = container.resolve(ContainerRegistrationKeys.QUERY);
-      const { data: withSeller } = await query.graph({
-        entity: "product",
-        fields: ["id", "seller.id"],
-        filters: { id: product.id },
+      const link = container.resolve(ContainerRegistrationKeys.LINK);
+      await link.create({
+        [Modules.PRODUCT]: { product_id: product.id },
+        [MercurModules.SELLER]: { seller_id: houseSeller.id },
       });
-      if (!withSeller[0]?.seller?.id) {
-        const sellerService = container.resolve(MercurModules.SELLER);
-        const [houseSeller] = await sellerService.listSellers({
-          handle: "house",
-        });
-        if (!houseSeller) {
-          throw new MedusaError(
-            MedusaError.Types.NOT_FOUND,
-            "House seller not found — run the seed before managing the catalog."
-          );
-        }
-        const link = container.resolve(ContainerRegistrationKeys.LINK);
-        await link.create({
-          [Modules.PRODUCT]: { product_id: product.id },
-          [MercurModules.SELLER]: { seller_id: houseSeller.id },
-        });
-      }
-      await updateProductsWorkflow(container).run({
-        input: {
-          products: [
-            {
-              id: product.id,
-              metadata: {
-                ...prevMetadata,
-                fmv: input.market_value,
-                points: typeof prevMetadata.points === "number" ? prevMetadata.points : 0,
-                grade: input.grade,
-                grader: input.grader,
-                set: input.set,
-                year:
-                  typeof prevMetadata.year === "number"
-                    ? prevMetadata.year
-                    : new Date().getFullYear(),
-              },
+    }
+    await updateProductsWorkflow(container).run({
+      input: {
+        products: [
+          {
+            id: product.id,
+            metadata: {
+              ...prevMetadata,
+              fmv: input.market_value,
+              points: typeof prevMetadata.points === "number" ? prevMetadata.points : 0,
+              grade: input.grade,
+              grader: input.grader,
+              set: input.set,
+              year:
+                typeof prevMetadata.year === "number"
+                  ? prevMetadata.year
+                  : new Date().getFullYear(),
             },
-          ],
-        },
-      });
-    } catch (error) {
-      await packs.deleteCards([card.id]);
-      throw error;
-    }
+          },
+        ],
+      },
+    });
+  } catch (error) {
+    await packs.deleteCards([card.id]);
+    throw error;
+  }
 
-    return new StepResponse(
-      { handle: card.handle, productId: product.id },
-      { cardId: card.id, productId: product.id, prevMetadata } satisfies CompensateData
-    );
+  return new StepResponse(
+    { handle: card.handle, productId: product.id },
+    { cardId: card.id, productId: product.id, prevMetadata } satisfies CompensateData
+  );
 };
 
 export const createCardStep = createStep(

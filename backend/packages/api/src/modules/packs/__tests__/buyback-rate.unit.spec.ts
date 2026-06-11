@@ -68,14 +68,17 @@ describe("buybackAmount", () => {
     expect(buybackAmount(0.05, 90)).toBe(0.05); // 4.5¢ → 5¢
   });
 
-  it("matches the quote for every catalog-shaped FMV at every legal whole percent", () => {
-    // Quote (vault route) and credit (buyback workflow) share this helper, so
-    // determinism across the whole input space IS the contract: same in, same out.
+  it("returns whole cents within half a cent of the exact product, across the input space", () => {
+    // Implementation-independent contract (NOT the formula restated): every
+    // result is a whole number of cents, and never further than half a cent
+    // from the mathematically exact FMV × percent.
     for (let cents = 0; cents <= 5000; cents += 7) {
       const fmv = cents / 100;
       for (const pct of [90, 92, 95, 100]) {
-        const expected = Math.round((cents * pct) / 100) / 100;
-        expect(buybackAmount(fmv, pct)).toBe(expected);
+        const result = buybackAmount(fmv, pct);
+        const resultCents = result * 100;
+        expect(Math.abs(resultCents - Math.round(resultCents))).toBeLessThan(1e-9);
+        expect(Math.abs(result - (fmv * pct) / 100)).toBeLessThanOrEqual(0.005 + 1e-9);
       }
     }
   });

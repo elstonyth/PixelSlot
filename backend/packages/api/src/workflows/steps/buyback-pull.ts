@@ -13,6 +13,7 @@ import {
   resolveBuybackRate,
   type BuybackRateType,
 } from "../../modules/packs/buyback-rate";
+import { insertOrMapDuplicate } from "./duplicate-race";
 
 export type BuybackPullInput = {
   pull_id: string;
@@ -96,30 +97,32 @@ export const buybackPullStep = createStep(
     const amount = buybackAmount(marketValue, percent);
 
     // 1. Credit row first — the unique pull_id kills concurrent duplicates here.
-    let creditTransactionId: string;
-    try {
-      const [txn] = await packs.createCreditTransactions([
-        {
-          customer_id: input.customer_id,
-          amount,
-          reason: "buyback" as const,
-          pull_id: pull.id,
-        },
-      ]);
-      creditTransactionId = txn.id;
-    } catch (error) {
-      const [existing] = await packs.listCreditTransactions(
-        { pull_id: pull.id },
-        { take: 1 }
-      );
-      if (existing) {
-        throw new MedusaError(
+    const [txn] = await insertOrMapDuplicate({
+      insert: () =>
+        packs.createCreditTransactions([
+          {
+            customer_id: input.customer_id,
+            amount,
+            reason: "buyback" as const,
+            pull_id: pull.id,
+          },
+        ]),
+      probeDuplicate: async () => {
+        const [existing] = await packs.listCreditTransactions(
+          { pull_id: pull.id },
+          { take: 1 }
+        );
+        return existing !== undefined;
+      },
+      duplicateError: () =>
+        new MedusaError(
           MedusaError.Types.NOT_ALLOWED,
           "This card was already sold back."
-        );
-      }
-      throw error;
-    }
+        ),
+      logger,
+      label: "buyback-pull",
+    });
+    const creditTransactionId = txn.id;
 
     // 2. Flip the pull. If this fails, remove the credit row so nothing is
     //    half-applied (compensation only covers later-step failures).

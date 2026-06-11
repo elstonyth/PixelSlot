@@ -1,6 +1,7 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils";
 import { Modules } from "@medusajs/framework/utils";
-import Redis from "ioredis";
+import type Redis from "ioredis";
+import { connectTestRedisOrFail, unwrapResponse } from "./utils";
 
 jest.setTimeout(240 * 1000);
 
@@ -32,28 +33,10 @@ medusaIntegrationTestRunner({
       let storeHeaders: Record<string, string>;
       let redis: Redis;
 
-      // Deliberately FAILS (no skip) when Redis is unreachable: the limiter
-      // silently fails over to its in-memory store, so without this probe the
-      // whole suite would stay green even if the Redis path were broken.
       beforeAll(async () => {
-        const url = process.env.REDIS_URL ?? "redis://localhost:6379";
-        redis = new Redis(url, {
-          lazyConnect: true,
-          connectTimeout: 2_000,
-          maxRetriesPerRequest: 1,
-          enableOfflineQueue: false,
-        });
-        redis.on("error", () => {
-          /* assertions surface failures; avoid unhandled 'error' events */
-        });
-        try {
-          await redis.connect();
-        } catch (err) {
-          throw new Error(
-            `Redis unreachable at ${url} — the rate-limit suite must observe the ` +
-              `real rl:pack-open:* keys. Start it: docker start pokenic-redis. (${err})`
-          );
-        }
+        redis = await connectTestRedisOrFail(
+          "the rate-limit suite must observe the real rl:pack-open:* keys"
+        );
       });
 
       afterAll(() => {
@@ -72,19 +55,11 @@ medusaIntegrationTestRunner({
         storeHeaders = { "x-publishable-api-key": key.token };
       });
 
-      // Returns the axios response for both 2xx and error statuses.
       const post = (
         path: string,
         body: Record<string, unknown>,
         headers: Record<string, string>
-      ) =>
-        api.post(path, body, { headers }).then(
-          (r: { status: number }) => r,
-          (e: { response?: { status: number } }) => {
-            if (!e.response) throw e;
-            return e.response;
-          }
-        );
+      ) => unwrapResponse(api.post(path, body, { headers }));
 
       // The slug doesn't need to exist: the limiter runs before the route
       // handler, so under the limit we see the handler's 404/400 for an

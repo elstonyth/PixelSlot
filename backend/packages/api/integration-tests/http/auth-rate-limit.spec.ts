@@ -1,5 +1,6 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils";
-import Redis from "ioredis";
+import type Redis from "ioredis";
+import { connectTestRedisOrFail, unwrapResponse } from "./utils";
 
 jest.setTimeout(240 * 1000);
 
@@ -23,29 +24,10 @@ medusaIntegrationTestRunner({
     describe("auth endpoint rate limiting", () => {
       let redis: Redis;
 
-      // Deliberately FAILS (no skip) when Redis is unreachable — same contract
-      // as the pack-open suite: the limiter silently fails over to in-memory,
-      // so without observing the real rl:auth:* keys the suite would stay
-      // green even if the Redis path were broken.
       beforeAll(async () => {
-        const url = process.env.REDIS_URL ?? "redis://localhost:6379";
-        redis = new Redis(url, {
-          lazyConnect: true,
-          connectTimeout: 2_000,
-          maxRetriesPerRequest: 1,
-          enableOfflineQueue: false,
-        });
-        redis.on("error", () => {
-          /* assertions surface failures; avoid unhandled 'error' events */
-        });
-        try {
-          await redis.connect();
-        } catch (err) {
-          throw new Error(
-            `Redis unreachable at ${url} — the auth-rate-limit suite must observe ` +
-              `the real rl:auth:* keys. Start it: docker start pokenic-redis. (${err})`
-          );
-        }
+        redis = await connectTestRedisOrFail(
+          "the auth-rate-limit suite must observe the real rl:auth:* keys"
+        );
         // A previous run's events within the window would shift this run's
         // budget — start from a clean slate.
         const keys = await redis.keys("rl:auth:*");
@@ -56,15 +38,8 @@ medusaIntegrationTestRunner({
         redis?.disconnect();
       });
 
-      // Returns the axios response for both 2xx and error statuses.
       const post = (path: string, body: Record<string, unknown>) =>
-        api.post(path, body).then(
-          (r: { status: number }) => r,
-          (e: { response?: { status: number } }) => {
-            if (!e.response) throw e;
-            return e.response;
-          }
-        );
+        unwrapResponse(api.post(path, body));
 
       const badLogin = () =>
         post("/auth/customer/emailpass", {
