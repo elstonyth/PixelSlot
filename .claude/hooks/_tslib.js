@@ -54,6 +54,9 @@ function runTsc(key, { incremental = true, timeoutMs = 90000 } = {}) {
     timeout: timeoutMs,
     encoding: "utf8",
     maxBuffer: 16 * 1024 * 1024,
+    // Without this, every spawned tsc flashes a visible console window on
+    // Windows (the hook fires after each .ts edit — constant pop-ups).
+    windowsHide: true,
   });
   if (res.status === 0) return { status: "pass", label: p.label, output: "" };
   // spawnSync sets `signal` when it kills the child on timeout; `error` on a
