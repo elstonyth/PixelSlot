@@ -1,4 +1,5 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import type { MedusaContainer } from "@medusajs/framework/types";
 import {
   ContainerRegistrationKeys,
   MedusaError,
@@ -34,9 +35,15 @@ type CompensateData =
 // ONLY the Card row (handle === Product.handle, the shared business key) and
 // mirrors the gacha facts onto the product's metadata so the marketplace detail
 // page can show FMV/grade. The product itself is never created or deleted here.
-export const createCardStep = createStep(
-  "create-card",
-  async (input: RegisterCardInput, { container }) => {
+//
+// The invoke handler is a named export so the unit suite can drive it with a
+// stubbed container: the duplicate-registration RACE branch (pre-check passes,
+// then the handle's UNIQUE constraint throws) cannot be triggered
+// deterministically through the HTTP harness.
+export const registerCardInvoke = async (
+  input: RegisterCardInput,
+  { container }: { container: MedusaContainer }
+) => {
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
     const productModule = container.resolve(Modules.PRODUCT);
 
@@ -177,7 +184,11 @@ export const createCardStep = createStep(
       { handle: card.handle, productId: product.id },
       { cardId: card.id, productId: product.id, prevMetadata } satisfies CompensateData
     );
-  },
+};
+
+export const createCardStep = createStep(
+  "create-card",
+  registerCardInvoke,
   async (data: CompensateData, { container }) => {
     if (!data) return;
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
