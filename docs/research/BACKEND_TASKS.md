@@ -146,7 +146,7 @@ visit a demo collector's profile.
 
 ---
 
-## ☐ Task C — Guest demo spin (frontend) + auth-gating sweep
+## ☑ Task C — Guest demo spin (frontend) + auth-gating sweep (DONE 2026-06-12)
 
 **Goal:** logged-out visitors can try the pack-open reveal as a clearly-labeled
 DEMO — nothing recorded, nothing claimable, no stock/odds touched. Logged-in

@@ -20,6 +20,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { openAuth } from "@/components/AuthButton";
 import Reveal from "@/components/Reveal";
 import type { PackDetail, RecentPull } from "@/lib/data/packs";
+import { demoDraw } from "@/lib/demo-spin";
 import { openPack } from "@/lib/actions/packs";
 import { getCreditBalance, sellBackPull } from "@/lib/actions/vault";
 import {
@@ -180,12 +181,16 @@ export default function PackDetailClient({
 
   const setQ = (n: number) => setQty(Math.min(99, Math.max(1, n)));
 
-  // Free demo spin — a random card from the static pool drives the same reveal
-  // overlay. No backend, no auth.
+  // Free demo spin — a client-side WEIGHTED sample over the published odds
+  // drives the same reveal overlay. Pure theater: no backend call, no Pull row,
+  // no credit/stock effects; the real open below stays auth-gated. Draws from
+  // the live public pool when the backend supplied one, else the static mock.
   function demoSpin() {
     if (opening) return;
     setOpenError(null);
-    const mock = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+    const pool = detail && detail.pool.length > 0 ? detail.pool : CARD_POOL;
+    const mock = demoDraw(pool, ODDS, Math.random(), Math.random());
+    if (!mock) return;
     setReveal({
       card: mock,
       isReal: false,
@@ -671,7 +676,12 @@ export default function PackDetailClient({
           }
           onSellBack={sellBackPull}
           onClose={() => setReveal(null)}
-          onOpenAnother={handleOpenPack}
+          // Demo reveals re-run the demo; only real reveals re-open for real.
+          onOpenAnother={reveal.isReal ? handleOpenPack : demoSpin}
+          // Anonymous demo spins swap keep/sell for the sign-up conversion CTA.
+          onSignUp={
+            !reveal.isReal && !customer ? () => openAuth("signup") : null
+          }
         />
       )}
     </div>

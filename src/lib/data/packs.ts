@@ -49,7 +49,8 @@ const toPack = (p: BackendPack): Pack => ({
   price: formatPrice(p.price),
   image: p.image,
   boost: p.boost || undefined,
-  buybackPercent: typeof p.buyback_percent === "number" ? p.buyback_percent : undefined,
+  buybackPercent:
+    typeof p.buyback_percent === "number" ? p.buyback_percent : undefined,
   inStock: p.in_stock === false ? false : undefined,
 });
 
@@ -90,7 +91,9 @@ export async function getPackCategories(): Promise<PackCategory[]> {
     // Keep empty categories (e.g. Dragon Ball) so they still render a chip; the
     // client hides empty sections on "All" and shows an empty state when one is
     // selected directly. Fall back to the full mock only if NOTHING resolved.
-    return categories.some((c) => c.packs.length > 0) ? categories : MOCK_CATEGORIES;
+    return categories.some((c) => c.packs.length > 0)
+      ? categories
+      : MOCK_CATEGORIES;
   } catch (error) {
     logger.error("[packs] failed to load packs from backend:", error);
     return MOCK_CATEGORIES;
@@ -116,6 +119,9 @@ interface BackendOddsEntry {
 
 export interface PackDetail {
   topHits: PackCard[];
+  /** The full public prize pool (display fields only, weights stay secret) —
+   *  feeds the guest demo spin's client-side weighted sample. */
+  pool: PackCard[];
 }
 
 /**
@@ -150,9 +156,8 @@ export async function getPackDetail(slug: string): Promise<PackDetail | null> {
     );
     if (valid.length === 0) return null;
 
-    const topHits: PackCard[] = [...valid]
+    const pool: PackCard[] = [...valid]
       .sort((a, b) => b.market_value - a.market_value)
-      .slice(0, 5)
       .map((o) => ({
         id: o.handle,
         name: o.name,
@@ -161,7 +166,7 @@ export async function getPackDetail(slug: string): Promise<PackDetail | null> {
         rarity: o.rarity as Rarity,
       }));
 
-    return { topHits };
+    return { topHits: pool.slice(0, 5), pool };
   } catch (error) {
     logger.error(`[packs] failed to load pack detail for '${slug}':`, error);
     return null;
@@ -220,7 +225,7 @@ function relativeTime(iso: string): string {
 export async function getRecentPulls(): Promise<RecentPull[]> {
   try {
     const { pulls } = await sdk.client.fetch<{ pulls: BackendRecentPull[] }>(
-      "/store/pulls/recent"
+      "/store/pulls/recent",
     );
     if (!Array.isArray(pulls)) return [];
 
@@ -231,7 +236,7 @@ export async function getRecentPulls(): Promise<RecentPull[]> {
           typeof p.handle === "string" &&
           typeof p.name === "string" &&
           isRarity(p.rarity) &&
-          Number.isFinite(p.market_value)
+          Number.isFinite(p.market_value),
       )
       .map((p, i) => {
         const pack = findPack(p.pack_id);
