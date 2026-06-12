@@ -9,6 +9,17 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/skills/strategic-compact/suggest-compact.js\" 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/port-guard.js\"",
+            "timeout": 15,
+            "statusMessage": "Checking PM2-owned ports"
+          }
+        ]
       }
     ],
     "PostToolUse": [

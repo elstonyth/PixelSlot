@@ -37,7 +37,7 @@
       "label": "Uploaded /static files are transient \u2014 a rebuild can wipe them while the DB keeps the URLs",
       "file_type": "document",
       "source_file": "backend/.claude/lessons.md",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "claude_lessons_uploaded_static_files_are_transient_a_rebuild_can_wipe_them_while_the_db_keeps_the_urls",
       "community": 502,
@@ -47,7 +47,7 @@
       "label": "Backend build + restart pattern",
       "file_type": "document",
       "source_file": "backend/.claude/lessons.md",
-      "source_location": "L40",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "claude_lessons_backend_build_restart_pattern",
       "community": 502,
@@ -57,101 +57,71 @@
       "label": "Integration suites: run via the package scripts, never raw jest",
       "file_type": "document",
       "source_file": "backend/.claude/lessons.md",
-      "source_location": "L50",
+      "source_location": "L53",
       "_origin": "ast",
       "id": "claude_lessons_integration_suites_run_via_the_package_scripts_never_raw_jest",
       "community": 502,
       "norm_label": "integration suites: run via the package scripts, never raw jest"
     },
     {
+      "label": "`medusa develop` watcher can wedge into a listener-less boot loop",
+      "file_type": "document",
+      "source_file": "backend/.claude/lessons.md",
+      "source_location": "L64",
+      "_origin": "ast",
+      "id": "claude_lessons_medusa_develop_watcher_can_wedge_into_a_listener_less_boot_loop",
+      "community": 502,
+      "norm_label": "`medusa develop` watcher can wedge into a listener-less boot loop"
+    },
+    {
       "label": "New rate limiter \u21d2 park it in .env.test",
       "file_type": "document",
       "source_file": "backend/.claude/lessons.md",
-      "source_location": "L60",
+      "source_location": "L75",
       "_origin": "ast",
       "id": "claude_lessons_new_rate_limiter_park_it_in_env_test",
       "community": 502,
       "norm_label": "new rate limiter \u21d2 park it in .env.test"
     },
     {
-      "label": "index.d.ts",
+      "label": "pack-open-charge.spec.ts",
       "file_type": "code",
-      "source_file": "backend/packages/api/.mercur/index.d.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 126,
-      "norm_label": "index.d.ts",
-      "id": "mercur_index_d"
-    },
-    {
-      "label": "Routes",
-      "file_type": "code",
-      "source_file": "backend/packages/api/.mercur/index.d.ts",
-      "source_location": "L4",
-      "_origin": "ast",
-      "community": 126,
-      "norm_label": "routes",
-      "id": "mercur_index_d_routes"
-    },
-    {
-      "label": "credit-topup.spec.ts",
-      "file_type": "code",
-      "source_file": "backend/packages/api/integration-tests/http/credit-topup.spec.ts",
+      "source_file": "backend/packages/api/integration-tests/http/pack-open-charge.spec.ts",
       "source_location": "L1",
       "_origin": "ast",
       "community": 19,
-      "norm_label": "credit-topup.spec.ts",
-      "id": "http_credit_topup_spec"
+      "norm_label": "pack-open-charge.spec.ts",
+      "id": "http_pack_open_charge_spec"
     },
     {
-      "label": "middlewares.ts",
+      "label": "vault-buyback.spec.ts",
       "file_type": "code",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_file": "backend/packages/api/integration-tests/http/vault-buyback.spec.ts",
       "source_location": "L1",
       "_origin": "ast",
       "community": 19,
-      "norm_label": "middlewares.ts",
-      "id": "api_middlewares"
-    },
-    {
-      "label": "storeReadRateLimit",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L32",
-      "_origin": "ast",
-      "community": 19,
-      "norm_label": "storereadratelimit",
-      "id": "api_middlewares_storereadratelimit"
-    },
-    {
-      "label": "authRateLimit",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L33",
-      "_origin": "ast",
-      "community": 19,
-      "norm_label": "authratelimit",
-      "id": "api_middlewares_authratelimit"
+      "norm_label": "vault-buyback.spec.ts",
+      "id": "http_vault_buyback_spec"
     },
     {
       "label": "route.ts",
       "file_type": "code",
-      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 423,
+      "community": 350,
       "norm_label": "route.ts",
-      "id": "topup_route"
+      "id": "open_route"
     },
     {
       "label": "POST()",
       "file_type": "code",
-      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
-      "source_location": "L15",
+      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
+      "source_location": "L21",
       "_origin": "ast",
-      "community": 423,
+      "community": 350,
       "norm_label": "post()",
-      "id": "topup_route_post"
+      "id": "open_route_post"
     },
     {
       "label": "rate-limit.ts",
@@ -377,7 +347,7 @@
       "label": "buildFailoverStore()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L329",
+      "source_location": "L331",
       "_origin": "ast",
       "community": 19,
       "norm_label": "buildfailoverstore()",
@@ -387,7 +357,7 @@
       "label": "EnvLimiterDefaults",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L363",
+      "source_location": "L365",
       "_origin": "ast",
       "community": 19,
       "norm_label": "envlimiterdefaults",
@@ -397,7 +367,7 @@
       "label": "createEnvRateLimit()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L372",
+      "source_location": "L374",
       "_origin": "ast",
       "community": 19,
       "norm_label": "createenvratelimit()",
@@ -407,7 +377,7 @@
       "label": "createPackOpenRateLimit()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L409",
+      "source_location": "L414",
       "_origin": "ast",
       "community": 19,
       "norm_label": "createpackopenratelimit()",
@@ -417,7 +387,7 @@
       "label": "createVaultBuybackRateLimit()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L420",
+      "source_location": "L425",
       "_origin": "ast",
       "community": 19,
       "norm_label": "createvaultbuybackratelimit()",
@@ -427,7 +397,7 @@
       "label": "createCreditTopupRateLimit()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L435",
+      "source_location": "L445",
       "_origin": "ast",
       "community": 19,
       "norm_label": "createcredittopupratelimit()",
@@ -437,7 +407,7 @@
       "label": "createAuthRateLimit()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L452",
+      "source_location": "L467",
       "_origin": "ast",
       "community": 19,
       "norm_label": "createauthratelimit()",
@@ -447,11 +417,751 @@
       "label": "createStoreReadRateLimit()",
       "file_type": "code",
       "source_file": "backend/packages/api/src/api/utils/rate-limit.ts",
-      "source_location": "L468",
+      "source_location": "L483",
       "_origin": "ast",
       "community": 19,
       "norm_label": "createstorereadratelimit()",
       "id": "utils_rate_limit_createstorereadratelimit"
+    },
+    {
+      "label": "pack-open-charge.unit.spec.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/__tests__/pack-open-charge.unit.spec.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "pack-open-charge.unit.spec.ts",
+      "id": "tests_pack_open_charge_unit_spec"
+    },
+    {
+      "label": "Migration20260612002121.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 379,
+      "norm_label": "migration20260612002121.ts",
+      "id": "migrations_migration20260612002121"
+    },
+    {
+      "label": "Migration20260612002121",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L5",
+      "_origin": "ast",
+      "community": 379,
+      "norm_label": "migration20260612002121",
+      "id": "migrations_migration20260612002121_migration20260612002121"
+    },
+    {
+      "label": ".up()",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L6",
+      "_origin": "ast",
+      "community": 379,
+      "norm_label": ".up()",
+      "id": "migrations_migration20260612002121_migration20260612002121_up"
+    },
+    {
+      "label": ".down()",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L16",
+      "_origin": "ast",
+      "community": 379,
+      "norm_label": ".down()",
+      "id": "migrations_migration20260612002121_migration20260612002121_down"
+    },
+    {
+      "label": "credit-transaction.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/models/credit-transaction.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 356,
+      "norm_label": "credit-transaction.ts",
+      "id": "models_credit_transaction"
+    },
+    {
+      "label": "CreditTransaction",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/models/credit-transaction.ts",
+      "source_location": "L7",
+      "_origin": "ast",
+      "community": 356,
+      "norm_label": "credittransaction",
+      "id": "models_credit_transaction_credittransaction"
+    },
+    {
+      "label": "pack-open-charge.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/pack-open-charge.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "pack-open-charge.ts",
+      "id": "packs_pack_open_charge"
+    },
+    {
+      "label": "hasEnoughCredit()",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/modules/packs/pack-open-charge.ts",
+      "source_location": "L9",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "hasenoughcredit()",
+      "id": "packs_pack_open_charge_hasenoughcredit"
+    },
+    {
+      "label": "open-pack.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "open-pack.ts",
+      "id": "workflows_open_pack"
+    },
+    {
+      "label": "OpenPackInput",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "openpackinput",
+      "id": "workflows_open_pack_openpackinput"
+    },
+    {
+      "label": "openPackWorkflow",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L27",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "openpackworkflow",
+      "id": "workflows_open_pack_openpackworkflow"
+    },
+    {
+      "label": "charge-pack-open.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "charge-pack-open.ts",
+      "id": "steps_charge_pack_open"
+    },
+    {
+      "label": "ChargePackOpenInput",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L8",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "chargepackopeninput",
+      "id": "steps_charge_pack_open_chargepackopeninput"
+    },
+    {
+      "label": "ChargePackOpenResult",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L13",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "chargepackopenresult",
+      "id": "steps_charge_pack_open_chargepackopenresult"
+    },
+    {
+      "label": "CompensateData",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L20",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "compensatedata",
+      "id": "steps_charge_pack_open_compensatedata"
+    },
+    {
+      "label": "chargePackOpenStep",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L33",
+      "_origin": "ast",
+      "community": 350,
+      "norm_label": "chargepackopenstep",
+      "id": "steps_charge_pack_open_chargepackopenstep"
+    },
+    {
+      "label": "BACKEND_TASKS.md",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "backend_tasks.md",
+      "id": "research_backend_tasks"
+    },
+    {
+      "label": "Backend Feature Tasks \u2014 one session per task",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "backend feature tasks \u2014 one session per task",
+      "id": "research_backend_tasks_backend_feature_tasks_one_session_per_task"
+    },
+    {
+      "label": "\u2611 Task A1 \u2014 Mock top-up: buy site credit through a fake gateway (DONE 2026-06-12)",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L33",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2611 task a1 \u2014 mock top-up: buy site credit through a fake gateway (done 2026-06-12)",
+      "id": "research_backend_tasks_task_a1_mock_top_up_buy_site_credit_through_a_fake_gateway_done_2026_06_12"
+    },
+    {
+      "label": "\u2611 Task A2 \u2014 Charge pack opens from the credit balance (PAYMENT SEAM) (DONE 2026-06-12)",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L75",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2611 task a2 \u2014 charge pack opens from the credit balance (payment seam) (done 2026-06-12)",
+      "id": "research_backend_tasks_task_a2_charge_pack_opens_from_the_credit_balance_payment_seam_done_2026_06_12"
+    },
+    {
+      "label": "\u2610 Task B \u2014 Real public profiles: `GET /store/profiles/:handle`",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L116",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2610 task b \u2014 real public profiles: `get /store/profiles/:handle`",
+      "id": "research_backend_tasks_task_b_real_public_profiles_get_store_profiles_handle"
+    },
+    {
+      "label": "\u2610 Task C \u2014 Guest demo spin (frontend) + auth-gating sweep",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L149",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2610 task c \u2014 guest demo spin (frontend) + auth-gating sweep",
+      "id": "research_backend_tasks_task_c_guest_demo_spin_frontend_auth_gating_sweep"
+    },
+    {
+      "label": "\u2610 Task D \u2014 Forgot-password flow (log-mail provider now, real mail later)",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L182",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2610 task d \u2014 forgot-password flow (log-mail provider now, real mail later)",
+      "id": "research_backend_tasks_task_d_forgot_password_flow_log_mail_provider_now_real_mail_later"
+    },
+    {
+      "label": "\u2610 Task E \u2014 Catalog gap: missing live packs (needs live re-capture)",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L212",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2610 task e \u2014 catalog gap: missing live packs (needs live re-capture)",
+      "id": "research_backend_tasks_task_e_catalog_gap_missing_live_packs_needs_live_re_capture"
+    },
+    {
+      "label": "\u2610 Task F \u2014 PriceCharting token (5 minutes, when purchased)",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L239",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "\u2610 task f \u2014 pricecharting token (5 minutes, when purchased)",
+      "id": "research_backend_tasks_task_f_pricecharting_token_5_minutes_when_purchased"
+    },
+    {
+      "label": "Suggested order",
+      "file_type": "document",
+      "source_file": "docs/research/BACKEND_TASKS.md",
+      "source_location": "L248",
+      "_origin": "ast",
+      "community": 191,
+      "norm_label": "suggested order",
+      "id": "research_backend_tasks_suggested_order"
+    },
+    {
+      "label": "demo-vault-flow.mjs",
+      "file_type": "code",
+      "source_file": "scripts/demo-vault-flow.mjs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 367,
+      "norm_label": "demo-vault-flow.mjs",
+      "id": "scripts_demo_vault_flow"
+    },
+    {
+      "label": "step()",
+      "file_type": "code",
+      "source_file": "scripts/demo-vault-flow.mjs",
+      "source_location": "L12",
+      "_origin": "ast",
+      "community": 367,
+      "norm_label": "step()",
+      "id": "scripts_demo_vault_flow_step"
+    },
+    {
+      "label": "pause()",
+      "file_type": "code",
+      "source_file": "scripts/demo-vault-flow.mjs",
+      "source_location": "L13",
+      "_origin": "ast",
+      "community": 367,
+      "norm_label": "pause()",
+      "id": "scripts_demo_vault_flow_pause"
+    },
+    {
+      "label": "page",
+      "file_type": "code",
+      "source_file": "scripts/demo-vault-flow.mjs",
+      "source_location": "L16",
+      "_origin": "ast",
+      "community": 367,
+      "norm_label": "page",
+      "id": "scripts_demo_vault_flow_page"
+    },
+    {
+      "label": "qa-pack-open-charge.mjs",
+      "file_type": "code",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 293,
+      "norm_label": "qa-pack-open-charge.mjs",
+      "id": "scripts_qa_pack_open_charge"
+    },
+    {
+      "label": "fail()",
+      "file_type": "code",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L16",
+      "_origin": "ast",
+      "community": 293,
+      "norm_label": "fail()",
+      "id": "scripts_qa_pack_open_charge_fail"
+    },
+    {
+      "label": "ok()",
+      "file_type": "code",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L20",
+      "_origin": "ast",
+      "community": 293,
+      "norm_label": "ok()",
+      "id": "scripts_qa_pack_open_charge_ok"
+    },
+    {
+      "label": "login()",
+      "file_type": "code",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L24",
+      "_origin": "ast",
+      "community": 293,
+      "norm_label": "login()",
+      "id": "scripts_qa_pack_open_charge_login"
+    },
+    {
+      "label": "readPriceAndBalance()",
+      "file_type": "code",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L39",
+      "_origin": "ast",
+      "community": 293,
+      "norm_label": "readpriceandbalance()",
+      "id": "scripts_qa_pack_open_charge_readpriceandbalance"
+    },
+    {
+      "label": "playRevealAndKeep()",
+      "file_type": "code",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L53",
+      "_origin": "ast",
+      "community": 293,
+      "norm_label": "playrevealandkeep()",
+      "id": "scripts_qa_pack_open_charge_playrevealandkeep"
+    },
+    {
+      "label": "VaultClient.tsx",
+      "file_type": "code",
+      "source_file": "src/app/(account)/vault/VaultClient.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 3,
+      "norm_label": "vaultclient.tsx",
+      "id": "vault_vaultclient"
+    },
+    {
+      "label": "VaultClient()",
+      "file_type": "code",
+      "source_file": "src/app/(account)/vault/VaultClient.tsx",
+      "source_location": "L18",
+      "_origin": "ast",
+      "community": 3,
+      "norm_label": "vaultclient()",
+      "id": "vault_vaultclient_vaultclient"
+    },
+    {
+      "label": "PackDetailClient.tsx",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "packdetailclient.tsx",
+      "id": "slug_packdetailclient"
+    },
+    {
+      "label": "RARITY_RING",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L37",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "rarity_ring",
+      "id": "slug_packdetailclient_rarity_ring"
+    },
+    {
+      "label": "SPICE_LEVELS",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L46",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "spice_levels",
+      "id": "slug_packdetailclient_spice_levels"
+    },
+    {
+      "label": "Spice",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L47",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "spice",
+      "id": "slug_packdetailclient_spice"
+    },
+    {
+      "label": "SPICE_ICON",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L48",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "spice_icon",
+      "id": "slug_packdetailclient_spice_icon"
+    },
+    {
+      "label": "SPICE_MULT",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L53",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "spice_mult",
+      "id": "slug_packdetailclient_spice_mult"
+    },
+    {
+      "label": "LIVE_ODDS",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L56",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "live_odds",
+      "id": "slug_packdetailclient_live_odds"
+    },
+    {
+      "label": "CardThumb()",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L77",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "cardthumb()",
+      "id": "slug_packdetailclient_cardthumb"
+    },
+    {
+      "label": "PackDetailClient()",
+      "file_type": "code",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L99",
+      "_origin": "ast",
+      "community": 4,
+      "norm_label": "packdetailclient()",
+      "id": "slug_packdetailclient_packdetailclient"
+    },
+    {
+      "label": "packs.ts",
+      "file_type": "code",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 49,
+      "norm_label": "packs.ts",
+      "id": "actions_packs"
+    },
+    {
+      "label": "WonCard",
+      "file_type": "code",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L19",
+      "_origin": "ast",
+      "community": 49,
+      "norm_label": "woncard",
+      "id": "actions_packs_woncard"
+    },
+    {
+      "label": "OpenPackResult",
+      "file_type": "code",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L27",
+      "_origin": "ast",
+      "community": 49,
+      "norm_label": "openpackresult",
+      "id": "actions_packs_openpackresult"
+    },
+    {
+      "label": "BackendWonCard",
+      "file_type": "code",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L43",
+      "_origin": "ast",
+      "community": 49,
+      "norm_label": "backendwoncard",
+      "id": "actions_packs_backendwoncard"
+    },
+    {
+      "label": "friendlyError()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L52",
+      "_origin": "ast",
+      "community": 49,
+      "norm_label": "friendlyerror()",
+      "id": "actions_packs_friendlyerror"
+    },
+    {
+      "label": "openPack()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L65",
+      "_origin": "ast",
+      "community": 49,
+      "norm_label": "openpack()",
+      "id": "actions_packs_openpack"
+    },
+    {
+      "label": "vault.ts",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "vault.ts",
+      "id": "actions_vault"
+    },
+    {
+      "label": "VaultItem",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L19",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "vaultitem",
+      "id": "actions_vault_vaultitem"
+    },
+    {
+      "label": "VaultResult",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L37",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "vaultresult",
+      "id": "actions_vault_vaultresult"
+    },
+    {
+      "label": "SellBackResult",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L41",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "sellbackresult",
+      "id": "actions_vault_sellbackresult"
+    },
+    {
+      "label": "BackendVaultItem",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L45",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "backendvaultitem",
+      "id": "actions_vault_backendvaultitem"
+    },
+    {
+      "label": "friendlyError()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L60",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "friendlyerror()",
+      "id": "actions_vault_friendlyerror"
+    },
+    {
+      "label": "needsAuthFrom()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L76",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "needsauthfrom()",
+      "id": "actions_vault_needsauthfrom"
+    },
+    {
+      "label": "getVault()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L82",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "getvault()",
+      "id": "actions_vault_getvault"
+    },
+    {
+      "label": "getCreditBalance()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L146",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "getcreditbalance()",
+      "id": "actions_vault_getcreditbalance"
+    },
+    {
+      "label": "TopUpActionResult",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L161",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "topupactionresult",
+      "id": "actions_vault_topupactionresult"
+    },
+    {
+      "label": "topUpCredits()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L168",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "topupcredits()",
+      "id": "actions_vault_topupcredits"
+    },
+    {
+      "label": "sellBackPull()",
+      "file_type": "code",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L208",
+      "_origin": "ast",
+      "community": 302,
+      "norm_label": "sellbackpull()",
+      "id": "actions_vault_sellbackpull"
+    },
+    {
+      "label": "index.d.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/.mercur/index.d.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 126,
+      "norm_label": "index.d.ts",
+      "id": "mercur_index_d"
+    },
+    {
+      "label": "Routes",
+      "file_type": "code",
+      "source_file": "backend/packages/api/.mercur/index.d.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "community": 126,
+      "norm_label": "routes",
+      "id": "mercur_index_d_routes"
+    },
+    {
+      "label": "credit-topup.spec.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/integration-tests/http/credit-topup.spec.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 19,
+      "norm_label": "credit-topup.spec.ts",
+      "id": "http_credit_topup_spec"
+    },
+    {
+      "label": "middlewares.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 19,
+      "norm_label": "middlewares.ts",
+      "id": "api_middlewares"
+    },
+    {
+      "label": "storeReadRateLimit",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L32",
+      "_origin": "ast",
+      "community": 19,
+      "norm_label": "storereadratelimit",
+      "id": "api_middlewares_storereadratelimit"
+    },
+    {
+      "label": "authRateLimit",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L33",
+      "_origin": "ast",
+      "community": 19,
+      "norm_label": "authratelimit",
+      "id": "api_middlewares_authratelimit"
+    },
+    {
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 423,
+      "norm_label": "route.ts",
+      "id": "topup_route"
+    },
+    {
+      "label": "POST()",
+      "file_type": "code",
+      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_location": "L15",
+      "_origin": "ast",
+      "community": 423,
+      "norm_label": "post()",
+      "id": "topup_route_post"
     },
     {
       "label": "topup.unit.spec.ts",
@@ -502,26 +1212,6 @@
       "community": 426,
       "norm_label": ".down()",
       "id": "migrations_migration20260611232039_migration20260611232039_down"
-    },
-    {
-      "label": "credit-transaction.ts",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/modules/packs/models/credit-transaction.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 356,
-      "norm_label": "credit-transaction.ts",
-      "id": "models_credit_transaction"
-    },
-    {
-      "label": "CreditTransaction",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/modules/packs/models/credit-transaction.ts",
-      "source_location": "L8",
-      "_origin": "ast",
-      "community": 356,
-      "norm_label": "credittransaction",
-      "id": "models_credit_transaction_credittransaction"
     },
     {
       "label": "topup.ts",
@@ -634,106 +1324,6 @@
       "id": "workflows_topup_credits_topupcreditsworkflow"
     },
     {
-      "label": "BACKEND_TASKS.md",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "backend_tasks.md",
-      "id": "research_backend_tasks"
-    },
-    {
-      "label": "Backend Feature Tasks \u2014 one session per task",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "backend feature tasks \u2014 one session per task",
-      "id": "research_backend_tasks_backend_feature_tasks_one_session_per_task"
-    },
-    {
-      "label": "\u2611 Task A1 \u2014 Mock top-up: buy site credit through a fake gateway (DONE 2026-06-12)",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L32",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2611 task a1 \u2014 mock top-up: buy site credit through a fake gateway (done 2026-06-12)",
-      "id": "research_backend_tasks_task_a1_mock_top_up_buy_site_credit_through_a_fake_gateway_done_2026_06_12"
-    },
-    {
-      "label": "\u2610 Task A2 \u2014 Charge pack opens from the credit balance (PAYMENT SEAM)",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L73",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2610 task a2 \u2014 charge pack opens from the credit balance (payment seam)",
-      "id": "research_backend_tasks_task_a2_charge_pack_opens_from_the_credit_balance_payment_seam"
-    },
-    {
-      "label": "\u2610 Task B \u2014 Real public profiles: `GET /store/profiles/:handle`",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L113",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2610 task b \u2014 real public profiles: `get /store/profiles/:handle`",
-      "id": "research_backend_tasks_task_b_real_public_profiles_get_store_profiles_handle"
-    },
-    {
-      "label": "\u2610 Task C \u2014 Guest demo spin (frontend) + auth-gating sweep",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L145",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2610 task c \u2014 guest demo spin (frontend) + auth-gating sweep",
-      "id": "research_backend_tasks_task_c_guest_demo_spin_frontend_auth_gating_sweep"
-    },
-    {
-      "label": "\u2610 Task D \u2014 Forgot-password flow (log-mail provider now, real mail later)",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L177",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2610 task d \u2014 forgot-password flow (log-mail provider now, real mail later)",
-      "id": "research_backend_tasks_task_d_forgot_password_flow_log_mail_provider_now_real_mail_later"
-    },
-    {
-      "label": "\u2610 Task E \u2014 Catalog gap: missing live packs (needs live re-capture)",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L207",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2610 task e \u2014 catalog gap: missing live packs (needs live re-capture)",
-      "id": "research_backend_tasks_task_e_catalog_gap_missing_live_packs_needs_live_re_capture"
-    },
-    {
-      "label": "\u2610 Task F \u2014 PriceCharting token (5 minutes, when purchased)",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L234",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "\u2610 task f \u2014 pricecharting token (5 minutes, when purchased)",
-      "id": "research_backend_tasks_task_f_pricecharting_token_5_minutes_when_purchased"
-    },
-    {
-      "label": "Suggested order",
-      "file_type": "document",
-      "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L243",
-      "_origin": "ast",
-      "community": 191,
-      "norm_label": "suggested order",
-      "id": "research_backend_tasks_suggested_order"
-    },
-    {
       "label": "qa-topup.mjs",
       "file_type": "code",
       "source_file": "scripts/qa-topup.mjs",
@@ -784,26 +1374,6 @@
       "id": "scripts_qa_topup_balancestat"
     },
     {
-      "label": "VaultClient.tsx",
-      "file_type": "code",
-      "source_file": "src/app/(account)/vault/VaultClient.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "vaultclient.tsx",
-      "id": "vault_vaultclient"
-    },
-    {
-      "label": "VaultClient()",
-      "file_type": "code",
-      "source_file": "src/app/(account)/vault/VaultClient.tsx",
-      "source_location": "L14",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "vaultclient()",
-      "id": "vault_vaultclient_vaultclient"
-    },
-    {
       "label": "AddCreditsPanel.tsx",
       "file_type": "code",
       "source_file": "src/components/account/AddCreditsPanel.tsx",
@@ -832,116 +1402,6 @@
       "community": 3,
       "norm_label": "addcreditspanel()",
       "id": "account_addcreditspanel_addcreditspanel"
-    },
-    {
-      "label": "vault.ts",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "vault.ts",
-      "id": "actions_vault"
-    },
-    {
-      "label": "VaultItem",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L19",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "vaultitem",
-      "id": "actions_vault_vaultitem"
-    },
-    {
-      "label": "VaultResult",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L37",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "vaultresult",
-      "id": "actions_vault_vaultresult"
-    },
-    {
-      "label": "SellBackResult",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L41",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "sellbackresult",
-      "id": "actions_vault_sellbackresult"
-    },
-    {
-      "label": "BackendVaultItem",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L45",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "backendvaultitem",
-      "id": "actions_vault_backendvaultitem"
-    },
-    {
-      "label": "friendlyError()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L60",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "friendlyerror()",
-      "id": "actions_vault_friendlyerror"
-    },
-    {
-      "label": "needsAuthFrom()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L74",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "needsauthfrom()",
-      "id": "actions_vault_needsauthfrom"
-    },
-    {
-      "label": "getVault()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L80",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "getvault()",
-      "id": "actions_vault_getvault"
-    },
-    {
-      "label": "TopUpActionResult",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L133",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "topupactionresult",
-      "id": "actions_vault_topupactionresult"
-    },
-    {
-      "label": "topUpCredits()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L140",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "topupcredits()",
-      "id": "actions_vault_topupcredits"
-    },
-    {
-      "label": "sellBackPull()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/vault.ts",
-      "source_location": "L173",
-      "_origin": "ast",
-      "community": 302,
-      "norm_label": "sellbackpull()",
-      "id": "actions_vault_sellbackpull"
     },
     {
       "label": "_tslib.js",
@@ -1389,7 +1849,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "en.json",
       "id": "backend_apps_admin_src_i18n_en_json_i18n_en"
     },
@@ -1399,7 +1859,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L2",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "customfields",
       "id": "backend_apps_admin_src_i18n_en_json_i18n_en_customfields"
     },
@@ -1409,7 +1869,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "title",
       "id": "backend_apps_admin_src_i18n_en_json_i18n_en_customfields_title"
     },
@@ -1419,7 +1879,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "description",
       "id": "backend_apps_admin_src_i18n_en_json_i18n_en_customfields_description"
     },
@@ -1429,7 +1889,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "nofields",
       "id": "backend_apps_admin_src_i18n_en_json_i18n_en_customfields_nofields"
     },
@@ -2189,7 +2649,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L89",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "cards",
       "id": "i18n_en_cards"
     },
@@ -2199,7 +2659,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "title",
       "id": "i18n_en_cards_title"
     },
@@ -2209,7 +2669,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "subtitle",
       "id": "i18n_en_cards_subtitle"
     },
@@ -2219,7 +2679,7 @@
       "source_file": "backend/apps/admin/src/i18n/en.json",
       "source_location": "L92",
       "_origin": "ast",
-      "community": 46,
+      "community": 37,
       "norm_label": "new",
       "id": "i18n_en_cards_new"
     },
@@ -11624,16 +12084,6 @@
       "id": "http_utils_connecttestredisorfail"
     },
     {
-      "label": "vault-buyback.spec.ts",
-      "file_type": "code",
-      "source_file": "backend/packages/api/integration-tests/http/vault-buyback.spec.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 19,
-      "norm_label": "vault-buyback.spec.ts",
-      "id": "http_vault_buyback_spec"
-    },
-    {
       "label": "setup.js",
       "file_type": "code",
       "source_file": "backend/packages/api/integration-tests/setup.js",
@@ -12702,26 +13152,6 @@
       "community": 569,
       "norm_label": "get()",
       "id": "backend_packages_api_src_api_store_leaderboard_route_ts_leaderboard_route_get"
-    },
-    {
-      "label": "route.ts",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 350,
-      "norm_label": "route.ts",
-      "id": "backend_packages_api_src_api_store_packs_slug_open_route_ts_open_route"
-    },
-    {
-      "label": "POST()",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
-      "source_location": "L21",
-      "_origin": "ast",
-      "community": 350,
-      "norm_label": "post()",
-      "id": "backend_packages_api_src_api_store_packs_slug_open_route_ts_open_route_post"
     },
     {
       "label": "route.ts",
@@ -14152,36 +14582,6 @@
       "community": 287,
       "norm_label": "deletepackworkflow",
       "id": "workflows_delete_pack_deletepackworkflow"
-    },
-    {
-      "label": "open-pack.ts",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 350,
-      "norm_label": "open-pack.ts",
-      "id": "backend_packages_api_src_workflows_open_pack_ts_workflows_open_pack"
-    },
-    {
-      "label": "OpenPackInput",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L11",
-      "_origin": "ast",
-      "community": 350,
-      "norm_label": "openpackinput",
-      "id": "workflows_open_pack_openpackinput"
-    },
-    {
-      "label": "openPackWorkflow",
-      "file_type": "code",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L26",
-      "_origin": "ast",
-      "community": 350,
-      "norm_label": "openpackworkflow",
-      "id": "workflows_open_pack_openpackworkflow"
     },
     {
       "label": "save-pack-odds.ts",
@@ -22094,46 +22494,6 @@
       "id": "scripts_debug_cyl_drag"
     },
     {
-      "label": "demo-vault-flow.mjs",
-      "file_type": "code",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 367,
-      "norm_label": "demo-vault-flow.mjs",
-      "id": "scripts_demo_vault_flow"
-    },
-    {
-      "label": "step()",
-      "file_type": "code",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L12",
-      "_origin": "ast",
-      "community": 367,
-      "norm_label": "step()",
-      "id": "scripts_demo_vault_flow_step"
-    },
-    {
-      "label": "pause()",
-      "file_type": "code",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L13",
-      "_origin": "ast",
-      "community": 367,
-      "norm_label": "pause()",
-      "id": "scripts_demo_vault_flow_pause"
-    },
-    {
-      "label": "page",
-      "file_type": "code",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L16",
-      "_origin": "ast",
-      "community": 367,
-      "norm_label": "page",
-      "id": "scripts_demo_vault_flow_page"
-    },
-    {
       "label": "detect-lines.mjs",
       "file_type": "code",
       "source_file": "scripts/detect-lines.mjs",
@@ -28495,7 +28855,7 @@
       "source_file": "src/app/(account)/layout.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "layout.tsx",
       "id": "account_layout"
     },
@@ -28505,7 +28865,7 @@
       "source_file": "src/app/(account)/layout.tsx",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "accountlayout()",
       "id": "account_layout_accountlayout"
     },
@@ -28595,7 +28955,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "page.tsx",
       "id": "orders_page"
     },
@@ -28605,7 +28965,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "metadata",
       "id": "orders_page_metadata"
     },
@@ -28615,7 +28975,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "tone",
       "id": "orders_page_tone"
     },
@@ -28625,7 +28985,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "fulfillment",
       "id": "orders_page_fulfillment"
     },
@@ -28635,7 +28995,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "humanize()",
       "id": "orders_page_humanize"
     },
@@ -28645,7 +29005,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "money()",
       "id": "orders_page_money"
     },
@@ -28655,7 +29015,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "orderdate()",
       "id": "orders_page_orderdate"
     },
@@ -28665,7 +29025,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "orderitems()",
       "id": "orders_page_orderitems"
     },
@@ -28675,7 +29035,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 3,
+      "community": 121,
       "norm_label": "emptystate()",
       "id": "orders_page_emptystate"
     },
@@ -28685,7 +29045,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 9,
+      "community": 121,
       "norm_label": "orderspage()",
       "id": "orders_page_orderspage"
     },
@@ -28795,7 +29155,7 @@
       "source_file": "src/app/(account)/settings/page.tsx",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "settingspage()",
       "id": "settings_page_settingspage"
     },
@@ -29195,7 +29555,7 @@
       "source_file": "src/app/airdrop/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "page.tsx",
       "id": "airdrop_page"
     },
@@ -29205,7 +29565,7 @@
       "source_file": "src/app/airdrop/page.tsx",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "metadata",
       "id": "airdrop_page_metadata"
     },
@@ -29215,7 +29575,7 @@
       "source_file": "src/app/airdrop/page.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "avatars",
       "id": "airdrop_page_avatars"
     },
@@ -29225,7 +29585,7 @@
       "source_file": "src/app/airdrop/page.tsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "airdroppage()",
       "id": "airdrop_page_airdroppage"
     },
@@ -29255,7 +29615,7 @@
       "source_file": "src/app/api/me/route.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "route.ts",
       "id": "me_route"
     },
@@ -29265,7 +29625,7 @@
       "source_file": "src/app/api/me/route.ts",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "get()",
       "id": "me_route_get"
     },
@@ -29275,7 +29635,7 @@
       "source_file": "src/app/api/recent-pulls/route.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 49,
+      "community": 187,
       "norm_label": "route.ts",
       "id": "recent_pulls_route"
     },
@@ -29285,7 +29645,7 @@
       "source_file": "src/app/api/recent-pulls/route.ts",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 49,
+      "community": 187,
       "norm_label": "get()",
       "id": "recent_pulls_route_get"
     },
@@ -29385,7 +29745,7 @@
       "source_file": "src/app/card/[id]/CardDetailClient.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "carddetailclient.tsx",
       "id": "id_carddetailclient"
     },
@@ -29395,7 +29755,7 @@
       "source_file": "src/app/card/[id]/CardDetailClient.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 3,
+      "community": 18,
       "norm_label": "carddetailclient()",
       "id": "id_carddetailclient_carddetailclient"
     },
@@ -29490,96 +29850,6 @@
       "id": "claw_clawclient_clawclient"
     },
     {
-      "label": "PackDetailClient.tsx",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "packdetailclient.tsx",
-      "id": "slug_packdetailclient"
-    },
-    {
-      "label": "RARITY_RING",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L36",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "rarity_ring",
-      "id": "slug_packdetailclient_rarity_ring"
-    },
-    {
-      "label": "SPICE_LEVELS",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L45",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "spice_levels",
-      "id": "slug_packdetailclient_spice_levels"
-    },
-    {
-      "label": "Spice",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L46",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "spice",
-      "id": "slug_packdetailclient_spice"
-    },
-    {
-      "label": "SPICE_ICON",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L47",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "spice_icon",
-      "id": "slug_packdetailclient_spice_icon"
-    },
-    {
-      "label": "SPICE_MULT",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L48",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "spice_mult",
-      "id": "slug_packdetailclient_spice_mult"
-    },
-    {
-      "label": "LIVE_ODDS",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L51",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "live_odds",
-      "id": "slug_packdetailclient_live_odds"
-    },
-    {
-      "label": "CardThumb()",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L72",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "cardthumb()",
-      "id": "slug_packdetailclient_cardthumb"
-    },
-    {
-      "label": "PackDetailClient()",
-      "file_type": "code",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L89",
-      "_origin": "ast",
-      "community": 4,
-      "norm_label": "packdetailclient()",
-      "id": "slug_packdetailclient_packdetailclient"
-    },
-    {
       "label": "PackOpenOverlay.tsx",
       "file_type": "code",
       "source_file": "src/app/claw/[slug]/PackOpenOverlay.tsx",
@@ -29655,7 +29925,7 @@
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 4,
+      "community": 187,
       "norm_label": "page.tsx",
       "id": "src_app_claw_slug_page_tsx_slug_page"
     },
@@ -29665,7 +29935,7 @@
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 4,
+      "community": 187,
       "norm_label": "generatemetadata()",
       "id": "slug_page_generatemetadata"
     },
@@ -29675,7 +29945,7 @@
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 4,
+      "community": 187,
       "norm_label": "packdetailpage()",
       "id": "slug_page_packdetailpage"
     },
@@ -29715,7 +29985,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "pack",
       "id": "claw_packs_data_pack"
     },
@@ -29745,7 +30015,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "categories",
       "id": "claw_packs_data_categories"
     },
@@ -29775,7 +30045,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L154",
       "_origin": "ast",
-      "community": 4,
+      "community": 187,
       "norm_label": "findpack()",
       "id": "claw_packs_data_findpack"
     },
@@ -29785,7 +30055,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L158",
       "_origin": "ast",
-      "community": 4,
+      "community": 187,
       "norm_label": "findcategory()",
       "id": "claw_packs_data_findcategory"
     },
@@ -29885,7 +30155,7 @@
       "source_file": "src/app/claw/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "page.tsx",
       "id": "claw_page"
     },
@@ -29895,7 +30165,7 @@
       "source_file": "src/app/claw/page.tsx",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "metadata",
       "id": "claw_page_metadata"
     },
@@ -29905,7 +30175,7 @@
       "source_file": "src/app/claw/page.tsx",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "clawpage()",
       "id": "claw_page_clawpage"
     },
@@ -29915,7 +30185,7 @@
       "source_file": "src/app/clawmaker/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "page.tsx",
       "id": "clawmaker_page"
     },
@@ -29925,7 +30195,7 @@
       "source_file": "src/app/clawmaker/page.tsx",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "metadata",
       "id": "clawmaker_page_metadata"
     },
@@ -29935,7 +30205,7 @@
       "source_file": "src/app/clawmaker/page.tsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "clawmakerpage()",
       "id": "clawmaker_page_clawmakerpage"
     },
@@ -29995,7 +30265,7 @@
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 296,
+      "community": 22,
       "norm_label": "page.tsx",
       "id": "fairness_page"
     },
@@ -30005,7 +30275,7 @@
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 296,
+      "community": 22,
       "norm_label": "metadata",
       "id": "fairness_page_metadata"
     },
@@ -30015,7 +30285,7 @@
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 296,
+      "community": 22,
       "norm_label": "fairnesspage()",
       "id": "fairness_page_fairnesspage"
     },
@@ -30025,7 +30295,7 @@
       "source_file": "src/app/free/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "page.tsx",
       "id": "free_page"
     },
@@ -30035,7 +30305,7 @@
       "source_file": "src/app/free/page.tsx",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "metadata",
       "id": "free_page_metadata"
     },
@@ -30045,7 +30315,7 @@
       "source_file": "src/app/free/page.tsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "packs",
       "id": "free_page_packs"
     },
@@ -30055,7 +30325,7 @@
       "source_file": "src/app/free/page.tsx",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "steps",
       "id": "free_page_steps"
     },
@@ -30065,7 +30335,7 @@
       "source_file": "src/app/free/page.tsx",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "freepage()",
       "id": "free_page_freepage"
     },
@@ -30915,7 +31185,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 396,
+      "community": 3,
       "norm_label": "profileclient.tsx",
       "id": "user_profileclient"
     },
@@ -30925,7 +31195,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 396,
+      "community": 3,
       "norm_label": "tabs",
       "id": "user_profileclient_tabs"
     },
@@ -30935,7 +31205,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 396,
+      "community": 3,
       "norm_label": "tab",
       "id": "user_profileclient_tab"
     },
@@ -30945,7 +31215,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 396,
+      "community": 3,
       "norm_label": "badges",
       "id": "user_profileclient_badges"
     },
@@ -30955,7 +31225,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 396,
+      "community": 3,
       "norm_label": "profileclient()",
       "id": "user_profileclient_profileclient"
     },
@@ -31085,7 +31355,7 @@
       "source_file": "src/app/roulette/RouletteClient.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "rouletteclient.tsx",
       "id": "roulette_rouletteclient"
     },
@@ -31095,7 +31365,7 @@
       "source_file": "src/app/roulette/RouletteClient.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "tiers",
       "id": "roulette_rouletteclient_tiers"
     },
@@ -31105,7 +31375,7 @@
       "source_file": "src/app/roulette/RouletteClient.tsx",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "thumb()",
       "id": "roulette_rouletteclient_thumb"
     },
@@ -31115,7 +31385,7 @@
       "source_file": "src/app/roulette/RouletteClient.tsx",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "rouletteclient()",
       "id": "roulette_rouletteclient_rouletteclient"
     },
@@ -31125,7 +31395,7 @@
       "source_file": "src/app/roulette/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "page.tsx",
       "id": "roulette_page"
     },
@@ -31135,7 +31405,7 @@
       "source_file": "src/app/roulette/page.tsx",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "metadata",
       "id": "roulette_page_metadata"
     },
@@ -31145,7 +31415,7 @@
       "source_file": "src/app/roulette/page.tsx",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 22,
+      "community": 18,
       "norm_label": "roulettepage()",
       "id": "roulette_page_roulettepage"
     },
@@ -31195,7 +31465,7 @@
       "source_file": "src/app/social/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 396,
+      "community": 5,
       "norm_label": "page.tsx",
       "id": "social_page"
     },
@@ -31205,7 +31475,7 @@
       "source_file": "src/app/social/page.tsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 396,
+      "community": 5,
       "norm_label": "tabs",
       "id": "social_page_tabs"
     },
@@ -31215,7 +31485,7 @@
       "source_file": "src/app/social/page.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 396,
+      "community": 5,
       "norm_label": "socialpage()",
       "id": "social_page_socialpage"
     },
@@ -31265,7 +31535,7 @@
       "source_file": "src/components/AuthButton.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "authbutton.tsx",
       "id": "components_authbutton"
     },
@@ -31275,7 +31545,7 @@
       "source_file": "src/components/AuthButton.tsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "openauth()",
       "id": "components_authbutton_openauth"
     },
@@ -31285,7 +31555,7 @@
       "source_file": "src/components/AuthButton.tsx",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 25,
+      "community": 257,
       "norm_label": "authbutton()",
       "id": "components_authbutton_authbutton"
     },
@@ -31295,7 +31565,7 @@
       "source_file": "src/components/AuthForm.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authform.tsx",
       "id": "components_authform"
     },
@@ -31305,7 +31575,7 @@
       "source_file": "src/components/AuthForm.tsx",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authform()",
       "id": "components_authform_authform"
     },
@@ -31315,7 +31585,7 @@
       "source_file": "src/components/AuthForm.tsx",
       "source_location": "L124",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "field()",
       "id": "components_authform_field"
     },
@@ -32135,7 +32405,7 @@
       "source_file": "src/components/auth/AuthProvider.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authprovider.tsx",
       "id": "auth_authprovider"
     },
@@ -32145,7 +32415,7 @@
       "source_file": "src/components/auth/AuthProvider.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authcontextvalue",
       "id": "auth_authprovider_authcontextvalue"
     },
@@ -32155,7 +32425,7 @@
       "source_file": "src/components/auth/AuthProvider.tsx",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authcontext",
       "id": "auth_authprovider_authcontext"
     },
@@ -32175,7 +32445,7 @@
       "source_file": "src/components/auth/AuthProvider.tsx",
       "source_location": "L53",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "useauth()",
       "id": "auth_authprovider_useauth"
     },
@@ -32185,7 +32455,7 @@
       "source_file": "src/components/auth/UserMenu.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "usermenu.tsx",
       "id": "auth_usermenu"
     },
@@ -32195,7 +32465,7 @@
       "source_file": "src/components/auth/UserMenu.tsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "menu_links",
       "id": "auth_usermenu_menu_links"
     },
@@ -32205,7 +32475,7 @@
       "source_file": "src/components/auth/UserMenu.tsx",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "displayname()",
       "id": "auth_usermenu_displayname"
     },
@@ -32215,7 +32485,7 @@
       "source_file": "src/components/auth/UserMenu.tsx",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "usermenu()",
       "id": "auth_usermenu_usermenu"
     },
@@ -32265,7 +32535,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "auth.ts",
       "id": "actions_auth"
     },
@@ -32275,7 +32545,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authcustomer",
       "id": "actions_auth_authcustomer"
     },
@@ -32285,7 +32555,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "authresult",
       "id": "actions_auth_authresult"
     },
@@ -32295,7 +32565,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "tokenresponse",
       "id": "actions_auth_tokenresponse"
     },
@@ -32305,7 +32575,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "toauthcustomer()",
       "id": "actions_auth_toauthcustomer"
     },
@@ -32315,7 +32585,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "friendlyerror()",
       "id": "actions_auth_friendlyerror"
     },
@@ -32325,7 +32595,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "exchangetoken()",
       "id": "actions_auth_exchangetoken"
     },
@@ -32335,7 +32605,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "login()",
       "id": "actions_auth_login"
     },
@@ -32345,7 +32615,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "signup()",
       "id": "actions_auth_signup"
     },
@@ -32355,7 +32625,7 @@
       "source_file": "src/lib/actions/auth.ts",
       "source_location": "L122",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "logout()",
       "id": "actions_auth_logout"
     },
@@ -32430,72 +32700,12 @@
       "id": "actions_customer_updateprofile"
     },
     {
-      "label": "packs.ts",
-      "file_type": "code",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 9,
-      "norm_label": "packs.ts",
-      "id": "actions_packs"
-    },
-    {
-      "label": "WonCard",
-      "file_type": "code",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L19",
-      "_origin": "ast",
-      "community": 9,
-      "norm_label": "woncard",
-      "id": "actions_packs_woncard"
-    },
-    {
-      "label": "OpenPackResult",
-      "file_type": "code",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L27",
-      "_origin": "ast",
-      "community": 9,
-      "norm_label": "openpackresult",
-      "id": "actions_packs_openpackresult"
-    },
-    {
-      "label": "BackendWonCard",
-      "file_type": "code",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L40",
-      "_origin": "ast",
-      "community": 9,
-      "norm_label": "backendwoncard",
-      "id": "actions_packs_backendwoncard"
-    },
-    {
-      "label": "friendlyError()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L49",
-      "_origin": "ast",
-      "community": 9,
-      "norm_label": "friendlyerror()",
-      "id": "actions_packs_friendlyerror"
-    },
-    {
-      "label": "openPack()",
-      "file_type": "code",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L60",
-      "_origin": "ast",
-      "community": 9,
-      "norm_label": "openpack()",
-      "id": "actions_packs_openpack"
-    },
-    {
       "label": "customer.ts",
       "file_type": "code",
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "customer.ts",
       "id": "data_customer"
     },
@@ -32505,7 +32715,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "setauthtoken()",
       "id": "data_customer_setauthtoken"
     },
@@ -32515,7 +32725,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 257,
+      "community": 9,
       "norm_label": "clearauthtoken()",
       "id": "data_customer_clearauthtoken"
     },
@@ -32525,7 +32735,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 9,
+      "community": 49,
       "norm_label": "getauthtoken()",
       "id": "data_customer_getauthtoken"
     },
@@ -32535,7 +32745,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "getcustomer",
       "id": "data_customer_getcustomer"
     },
@@ -32545,7 +32755,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L84",
       "_origin": "ast",
-      "community": 9,
+      "community": 121,
       "norm_label": "getorders()",
       "id": "data_customer_getorders"
     },
@@ -32645,7 +32855,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "packs.ts",
       "id": "data_packs"
     },
@@ -32655,7 +32865,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "backendpack",
       "id": "data_packs_backendpack"
     },
@@ -32665,7 +32875,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "formatprice()",
       "id": "data_packs_formatprice"
     },
@@ -32675,7 +32885,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "topack()",
       "id": "data_packs_topack"
     },
@@ -32685,7 +32895,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "getpackcategories()",
       "id": "data_packs_getpackcategories"
     },
@@ -32695,7 +32905,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L109",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "backendoddsentry",
       "id": "data_packs_backendoddsentry"
     },
@@ -32715,7 +32925,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L135",
       "_origin": "ast",
-      "community": 4,
+      "community": 187,
       "norm_label": "getpackdetail()",
       "id": "data_packs_getpackdetail"
     },
@@ -32725,7 +32935,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L174",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "backendrecentpull",
       "id": "data_packs_backendrecentpull"
     },
@@ -32735,7 +32945,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L184",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "recentpull",
       "id": "data_packs_recentpull"
     },
@@ -32745,7 +32955,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L201",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "relativetime()",
       "id": "data_packs_relativetime"
     },
@@ -32755,7 +32965,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L220",
       "_origin": "ast",
-      "community": 49,
+      "community": 187,
       "norm_label": "getrecentpulls()",
       "id": "data_packs_getrecentpulls"
     },
@@ -32975,7 +33185,7 @@
       "source_file": "src/lib/format.ts",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 396,
+      "community": 3,
       "norm_label": "compact()",
       "id": "lib_format_compact"
     },
@@ -32995,7 +33205,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 122,
       "norm_label": "logger.ts",
       "id": "lib_logger"
     },
@@ -33005,7 +33215,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 9,
+      "community": 122,
       "norm_label": "logfn",
       "id": "lib_logger_logfn"
     },
@@ -33015,7 +33225,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 9,
+      "community": 122,
       "norm_label": "logger",
       "id": "lib_logger_logger"
     },
@@ -33025,7 +33235,7 @@
       "source_file": "src/lib/medusa.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "medusa.ts",
       "id": "lib_medusa"
     },
@@ -33035,7 +33245,7 @@
       "source_file": "src/lib/medusa.ts",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 9,
+      "community": 25,
       "norm_label": "sdk",
       "id": "lib_medusa_sdk"
     },
@@ -33045,7 +33255,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "cards.ts",
       "id": "mock_cards"
     },
@@ -33055,7 +33265,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "grader",
       "id": "mock_cards_grader"
     },
@@ -33065,7 +33275,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "rarity",
       "id": "mock_cards_rarity"
     },
@@ -33075,7 +33285,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "mockcard",
       "id": "mock_cards_mockcard"
     },
@@ -33085,7 +33295,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "subjects",
       "id": "mock_cards_subjects"
     },
@@ -33095,7 +33305,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "sets",
       "id": "mock_cards_sets"
     },
@@ -33105,7 +33315,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "graders",
       "id": "mock_cards_graders"
     },
@@ -33115,7 +33325,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "grades",
       "id": "mock_cards_grades"
     },
@@ -33125,7 +33335,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "years",
       "id": "mock_cards_years"
     },
@@ -33135,7 +33345,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "harvest",
       "id": "mock_cards_harvest"
     },
@@ -33145,7 +33355,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "kebab()",
       "id": "mock_cards_kebab"
     },
@@ -33155,7 +33365,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "rarityfor()",
       "id": "mock_cards_rarityfor"
     },
@@ -33165,7 +33375,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "build()",
       "id": "mock_cards_build"
     },
@@ -33175,7 +33385,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "mock_cards",
       "id": "mock_cards_mock_cards"
     },
@@ -33185,7 +33395,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L69",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "rarity_rgb",
       "id": "mock_cards_rarity_rgb"
     },
@@ -33205,7 +33415,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "hash()",
       "id": "mock_cards_hash"
     },
@@ -33225,7 +33435,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L111",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "morefromset()",
       "id": "mock_cards_morefromset"
     },
@@ -33345,7 +33555,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 396,
+      "community": 5,
       "norm_label": "mockuser",
       "id": "mock_users_mockuser"
     },
@@ -33505,7 +33715,7 @@
       "source_file": "src/lib/motion.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 22,
+      "community": 324,
       "norm_label": "hero_slide",
       "id": "lib_motion_hero_slide"
     },
@@ -33535,7 +33745,7 @@
       "source_file": "src/lib/packs-format.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 49,
       "norm_label": "packs-format.ts",
       "id": "lib_packs_format"
     },
@@ -33545,7 +33755,7 @@
       "source_file": "src/lib/packs-format.ts",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 9,
+      "community": 49,
       "norm_label": "rarities",
       "id": "lib_packs_format_rarities"
     },
@@ -33555,7 +33765,7 @@
       "source_file": "src/lib/packs-format.ts",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 9,
+      "community": 49,
       "norm_label": "rarity_set",
       "id": "lib_packs_format_rarity_set"
     },
@@ -33565,7 +33775,7 @@
       "source_file": "src/lib/packs-format.ts",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 9,
+      "community": 49,
       "norm_label": "israrity()",
       "id": "lib_packs_format_israrity"
     },
@@ -33575,7 +33785,7 @@
       "source_file": "src/lib/packs-format.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 9,
+      "community": 49,
       "norm_label": "formatvalue()",
       "id": "lib_packs_format_formatvalue"
     },
@@ -44946,7 +45156,7 @@
       "file_type": "code",
       "source_file": "src/app/clawmaker/page.tsx",
       "source_location": "L9",
-      "community": 5,
+      "community": 18,
       "norm_label": "pool",
       "id": "clawmaker_page_pool"
     },
@@ -44982,7 +45192,7 @@
       "file_type": "code",
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L8",
-      "community": 3,
+      "community": 121,
       "norm_label": "status",
       "id": "orders_page_status"
     },
@@ -45000,7 +45210,7 @@
       "file_type": "code",
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L1",
-      "community": 4,
+      "community": 187,
       "norm_label": "page.tsx",
       "id": "slug_page"
     },
@@ -45009,7 +45219,7 @@
       "file_type": "code",
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L7",
-      "community": 4,
+      "community": 187,
       "norm_label": "generatestaticparams()",
       "id": "slug_page_generatestaticparams"
     },
@@ -45018,7 +45228,7 @@
       "file_type": "code",
       "source_file": "src/app/claw/page.tsx",
       "source_location": "L11",
-      "community": 49,
+      "community": 4,
       "norm_label": "tabs",
       "id": "claw_page_tabs"
     },
@@ -45027,7 +45237,7 @@
       "file_type": "code",
       "source_file": "src/app/claw/page.tsx",
       "source_location": "L17",
-      "community": 49,
+      "community": 4,
       "norm_label": "packcard()",
       "id": "claw_page_packcard"
     },
@@ -45036,7 +45246,7 @@
       "file_type": "code",
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L11",
-      "community": 296,
+      "community": 22,
       "norm_label": "hex()",
       "id": "fairness_page_hex"
     },
@@ -45045,7 +45255,7 @@
       "file_type": "code",
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L21",
-      "community": 296,
+      "community": 22,
       "norm_label": "proofs",
       "id": "fairness_page_proofs"
     },
@@ -45054,7 +45264,7 @@
       "file_type": "code",
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L30",
-      "community": 296,
+      "community": 22,
       "norm_label": "row()",
       "id": "fairness_page_row"
     },
@@ -45311,8 +45521,18 @@
       "source_file": "backend/.claude/lessons.md",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_lessons_backend_lessons",
-      "target": "claude_lessons_integration_suites_run_via_the_package_scripts_never_raw_jest",
+      "target": "claude_lessons_integration_suites_run_via_the_package_scripts_never_raw_jest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/.claude/lessons.md",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "claude_lessons_backend_lessons",
+      "target": "claude_lessons_medusa_develop_watcher_can_wedge_into_a_listener_less_boot_loop",
       "confidence_score": 1.0
     },
     {
@@ -45331,9 +45551,9 @@
       "source_file": "backend/.claude/lessons.md",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_lessons_backend_lessons",
-      "target": "claude_lessons_new_rate_limiter_park_it_in_env_test",
-      "confidence_score": 1.0
+      "target": "claude_lessons_new_rate_limiter_park_it_in_env_test"
     },
     {
       "relation": "contains",
@@ -45346,45 +45566,80 @@
       "target": "claude_lessons_uploaded_static_files_are_transient_a_rebuild_can_wipe_them_while_the_db_keeps_the_urls"
     },
     {
-      "relation": "contains",
+      "relation": "imports",
+      "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/.mercur/index.d.ts",
-      "source_location": "L4",
+      "source_file": "backend/packages/api/integration-tests/http/pack-open-charge.spec.ts",
+      "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "mercur_index_d",
-      "target": "mercur_index_d_routes"
+      "source": "http_pack_open_charge_spec",
+      "target": "http_utils_unwrapresponse"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/integration-tests/http/vault-buyback.spec.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "http_vault_buyback_spec",
+      "target": "http_utils"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/integration-tests/http/credit-topup.spec.ts",
-      "source_location": "L5",
+      "source_file": "backend/packages/api/integration-tests/http/vault-buyback.spec.ts",
+      "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "http_credit_topup_spec",
+      "source": "http_vault_buyback_spec",
       "target": "http_utils_unwrapresponse"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L33",
+      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
+      "source_location": "L21",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "api_middlewares_authratelimit"
+      "source": "open_route",
+      "target": "open_route_post"
     },
     {
-      "relation": "contains",
+      "relation": "imports_from",
+      "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L32",
+      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
+      "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "api_middlewares_storereadratelimit"
+      "source": "open_route",
+      "target": "workflows_open_pack"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "open_route",
+      "target": "workflows_open_pack_openpackworkflow"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "open_route_post",
+      "target": "workflows_open_pack_openpackworkflow"
     },
     {
       "relation": "imports_from",
@@ -45396,104 +45651,6 @@
       "confidence_score": 1.0,
       "source": "api_middlewares",
       "target": "utils_rate_limit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "utils_rate_limit_createauthratelimit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "utils_rate_limit_createcredittopupratelimit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "utils_rate_limit_createpackopenratelimit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "utils_rate_limit_createstorereadratelimit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/middlewares.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "api_middlewares",
-      "target": "utils_rate_limit_createvaultbuybackratelimit"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "topup_route",
-      "target": "topup_route_post"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "topup_route",
-      "target": "workflows_topup_credits"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "topup_route",
-      "target": "workflows_topup_credits_topupcreditsworkflow"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "topup_route_post",
-      "target": "workflows_topup_credits_topupcreditsworkflow"
     },
     {
       "relation": "contains",
@@ -45984,67 +46141,111 @@
       "target": "utils_rate_limit_createenvratelimit"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "utils_rate_limit_createpackopenratelimit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "utils_rate_limit_createvaultbuybackratelimit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "utils_rate_limit_createcredittopupratelimit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "utils_rate_limit_createauthratelimit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "utils_rate_limit_createstorereadratelimit"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/__tests__/topup.unit.spec.ts",
+      "source_file": "backend/packages/api/src/modules/packs/__tests__/pack-open-charge.unit.spec.ts",
       "source_location": "L1",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "tests_topup_unit_spec",
-      "target": "packs_topup"
+      "source": "tests_pack_open_charge_unit_spec",
+      "target": "packs_pack_open_charge"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/__tests__/topup.unit.spec.ts",
+      "source_file": "backend/packages/api/src/modules/packs/__tests__/pack-open-charge.unit.spec.ts",
       "source_location": "L1",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "tests_topup_unit_spec",
-      "target": "packs_topup_mockcharge"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/__tests__/topup.unit.spec.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_topup_unit_spec",
-      "target": "packs_topup_topupamounterror"
+      "source": "tests_pack_open_charge_unit_spec",
+      "target": "packs_pack_open_charge_hasenoughcredit"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260611232039.ts",
-      "source_location": "L7",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "migrations_migration20260611232039",
-      "target": "migrations_migration20260611232039_migration20260611232039"
+      "source": "migrations_migration20260612002121",
+      "target": "migrations_migration20260612002121_migration20260612002121"
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260611232039.ts",
-      "source_location": "L18",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L16",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "migrations_migration20260611232039_migration20260611232039",
-      "target": "migrations_migration20260611232039_migration20260611232039_down"
+      "source": "migrations_migration20260612002121_migration20260612002121",
+      "target": "migrations_migration20260612002121_migration20260612002121_down"
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260611232039.ts",
-      "source_location": "L9",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260612002121.ts",
+      "source_location": "L6",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "migrations_migration20260611232039_migration20260611232039",
-      "target": "migrations_migration20260611232039_migration20260611232039_up"
+      "source": "migrations_migration20260612002121_migration20260612002121",
+      "target": "migrations_migration20260612002121_migration20260612002121_up"
     },
     {
       "relation": "contains",
@@ -46059,148 +46260,171 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
-      "source_location": "L49",
+      "source_file": "backend/packages/api/src/modules/packs/pack-open-charge.ts",
+      "source_location": "L9",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "packs_topup",
-      "target": "packs_topup_mockcharge"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "packs_topup",
-      "target": "packs_topup_mockchargeinput"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "packs_topup",
-      "target": "packs_topup_mockchargeresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "packs_topup",
-      "target": "packs_topup_topupamounterror"
+      "source": "packs_pack_open_charge",
+      "target": "packs_pack_open_charge_hasenoughcredit"
     },
     {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
       "source_location": "L6",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "steps_topup_credits",
-      "target": "packs_topup"
+      "source": "steps_charge_pack_open",
+      "target": "packs_pack_open_charge"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
       "source_location": "L6",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "steps_topup_credits",
-      "target": "packs_topup_topupamounterror"
+      "source": "steps_charge_pack_open",
+      "target": "packs_pack_open_charge_hasenoughcredit"
     },
     {
-      "relation": "imports",
+      "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "steps_topup_credits",
-      "target": "packs_topup_mockcharge"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
       "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "steps_topup_credits",
-      "target": "steps_topup_credits_topupcreditsinput"
+      "source": "workflows_open_pack",
+      "target": "steps_charge_pack_open"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_open_pack",
+      "target": "steps_charge_pack_open_chargepackopenstep"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_open_pack",
+      "target": "steps_decrement_card_stock_decrementcardstockstep"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_open_pack",
+      "target": "steps_record_pull_recordpullstep"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_open_pack",
+      "target": "steps_roll_pack_rollpackstep"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_open_pack",
+      "target": "workflows_open_pack_openpackinput"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
       "source_location": "L27",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "steps_topup_credits",
-      "target": "steps_topup_credits_topupcreditsstep"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "steps_topup_credits",
-      "target": "steps_topup_credits_topupresult"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "workflows_topup_credits",
-      "target": "steps_topup_credits"
+      "source": "workflows_open_pack",
+      "target": "workflows_open_pack_openpackworkflow"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
-      "source_location": "L5",
+      "source_file": "backend/packages/api/src/scripts/verify-pools.ts",
+      "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "workflows_topup_credits",
-      "target": "steps_topup_credits_topupcreditsinput"
+      "source": "backend_packages_api_src_scripts_verify_pools_ts_scripts_verify_pools",
+      "target": "workflows_open_pack_openpackworkflow"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
-      "source_location": "L5",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/packages/api/src/scripts/verify-pools.ts",
+      "source_location": "L28",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "workflows_topup_credits",
-      "target": "steps_topup_credits_topupcreditsstep"
+      "source": "backend_packages_api_src_scripts_verify_pools_ts_scripts_verify_pools_verifypools",
+      "target": "workflows_open_pack_openpackworkflow"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_charge_pack_open",
+      "target": "steps_charge_pack_open_chargepackopeninput"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
       "source_location": "L13",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "workflows_topup_credits",
-      "target": "workflows_topup_credits_topupcreditsworkflow"
+      "source": "steps_charge_pack_open",
+      "target": "steps_charge_pack_open_chargepackopenresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_charge_pack_open",
+      "target": "steps_charge_pack_open_chargepackopenstep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/charge-pack-open.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_charge_pack_open",
+      "target": "steps_charge_pack_open_compensatedata"
     },
     {
       "relation": "contains",
@@ -46236,11 +46460,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/research/BACKEND_TASKS.md",
-      "source_location": "L71",
+      "source_location": "L75",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "research_backend_tasks_backend_feature_tasks_one_session_per_task",
-      "target": "research_backend_tasks_task_a2_charge_pack_opens_from_the_credit_balance_payment_seam"
+      "target": "research_backend_tasks_task_a2_charge_pack_opens_from_the_credit_balance_payment_seam_done_2026_06_12"
     },
     {
       "relation": "contains",
@@ -46295,42 +46519,82 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "scripts/qa-topup.mjs",
-      "source_location": "L24",
+      "source_file": "scripts/demo-vault-flow.mjs",
+      "source_location": "L16",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_qa_topup",
-      "target": "scripts_qa_topup_balancestat"
+      "source": "scripts_demo_vault_flow",
+      "target": "scripts_demo_vault_flow_page"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "scripts/qa-topup.mjs",
+      "source_file": "scripts/demo-vault-flow.mjs",
       "source_location": "L13",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_qa_topup",
-      "target": "scripts_qa_topup_fail"
+      "source": "scripts_demo_vault_flow",
+      "target": "scripts_demo_vault_flow_pause"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "scripts/qa-topup.mjs",
-      "source_location": "L17",
+      "source_file": "scripts/demo-vault-flow.mjs",
+      "source_location": "L12",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_qa_topup",
-      "target": "scripts_qa_topup_ok"
+      "source": "scripts_demo_vault_flow",
+      "target": "scripts_demo_vault_flow_step"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "scripts/qa-topup.mjs",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_pack_open_charge",
+      "target": "scripts_qa_pack_open_charge_fail"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_pack_open_charge",
+      "target": "scripts_qa_pack_open_charge_login"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
       "source_location": "L20",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_qa_topup",
-      "target": "scripts_qa_topup_page"
+      "source": "scripts_qa_pack_open_charge",
+      "target": "scripts_qa_pack_open_charge_ok"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_pack_open_charge",
+      "target": "scripts_qa_pack_open_charge_playrevealandkeep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-pack-open-charge.mjs",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_pack_open_charge",
+      "target": "scripts_qa_pack_open_charge_readpriceandbalance"
     },
     {
       "relation": "imports_from",
@@ -46497,24 +46761,673 @@
       "target": "lib_format_usd"
     },
     {
-      "relation": "contains",
+      "relation": "imports_from",
+      "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/account/AddCreditsPanel.tsx",
-      "source_location": "L13",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L22",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "account_addcreditspanel",
-      "target": "account_addcreditspanel_addcreditspanel"
+      "source": "slug_packdetailclient",
+      "target": "actions_packs"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "actions_packs_openpack"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "actions_vault"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "actions_vault_getcreditbalance"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "actions_vault_sellbackpull"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "auth_authprovider"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "auth_authprovider_useauth"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_card_pool"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_clawmachine"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_odds"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_pack"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_packcard"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_pricenumber"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "claw_packs_data_resolvedpack"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "components_authbutton"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "components_authbutton_openauth"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "components_reveal"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "data_packs"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "data_packs_packdetail"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "data_packs_recentpull"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "lib_format_usd"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "lib_use_reveal"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "lib_use_reveal_useprefersreducedmotion"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "lib_utils"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "lib_utils_cn"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/account/AddCreditsPanel.tsx",
-      "source_location": "L7",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L69",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "account_addcreditspanel",
-      "target": "account_addcreditspanel_presets"
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_cardthumb"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_live_odds"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L86",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_packdetailclient"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_rarity_ring"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_spice"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_spice_icon"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_spice_levels"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packdetailclient_spice_mult"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_packdetailclient",
+      "target": "slug_packopenoverlay"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "slug_page",
+      "target": "slug_packdetailclient"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/claw/[slug]/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_claw_slug_page_tsx_slug_page",
+      "target": "slug_packdetailclient"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L101",
+      "weight": 1.0,
+      "source": "slug_packdetailclient_packdetailclient",
+      "target": "auth_authprovider_useauth"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L102",
+      "weight": 1.0,
+      "source": "slug_packdetailclient_packdetailclient",
+      "target": "claw_packs_data_clawmachine"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "slug_packdetailclient_packdetailclient",
+      "target": "claw_packs_data_pricenumber"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L93",
+      "weight": 1.0,
+      "source": "slug_packdetailclient_packdetailclient",
+      "target": "lib_use_reveal_useprefersreducedmotion"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
+      "source_location": "L187",
+      "weight": 1.0,
+      "source": "slug_packdetailclient_packdetailclient",
+      "target": "lib_utils_cn"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "actions_packs_backendwoncard"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "actions_packs_friendlyerror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "actions_packs_openpack"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "actions_packs_openpackresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "actions_packs_woncard"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "claw_packs_data"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "claw_packs_data_rarity"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "data_customer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "data_customer_getauthtoken"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_logger_logger"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_medusa"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_medusa_sdk"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_packs_format"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_packs_format_formatvalue"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs",
+      "target": "lib_packs_format_israrity"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_packs_openpack",
+      "target": "actions_packs_friendlyerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "actions_packs_openpack",
+      "target": "data_customer_getauthtoken"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "actions_packs_openpack",
+      "target": "lib_packs_format_formatvalue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/actions/packs.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "actions_packs_openpack",
+      "target": "lib_packs_format_israrity"
     },
     {
       "relation": "imports_from",
@@ -46526,28 +47439,6 @@
       "confidence_score": 1.0,
       "source": "account_addcreditspanel",
       "target": "actions_vault"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/account/AddCreditsPanel.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "account_addcreditspanel",
-      "target": "actions_vault_topupcredits"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/account/AddCreditsPanel.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "account_addcreditspanel",
-      "target": "lib_format_usd"
     },
     {
       "relation": "contains",
@@ -46568,6 +47459,16 @@
       "confidence_score": 1.0,
       "source": "actions_vault",
       "target": "actions_vault_friendlyerror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/actions/vault.ts",
+      "source_location": "L146",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "actions_vault",
+      "target": "actions_vault_getcreditbalance"
     },
     {
       "relation": "contains",
@@ -46719,17 +47620,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "actions_vault"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/app/(account)/vault/page.tsx",
       "source_location": "L2",
       "weight": 1.0,
@@ -46837,6 +47727,17 @@
       "target": "actions_vault_getvault"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/account/AddCreditsPanel.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "account_addcreditspanel",
+      "target": "actions_vault_topupcredits"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -46848,15 +47749,368 @@
       "target": "data_customer_getauthtoken"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/.mercur/index.d.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mercur_index_d",
+      "target": "mercur_index_d_routes"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L23",
+      "source_file": "backend/packages/api/integration-tests/http/credit-topup.spec.ts",
+      "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "actions_vault_sellbackpull"
+      "source": "http_credit_topup_spec",
+      "target": "http_utils_unwrapresponse"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "api_middlewares_authratelimit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/middlewares.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "api_middlewares",
+      "target": "api_middlewares_storereadratelimit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "topup_route",
+      "target": "topup_route_post"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "topup_route",
+      "target": "workflows_topup_credits"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "topup_route",
+      "target": "workflows_topup_credits_topupcreditsworkflow"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/packages/api/src/api/store/credits/topup/route.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "topup_route_post",
+      "target": "workflows_topup_credits_topupcreditsworkflow"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/__tests__/topup.unit.spec.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_topup_unit_spec",
+      "target": "packs_topup"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/__tests__/topup.unit.spec.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_topup_unit_spec",
+      "target": "packs_topup_mockcharge"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/__tests__/topup.unit.spec.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_topup_unit_spec",
+      "target": "packs_topup_topupamounterror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260611232039.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "migrations_migration20260611232039",
+      "target": "migrations_migration20260611232039_migration20260611232039"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260611232039.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "migrations_migration20260611232039_migration20260611232039",
+      "target": "migrations_migration20260611232039_migration20260611232039_down"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/migrations/Migration20260611232039.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "migrations_migration20260611232039_migration20260611232039",
+      "target": "migrations_migration20260611232039_migration20260611232039_up"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
+      "source_location": "L49",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "packs_topup",
+      "target": "packs_topup_mockcharge"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "packs_topup",
+      "target": "packs_topup_mockchargeinput"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "packs_topup",
+      "target": "packs_topup_mockchargeresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/modules/packs/topup.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "packs_topup",
+      "target": "packs_topup_topupamounterror"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_topup_credits",
+      "target": "packs_topup"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_topup_credits",
+      "target": "packs_topup_topupamounterror"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_topup_credits",
+      "target": "packs_topup_mockcharge"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_topup_credits",
+      "target": "steps_topup_credits_topupcreditsinput"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_topup_credits",
+      "target": "steps_topup_credits_topupcreditsstep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/steps/topup-credits.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "steps_topup_credits",
+      "target": "steps_topup_credits_topupresult"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_topup_credits",
+      "target": "steps_topup_credits"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_topup_credits",
+      "target": "steps_topup_credits_topupcreditsinput"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_topup_credits",
+      "target": "steps_topup_credits_topupcreditsstep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/packages/api/src/workflows/topup-credits.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "workflows_topup_credits",
+      "target": "workflows_topup_credits_topupcreditsworkflow"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-topup.mjs",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_topup",
+      "target": "scripts_qa_topup_balancestat"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-topup.mjs",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_topup",
+      "target": "scripts_qa_topup_fail"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-topup.mjs",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_topup",
+      "target": "scripts_qa_topup_ok"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/qa-topup.mjs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_qa_topup",
+      "target": "scripts_qa_topup_page"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/account/AddCreditsPanel.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "account_addcreditspanel",
+      "target": "account_addcreditspanel_addcreditspanel"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/account/AddCreditsPanel.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "account_addcreditspanel",
+      "target": "account_addcreditspanel_presets"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/account/AddCreditsPanel.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "account_addcreditspanel",
+      "target": "lib_format_usd"
     },
     {
       "relation": "imports_from",
@@ -58171,28 +59425,6 @@
       "target": "http_utils_unwrapresponse"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/integration-tests/http/vault-buyback.spec.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "http_vault_buyback_spec",
-      "target": "http_utils"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/integration-tests/http/vault-buyback.spec.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "http_vault_buyback_spec",
-      "target": "http_utils_unwrapresponse"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/packages/api/integration-tests/setup.js",
@@ -59644,38 +60876,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_api_store_packs_slug_open_route_ts_open_route",
-      "target": "backend_packages_api_src_api_store_packs_slug_open_route_ts_open_route_post"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_api_store_packs_slug_open_route_ts_open_route",
-      "target": "workflows_open_pack_openpackworkflow"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/packages/api/src/api/store/packs/[slug]/open/route.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "backend_packages_api_src_api_store_packs_slug_open_route_ts_open_route_post",
-      "target": "workflows_open_pack_openpackworkflow"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "backend/packages/api/src/api/store/packs/[slug]/route.ts",
       "source_location": "L17",
       "weight": 1.0,
@@ -60896,28 +62096,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/scripts/verify-pools.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_scripts_verify_pools_ts_scripts_verify_pools",
-      "target": "workflows_open_pack_openpackworkflow"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/packages/api/src/scripts/verify-pools.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "backend_packages_api_src_scripts_verify_pools_ts_scripts_verify_pools_verifypools",
-      "target": "workflows_open_pack_openpackworkflow"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "backend/packages/api/src/workflows/buyback-pull.ts",
       "source_location": "L5",
       "weight": 1.0,
@@ -61073,59 +62251,6 @@
       "confidence_score": 1.0,
       "source": "backend_packages_api_src_workflows_delete_pack_ts_workflows_delete_pack",
       "target": "workflows_delete_pack_deletepackworkflow"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_workflows_open_pack_ts_workflows_open_pack",
-      "target": "steps_decrement_card_stock_decrementcardstockstep"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_workflows_open_pack_ts_workflows_open_pack",
-      "target": "steps_record_pull_recordpullstep"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_workflows_open_pack_ts_workflows_open_pack",
-      "target": "steps_roll_pack_rollpackstep"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_workflows_open_pack_ts_workflows_open_pack",
-      "target": "workflows_open_pack_openpackinput"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/packages/api/src/workflows/open-pack.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_packages_api_src_workflows_open_pack_ts_workflows_open_pack",
-      "target": "workflows_open_pack_openpackworkflow"
     },
     {
       "relation": "imports",
@@ -69575,36 +70700,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_demo_vault_flow",
-      "target": "scripts_demo_vault_flow_page"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_demo_vault_flow",
-      "target": "scripts_demo_vault_flow_pause"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/demo-vault-flow.mjs",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_demo_vault_flow",
-      "target": "scripts_demo_vault_flow_step"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "scripts/detect-lines.mjs",
       "source_location": "L6",
       "weight": 1.0,
@@ -76668,416 +77763,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "actions_packs"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "actions_packs_openpack"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "auth_authprovider"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "auth_authprovider_useauth"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_card_pool"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_clawmachine"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_odds"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_pack"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_packcard"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_pricenumber"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "claw_packs_data_resolvedpack"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "components_authbutton"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "components_authbutton_openauth"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "components_reveal"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "data_packs"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "data_packs_packdetail"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "data_packs_recentpull"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "lib_use_reveal"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "lib_use_reveal_useprefersreducedmotion"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "lib_utils"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "lib_utils_cn"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_cardthumb"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L48",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_live_odds"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L86",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_packdetailclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_rarity_ring"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_spice"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_spice_icon"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_spice_levels"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packdetailclient_spice_mult"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L32",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_packdetailclient",
-      "target": "slug_packopenoverlay"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/page.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "slug_page",
-      "target": "slug_packdetailclient"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/claw/[slug]/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_claw_slug_page_tsx_slug_page",
-      "target": "slug_packdetailclient"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L101",
-      "weight": 1.0,
-      "source": "slug_packdetailclient_packdetailclient",
-      "target": "auth_authprovider_useauth"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L102",
-      "weight": 1.0,
-      "source": "slug_packdetailclient_packdetailclient",
-      "target": "claw_packs_data_clawmachine"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L103",
-      "weight": 1.0,
-      "source": "slug_packdetailclient_packdetailclient",
-      "target": "claw_packs_data_pricenumber"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L93",
-      "weight": 1.0,
-      "source": "slug_packdetailclient_packdetailclient",
-      "target": "lib_use_reveal_useprefersreducedmotion"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
-      "source_location": "L187",
-      "weight": 1.0,
-      "source": "slug_packdetailclient_packdetailclient",
-      "target": "lib_utils_cn"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/app/claw/[slug]/PackOpenOverlay.tsx",
       "source_location": "L34",
       "weight": 1.0,
@@ -77471,17 +78156,6 @@
       "target": "claw_loading_clawloading"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "claw_packs_data"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/claw/packs-data.ts",
@@ -77815,17 +78489,6 @@
       "confidence_score": 1.0,
       "source": "slug_page",
       "target": "claw_packs_data_findcategory"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "claw_packs_data_rarity"
     },
     {
       "relation": "imports",
@@ -83302,199 +83965,6 @@
       "weight": 1.0,
       "source": "actions_customer_updateprofile",
       "target": "data_customer_updatecustomerprofile"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L32",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "actions_packs_backendwoncard"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "actions_packs_friendlyerror"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "actions_packs_openpack"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "actions_packs_openpackresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "actions_packs_woncard"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "data_customer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "data_customer_getauthtoken"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_logger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_logger_logger"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_medusa"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_medusa_sdk"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_packs_format"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_packs_format_formatvalue"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs",
-      "target": "lib_packs_format_israrity"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L97",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "actions_packs_openpack",
-      "target": "actions_packs_friendlyerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L56",
-      "weight": 1.0,
-      "source": "actions_packs_openpack",
-      "target": "data_customer_getauthtoken"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L89",
-      "weight": 1.0,
-      "source": "actions_packs_openpack",
-      "target": "lib_packs_format_formatvalue"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/lib/actions/packs.ts",
-      "source_location": "L77",
-      "weight": 1.0,
-      "source": "actions_packs_openpack",
-      "target": "lib_packs_format_israrity"
     },
     {
       "relation": "contains",
@@ -95741,5 +96211,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e461b4fdd91ebf0a3f89a17aa519aebc9962d137"
+  "built_at_commit": "b1277f5b260ac732e43b7f9eabb880a3bab8f8ee"
 }
