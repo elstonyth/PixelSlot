@@ -83,12 +83,32 @@ async function readPriceAndBalance(page) {
   };
 }
 
+const revealDialog = (page) => page.getByRole("dialog", { name: /^opening /i });
+
+// Stage 1 (pack cylinder) wraps the whole screen in a stopPropagation block —
+// selection happens via pointer-up ON the grabbable pack, so click that.
+async function selectPack(page) {
+  const dialog = revealDialog(page);
+  await dialog.waitFor({ timeout: 15000 });
+  await dialog.locator("div.cursor-grab").click();
+}
+
+// Later stages (slab → metadata → pull → card) advance on any click that
+// bubbles to the dialog root; tap the top strip, which is always background
+// (the inner card stack stops propagation; Close/icons sit in the corners).
+async function tapOverlay(page) {
+  const dialog = revealDialog(page);
+  await dialog.waitFor({ timeout: 15000 });
+  const box = await dialog.boundingBox();
+  await dialog.click({ position: { x: box.width / 2, y: 60 } });
+}
+
 // Reveal theater: cylinder → tap pack → slab → tap → metadata → card → keep.
 async function playRevealAndKeep(page) {
   await page.waitForTimeout(2600);
-  await page.mouse.click(720, 420);
+  await selectPack(page);
   await page.waitForTimeout(1000);
-  await page.mouse.click(720, 420);
+  await tapOverlay(page);
   const keep = page.getByRole("button", { name: /keep in vault/i });
   await keep.waitFor({ timeout: 25000 });
   await keep.click();
@@ -99,11 +119,11 @@ async function playRevealAndKeep(page) {
 async function playDemoToCard(page) {
   await page.getByRole("button", { name: /demo spin/i }).click();
   await page.waitForTimeout(1200);
-  await page.mouse.click(720, 420);
+  await selectPack(page);
   await page.waitForTimeout(900);
-  await page.mouse.click(720, 420);
+  await tapOverlay(page);
   await page.waitForTimeout(600);
-  await page.mouse.click(720, 80);
+  await tapOverlay(page);
   await page.getByText("Demo", { exact: true }).waitFor({ timeout: 25000 });
   await page.waitForTimeout(1000);
 }
@@ -248,9 +268,12 @@ try {
     rarity: o.rarity,
   }));
   // Lock the most valuable card at a wild 40% — a change that WOULD be visible
-  // if the storefront mirrored live weights.
+  // if the storefront mirrored live weights. Pick it by market_value rather
+  // than relying on the endpoint's sort order.
+  const values = oddsState.odds.map((o) => Number(o.market_value) || 0);
+  const targetIdx = values.indexOf(Math.max(...values));
   const tweaked = original.map((o, i) =>
-    i === 0 ? { ...o, locked: true, pct: 40 } : { ...o, locked: false },
+    i === targetIdx ? { ...o, locked: true, pct: 40 } : { ...o, locked: false },
   );
   await api(`/admin/packs/${PACK}/odds`, {
     method: "POST",
