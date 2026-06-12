@@ -86,6 +86,41 @@ try {
     fullPage: true,
   });
 
+  // ── Customer support view ────────────────────────────────────────────────
+  await page.goto(`${ADMIN}/support`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(2500);
+  await page.fill("#support-q", "qa-e2e-");
+  await page.getByRole("button", { name: /^search$/i }).click();
+  const firstResult = page.getByText(/qa-e2e-\d+@pokenic\.local/).first();
+  await firstResult.waitFor({ timeout: 15000 });
+  ok("support view: customer search returns E2E customers");
+  await firstResult.click();
+  await page.getByText(/credit balance/i).waitFor({ timeout: 15000 });
+  const balText = await page.locator("h1.tabular-nums").first().textContent();
+  const balBefore = Number(balText.replace(/[$,]/g, ""));
+  ok(`support view: detail loaded (balance $${balBefore})`);
+
+  // Adjust +$5 and expect the balance stat to rise by exactly 5.
+  await page.getByLabel(/amount/i).fill("5");
+  await page.getByLabel(/note/i).fill("QA adjustment probe");
+  await page.getByRole("button", { name: /apply adjustment/i }).click();
+  await page.waitForTimeout(2500);
+  const balAfterText = await page
+    .locator("h1.tabular-nums")
+    .first()
+    .textContent();
+  const balAfter = Number(balAfterText.replace(/[$,]/g, ""));
+  if (Math.round((balAfter - balBefore) * 100) === 500)
+    ok(`support view: +$5 adjustment applied ($${balBefore} → $${balAfter})`);
+  else fail(`adjustment delta wrong: $${balBefore} → $${balAfter}`);
+  const adjRow = await page.getByText("QA adjustment probe").count();
+  if (adjRow > 0) ok("support view: adjustment row in the ledger with note");
+  else fail("support view: adjustment row missing from the ledger");
+  await page.screenshot({
+    path: "docs/research/qa-admin-support.png",
+    fullPage: true,
+  });
+
   if (consoleErrors.length === 0) ok("admin dashboard: zero console errors");
   else fail(`admin console errors: ${consoleErrors.slice(0, 5).join(" | ")}`);
 } catch (err) {

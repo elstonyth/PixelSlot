@@ -2,7 +2,7 @@ import { medusaIntegrationTestRunner } from "@medusajs/test-utils";
 import { Modules } from "@medusajs/framework/utils";
 import { PACKS_MODULE } from "../../src/modules/packs";
 import type PacksModuleService from "../../src/modules/packs/service";
-import { unwrapResponse } from "./utils";
+import { mintSuperAdmin, unwrapResponse } from "./utils";
 
 jest.setTimeout(240 * 1000);
 
@@ -33,42 +33,12 @@ medusaIntegrationTestRunner({
         });
         storeHeaders = { "x-publishable-api-key": key.token };
 
-        // Mint a SUPER-ADMIN the way `medusa user` does (RBAC is on, so a
-        // role-less user 403s on /admin/*): create the user carrying the
-        // super-admin role via the workflow engine (untyped, mirroring the
-        // CLI — `roles` is an RBAC extension of the user DTO), register the
-        // emailpass identity, link the two, then log in for the JWT.
-        const rbacService = container.resolve(Modules.RBAC);
-        const superAdminRoles = await rbacService.listRbacRoles({
-          id: "role_super_admin",
-        });
-        const workflowService = container.resolve(Modules.WORKFLOW_ENGINE);
-        const { result: users } = await workflowService.run(
-          "create-users-workflow",
-          {
-            input: {
-              users: [
-                {
-                  email: ADMIN_EMAIL,
-                  roles: superAdminRoles.map((r: { id: string }) => r.id),
-                },
-              ],
-            },
-          },
+        adminToken = await mintSuperAdmin(
+          container,
+          api,
+          ADMIN_EMAIL,
+          PASSWORD,
         );
-        const authService = container.resolve(Modules.AUTH);
-        const { authIdentity } = await authService.register("emailpass", {
-          body: { email: ADMIN_EMAIL, password: PASSWORD },
-        } as Parameters<typeof authService.register>[1]);
-        await authService.updateAuthIdentities({
-          id: authIdentity!.id,
-          app_metadata: { user_id: (users as { id: string }[])[0].id },
-        });
-        const login = await api.post("/auth/user/emailpass", {
-          email: ADMIN_EMAIL,
-          password: PASSWORD,
-        });
-        adminToken = login.data.token;
       });
 
       const adminHeaders = (): Record<string, string> => ({

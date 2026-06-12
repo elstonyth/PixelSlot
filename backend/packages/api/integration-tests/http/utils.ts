@@ -1,4 +1,6 @@
 import Redis from "ioredis";
+import { Modules } from "@medusajs/framework/utils";
+import type { MedusaContainer } from "@medusajs/framework/types";
 
 // Shared harness policy for the HTTP suites — the two idioms every suite was
 // copy-pasting. Not a spec file (jest's http testMatch only picks *.spec.ts).
@@ -19,8 +21,46 @@ export const unwrapResponse = (promise: Promise<any>): Promise<any> =>
     (e: { response?: unknown }) => {
       if (!e.response) throw e;
       return e.response;
-    }
+    },
   );
+
+/**
+ * Mints a SUPER-ADMIN user and returns a logged-in bearer token — the way the
+ * `medusa user` CLI does it. RBAC is enabled in this backend, so a role-less
+ * user authenticates fine but 403s on every /admin/* route; the user must be
+ * created CARRYING the super-admin role (an RBAC extension of the user DTO,
+ * hence the untyped workflow-engine run, mirroring the CLI).
+ */
+export async function mintSuperAdmin(
+  container: MedusaContainer,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  api: any,
+  email: string,
+  password: string,
+): Promise<string> {
+  const rbacService = container.resolve(Modules.RBAC) as unknown as {
+    listRbacRoles: (f: { id: string }) => Promise<{ id: string }[]>;
+  };
+  const superAdminRoles = await rbacService.listRbacRoles({
+    id: "role_super_admin",
+  });
+  const workflowService = container.resolve(Modules.WORKFLOW_ENGINE);
+  const { result: users } = await workflowService.run("create-users-workflow", {
+    input: {
+      users: [{ email, roles: superAdminRoles.map((r) => r.id) }],
+    },
+  });
+  const authService = container.resolve(Modules.AUTH);
+  const { authIdentity } = await authService.register("emailpass", {
+    body: { email, password },
+  } as Parameters<typeof authService.register>[1]);
+  await authService.updateAuthIdentities({
+    id: authIdentity!.id,
+    app_metadata: { user_id: (users as { id: string }[])[0].id },
+  });
+  const login = await api.post("/auth/user/emailpass", { email, password });
+  return login.data.token as string;
+}
 
 /**
  * Connects to the test Redis or THROWS — deliberately no skip: the rate
@@ -43,7 +83,7 @@ export async function connectTestRedisOrFail(purpose: string): Promise<Redis> {
     await redis.connect();
   } catch (err) {
     throw new Error(
-      `Redis unreachable at ${url} — ${purpose}. Start it: docker start pokenic-redis. (${err})`
+      `Redis unreachable at ${url} — ${purpose}. Start it: docker start pokenic-redis. (${err})`,
     );
   }
   return redis;

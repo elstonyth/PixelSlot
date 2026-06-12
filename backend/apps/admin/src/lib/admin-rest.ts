@@ -39,7 +39,7 @@ export async function uploadImage(file: File): Promise<string> {
 export async function deleteCard(handle: string): Promise<void> {
   const res = await fetch(
     `${__BACKEND_URL__}/admin/cards/${encodeURIComponent(handle)}`,
-    { method: "DELETE", credentials: "include" }
+    { method: "DELETE", credentials: "include" },
   );
   if (!res.ok) {
     throw new Error(await errorMessage(res));
@@ -49,7 +49,7 @@ export async function deleteCard(handle: string): Promise<void> {
 export async function deletePack(slug: string): Promise<void> {
   const res = await fetch(
     `${__BACKEND_URL__}/admin/packs/${encodeURIComponent(slug)}`,
-    { method: "DELETE", credentials: "include" }
+    { method: "DELETE", credentials: "include" },
   );
   if (!res.ok) {
     throw new Error(await errorMessage(res));
@@ -78,9 +78,84 @@ export interface EligibleProduct {
 
 export async function listEligibleProducts(): Promise<EligibleProduct[]> {
   const data = await getJson<{ products: EligibleProduct[] }>(
-    "/admin/gacha/eligible-products"
+    "/admin/gacha/eligible-products",
   );
   return data.products;
+}
+
+// ── Customer support view ────────────────────────────────────────────────────
+
+export interface SupportCustomer {
+  id: string;
+  email: string;
+  first_name: string | null;
+  created_at: string;
+}
+
+export interface SupportTransaction {
+  id: string;
+  amount: number;
+  reason: string;
+  reference: string | null;
+  created_at: string;
+}
+
+export interface SupportPull {
+  id: string;
+  pack_id: string;
+  rolled_at: string;
+  status: "vaulted" | "bought_back";
+  buyback_amount: number | null;
+  card: {
+    handle: string;
+    name: string;
+    market_value: number;
+    image: string;
+  } | null;
+}
+
+export interface CustomerGacha {
+  customer: SupportCustomer;
+  balance: number;
+  transactions: SupportTransaction[];
+  pulls: SupportPull[];
+  vault: { count: number; market_value: number };
+}
+
+// Core Medusa admin customer search (?q matches email/name).
+export async function searchCustomers(q: string): Promise<SupportCustomer[]> {
+  const data = await getJson<{ customers: SupportCustomer[] }>(
+    `/admin/customers?q=${encodeURIComponent(q)}&limit=10`,
+  );
+  return data.customers;
+}
+
+export async function getCustomerGacha(id: string): Promise<CustomerGacha> {
+  return getJson<CustomerGacha>(
+    `/admin/customers/${encodeURIComponent(id)}/gacha`,
+  );
+}
+
+// Operator credit adjustment: signed amount, required audit note. The backend
+// enforces the $0 balance floor and returns the fresh balance.
+export async function adjustCustomerCredits(
+  id: string,
+  amount: number,
+  note: string,
+): Promise<{ amount: number; balance: number }> {
+  const res = await fetch(
+    `${__BACKEND_URL__}/admin/customers/${encodeURIComponent(id)}/credits`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount, note }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(await errorMessage(res));
+  }
+  return (await res.json()) as { amount: number; balance: number };
 }
 
 // PriceCharting proxies (the API token lives server-side only). A 503 from the
@@ -102,14 +177,14 @@ export interface PcProduct {
 
 export async function searchPriceCharting(q: string): Promise<PcMatch[]> {
   const data = await getJson<{ matches: PcMatch[] }>(
-    `/admin/pricecharting/search?q=${encodeURIComponent(q)}`
+    `/admin/pricecharting/search?q=${encodeURIComponent(q)}`,
   );
   return data.matches;
 }
 
 export async function getPriceChartingProduct(id: string): Promise<PcProduct> {
   const data = await getJson<{ product: PcProduct }>(
-    `/admin/pricecharting/product?id=${encodeURIComponent(id)}`
+    `/admin/pricecharting/product?id=${encodeURIComponent(id)}`,
   );
   return data.product;
 }
