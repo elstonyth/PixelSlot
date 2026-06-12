@@ -152,3 +152,67 @@ export async function signup(input: {
 export async function logout(): Promise<void> {
   await clearAuthToken();
 }
+
+/**
+ * Requests a password-reset email. The backend 201s for known AND unknown
+ * emails (no account enumeration) and emits `auth.password_reset`, whose
+ * subscriber delivers the reset link (dev mode: logs it at WARN on the
+ * backend console). A failure here is transport/rate-limit only — it says
+ * nothing about whether the account exists.
+ */
+export async function requestPasswordReset(input: {
+  email: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const email = input.email.trim().toLowerCase();
+  if (!EMAIL_RE.test(email))
+    return { ok: false, error: "Please enter a valid email address." };
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: email,
+    });
+    return { ok: true };
+  } catch (error) {
+    logger.error("[auth] password reset request failed:", error);
+    return {
+      ok: false,
+      error: "Could not send the reset email. Please try again.",
+    };
+  }
+}
+
+/**
+ * Sets a new password using the single-use token from the reset link
+ * (Bearer on /auth/customer/emailpass/update; the backend derives the
+ * account from the token, never from the body).
+ */
+export async function resetPassword(input: {
+  token: string;
+  password: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (input.password.length < MIN_PASSWORD_LENGTH)
+    return {
+      ok: false,
+      error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+    };
+  if (!input.token)
+    return { ok: false, error: "This reset link is invalid or has expired." };
+
+  try {
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      { password: input.password },
+      input.token,
+    );
+    return { ok: true };
+  } catch (error) {
+    logger.error("[auth] password reset failed:", error);
+    // Expired, consumed, or tampered token all surface as 401 — one message.
+    return {
+      ok: false,
+      error:
+        "This reset link is invalid or has expired. Request a new one and try again.",
+    };
+  }
+}

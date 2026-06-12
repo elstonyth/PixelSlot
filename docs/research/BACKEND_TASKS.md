@@ -179,7 +179,24 @@ demo spin plays, result labeled, no network POST to /store/packs/\*/open fired
 
 ---
 
-## ☐ Task D — Forgot-password flow (log-mail provider now, real mail later)
+## ☑ Task D — Forgot-password flow (log-mail provider now, real mail later) (DONE 2026-06-12)
+
+> **Done note:** built as specced, plus reset tokens are now **single-use**
+> (stock Medusa accepts the same token for its whole 15m JWT life):
+> `src/api/utils/reset-token-guard.ts` marks sha256(token) consumed in Redis
+> on a 2xx update (in-memory failover), replay → core-identical "Invalid
+> token" 401. Verified: `password-reset.spec.ts` (http), 16 guard unit tests,
+> and `scripts/qa-forgot-password.mjs` E2E on :4000 (ALL PASS — screenshots
+> `docs/research/qa-forgot-*.png`). PM2 is gone — grep the reset link from the
+> manually-started backend's console, not `pm2 logs`.
+>
+> **Preconditions for the real-mail swap (Resend/SendGrid):** today the only
+> cost of reset spam is a log line, but with real mail it becomes a mail-bomb
+> vector — before swapping, add a per-identifier sliding window on
+> `reset-password`, and fix the shared-IP problem (every storefront server
+> action reaches the backend from the one Next server IP, so the per-IP
+> `AUTH_RATE_*` budget is global across real users; forward the client IP in a
+> header the backend only trusts from the storefront).
 
 **Goal:** "Forgot password?" works end-to-end. Email delivery is a dev-mode
 console/log provider for now; swapping in Resend/SendGrid later is config.
@@ -195,8 +212,9 @@ Medusa docs: load the medusa-dev skill refs (`authentication.md`,
 **Build (backend):** subscriber `src/subscribers/password-reset.ts` on
 `auth.password_reset`: builds
 `${STOREFRONT_URL}/reset-password?token=…&email=…` and — until a real
-notification provider lands — logs it at WARN level (greppable:
-`pm2 logs pokenic-backend`). Add `STOREFRONT_URL` to `.env.template`.
+notification provider lands — logs it at WARN level (greppable from the
+manually-started backend's console; PM2 is gone). Add `STOREFRONT_URL` to
+`.env.template`.
 
 **Build (storefront):** "Forgot password?" in `AuthForm` → email-entry form →
 posts reset-password (always "check your email" response — no account

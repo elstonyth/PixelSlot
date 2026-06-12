@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
-import { login, signup } from "@/lib/actions/auth";
+import { login, signup, requestPasswordReset } from "@/lib/actions/auth";
 import { useAuth } from "./auth/AuthProvider";
 
 // Inner content of the auth modal. The panel chrome (border/bg/padding) is provided
@@ -26,6 +26,34 @@ export default function AuthForm({
   const { setCustomer } = useAuth();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  // Forgot-password lives inside the login mode as a sub-view (the live site
+  // keeps everything in the one modal): "form" collects the email, "sent" is
+  // the always-the-same confirmation (no account enumeration — the backend
+  // 201s for unknown emails too).
+  const [forgot, setForgot] = useState<"none" | "form" | "sent">("none");
+
+  function switchMode(m: "login" | "signup") {
+    setForgot("none");
+    setNote(null);
+    onSwitchMode(m);
+  }
+
+  async function onForgotSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (busy) return;
+    setNote(null);
+
+    const email = String(new FormData(e.currentTarget).get("email") ?? "");
+    setBusy(true);
+    const result = await requestPasswordReset({ email });
+    setBusy(false);
+
+    if (result.ok) {
+      setForgot("sent");
+      return;
+    }
+    setNote(result.error);
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,7 +71,11 @@ export default function AuthForm({
 
     setBusy(true);
     const result = isSignup
-      ? await signup({ email, password, first_name: String(form.get("username") ?? "") })
+      ? await signup({
+          email,
+          password,
+          first_name: String(form.get("username") ?? ""),
+        })
       : await login({ email, password });
     setBusy(false);
 
@@ -57,13 +89,82 @@ export default function AuthForm({
     setNote(result.error);
   }
 
+  // Only the login mode owns the forgot sub-view — if something external
+  // flips the modal to signup (openAuth event) the signup form must win.
+  if (!isSignup && forgot !== "none") {
+    return (
+      <div className="w-full">
+        <h1 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          Reset your password
+        </h1>
+        {forgot === "form" ? (
+          <>
+            <p className="mt-1.5 text-sm text-white/50">
+              Enter your email and we&apos;ll send you a reset link.
+            </p>
+            <form
+              onSubmit={onForgotSubmit}
+              className="mt-6 flex flex-col gap-3"
+            >
+              <Field
+                icon={Mail}
+                name="email"
+                type="email"
+                placeholder="Email"
+                autoComplete="email"
+                required
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-neutral-200 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white disabled:opacity-70"
+              >
+                {busy && (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                )}
+                Send reset link
+              </button>
+            </form>
+          </>
+        ) : (
+          // Same copy whether or not the account exists — the backend
+          // responds identically, and so does this view.
+          <p className="mt-1.5 text-sm text-white/50">
+            If an account exists for that email, a reset link is on its way.
+            Check your inbox.
+          </p>
+        )}
+
+        {note && (
+          <p className="mt-3 text-center text-[12px] text-white/45">{note}</p>
+        )}
+
+        <p className="mt-6 text-center text-[13px] text-white/50">
+          Remembered it?{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setForgot("none");
+              setNote(null);
+            }}
+            className="font-semibold text-white hover:underline"
+          >
+            Back to log in
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <h1 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
         {isSignup ? "Create your account" : "Welcome back"}
       </h1>
       <p className="mt-1.5 text-sm text-white/50">
-        {isSignup ? "Start ripping packs and collecting graded cards." : "Log in to your Pokenic account."}
+        {isSignup
+          ? "Start ripping packs and collecting graded cards."
+          : "Log in to your Pokenic account."}
       </p>
 
       {/* Social */}
@@ -80,17 +181,57 @@ export default function AuthForm({
         ))}
       </div>
       <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-wide text-white/30">
-        <span className="h-px flex-1 bg-white/10" /> or <span className="h-px flex-1 bg-white/10" />
+        <span className="h-px flex-1 bg-white/10" /> or{" "}
+        <span className="h-px flex-1 bg-white/10" />
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        {isSignup && <Field icon={UserIcon} name="username" type="text" placeholder="Username" autoComplete="username" />}
-        <Field icon={Mail} name="email" type="email" placeholder="Email" autoComplete="email" required />
-        <Field icon={Lock} name="password" type="password" placeholder="Password" autoComplete={isSignup ? "new-password" : "current-password"} required minLength={isSignup ? 8 : undefined} />
-        {isSignup && <Field icon={Lock} name="confirmPassword" type="password" placeholder="Confirm password" autoComplete="new-password" required />}
+        {isSignup && (
+          <Field
+            icon={UserIcon}
+            name="username"
+            type="text"
+            placeholder="Username"
+            autoComplete="username"
+          />
+        )}
+        <Field
+          icon={Mail}
+          name="email"
+          type="email"
+          placeholder="Email"
+          autoComplete="email"
+          required
+        />
+        <Field
+          icon={Lock}
+          name="password"
+          type="password"
+          placeholder="Password"
+          autoComplete={isSignup ? "new-password" : "current-password"}
+          required
+          minLength={isSignup ? 8 : undefined}
+        />
+        {isSignup && (
+          <Field
+            icon={Lock}
+            name="confirmPassword"
+            type="password"
+            placeholder="Confirm password"
+            autoComplete="new-password"
+            required
+          />
+        )}
 
         {!isSignup && (
-          <button type="button" onClick={() => setNote("Password reset goes live with the backend.")} className="self-end text-[12px] text-white/45 hover:text-white/70">
+          <button
+            type="button"
+            onClick={() => {
+              setForgot("form");
+              setNote(null);
+            }}
+            className="self-end text-[12px] text-white/45 hover:text-white/70"
+          >
             Forgot password?
           </button>
         )}
@@ -105,13 +246,15 @@ export default function AuthForm({
         </button>
       </form>
 
-      {note && <p className="mt-3 text-center text-[12px] text-white/45">{note}</p>}
+      {note && (
+        <p className="mt-3 text-center text-[12px] text-white/45">{note}</p>
+      )}
 
       <p className="mt-6 text-center text-[13px] text-white/50">
         {isSignup ? "Already have an account? " : "New to Pokenic? "}
         <button
           type="button"
-          onClick={() => onSwitchMode(isSignup ? "login" : "signup")}
+          onClick={() => switchMode(isSignup ? "login" : "signup")}
           className="font-semibold text-white hover:underline"
         >
           {isSignup ? "Log in" : "Sign up"}
@@ -127,7 +270,10 @@ function Field({
 }: { icon: typeof Mail } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="relative">
-      <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" aria-hidden />
+      <Icon
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+        aria-hidden
+      />
       <input
         aria-label={props["aria-label"] ?? props.placeholder}
         {...props}

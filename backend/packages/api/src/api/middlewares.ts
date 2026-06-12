@@ -7,6 +7,7 @@ import {
   createStoreReadRateLimit,
   createVaultBuybackRateLimit,
 } from "./utils/rate-limit";
+import { createResetTokenSingleUseGuard } from "./utils/reset-token-guard";
 
 // Custom-route middleware. /store/* is NOT a default customer-protected prefix
 // (only /store/customers/me/* is), so every customer-owned route here must opt
@@ -49,6 +50,16 @@ export default defineMiddlewares({
       matcher: "/auth/*/emailpass/*",
       method: "POST",
       middlewares: [authRateLimit],
+    },
+    // Password-reset tokens are single-use: core validates the 15m JWT but
+    // never invalidates it after a successful update, so a consumed link
+    // would otherwise keep working until expiry. The guard 401s replays
+    // (same "Invalid token" body as core — no oracle) and only ever rejects;
+    // a token it passes still goes through core's full validateToken.
+    {
+      matcher: "/auth/*/emailpass/update",
+      method: "POST",
+      middlewares: [createResetTokenSingleUseGuard()],
     },
     {
       matcher: "/store/packs/*/open",

@@ -60,7 +60,17 @@ out of scope for the account-data slice.
 **Stubbed auth features (not wired):**
 
 - [ ] Social login (Google / Discord) buttons in `AuthForm` are placeholders.
-- [ ] "Forgot password?" is a placeholder (no reset flow).
+- [x] ~~"Forgot password?" is a placeholder~~ **Done 2026-06-12** (Task D): full
+      reset flow — `AuthForm` forgot view → `POST /auth/customer/emailpass/reset-password`
+      (always "check your email", no enumeration) → `auth.password_reset` subscriber logs
+      the `${STOREFRONT_URL}/reset-password?token&email` link at WARN (dev-mode mail; swap
+      in a real provider later) → `/reset-password` page posts `/auth/customer/emailpass/update`.
+      Reset tokens are SINGLE-USE (Redis-backed guard, `src/api/utils/reset-token-guard.ts`);
+      integration-tested in `password-reset.spec.ts`. Caveat: password min-length
+      (8) is enforced only by the storefront server actions — core's emailpass
+      update/register routes accept any non-empty string, so a direct `:9000`
+      POST can set a 1-char password (pre-existing core behavior; revisit if a
+      backend password policy ever lands).
 
 **Orders will be empty until checkout exists:**
 
