@@ -16,7 +16,7 @@ type Props = { customer: ProfileCustomer };
 
 export default function SettingsForm({ customer }: Props) {
   const router = useRouter();
-  const { setCustomer } = useAuth();
+  const { customer: authCustomer, setCustomer } = useAuth();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -36,11 +36,13 @@ export default function SettingsForm({ customer }: Props) {
 
     if (result.ok) {
       // Sync the header's user menu (AuthCustomer has no phone — drop it).
+      // The profile handle is name-independent — carry the current one over.
       setCustomer({
         id: result.customer.id,
         email: result.customer.email,
         first_name: result.customer.first_name,
         last_name: result.customer.last_name,
+        handle: authCustomer?.handle ?? null,
       });
       setNote({ ok: true, text: "Changes saved." });
       router.refresh();

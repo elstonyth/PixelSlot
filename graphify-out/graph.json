@@ -4,6 +4,86 @@
   "graph": {},
   "nodes": [
     {
+      "label": "CLAUDE.md",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "claude",
+      "community": 455,
+      "norm_label": "claude.md"
+    },
+    {
+      "label": "CLAUDE.md",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "claude_claude_md",
+      "community": 455,
+      "norm_label": "claude.md"
+    },
+    {
+      "label": "What this repo actually is",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "claude_what_this_repo_actually_is",
+      "community": 455,
+      "norm_label": "what this repo actually is"
+    },
+    {
+      "label": "Running & verifying (read before starting a server)",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "claude_running_verifying_read_before_starting_a_server",
+      "community": 455,
+      "norm_label": "running & verifying (read before starting a server)"
+    },
+    {
+      "label": "Architecture",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "claude_architecture",
+      "community": 455,
+      "norm_label": "architecture"
+    },
+    {
+      "label": "The clone workflow",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "claude_the_clone_workflow",
+      "community": 455,
+      "norm_label": "the clone workflow"
+    },
+    {
+      "label": "graphify",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "claude_graphify",
+      "community": 455,
+      "norm_label": "graphify"
+    },
+    {
+      "label": "Running services (default local setup)",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "claude_running_services_default_local_setup",
+      "community": 455,
+      "norm_label": "running services (default local setup)"
+    },
+    {
       "label": "lessons.md",
       "file_type": "document",
       "source_file": "backend/.claude/lessons.md",
@@ -74,14 +154,44 @@
       "norm_label": "`medusa develop` watcher can wedge into a listener-less boot loop"
     },
     {
-      "label": "New rate limiter \u21d2 park it in .env.test",
+      "label": "`medusa develop` restart flashes a terminal window on every save (PATCHED locally)",
       "file_type": "document",
       "source_file": "backend/.claude/lessons.md",
       "source_location": "L75",
       "_origin": "ast",
+      "id": "claude_lessons_medusa_develop_restart_flashes_a_terminal_window_on_every_save_patched_locally",
+      "community": 502,
+      "norm_label": "`medusa develop` restart flashes a terminal window on every save (patched locally)"
+    },
+    {
+      "label": "New rate limiter \u21d2 park it in .env.test",
+      "file_type": "document",
+      "source_file": "backend/.claude/lessons.md",
+      "source_location": "L103",
+      "_origin": "ast",
       "id": "claude_lessons_new_rate_limiter_park_it_in_env_test",
       "community": 502,
       "norm_label": "new rate limiter \u21d2 park it in .env.test"
+    },
+    {
+      "label": "vite.config.ts",
+      "file_type": "code",
+      "source_file": "backend/apps/admin/vite.config.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "admin_vite_config",
+      "community": 181,
+      "norm_label": "vite.config.ts"
+    },
+    {
+      "label": "vite.config.ts",
+      "file_type": "code",
+      "source_file": "backend/apps/vendor/vite.config.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "vendor_vite_config",
+      "community": 184,
+      "norm_label": "vite.config.ts"
     },
     {
       "label": "pack-open-charge.spec.ts",
@@ -799,7 +909,7 @@
       "source_file": "src/app/(account)/vault/VaultClient.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 302,
       "norm_label": "vaultclient.tsx",
       "id": "vault_vaultclient"
     },
@@ -809,7 +919,7 @@
       "source_file": "src/app/(account)/vault/VaultClient.tsx",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 3,
+      "community": 302,
       "norm_label": "vaultclient()",
       "id": "vault_vaultclient_vaultclient"
     },
@@ -819,7 +929,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "packdetailclient.tsx",
       "id": "slug_packdetailclient"
     },
@@ -829,7 +939,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "rarity_ring",
       "id": "slug_packdetailclient_rarity_ring"
     },
@@ -839,7 +949,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "spice_levels",
       "id": "slug_packdetailclient_spice_levels"
     },
@@ -849,7 +959,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "spice",
       "id": "slug_packdetailclient_spice"
     },
@@ -859,7 +969,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "spice_icon",
       "id": "slug_packdetailclient_spice_icon"
     },
@@ -869,7 +979,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L53",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "spice_mult",
       "id": "slug_packdetailclient_spice_mult"
     },
@@ -879,7 +989,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "live_odds",
       "id": "slug_packdetailclient_live_odds"
     },
@@ -889,7 +999,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "cardthumb()",
       "id": "slug_packdetailclient_cardthumb"
     },
@@ -899,7 +1009,7 @@
       "source_file": "src/app/claw/[slug]/PackDetailClient.tsx",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "packdetailclient()",
       "id": "slug_packdetailclient_packdetailclient"
     },
@@ -1049,7 +1159,7 @@
       "source_file": "src/lib/actions/vault.ts",
       "source_location": "L146",
       "_origin": "ast",
-      "community": 302,
+      "community": 40,
       "norm_label": "getcreditbalance()",
       "id": "actions_vault_getcreditbalance"
     },
@@ -1379,7 +1489,7 @@
       "source_file": "src/components/account/AddCreditsPanel.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 302,
       "norm_label": "addcreditspanel.tsx",
       "id": "account_addcreditspanel"
     },
@@ -1389,7 +1499,7 @@
       "source_file": "src/components/account/AddCreditsPanel.tsx",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 3,
+      "community": 302,
       "norm_label": "presets",
       "id": "account_addcreditspanel_presets"
     },
@@ -1399,7 +1509,7 @@
       "source_file": "src/components/account/AddCreditsPanel.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 3,
+      "community": 302,
       "norm_label": "addcreditspanel()",
       "id": "account_addcreditspanel_addcreditspanel"
     },
@@ -1482,36 +1592,6 @@
       "community": 363,
       "norm_label": "errorlines()",
       "id": "hooks_tslib_errorlines"
-    },
-    {
-      "label": "port-guard.js",
-      "file_type": "code",
-      "source_file": ".claude/hooks/port-guard.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 399,
-      "norm_label": "port-guard.js",
-      "id": "hooks_port_guard"
-    },
-    {
-      "label": "PORT_FLAG",
-      "file_type": "code",
-      "source_file": ".claude/hooks/port-guard.js",
-      "source_location": "L16",
-      "_origin": "ast",
-      "community": 399,
-      "norm_label": "port_flag",
-      "id": "hooks_port_guard_port_flag"
-    },
-    {
-      "label": "PORT_ENV",
-      "file_type": "code",
-      "source_file": ".claude/hooks/port-guard.js",
-      "source_location": "L17",
-      "_origin": "ast",
-      "community": 399,
-      "norm_label": "port_env",
-      "id": "hooks_port_guard_port_env"
     },
     {
       "label": "post-edit-typecheck.js",
@@ -4424,16 +4504,6 @@
       "id": "admin_tsconfig_node_include"
     },
     {
-      "label": "vite.config.ts",
-      "file_type": "code",
-      "source_file": "backend/apps/admin/vite.config.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 181,
-      "norm_label": "vite.config.ts",
-      "id": "admin_vite_config"
-    },
-    {
       "label": "eslint.config.js",
       "file_type": "code",
       "source_file": "backend/apps/vendor/eslint.config.js",
@@ -5162,16 +5232,6 @@
       "community": 15,
       "norm_label": "include",
       "id": "vendor_tsconfig_node_include"
-    },
-    {
-      "label": "vite.config.ts",
-      "file_type": "code",
-      "source_file": "backend/apps/vendor/vite.config.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 184,
-      "norm_label": "vite.config.ts",
-      "id": "vendor_vite_config"
     },
     {
       "label": "blocks.json",
@@ -28875,7 +28935,7 @@
       "source_file": "src/app/(account)/messages/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "page.tsx",
       "id": "messages_page"
     },
@@ -28885,7 +28945,7 @@
       "source_file": "src/app/(account)/messages/page.tsx",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "metadata",
       "id": "messages_page_metadata"
     },
@@ -28895,7 +28955,7 @@
       "source_file": "src/app/(account)/messages/page.tsx",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "previews",
       "id": "messages_page_previews"
     },
@@ -28905,7 +28965,7 @@
       "source_file": "src/app/(account)/messages/page.tsx",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "messagespage()",
       "id": "messages_page_messagespage"
     },
@@ -28955,7 +29015,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "page.tsx",
       "id": "orders_page"
     },
@@ -28965,7 +29025,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "metadata",
       "id": "orders_page_metadata"
     },
@@ -28975,7 +29035,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "tone",
       "id": "orders_page_tone"
     },
@@ -28985,7 +29045,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "fulfillment",
       "id": "orders_page_fulfillment"
     },
@@ -28995,7 +29055,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "humanize()",
       "id": "orders_page_humanize"
     },
@@ -29005,7 +29065,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "money()",
       "id": "orders_page_money"
     },
@@ -29015,7 +29075,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "orderdate()",
       "id": "orders_page_orderdate"
     },
@@ -29025,7 +29085,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "orderitems()",
       "id": "orders_page_orderitems"
     },
@@ -29035,7 +29095,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 121,
+      "community": 3,
       "norm_label": "emptystate()",
       "id": "orders_page_emptystate"
     },
@@ -29045,7 +29105,7 @@
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 121,
+      "community": 302,
       "norm_label": "orderspage()",
       "id": "orders_page_orderspage"
     },
@@ -29475,7 +29535,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "page.tsx",
       "id": "activity_page"
     },
@@ -29485,7 +29545,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "metadata",
       "id": "activity_page_metadata"
     },
@@ -29495,7 +29555,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "stats",
       "id": "activity_page_stats"
     },
@@ -29505,7 +29565,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "txtype",
       "id": "activity_page_txtype"
     },
@@ -29515,7 +29575,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "type_tone",
       "id": "activity_page_type_tone"
     },
@@ -29525,7 +29585,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "feed",
       "id": "activity_page_feed"
     },
@@ -29535,7 +29595,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "actor()",
       "id": "activity_page_actor"
     },
@@ -29545,7 +29605,7 @@
       "source_file": "src/app/activity/page.tsx",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "activitypage()",
       "id": "activity_page_activitypage"
     },
@@ -29635,7 +29695,7 @@
       "source_file": "src/app/api/recent-pulls/route.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "route.ts",
       "id": "recent_pulls_route"
     },
@@ -29645,7 +29705,7 @@
       "source_file": "src/app/api/recent-pulls/route.ts",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "get()",
       "id": "recent_pulls_route_get"
     },
@@ -29925,7 +29985,7 @@
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "page.tsx",
       "id": "src_app_claw_slug_page_tsx_slug_page"
     },
@@ -29935,7 +29995,7 @@
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "generatemetadata()",
       "id": "slug_page_generatemetadata"
     },
@@ -29945,7 +30005,7 @@
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "packdetailpage()",
       "id": "slug_page_packdetailpage"
     },
@@ -29995,7 +30055,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 17,
+      "community": 4,
       "norm_label": "packcategory",
       "id": "claw_packs_data_packcategory"
     },
@@ -30025,7 +30085,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L148",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "resolvedpack",
       "id": "claw_packs_data_resolvedpack"
     },
@@ -30045,7 +30105,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L154",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "findpack()",
       "id": "claw_packs_data_findpack"
     },
@@ -30055,7 +30115,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L158",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "findcategory()",
       "id": "claw_packs_data_findcategory"
     },
@@ -30085,7 +30145,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L198",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "clawmachine()",
       "id": "claw_packs_data_clawmachine"
     },
@@ -30095,7 +30155,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L208",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "pricenumber()",
       "id": "claw_packs_data_pricenumber"
     },
@@ -30105,7 +30165,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L216",
       "_origin": "ast",
-      "community": 49,
+      "community": 4,
       "norm_label": "rarity",
       "id": "claw_packs_data_rarity"
     },
@@ -30115,7 +30175,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L217",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "packcard",
       "id": "claw_packs_data_packcard"
     },
@@ -30135,7 +30195,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L222",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "card_pool",
       "id": "claw_packs_data_card_pool"
     },
@@ -30145,7 +30205,7 @@
       "source_file": "src/app/claw/packs-data.ts",
       "source_location": "L233",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "odds",
       "id": "claw_packs_data_odds"
     },
@@ -30265,7 +30325,7 @@
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 22,
+      "community": 46,
       "norm_label": "page.tsx",
       "id": "fairness_page"
     },
@@ -30275,7 +30335,7 @@
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 22,
+      "community": 46,
       "norm_label": "metadata",
       "id": "fairness_page_metadata"
     },
@@ -30285,7 +30345,7 @@
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 22,
+      "community": 46,
       "norm_label": "fairnesspage()",
       "id": "fairness_page_fairnesspage"
     },
@@ -31185,7 +31245,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 5,
       "norm_label": "profileclient.tsx",
       "id": "user_profileclient"
     },
@@ -31195,7 +31255,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 3,
+      "community": 5,
       "norm_label": "tabs",
       "id": "user_profileclient_tabs"
     },
@@ -31205,7 +31265,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 3,
+      "community": 5,
       "norm_label": "tab",
       "id": "user_profileclient_tab"
     },
@@ -31215,7 +31275,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 3,
+      "community": 5,
       "norm_label": "badges",
       "id": "user_profileclient_badges"
     },
@@ -31225,7 +31285,7 @@
       "source_file": "src/app/profile/[user]/ProfileClient.tsx",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 3,
+      "community": 5,
       "norm_label": "profileclient()",
       "id": "user_profileclient_profileclient"
     },
@@ -31235,7 +31295,7 @@
       "source_file": "src/app/profile/[user]/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "page.tsx",
       "id": "user_page"
     },
@@ -31245,7 +31305,7 @@
       "source_file": "src/app/profile/[user]/page.tsx",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "generatestaticparams()",
       "id": "user_page_generatestaticparams"
     },
@@ -31255,7 +31315,7 @@
       "source_file": "src/app/profile/[user]/page.tsx",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "generatemetadata()",
       "id": "user_page_generatemetadata"
     },
@@ -31265,7 +31325,7 @@
       "source_file": "src/app/profile/[user]/page.tsx",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "profilepage()",
       "id": "user_page_profilepage"
     },
@@ -32045,7 +32105,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "sitefooter.tsx",
       "id": "components_sitefooter"
     },
@@ -32055,7 +32115,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "footerlink",
       "id": "components_sitefooter_footerlink"
     },
@@ -32065,7 +32125,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "quick_links",
       "id": "components_sitefooter_quick_links"
     },
@@ -32075,7 +32135,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "support_links",
       "id": "components_sitefooter_support_links"
     },
@@ -32085,7 +32145,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "iconprops",
       "id": "components_sitefooter_iconprops"
     },
@@ -32095,7 +32155,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "twittericon()",
       "id": "components_sitefooter_twittericon"
     },
@@ -32105,7 +32165,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "instagramicon()",
       "id": "components_sitefooter_instagramicon"
     },
@@ -32115,7 +32175,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "discordicon()",
       "id": "components_sitefooter_discordicon"
     },
@@ -32125,7 +32185,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "socials",
       "id": "components_sitefooter_socials"
     },
@@ -32135,7 +32195,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L109",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "linkcolumn()",
       "id": "components_sitefooter_linkcolumn"
     },
@@ -32145,7 +32205,7 @@
       "source_file": "src/components/SiteFooter.tsx",
       "source_location": "L135",
       "_origin": "ast",
-      "community": 320,
+      "community": 17,
       "norm_label": "sitefooter()",
       "id": "components_sitefooter_sitefooter"
     },
@@ -32705,7 +32765,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 9,
       "norm_label": "customer.ts",
       "id": "data_customer"
     },
@@ -32735,7 +32795,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 49,
+      "community": 302,
       "norm_label": "getauthtoken()",
       "id": "data_customer_getauthtoken"
     },
@@ -32755,7 +32815,7 @@
       "source_file": "src/lib/data/customer.ts",
       "source_location": "L84",
       "_origin": "ast",
-      "community": 121,
+      "community": 302,
       "norm_label": "getorders()",
       "id": "data_customer_getorders"
     },
@@ -32915,7 +32975,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L117",
       "_origin": "ast",
-      "community": 4,
+      "community": 40,
       "norm_label": "packdetail",
       "id": "data_packs_packdetail"
     },
@@ -32925,7 +32985,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L135",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "getpackdetail()",
       "id": "data_packs_getpackdetail"
     },
@@ -32965,7 +33025,7 @@
       "source_file": "src/lib/data/packs.ts",
       "source_location": "L220",
       "_origin": "ast",
-      "community": 187,
+      "community": 4,
       "norm_label": "getrecentpulls()",
       "id": "data_packs_getrecentpulls"
     },
@@ -33185,7 +33245,7 @@
       "source_file": "src/lib/format.ts",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 3,
+      "community": 5,
       "norm_label": "compact()",
       "id": "lib_format_compact"
     },
@@ -33205,7 +33265,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 122,
+      "community": 9,
       "norm_label": "logger.ts",
       "id": "lib_logger"
     },
@@ -33215,7 +33275,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 122,
+      "community": 9,
       "norm_label": "logfn",
       "id": "lib_logger_logfn"
     },
@@ -33225,7 +33285,7 @@
       "source_file": "src/lib/logger.ts",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 122,
+      "community": 9,
       "norm_label": "logger",
       "id": "lib_logger_logger"
     },
@@ -33235,7 +33295,7 @@
       "source_file": "src/lib/medusa.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 9,
       "norm_label": "medusa.ts",
       "id": "lib_medusa"
     },
@@ -33245,7 +33305,7 @@
       "source_file": "src/lib/medusa.ts",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 25,
+      "community": 9,
       "norm_label": "sdk",
       "id": "lib_medusa_sdk"
     },
@@ -33265,7 +33325,7 @@
       "source_file": "src/lib/mock/cards.ts",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 18,
+      "community": 6,
       "norm_label": "grader",
       "id": "mock_cards_grader"
     },
@@ -33545,7 +33605,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "users.ts",
       "id": "mock_users"
     },
@@ -33565,7 +33625,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "usernames",
       "id": "mock_users_usernames"
     },
@@ -33575,7 +33635,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "pfp()",
       "id": "mock_users_pfp"
     },
@@ -33585,7 +33645,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "hash()",
       "id": "mock_users_hash"
     },
@@ -33595,7 +33655,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "mock_users",
       "id": "mock_users_mock_users"
     },
@@ -33605,7 +33665,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "finduser()",
       "id": "mock_users_finduser"
     },
@@ -33615,7 +33675,7 @@
       "source_file": "src/lib/mock/users.ts",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 5,
+      "community": 18,
       "norm_label": "userorgeneric()",
       "id": "mock_users_userorgeneric"
     },
@@ -33715,7 +33775,7 @@
       "source_file": "src/lib/motion.ts",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 324,
+      "community": 22,
       "norm_label": "hero_slide",
       "id": "lib_motion_hero_slide"
     },
@@ -35948,86 +36008,6 @@
       "community": 321,
       "norm_label": "added",
       "id": "changelog_added_64"
-    },
-    {
-      "label": "CLAUDE.md",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "claude.md",
-      "id": "claude"
-    },
-    {
-      "label": "CLAUDE.md",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "claude.md",
-      "id": "claude_claude_md"
-    },
-    {
-      "label": "What this repo actually is",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L11",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "what this repo actually is",
-      "id": "claude_what_this_repo_actually_is"
-    },
-    {
-      "label": "Running & verifying (read before starting a server)",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L15",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "running & verifying (read before starting a server)",
-      "id": "claude_running_verifying_read_before_starting_a_server"
-    },
-    {
-      "label": "Architecture",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L30",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "architecture",
-      "id": "claude_architecture"
-    },
-    {
-      "label": "The clone workflow",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L49",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "the clone workflow",
-      "id": "claude_the_clone_workflow"
-    },
-    {
-      "label": "graphify",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L55",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "graphify",
-      "id": "claude_graphify"
-    },
-    {
-      "label": "PM2 services (Radmin-VPN preview stack \u2014 keep running until project finish)",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L65",
-      "_origin": "ast",
-      "community": 455,
-      "norm_label": "pm2 services (radmin-vpn preview stack \u2014 keep running until project finish)",
-      "id": "claude_pm2_services_radmin_vpn_preview_stack_keep_running_until_project_finish"
     },
     {
       "label": "GEMINI.md",
@@ -40760,51 +40740,6 @@
       "id": "route_qa_validation_report_exact_plan_edits_needed_union_of_route_mismatch_medusa_only_refinements_deduped_by_line"
     },
     {
-      "label": "settings.json",
-      "file_type": "code",
-      "source_file": ".claude/settings.json",
-      "source_location": "L1",
-      "community": 503,
-      "norm_label": "settings.json",
-      "id": "claude_settings"
-    },
-    {
-      "label": "hooks",
-      "file_type": "code",
-      "source_file": ".claude/settings.json",
-      "source_location": "L2",
-      "community": 503,
-      "norm_label": "hooks",
-      "id": "claude_settings_hooks"
-    },
-    {
-      "label": "PreToolUse",
-      "file_type": "code",
-      "source_file": ".claude/settings.json",
-      "source_location": "L3",
-      "community": 503,
-      "norm_label": "pretooluse",
-      "id": "claude_settings_hooks_pretooluse"
-    },
-    {
-      "label": "PostToolUse",
-      "file_type": "code",
-      "source_file": ".claude/settings.json",
-      "source_location": "L14",
-      "community": 503,
-      "norm_label": "posttooluse",
-      "id": "claude_settings_hooks_posttooluse"
-    },
-    {
-      "label": "Stop",
-      "file_type": "code",
-      "source_file": ".claude/settings.json",
-      "source_location": "L25",
-      "community": 503,
-      "norm_label": "stop",
-      "id": "claude_settings_hooks_stop"
-    },
-    {
       "label": "round2()",
       "file_type": "code",
       "source_file": "backend/packages/api/.medusa/server/src/api/store/vault/route.js",
@@ -45192,7 +45127,7 @@
       "file_type": "code",
       "source_file": "src/app/(account)/orders/page.tsx",
       "source_location": "L8",
-      "community": 121,
+      "community": 3,
       "norm_label": "status",
       "id": "orders_page_status"
     },
@@ -45210,7 +45145,7 @@
       "file_type": "code",
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L1",
-      "community": 187,
+      "community": 4,
       "norm_label": "page.tsx",
       "id": "slug_page"
     },
@@ -45219,7 +45154,7 @@
       "file_type": "code",
       "source_file": "src/app/claw/[slug]/page.tsx",
       "source_location": "L7",
-      "community": 187,
+      "community": 4,
       "norm_label": "generatestaticparams()",
       "id": "slug_page_generatestaticparams"
     },
@@ -45246,7 +45181,7 @@
       "file_type": "code",
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L11",
-      "community": 22,
+      "community": 46,
       "norm_label": "hex()",
       "id": "fairness_page_hex"
     },
@@ -45255,7 +45190,7 @@
       "file_type": "code",
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L21",
-      "community": 22,
+      "community": 46,
       "norm_label": "proofs",
       "id": "fairness_page_proofs"
     },
@@ -45264,7 +45199,7 @@
       "file_type": "code",
       "source_file": "src/app/fairness/page.tsx",
       "source_location": "L30",
-      "community": 22,
+      "community": 46,
       "norm_label": "row()",
       "id": "fairness_page_row"
     },
@@ -45498,6 +45433,76 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude",
+      "target": "claude_claude_md"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_claude_md",
+      "target": "claude_architecture"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_claude_md",
+      "target": "claude_graphify"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "claude_claude_md",
+      "target": "claude_running_services_default_local_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_claude_md",
+      "target": "claude_running_verifying_read_before_starting_a_server"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_claude_md",
+      "target": "claude_the_clone_workflow"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CLAUDE.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_claude_md",
+      "target": "claude_what_this_repo_actually_is"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "backend/.claude/lessons.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -45529,11 +45534,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/.claude/lessons.md",
-      "source_location": "L64",
+      "source_location": "L75",
       "weight": 1.0,
       "source": "claude_lessons_backend_lessons",
-      "target": "claude_lessons_medusa_develop_watcher_can_wedge_into_a_listener_less_boot_loop",
+      "target": "claude_lessons_medusa_develop_restart_flashes_a_terminal_window_on_every_save_patched_locally",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/.claude/lessons.md",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "claude_lessons_backend_lessons",
+      "target": "claude_lessons_medusa_develop_watcher_can_wedge_into_a_listener_less_boot_loop"
     },
     {
       "relation": "contains",
@@ -48247,26 +48262,6 @@
       "confidence_score": 1.0,
       "source": "hooks_stop_verify",
       "target": "hooks_tslib_errorlines"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".claude/hooks/port-guard.js",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hooks_port_guard",
-      "target": "hooks_port_guard_port_env"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".claude/hooks/port-guard.js",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hooks_port_guard",
-      "target": "hooks_port_guard_port_flag"
     },
     {
       "relation": "contains",
@@ -87460,76 +87455,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude",
-      "target": "claude_claude_md"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_claude_md",
-      "target": "claude_architecture"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_claude_md",
-      "target": "claude_graphify"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L67",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_claude_md",
-      "target": "claude_pm2_services_radmin_vpn_preview_stack_keep_running_until_project_finish"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_claude_md",
-      "target": "claude_running_verifying_read_before_starting_a_server"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L49",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_claude_md",
-      "target": "claude_the_clone_workflow"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_claude_md",
-      "target": "claude_what_this_repo_actually_is"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "README.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -91766,46 +91691,6 @@
       "confidence_score": 1.0,
       "source": "route_qa_validation_report_6_final_verdict_fail",
       "target": "route_qa_validation_report_exact_plan_edits_needed_union_of_route_mismatch_medusa_only_refinements_deduped_by_line"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".claude/settings.json",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_settings",
-      "target": "claude_settings_hooks"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".claude/settings.json",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_settings_hooks",
-      "target": "claude_settings_hooks_posttooluse"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".claude/settings.json",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_settings_hooks",
-      "target": "claude_settings_hooks_pretooluse"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".claude/settings.json",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "claude_settings_hooks",
-      "target": "claude_settings_hooks_stop"
     },
     {
       "relation": "contains",
@@ -96211,5 +96096,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b1277f5b260ac732e43b7f9eabb880a3bab8f8ee"
+  "built_at_commit": "1495ff1eefde84c32ec6147a5c48ac2188e208db"
 }

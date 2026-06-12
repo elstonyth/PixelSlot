@@ -1,10 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { useInView, usePrefersReducedMotion } from '@/lib/use-reveal';
-import { MOCK_LEADERBOARD, type LeaderboardEntry } from '@/lib/data/leaderboard';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useInView, usePrefersReducedMotion } from "@/lib/use-reveal";
+import {
+  MOCK_LEADERBOARD,
+  type LeaderboardEntry,
+} from "@/lib/data/leaderboard";
 
 function Avatar({ src, name }: { src: string; name: string }) {
   return (
@@ -46,7 +49,7 @@ export default function LeaderboardSection({
   useEffect(() => {
     if (!live) return;
     let active = true;
-    fetch('/api/leaderboard', { cache: 'no-store' })
+    fetch("/api/leaderboard", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (active && Array.isArray(d?.entries) && d.entries.length > 0) {
@@ -84,10 +87,13 @@ export default function LeaderboardSection({
           {rows.map((e, i) => (
             <div
               key={e.rank}
-              style={{ transitionDelay: show && !reduced ? `${i * 45}ms` : "0ms" }}
+              style={{
+                transitionDelay: show && !reduced ? `${i * 45}ms` : "0ms",
+              }}
               className={cn(
                 "flex items-center justify-between px-4 py-3 hover:bg-neutral-800/50",
-                !reduced && "transition-[opacity,transform] duration-500 ease-out",
+                !reduced &&
+                  "transition-[opacity,transform] duration-500 ease-out",
                 show ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
               )}
             >
@@ -96,13 +102,17 @@ export default function LeaderboardSection({
                   {e.rank}
                 </span>
                 <Avatar src={e.avatar} name={e.name} />
-                <Link href={`/profile/${e.name}`} className="truncate text-sm text-neutral-50 hover:underline">
+                {/* Real collectors link by profile handle; rows without one
+                    (mock board, pre-handle customers) keep the name link. */}
+                <Link
+                  href={`/profile/${e.handle ?? e.name}`}
+                  className="truncate text-sm text-neutral-50 hover:underline"
+                >
                   {e.name}
                 </Link>
               </div>
               <span className="shrink-0 pl-3 text-sm text-neutral-50">
-                {e.points}{' '}
-                <span className="text-neutral-400">pts</span>
+                {e.points} <span className="text-neutral-400">pts</span>
               </span>
             </div>
           ))}
@@ -134,11 +144,16 @@ export default function LeaderboardSection({
               {rows.map((e, i) => (
                 <tr
                   key={e.rank}
-                  style={{ transitionDelay: show && !reduced ? `${i * 45}ms` : "0ms" }}
+                  style={{
+                    transitionDelay: show && !reduced ? `${i * 45}ms` : "0ms",
+                  }}
                   className={cn(
                     "border-b border-neutral-800 last:border-0 hover:bg-neutral-800/50",
-                    !reduced && "transition-[opacity,transform] duration-500 ease-out",
-                    show ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
+                    !reduced &&
+                      "transition-[opacity,transform] duration-500 ease-out",
+                    show
+                      ? "translate-y-0 opacity-100"
+                      : "translate-y-3 opacity-0",
                   )}
                 >
                   <td className="px-6 py-4 text-center text-sm text-neutral-50">
@@ -147,7 +162,12 @@ export default function LeaderboardSection({
                   <td className="px-4 py-4 text-left text-sm text-neutral-50">
                     <div className="flex items-center gap-3">
                       <Avatar src={e.avatar} name={e.name} />
-                      <Link href={`/profile/${e.name}`} className="whitespace-nowrap hover:underline">{e.name}</Link>
+                      <Link
+                        href={`/profile/${e.handle ?? e.name}`}
+                        className="whitespace-nowrap hover:underline"
+                      >
+                        {e.name}
+                      </Link>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-4 text-left text-sm text-neutral-50">

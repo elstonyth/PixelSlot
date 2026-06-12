@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import PacksModuleService from "../../../modules/packs/service";
 import { PACKS_MODULE } from "../../../modules/packs";
+import { HANDLE_RE, seedOf } from "../../../utils/profile-handle";
 
 // GET /store/leaderboard?period=weekly|alltime — public leaderboard aggregated
 // from the Pull ledger. A plain publishable-key store route (read-only, no
@@ -16,16 +17,12 @@ import { PACKS_MODULE } from "../../../modules/packs";
 const TOP_N = 10;
 const WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Deterministic small hash of a string -> non-negative int (avatar seed only).
-function seedOf(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
+// Avatar seed = the shared `seedOf` (utils/profile-handle) so the leaderboard
+// and the public profile page render the SAME avatar for the same customer.
 
 export async function GET(
   req: MedusaRequest,
-  res: MedusaResponse
+  res: MedusaResponse,
 ): Promise<void> {
   const packs: PacksModuleService = req.scope.resolve(PACKS_MODULE);
   const customerService = req.scope.resolve(Modules.CUSTOMER);
@@ -47,7 +44,9 @@ export async function GET(
   const cards = handles.length
     ? await packs.listCards({ handle: handles }, { take: handles.length })
     : [];
-  const mvByHandle = new Map(cards.map((c) => [c.handle, Number(c.market_value)]));
+  const mvByHandle = new Map(
+    cards.map((c) => [c.handle, Number(c.market_value)]),
+  );
 
   const packIds = [...new Set(pulls.map((p) => p.pack_id))];
   const packRows = packIds.length
@@ -60,7 +59,11 @@ export async function GET(
   const byCustomer = new Map<string, Agg>();
   for (const p of pulls) {
     if (!p.customer_id) continue;
-    const a = byCustomer.get(p.customer_id) ?? { pulls: 0, volume: 0, points: 0 };
+    const a = byCustomer.get(p.customer_id) ?? {
+      pulls: 0,
+      volume: 0,
+      points: 0,
+    };
     a.pulls += 1;
     a.volume += mvByHandle.get(p.card_id) ?? 0;
     a.points += (priceBySlug.get(p.pack_id) ?? 0) * 100;
@@ -72,12 +75,25 @@ export async function GET(
     .slice(0, TOP_N);
 
   // Names for the ranked customers only — first_name ONLY (never email).
+  // The public profile handle (customer metadata.handle, PII-safe by design)
+  // rides along so the storefront can link each row to /profile/<handle>.
+  // Customers that predate handle assignment return null — NO mutation here
+  // (handles are assigned by the ensure-profile-handle workflow, not a GET).
   const ids = ranked.map(([id]) => id);
   const customers = ids.length
     ? await customerService.listCustomers({ id: ids }, { take: ids.length })
     : [];
   const firstNameById = new Map(
-    customers.map((c) => [c.id, (c.first_name || "").trim()])
+    customers.map((c) => [c.id, (c.first_name || "").trim()]),
+  );
+  const handleById = new Map(
+    customers.map((c) => {
+      const handle = (c.metadata ?? {})["handle"];
+      return [
+        c.id,
+        typeof handle === "string" && HANDLE_RE.test(handle) ? handle : null,
+      ];
+    }),
   );
 
   const entries = ranked.map(([id, a], i) => {
@@ -85,7 +101,11 @@ export async function GET(
     const seed = seedOf(id);
     return {
       rank: i + 1,
-      name: first && first.length > 0 ? first : `Collector ${String(seed).slice(0, 4)}`,
+      name:
+        first && first.length > 0
+          ? first
+          : `Collector ${String(seed).slice(0, 4)}`,
+      handle: handleById.get(id) ?? null,
       volume: Math.round(a.volume * 100) / 100,
       pulls: a.pulls,
       points: a.points,

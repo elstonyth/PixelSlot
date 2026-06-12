@@ -546,6 +546,10 @@ export type Routes = {
                 open: typeof import("../../src/api/store/packs/[slug]/open/route");
             };
         };
+        profiles: {
+            $handle: typeof import("../../src/api/store/profiles/[handle]/route");
+            me: typeof import("../../src/api/store/profiles/me/route");
+        };
         pulls: {
             recent: typeof import("../../src/api/store/pulls/recent/route");
         };

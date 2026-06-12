@@ -113,7 +113,7 @@ balance rises.
 
 ---
 
-## ☐ Task B — Real public profiles: `GET /store/profiles/:handle`
+## ☑ Task B — Real public profiles: `GET /store/profiles/:handle` (DONE 2026-06-12)
 
 **Goal:** `/profile/[user]` shows real data for any customer, safe-public
 subset only. Replaces the deterministic mock pool.

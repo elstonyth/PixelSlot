@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, LogOut, Package, Settings } from "lucide-react";
+import { ChevronDown, LogOut, Package, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout, type AuthCustomer } from "@/lib/actions/auth";
 import { useAuth } from "./AuthProvider";
@@ -12,6 +12,17 @@ const MENU_LINKS = [
   { label: "Orders", href: "/orders", icon: Package },
   { label: "Settings", href: "/settings", icon: Settings },
 ] as const;
+
+// "My Profile" goes first when the customer's public handle is known (it is
+// lazily assigned by the backend, so a just-failed fetch simply hides the link
+// until the next /api/me refresh).
+const menuLinks = (handle: string | null) =>
+  handle
+    ? [
+        { label: "My Profile", href: `/profile/${handle}`, icon: User },
+        ...MENU_LINKS,
+      ]
+    : [...MENU_LINKS];
 
 const displayName = (c: AuthCustomer) =>
   c.first_name?.trim() || c.email.split("@")[0];
@@ -29,7 +40,8 @@ export default function UserMenu({ customer }: { customer: AuthCustomer }) {
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", onDown);
@@ -63,7 +75,10 @@ export default function UserMenu({ customer }: { customer: AuthCustomer }) {
         </span>
         <span className="hidden max-w-[120px] truncate sm:block">{name}</span>
         <ChevronDown
-          className={cn("h-4 w-4 text-white/50 transition-transform duration-200", open && "rotate-180")}
+          className={cn(
+            "h-4 w-4 text-white/50 transition-transform duration-200",
+            open && "rotate-180",
+          )}
           aria-hidden
         />
       </button>
@@ -75,9 +90,11 @@ export default function UserMenu({ customer }: { customer: AuthCustomer }) {
         >
           <div className="border-b border-neutral-800 px-3 py-2.5">
             <p className="truncate text-sm font-medium text-white">{name}</p>
-            <p className="truncate text-[12px] text-white/45">{customer.email}</p>
+            <p className="truncate text-[12px] text-white/45">
+              {customer.email}
+            </p>
           </div>
-          {MENU_LINKS.map(({ label, href, icon: Icon }) => (
+          {menuLinks(customer.handle).map(({ label, href, icon: Icon }) => (
             <Link
               key={href}
               href={href}

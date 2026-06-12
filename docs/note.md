@@ -20,28 +20,36 @@ wire real data only where it's the logged-in user ("me"). Real per-user public p
 out of scope for the account-data slice.
 
 **Recheck at launch:**
-- [ ] Decide if public profiles ship at all. If yes, add a **custom backend route**
-      (e.g. `GET /store/profiles/:handle`) returning a safe, public subset (display name,
-      avatar, public stats) — never PII (email, addresses, payment).
-- [ ] Until then, ensure `/profile/[user]` is clearly demo/illustrative, not implied real.
-- [ ] Confirm no private customer fields leak through any profile surface.
+
+- [x] ~~Decide if public profiles ship at all.~~ **Shipped 2026-06-12 (Task B)**:
+      `GET /store/profiles/:handle` (public, IP rate-limited) + `GET /store/profiles/me`
+      (authed, lazily assigns `metadata.handle`). Safe subset only — display name, avatar
+      seed, join date, pull stats, recent pulls. Unknown handles fall back to the mock pool
+      on the storefront (links from mock surfaces keep working).
+- [x] Profile pages now render real data for collector handles; the mock pool remains the
+      fallback/skeleton for unknown usernames.
+- [x] PII leak check is integration-tested (`public-profile.spec.ts` asserts no email /
+      customer id / balance / vault fields in the payload). Re-verify at launch anyway.
 
 ---
 
 ## 2026-06-08 — Other Phase 3 (Auth) deferrals to recheck for prod
 
 **Dev secrets (CRITICAL for prod):**
+
 - [x] ~~`backend/packages/api/.env` has `JWT_SECRET=supersecret` / `COOKIE_SECRET=supersecret`~~
       **Rotated to strong random values 2026-06-11** (cleanup wave). Prod deploys still
       need their own values — generation one-liner documented in `.env.template`'s
       PROD CHECKLIST block.
 
 **CORS config is local-only:**
+
 - [ ] `STORE_CORS` / `AUTH_CORS` were set to include `http://localhost:4000` in the local
       (gitignored) `.env`. Production must set these to the **real storefront origin(s)** —
       this won't travel in git. Document canonical values in a `.env.example` if added.
 
 **Auth cookie hardening:**
+
 - [ ] The session cookie (`_pokenic_jwt`, `src/lib/data/customer.ts`) sets
       `secure: process.env.NODE_ENV === "production"`. Confirm prod actually runs with
       `NODE_ENV=production` so `Secure` is set (cookie is already `httpOnly` + `SameSite=Lax`).
@@ -50,9 +58,11 @@ out of scope for the account-data slice.
       types; token refresh excluded). `AUTH_RATE_*` envs; integration-tested.
 
 **Stubbed auth features (not wired):**
+
 - [ ] Social login (Google / Discord) buttons in `AuthForm` are placeholders.
 - [ ] "Forgot password?" is a placeholder (no reset flow).
 
 **Orders will be empty until checkout exists:**
+
 - [ ] `/orders` (once wired to `sdk.store.order.list`) shows an empty state until the
       Phase 5 cart→Stripe→order flow lands. Expected, not a bug — recheck once checkout ships.

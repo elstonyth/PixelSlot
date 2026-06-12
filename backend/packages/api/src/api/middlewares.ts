@@ -3,6 +3,7 @@ import {
   createAuthRateLimit,
   createCreditTopupRateLimit,
   createPackOpenRateLimit,
+  createProfileReadRateLimit,
   createStoreReadRateLimit,
   createVaultBuybackRateLimit,
 } from "./utils/rate-limit";
@@ -73,6 +74,23 @@ export default defineMiddlewares({
       // Credit balance + ledger (GET /store/credits).
       matcher: "/store/credits",
       middlewares: [authenticate("customer", ["bearer"]), storeReadRateLimit],
+    },
+    {
+      // The customer's own profile handle (GET /store/profiles/me) — lazily
+      // assigns metadata.handle, so it must be authed. Shares the vault/
+      // credits read budget (the account UI fetches them together).
+      matcher: "/store/profiles/me",
+      method: "GET",
+      middlewares: [authenticate("customer", ["bearer"]), storeReadRateLimit],
+    },
+    {
+      // PUBLIC profile read (GET /store/profiles/:handle) — no auth, so the
+      // limiter keys on the request IP. This glob also matches /profiles/me,
+      // which therefore consumes from both budgets — harmless, and globs
+      // can't express an exclusion.
+      matcher: "/store/profiles/*",
+      method: "GET",
+      middlewares: [createProfileReadRateLimit()],
     },
     {
       // Credit top-up through the (mock) payment gateway

@@ -15,6 +15,7 @@ import type { HttpTypes } from "@medusajs/types";
 import { sdk } from "@/lib/medusa";
 import { logger } from "@/lib/logger";
 import { setAuthToken, clearAuthToken } from "@/lib/data/customer";
+import { fetchProfileHandle } from "@/lib/data/profiles";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -24,6 +25,9 @@ export type AuthCustomer = {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  /** Public profile handle (lazily assigned by the backend) — null only if
+   * the handle fetch failed; /api/me refreshes it. */
+  handle: string | null;
 };
 
 export type AuthResult =
@@ -32,11 +36,15 @@ export type AuthResult =
 
 type TokenResponse = { token: string };
 
-const toAuthCustomer = (c: HttpTypes.StoreCustomer): AuthCustomer => ({
+const toAuthCustomer = (
+  c: HttpTypes.StoreCustomer,
+  handle: string | null,
+): AuthCustomer => ({
   id: c.id,
   email: c.email,
   first_name: c.first_name,
   last_name: c.last_name,
+  handle,
 });
 
 // Map known backend errors to friendly copy; never surface raw errors to the UI.
@@ -49,7 +57,11 @@ function friendlyError(error: unknown, fallback: string): string {
   return fallback;
 }
 
-async function exchangeToken(path: string, email: string, password: string): Promise<string> {
+async function exchangeToken(
+  path: string,
+  email: string,
+  password: string,
+): Promise<string> {
   const { token } = await sdk.client.fetch<TokenResponse>(path, {
     method: "POST",
     body: { email, password },
@@ -63,8 +75,10 @@ export async function login(input: {
 }): Promise<AuthResult> {
   const email = input.email.trim().toLowerCase();
   // Validate at the boundary — a server action is a public endpoint.
-  if (!EMAIL_RE.test(email)) return { ok: false, error: "Please enter a valid email address." };
-  if (!input.password) return { ok: false, error: "Please enter your password." };
+  if (!EMAIL_RE.test(email))
+    return { ok: false, error: "Please enter a valid email address." };
+  if (!input.password)
+    return { ok: false, error: "Please enter your password." };
 
   try {
     const token = await exchangeToken(
@@ -78,7 +92,10 @@ export async function login(input: {
         {},
         { Authorization: `Bearer ${token}` },
       );
-      return { ok: true, customer: toAuthCustomer(customer) };
+      // Lazily-assigned public profile handle for the "My Profile" link —
+      // explicit token (the cookie was set this same request).
+      const handle = await fetchProfileHandle(token);
+      return { ok: true, customer: toAuthCustomer(customer, handle) };
     } catch (error) {
       // Don't leave a cookie we couldn't validate.
       await clearAuthToken();
@@ -86,7 +103,10 @@ export async function login(input: {
     }
   } catch (error) {
     logger.error("[auth] login failed:", error);
-    return { ok: false, error: friendlyError(error, "Could not log in. Please try again.") };
+    return {
+      ok: false,
+      error: friendlyError(error, "Could not log in. Please try again."),
+    };
   }
 }
 
@@ -96,9 +116,13 @@ export async function signup(input: {
   first_name?: string;
 }): Promise<AuthResult> {
   const email = input.email.trim().toLowerCase();
-  if (!EMAIL_RE.test(email)) return { ok: false, error: "Please enter a valid email address." };
+  if (!EMAIL_RE.test(email))
+    return { ok: false, error: "Please enter a valid email address." };
   if (input.password.length < MIN_PASSWORD_LENGTH)
-    return { ok: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` };
+    return {
+      ok: false,
+      error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+    };
 
   try {
     const registerToken = await exchangeToken(
@@ -115,7 +139,13 @@ export async function signup(input: {
     return await login({ email, password: input.password });
   } catch (error) {
     logger.error("[auth] signup failed:", error);
-    return { ok: false, error: friendlyError(error, "Could not create your account. Please try again.") };
+    return {
+      ok: false,
+      error: friendlyError(
+        error,
+        "Could not create your account. Please try again.",
+      ),
+    };
   }
 }
 

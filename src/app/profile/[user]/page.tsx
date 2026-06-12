@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { MOCK_USERS, userOrGeneric } from "@/lib/mock/users";
+import { userOrGeneric } from "@/lib/mock/users";
+import { getPublicProfile } from "@/lib/data/profiles";
+import { mockProfileView, toProfileView } from "@/lib/profile-view";
 import ProfileClient from "./ProfileClient";
 
-export function generateStaticParams() {
-  return MOCK_USERS.map((u) => ({ user: u.username }));
-}
+// Real public profiles (Task B): the param is a collector handle resolved via
+// GET /store/profiles/:handle (safe-public subset, no PII). Unknown handles —
+// mock-pool usernames, dead links — fall back to the deterministic mock pool
+// so every /profile/<user> URL keeps rendering, exactly as before. Dynamic
+// now (no generateStaticParams): profiles change with every pull.
 
 export async function generateMetadata({
   params,
@@ -12,12 +16,25 @@ export async function generateMetadata({
   params: Promise<{ user: string }>;
 }): Promise<Metadata> {
   const { user } = await params;
-  const u = userOrGeneric(decodeURIComponent(user));
-  return { title: `${u.username} | Pokenic`, description: `${u.username}'s collection on Pokenic.` };
+  const handle = decodeURIComponent(user);
+  const profile = await getPublicProfile(handle); // cache()d — shared with the page
+  const name = profile?.name ?? userOrGeneric(handle).username;
+  return {
+    title: `${name} | Pokenic`,
+    description: `${name}'s collection on Pokenic.`,
+  };
 }
 
-export default async function ProfilePage({ params }: { params: Promise<{ user: string }> }) {
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ user: string }>;
+}) {
   const { user } = await params;
-  const u = userOrGeneric(decodeURIComponent(user));
-  return <ProfileClient user={u} />;
+  const handle = decodeURIComponent(user);
+  const profile = await getPublicProfile(handle);
+  const view = profile
+    ? toProfileView(profile)
+    : mockProfileView(userOrGeneric(handle));
+  return <ProfileClient user={view} />;
 }

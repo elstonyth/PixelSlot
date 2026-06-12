@@ -473,6 +473,30 @@ export function createAuthRateLimit(): MiddlewareHandler {
 }
 
 /**
+ * The public-profile read limiter (GET /store/profiles/:handle). The route is
+ * PUBLIC — no auth_context — so the middleware keys on the request IP (its
+ * designed fallback). NOTE: the storefront fetches profiles SERVER-side, so
+ * every visitor's page view arrives from the one Next.js origin IP — the
+ * budget below is therefore a whole-storefront budget, not per-visitor, and
+ * is sized well above any human browsing rate while still stopping scripted
+ * hammering/enumeration. Env-tunable:
+ * PROFILE_READ_RATE_BURST_LIMIT / PROFILE_READ_RATE_BURST_WINDOW_MS (60/10s)
+ * PROFILE_READ_RATE_LIMIT / PROFILE_READ_RATE_WINDOW_MS (600/60s)
+ */
+export function createProfileReadRateLimit(): MiddlewareHandler {
+  return createEnvRateLimit({
+    name: "profile-read",
+    message: "Too many requests.",
+    defaults: {
+      burstLimit: 60,
+      burstWindowMs: 10_000,
+      limit: 600,
+      windowMs: 60_000,
+    },
+  });
+}
+
+/**
  * The store-read limiter for the customer's own vault/credits GETs — cheap
  * reads, so the budget is generous; it only stops a runaway client or script
  * from hammering. One instance is shared by both matchers (a combined budget —

@@ -1,7 +1,4 @@
-import {
-  CreateInventoryLevelInput,
-  ExecArgs,
-} from "@medusajs/framework/types";
+import { CreateInventoryLevelInput, ExecArgs } from "@medusajs/framework/types";
 import {
   ContainerRegistrationKeys,
   Modules,
@@ -32,6 +29,7 @@ import { MercurModules, SellerStatus } from "@mercurjs/types";
 import PacksModuleService from "../modules/packs/service";
 import { PACKS_MODULE } from "../modules/packs";
 import { buildCardProductInput } from "../modules/packs/card-product";
+import { HANDLE_RE, deriveHandle } from "../utils/profile-handle";
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -49,7 +47,7 @@ const updateStoreCurrencies = createWorkflow(
                 currency_code: currency.currency_code,
                 is_default: currency.is_default ?? false,
               };
-            }
+            },
           ),
         },
       };
@@ -58,7 +56,7 @@ const updateStoreCurrencies = createWorkflow(
     const stores = updateStoresStep(normalizedInput);
 
     return new WorkflowResponse(stores);
-  }
+  },
 );
 
 // ---------------------------------------------------------------------------
@@ -359,53 +357,510 @@ const CARD_PRODUCTS: CardSeed[] = [
   // are reused within a category (as the 16 Pokemon listings reuse 7 images).
 
   // basketball — basketball1 = Alonzo Mourning PMG, basketball2/3 = Michael Jordan
-  { handle: "nba-jordan-pmg", title: "1997 Metal Universe Championship Michael Jordan #23 Precious Metal Gems PSA 9", price: 140, fmv: 142, points: 95, grade: "9 MINT", grader: "PSA", set: "Metal Universe Championship", rarity: "Legendary", year: 1997, image: slabImage("basketball2"), category: "basketball" },
-  { handle: "nba-jordan-metal", title: "1998 Skybox Metal Universe Michael Jordan #23 BGS 9.5 GEM MINT", price: 62, fmv: 63.5, points: 98, grade: "9.5 GEM MINT", grader: "BGS", set: "Metal Universe", rarity: "Epic", year: 1998, image: slabImage("basketball3"), category: "basketball" },
-  { handle: "nba-mourning-pmg", title: "1997 Metal Universe Championship Alonzo Mourning #13 Precious Metal Gems PSA 5", price: 30, fmv: 31.2, points: 75, grade: "5 EX", grader: "PSA", set: "Metal Universe Championship", rarity: "Rare", year: 1997, image: slabImage("basketball1"), category: "basketball" },
-  { handle: "nba-mourning-heat", title: "1998 Skybox Alonzo Mourning Miami Heat CGC 8.5 NM-MT+", price: 15, fmv: 14.8, points: 92, grade: "8.5 NM-MT+", grader: "CGC", set: "Skybox", rarity: "Uncommon", year: 1998, image: slabImage("basketball1"), category: "basketball" },
-  { handle: "nba-heat-base", title: "1997 Metal Universe Miami Heat Team Card PSA 7 NM", price: 8, fmv: 7.75, points: 85, grade: "7 NM", grader: "PSA", set: "Metal Universe", rarity: "Common", year: 1997, image: slabImage("basketball2"), category: "basketball" },
+  {
+    handle: "nba-jordan-pmg",
+    title:
+      "1997 Metal Universe Championship Michael Jordan #23 Precious Metal Gems PSA 9",
+    price: 140,
+    fmv: 142,
+    points: 95,
+    grade: "9 MINT",
+    grader: "PSA",
+    set: "Metal Universe Championship",
+    rarity: "Legendary",
+    year: 1997,
+    image: slabImage("basketball2"),
+    category: "basketball",
+  },
+  {
+    handle: "nba-jordan-metal",
+    title: "1998 Skybox Metal Universe Michael Jordan #23 BGS 9.5 GEM MINT",
+    price: 62,
+    fmv: 63.5,
+    points: 98,
+    grade: "9.5 GEM MINT",
+    grader: "BGS",
+    set: "Metal Universe",
+    rarity: "Epic",
+    year: 1998,
+    image: slabImage("basketball3"),
+    category: "basketball",
+  },
+  {
+    handle: "nba-mourning-pmg",
+    title:
+      "1997 Metal Universe Championship Alonzo Mourning #13 Precious Metal Gems PSA 5",
+    price: 30,
+    fmv: 31.2,
+    points: 75,
+    grade: "5 EX",
+    grader: "PSA",
+    set: "Metal Universe Championship",
+    rarity: "Rare",
+    year: 1997,
+    image: slabImage("basketball1"),
+    category: "basketball",
+  },
+  {
+    handle: "nba-mourning-heat",
+    title: "1998 Skybox Alonzo Mourning Miami Heat CGC 8.5 NM-MT+",
+    price: 15,
+    fmv: 14.8,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Skybox",
+    rarity: "Uncommon",
+    year: 1998,
+    image: slabImage("basketball1"),
+    category: "basketball",
+  },
+  {
+    handle: "nba-heat-base",
+    title: "1997 Metal Universe Miami Heat Team Card PSA 7 NM",
+    price: 8,
+    fmv: 7.75,
+    points: 85,
+    grade: "7 NM",
+    grader: "PSA",
+    set: "Metal Universe",
+    rarity: "Common",
+    year: 1997,
+    image: slabImage("basketball2"),
+    category: "basketball",
+  },
 
   // football — football1 = Donruss Downtown, football3/4 = National Treasures RPA
-  { handle: "nfl-downtown", title: "2023 Donruss Downtown Patrick Mahomes Kansas City Chiefs BGS 9.5", price: 120, fmv: 124, points: 98, grade: "9.5 GEM MINT", grader: "BGS", set: "Donruss Downtown", rarity: "Legendary", year: 2023, image: slabImage("football1"), category: "football" },
-  { handle: "nfl-nt-purdy", title: "2023 National Treasures Brock Purdy Rookie Patch Auto /99 PSA 10", price: 66, fmv: 67.5, points: 100, grade: "10 GEM MINT", grader: "PSA", set: "National Treasures", rarity: "Epic", year: 2023, image: slabImage("football3"), category: "football" },
-  { handle: "nfl-nt-rpa", title: "2023 National Treasures Rookie Patch Autograph /99 BGS 9", price: 28, fmv: 29.4, points: 95, grade: "9 MINT", grader: "BGS", set: "National Treasures", rarity: "Rare", year: 2023, image: slabImage("football4"), category: "football" },
-  { handle: "nfl-prizm-rc", title: "2023 Panini Prizm Rookie CGC 8.5 NM-MT+", price: 14, fmv: 13.6, points: 92, grade: "8.5 NM-MT+", grader: "CGC", set: "Prizm", rarity: "Uncommon", year: 2023, image: slabImage("football3"), category: "football" },
-  { handle: "nfl-donruss-base", title: "2023 Donruss NFL Base PSA 7 NM", price: 7, fmv: 6.5, points: 85, grade: "7 NM", grader: "PSA", set: "Donruss", rarity: "Common", year: 2023, image: slabImage("football1"), category: "football" },
+  {
+    handle: "nfl-downtown",
+    title: "2023 Donruss Downtown Patrick Mahomes Kansas City Chiefs BGS 9.5",
+    price: 120,
+    fmv: 124,
+    points: 98,
+    grade: "9.5 GEM MINT",
+    grader: "BGS",
+    set: "Donruss Downtown",
+    rarity: "Legendary",
+    year: 2023,
+    image: slabImage("football1"),
+    category: "football",
+  },
+  {
+    handle: "nfl-nt-purdy",
+    title: "2023 National Treasures Brock Purdy Rookie Patch Auto /99 PSA 10",
+    price: 66,
+    fmv: 67.5,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "PSA",
+    set: "National Treasures",
+    rarity: "Epic",
+    year: 2023,
+    image: slabImage("football3"),
+    category: "football",
+  },
+  {
+    handle: "nfl-nt-rpa",
+    title: "2023 National Treasures Rookie Patch Autograph /99 BGS 9",
+    price: 28,
+    fmv: 29.4,
+    points: 95,
+    grade: "9 MINT",
+    grader: "BGS",
+    set: "National Treasures",
+    rarity: "Rare",
+    year: 2023,
+    image: slabImage("football4"),
+    category: "football",
+  },
+  {
+    handle: "nfl-prizm-rc",
+    title: "2023 Panini Prizm Rookie CGC 8.5 NM-MT+",
+    price: 14,
+    fmv: 13.6,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Prizm",
+    rarity: "Uncommon",
+    year: 2023,
+    image: slabImage("football3"),
+    category: "football",
+  },
+  {
+    handle: "nfl-donruss-base",
+    title: "2023 Donruss NFL Base PSA 7 NM",
+    price: 7,
+    fmv: 6.5,
+    points: 85,
+    grade: "7 NM",
+    grader: "PSA",
+    set: "Donruss",
+    rarity: "Common",
+    year: 2023,
+    image: slabImage("football1"),
+    category: "football",
+  },
 
   // baseball — baseball1 = 1968 Topps Mickey Mantle (only one slab; reused)
-  { handle: "mlb-mantle-ex", title: "1968 Topps Mickey Mantle #280 New York Yankees PSA 5 EX", price: 150, fmv: 155, points: 75, grade: "5 EX", grader: "PSA", set: "Topps", rarity: "Legendary", year: 1968, image: slabImage("baseball1"), category: "baseball" },
-  { handle: "mlb-mantle-vg", title: "1968 Topps Mickey Mantle #280 New York Yankees PSA 3 VG", price: 60, fmv: 58, points: 60, grade: "3 VG", grader: "PSA", set: "Topps", rarity: "Epic", year: 1968, image: slabImage("baseball1"), category: "baseball" },
-  { handle: "mlb-yankees-team", title: "1968 Topps New York Yankees Team Card #490 PSA 6 EX-MT", price: 26, fmv: 25.4, points: 80, grade: "6 EX-MT", grader: "PSA", set: "Topps", rarity: "Rare", year: 1968, image: slabImage("baseball1"), category: "baseball" },
-  { handle: "mlb-topps-base", title: "1968 Topps Baseball Base CGC 7.5 NM+", price: 13, fmv: 12.6, points: 88, grade: "7.5 NM+", grader: "CGC", set: "Topps", rarity: "Uncommon", year: 1968, image: slabImage("baseball1"), category: "baseball" },
-  { handle: "mlb-common", title: "1968 Topps Baseball Common PSA 6 EX-MT", price: 7, fmv: 6.4, points: 80, grade: "6 EX-MT", grader: "PSA", set: "Topps", rarity: "Common", year: 1968, image: slabImage("baseball1"), category: "baseball" },
+  {
+    handle: "mlb-mantle-ex",
+    title: "1968 Topps Mickey Mantle #280 New York Yankees PSA 5 EX",
+    price: 150,
+    fmv: 155,
+    points: 75,
+    grade: "5 EX",
+    grader: "PSA",
+    set: "Topps",
+    rarity: "Legendary",
+    year: 1968,
+    image: slabImage("baseball1"),
+    category: "baseball",
+  },
+  {
+    handle: "mlb-mantle-vg",
+    title: "1968 Topps Mickey Mantle #280 New York Yankees PSA 3 VG",
+    price: 60,
+    fmv: 58,
+    points: 60,
+    grade: "3 VG",
+    grader: "PSA",
+    set: "Topps",
+    rarity: "Epic",
+    year: 1968,
+    image: slabImage("baseball1"),
+    category: "baseball",
+  },
+  {
+    handle: "mlb-yankees-team",
+    title: "1968 Topps New York Yankees Team Card #490 PSA 6 EX-MT",
+    price: 26,
+    fmv: 25.4,
+    points: 80,
+    grade: "6 EX-MT",
+    grader: "PSA",
+    set: "Topps",
+    rarity: "Rare",
+    year: 1968,
+    image: slabImage("baseball1"),
+    category: "baseball",
+  },
+  {
+    handle: "mlb-topps-base",
+    title: "1968 Topps Baseball Base CGC 7.5 NM+",
+    price: 13,
+    fmv: 12.6,
+    points: 88,
+    grade: "7.5 NM+",
+    grader: "CGC",
+    set: "Topps",
+    rarity: "Uncommon",
+    year: 1968,
+    image: slabImage("baseball1"),
+    category: "baseball",
+  },
+  {
+    handle: "mlb-common",
+    title: "1968 Topps Baseball Common PSA 6 EX-MT",
+    price: 7,
+    fmv: 6.4,
+    points: 80,
+    grade: "6 EX-MT",
+    grader: "PSA",
+    set: "Topps",
+    rarity: "Common",
+    year: 1968,
+    image: slabImage("baseball1"),
+    category: "baseball",
+  },
 
   // one-piece — onepiece4 = Monkey D. Luffy, onepiece2 = TCG holo
-  { handle: "op-luffy", title: "2024 One Piece TCG Monkey D. Luffy Leader Parallel CGC 10", price: 95, fmv: 97, points: 100, grade: "10 GEM MINT", grader: "CGC", set: "OP-01 Romance Dawn", rarity: "Legendary", year: 2024, image: slabImage("onepiece4"), category: "one-piece" },
-  { handle: "op-zoro", title: "2024 One Piece TCG Roronoa Zoro Super Parallel PSA 10", price: 55, fmv: 56.5, points: 100, grade: "10 GEM MINT", grader: "PSA", set: "Paramount War", rarity: "Epic", year: 2024, image: slabImage("onepiece2"), category: "one-piece" },
-  { handle: "op-shanks", title: "2024 One Piece TCG Shanks Leader Rare BGS 9.5", price: 26, fmv: 26.8, points: 98, grade: "9.5 GEM MINT", grader: "BGS", set: "OP-01 Romance Dawn", rarity: "Rare", year: 2024, image: slabImage("onepiece2"), category: "one-piece" },
-  { handle: "op-nami", title: "2024 One Piece TCG Nami Uncommon CGC 9 MINT", price: 14, fmv: 13.9, points: 95, grade: "9 MINT", grader: "CGC", set: "Paramount War", rarity: "Uncommon", year: 2024, image: slabImage("onepiece4"), category: "one-piece" },
-  { handle: "op-common", title: "2024 One Piece TCG Common CGC 8 NM-MT", price: 7, fmv: 6.75, points: 90, grade: "8 NM-MT", grader: "CGC", set: "Romance Dawn", rarity: "Common", year: 2024, image: slabImage("onepiece2"), category: "one-piece" },
+  {
+    handle: "op-luffy",
+    title: "2024 One Piece TCG Monkey D. Luffy Leader Parallel CGC 10",
+    price: 95,
+    fmv: 97,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "CGC",
+    set: "OP-01 Romance Dawn",
+    rarity: "Legendary",
+    year: 2024,
+    image: slabImage("onepiece4"),
+    category: "one-piece",
+  },
+  {
+    handle: "op-zoro",
+    title: "2024 One Piece TCG Roronoa Zoro Super Parallel PSA 10",
+    price: 55,
+    fmv: 56.5,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "PSA",
+    set: "Paramount War",
+    rarity: "Epic",
+    year: 2024,
+    image: slabImage("onepiece2"),
+    category: "one-piece",
+  },
+  {
+    handle: "op-shanks",
+    title: "2024 One Piece TCG Shanks Leader Rare BGS 9.5",
+    price: 26,
+    fmv: 26.8,
+    points: 98,
+    grade: "9.5 GEM MINT",
+    grader: "BGS",
+    set: "OP-01 Romance Dawn",
+    rarity: "Rare",
+    year: 2024,
+    image: slabImage("onepiece2"),
+    category: "one-piece",
+  },
+  {
+    handle: "op-nami",
+    title: "2024 One Piece TCG Nami Uncommon CGC 9 MINT",
+    price: 14,
+    fmv: 13.9,
+    points: 95,
+    grade: "9 MINT",
+    grader: "CGC",
+    set: "Paramount War",
+    rarity: "Uncommon",
+    year: 2024,
+    image: slabImage("onepiece4"),
+    category: "one-piece",
+  },
+  {
+    handle: "op-common",
+    title: "2024 One Piece TCG Common CGC 8 NM-MT",
+    price: 7,
+    fmv: 6.75,
+    points: 90,
+    grade: "8 NM-MT",
+    grader: "CGC",
+    set: "Romance Dawn",
+    rarity: "Common",
+    year: 2024,
+    image: slabImage("onepiece2"),
+    category: "one-piece",
+  },
 
   // yugioh — yugioh2 = Summoned Skull, yugioh1 = classic monster
-  { handle: "ygo-summoned-skull", title: "2002 Yu-Gi-Oh Summoned Skull MRD-061 1st Edition PSA 10", price: 100, fmv: 104, points: 100, grade: "10 GEM MINT", grader: "PSA", set: "Metal Raiders", rarity: "Legendary", year: 2002, image: slabImage("yugioh2"), category: "yugioh" },
-  { handle: "ygo-blue-eyes", title: "2002 Yu-Gi-Oh Blue-Eyes White Dragon LOB-001 BGS 9.5", price: 60, fmv: 61.5, points: 98, grade: "9.5 GEM MINT", grader: "BGS", set: "Legend of Blue Eyes White Dragon", rarity: "Epic", year: 2002, image: slabImage("yugioh1"), category: "yugioh" },
-  { handle: "ygo-dark-magician", title: "2002 Yu-Gi-Oh Dark Magician LOB-005 Rare CGC 9", price: 28, fmv: 28.9, points: 95, grade: "9 MINT", grader: "CGC", set: "Legend of Blue Eyes White Dragon", rarity: "Rare", year: 2002, image: slabImage("yugioh1"), category: "yugioh" },
-  { handle: "ygo-kuriboh", title: "2003 Yu-Gi-Oh Kuriboh Uncommon CGC 8.5 NM-MT+", price: 13, fmv: 12.4, points: 92, grade: "8.5 NM-MT+", grader: "CGC", set: "Metal Raiders", rarity: "Uncommon", year: 2003, image: slabImage("yugioh2"), category: "yugioh" },
-  { handle: "ygo-common", title: "2002 Yu-Gi-Oh Metal Raiders Common PSA 8 NM-MT", price: 6, fmv: 5.8, points: 90, grade: "8 NM-MT", grader: "PSA", set: "Metal Raiders", rarity: "Common", year: 2002, image: slabImage("yugioh1"), category: "yugioh" },
+  {
+    handle: "ygo-summoned-skull",
+    title: "2002 Yu-Gi-Oh Summoned Skull MRD-061 1st Edition PSA 10",
+    price: 100,
+    fmv: 104,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "PSA",
+    set: "Metal Raiders",
+    rarity: "Legendary",
+    year: 2002,
+    image: slabImage("yugioh2"),
+    category: "yugioh",
+  },
+  {
+    handle: "ygo-blue-eyes",
+    title: "2002 Yu-Gi-Oh Blue-Eyes White Dragon LOB-001 BGS 9.5",
+    price: 60,
+    fmv: 61.5,
+    points: 98,
+    grade: "9.5 GEM MINT",
+    grader: "BGS",
+    set: "Legend of Blue Eyes White Dragon",
+    rarity: "Epic",
+    year: 2002,
+    image: slabImage("yugioh1"),
+    category: "yugioh",
+  },
+  {
+    handle: "ygo-dark-magician",
+    title: "2002 Yu-Gi-Oh Dark Magician LOB-005 Rare CGC 9",
+    price: 28,
+    fmv: 28.9,
+    points: 95,
+    grade: "9 MINT",
+    grader: "CGC",
+    set: "Legend of Blue Eyes White Dragon",
+    rarity: "Rare",
+    year: 2002,
+    image: slabImage("yugioh1"),
+    category: "yugioh",
+  },
+  {
+    handle: "ygo-kuriboh",
+    title: "2003 Yu-Gi-Oh Kuriboh Uncommon CGC 8.5 NM-MT+",
+    price: 13,
+    fmv: 12.4,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Metal Raiders",
+    rarity: "Uncommon",
+    year: 2003,
+    image: slabImage("yugioh2"),
+    category: "yugioh",
+  },
+  {
+    handle: "ygo-common",
+    title: "2002 Yu-Gi-Oh Metal Raiders Common PSA 8 NM-MT",
+    price: 6,
+    fmv: 5.8,
+    points: 90,
+    grade: "8 NM-MT",
+    grader: "PSA",
+    set: "Metal Raiders",
+    rarity: "Common",
+    year: 2002,
+    image: slabImage("yugioh1"),
+    category: "yugioh",
+  },
 
   // soccer — no native slab art; reuse football slabs as a sports-card stand-in
-  { handle: "soccer-messi", title: "2022 Topps Chrome Lionel Messi Argentina World Cup PSA 10", price: 130, fmv: 134, points: 100, grade: "10 GEM MINT", grader: "PSA", set: "Topps Chrome", rarity: "Legendary", year: 2022, image: slabImage("football1"), category: "soccer" },
-  { handle: "soccer-ronaldo", title: "2021 Panini Prizm Cristiano Ronaldo Manchester United BGS 9.5", price: 64, fmv: 65.5, points: 98, grade: "9.5 GEM MINT", grader: "BGS", set: "Prizm", rarity: "Epic", year: 2021, image: slabImage("football3"), category: "soccer" },
-  { handle: "soccer-mbappe", title: "2022 Topps Chrome Kylian Mbappe France PSA 9", price: 30, fmv: 30.6, points: 95, grade: "9 MINT", grader: "PSA", set: "Topps Chrome", rarity: "Rare", year: 2022, image: slabImage("football4"), category: "soccer" },
-  { handle: "soccer-haaland", title: "2023 Panini Prizm Erling Haaland Manchester City CGC 8.5", price: 15, fmv: 14.7, points: 92, grade: "8.5 NM-MT+", grader: "CGC", set: "Prizm", rarity: "Uncommon", year: 2023, image: slabImage("football1"), category: "soccer" },
-  { handle: "soccer-base", title: "2022 Topps Chrome UEFA Champions League Base PSA 7", price: 7, fmv: 6.6, points: 85, grade: "7 NM", grader: "PSA", set: "Topps Chrome", rarity: "Common", year: 2022, image: slabImage("football3"), category: "soccer" },
+  {
+    handle: "soccer-messi",
+    title: "2022 Topps Chrome Lionel Messi Argentina World Cup PSA 10",
+    price: 130,
+    fmv: 134,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "PSA",
+    set: "Topps Chrome",
+    rarity: "Legendary",
+    year: 2022,
+    image: slabImage("football1"),
+    category: "soccer",
+  },
+  {
+    handle: "soccer-ronaldo",
+    title: "2021 Panini Prizm Cristiano Ronaldo Manchester United BGS 9.5",
+    price: 64,
+    fmv: 65.5,
+    points: 98,
+    grade: "9.5 GEM MINT",
+    grader: "BGS",
+    set: "Prizm",
+    rarity: "Epic",
+    year: 2021,
+    image: slabImage("football3"),
+    category: "soccer",
+  },
+  {
+    handle: "soccer-mbappe",
+    title: "2022 Topps Chrome Kylian Mbappe France PSA 9",
+    price: 30,
+    fmv: 30.6,
+    points: 95,
+    grade: "9 MINT",
+    grader: "PSA",
+    set: "Topps Chrome",
+    rarity: "Rare",
+    year: 2022,
+    image: slabImage("football4"),
+    category: "soccer",
+  },
+  {
+    handle: "soccer-haaland",
+    title: "2023 Panini Prizm Erling Haaland Manchester City CGC 8.5",
+    price: 15,
+    fmv: 14.7,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Prizm",
+    rarity: "Uncommon",
+    year: 2023,
+    image: slabImage("football1"),
+    category: "soccer",
+  },
+  {
+    handle: "soccer-base",
+    title: "2022 Topps Chrome UEFA Champions League Base PSA 7",
+    price: 7,
+    fmv: 6.6,
+    points: 85,
+    grade: "7 NM",
+    grader: "PSA",
+    set: "Topps Chrome",
+    rarity: "Common",
+    year: 2022,
+    image: slabImage("football3"),
+    category: "soccer",
+  },
 
   // riftbound (League of Legends TCG) — no native slab art; reuse yugioh TCG slabs
-  { handle: "riftbound-jinx", title: "2025 Riftbound League of Legends Jinx Hyperpop Foil PSA 10", price: 110, fmv: 113, points: 100, grade: "10 GEM MINT", grader: "PSA", set: "Riftbound Origins", rarity: "Legendary", year: 2025, image: slabImage("yugioh2"), category: "riftbound" },
-  { handle: "riftbound-ahri", title: "2025 Riftbound Ahri Spirit Blossom Holo BGS 9.5", price: 58, fmv: 59.5, points: 98, grade: "9.5 GEM MINT", grader: "BGS", set: "Riftbound Origins", rarity: "Epic", year: 2025, image: slabImage("yugioh1"), category: "riftbound" },
-  { handle: "riftbound-yasuo", title: "2025 Riftbound Yasuo Champion Rare CGC 9", price: 27, fmv: 27.5, points: 95, grade: "9 MINT", grader: "CGC", set: "Riftbound Origins", rarity: "Rare", year: 2025, image: slabImage("yugioh2"), category: "riftbound" },
-  { handle: "riftbound-lux", title: "2025 Riftbound Lux Uncommon CGC 8.5 NM-MT+", price: 13, fmv: 12.5, points: 92, grade: "8.5 NM-MT+", grader: "CGC", set: "Riftbound Origins", rarity: "Uncommon", year: 2025, image: slabImage("yugioh1"), category: "riftbound" },
-  { handle: "riftbound-base", title: "2025 Riftbound Origins Base PSA 8 NM-MT", price: 7, fmv: 6.8, points: 90, grade: "8 NM-MT", grader: "PSA", set: "Riftbound Origins", rarity: "Common", year: 2025, image: slabImage("yugioh2"), category: "riftbound" },
+  {
+    handle: "riftbound-jinx",
+    title: "2025 Riftbound League of Legends Jinx Hyperpop Foil PSA 10",
+    price: 110,
+    fmv: 113,
+    points: 100,
+    grade: "10 GEM MINT",
+    grader: "PSA",
+    set: "Riftbound Origins",
+    rarity: "Legendary",
+    year: 2025,
+    image: slabImage("yugioh2"),
+    category: "riftbound",
+  },
+  {
+    handle: "riftbound-ahri",
+    title: "2025 Riftbound Ahri Spirit Blossom Holo BGS 9.5",
+    price: 58,
+    fmv: 59.5,
+    points: 98,
+    grade: "9.5 GEM MINT",
+    grader: "BGS",
+    set: "Riftbound Origins",
+    rarity: "Epic",
+    year: 2025,
+    image: slabImage("yugioh1"),
+    category: "riftbound",
+  },
+  {
+    handle: "riftbound-yasuo",
+    title: "2025 Riftbound Yasuo Champion Rare CGC 9",
+    price: 27,
+    fmv: 27.5,
+    points: 95,
+    grade: "9 MINT",
+    grader: "CGC",
+    set: "Riftbound Origins",
+    rarity: "Rare",
+    year: 2025,
+    image: slabImage("yugioh2"),
+    category: "riftbound",
+  },
+  {
+    handle: "riftbound-lux",
+    title: "2025 Riftbound Lux Uncommon CGC 8.5 NM-MT+",
+    price: 13,
+    fmv: 12.5,
+    points: 92,
+    grade: "8.5 NM-MT+",
+    grader: "CGC",
+    set: "Riftbound Origins",
+    rarity: "Uncommon",
+    year: 2025,
+    image: slabImage("yugioh1"),
+    category: "riftbound",
+  },
+  {
+    handle: "riftbound-base",
+    title: "2025 Riftbound Origins Base PSA 8 NM-MT",
+    price: 7,
+    fmv: 6.8,
+    points: 90,
+    grade: "8 NM-MT",
+    grader: "PSA",
+    set: "Riftbound Origins",
+    rarity: "Common",
+    year: 2025,
+    image: slabImage("yugioh2"),
+    category: "riftbound",
+  },
 ];
 
 const CARD_HANDLES = CARD_PRODUCTS.map((c) => c.handle);
@@ -444,65 +899,214 @@ const clawIcon = (base: string) => `/images/claw/${base}-icon.webp`;
 
 const PACK_SEED_GROUPS: {
   category: string;
-  packs: { slug: string; title: string; price: number; image: string; boost?: boolean; buyback?: number; inStock?: boolean }[];
+  packs: {
+    slug: string;
+    title: string;
+    price: number;
+    image: string;
+    boost?: boolean;
+    buyback?: number;
+    inStock?: boolean;
+  }[];
 }[] = [
   {
     category: "pokemon",
     packs: [
-      { slug: "pokemon-mythic", title: "Mythic Pack", price: 1000, image: clawIcon("mythic-pack"), boost: true },
-      { slug: "pokemon-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-pack"), boost: true },
-      { slug: "pokemon-elite", title: "Elite Pack", price: 50, image: clawIcon("elite-pack") },
-      { slug: "pokemon-platinum", title: "Platinum Pack", price: 500, image: clawIcon("platinum-pack"), boost: true },
-      { slug: "pokemon-rookie", title: "Rookie Pack", price: 25, image: clawIcon("rookie-pack") },
-      { slug: "pokemon-black", title: "Black Pack", price: 2500, image: clawIcon("black-pack"), boost: true, buyback: 92 },
-      { slug: "pokemon-diamond", title: "Diamond Pack", price: 5000, image: clawIcon("diamond-pack"), boost: true, buyback: 92 },
-      { slug: "pokemon-trainer", title: "Trainer Pack", price: 10, image: clawIcon("trainer-pack"), inStock: false },
+      {
+        slug: "pokemon-mythic",
+        title: "Mythic Pack",
+        price: 1000,
+        image: clawIcon("mythic-pack"),
+        boost: true,
+      },
+      {
+        slug: "pokemon-legend",
+        title: "Legend Pack",
+        price: 250,
+        image: clawIcon("legend-pack"),
+        boost: true,
+      },
+      {
+        slug: "pokemon-elite",
+        title: "Elite Pack",
+        price: 50,
+        image: clawIcon("elite-pack"),
+      },
+      {
+        slug: "pokemon-platinum",
+        title: "Platinum Pack",
+        price: 500,
+        image: clawIcon("platinum-pack"),
+        boost: true,
+      },
+      {
+        slug: "pokemon-rookie",
+        title: "Rookie Pack",
+        price: 25,
+        image: clawIcon("rookie-pack"),
+      },
+      {
+        slug: "pokemon-black",
+        title: "Black Pack",
+        price: 2500,
+        image: clawIcon("black-pack"),
+        boost: true,
+        buyback: 92,
+      },
+      {
+        slug: "pokemon-diamond",
+        title: "Diamond Pack",
+        price: 5000,
+        image: clawIcon("diamond-pack"),
+        boost: true,
+        buyback: 92,
+      },
+      {
+        slug: "pokemon-trainer",
+        title: "Trainer Pack",
+        price: 10,
+        image: clawIcon("trainer-pack"),
+        inStock: false,
+      },
     ],
   },
   {
     category: "one-piece",
     packs: [
-      { slug: "onepiece-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-one-piece-pack"), boost: true },
-      { slug: "onepiece-platinum", title: "Platinum Pack", price: 500, image: clawIcon("one-piece-platinum-pack"), boost: true },
-      { slug: "onepiece-elite", title: "Elite Pack", price: 50, image: clawIcon("elite-one-piece-pack") },
-      { slug: "onepiece-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-one-piece-pack") },
+      {
+        slug: "onepiece-legend",
+        title: "Legend Pack",
+        price: 250,
+        image: clawIcon("legend-one-piece-pack"),
+        boost: true,
+      },
+      {
+        slug: "onepiece-platinum",
+        title: "Platinum Pack",
+        price: 500,
+        image: clawIcon("one-piece-platinum-pack"),
+        boost: true,
+      },
+      {
+        slug: "onepiece-elite",
+        title: "Elite Pack",
+        price: 50,
+        image: clawIcon("elite-one-piece-pack"),
+      },
+      {
+        slug: "onepiece-starter",
+        title: "Starter Pack",
+        price: 25,
+        image: clawIcon("starter-one-piece-pack"),
+      },
     ],
   },
   {
     category: "basketball",
     packs: [
-      { slug: "nba-black", title: "Black Pack", price: 1000, image: clawIcon("black-pack-jjnfuk"), boost: true },
-      { slug: "nba-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-pack-1dpaec"), boost: true },
-      { slug: "nba-platinum", title: "Platinum Pack", price: 500, image: clawIcon("modern-grails-noafw0"), boost: true },
+      {
+        slug: "nba-black",
+        title: "Black Pack",
+        price: 1000,
+        image: clawIcon("black-pack-jjnfuk"),
+        boost: true,
+      },
+      {
+        slug: "nba-legend",
+        title: "Legend Pack",
+        price: 250,
+        image: clawIcon("legend-pack-1dpaec"),
+        boost: true,
+      },
+      {
+        slug: "nba-platinum",
+        title: "Platinum Pack",
+        price: 500,
+        image: clawIcon("modern-grails-noafw0"),
+        boost: true,
+      },
     ],
   },
   {
     category: "baseball",
     packs: [
-      { slug: "baseball-pro", title: "Pro Pack", price: 100, image: clawIcon("pro-baseball-pack") },
-      { slug: "baseball-legend", title: "Legend Pack", price: 250, image: clawIcon("legend-baseball-pack"), boost: true },
-      { slug: "baseball-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-baseball-pack") },
+      {
+        slug: "baseball-pro",
+        title: "Pro Pack",
+        price: 100,
+        image: clawIcon("pro-baseball-pack"),
+      },
+      {
+        slug: "baseball-legend",
+        title: "Legend Pack",
+        price: 250,
+        image: clawIcon("legend-baseball-pack"),
+        boost: true,
+      },
+      {
+        slug: "baseball-starter",
+        title: "Starter Pack",
+        price: 25,
+        image: clawIcon("starter-baseball-pack"),
+      },
     ],
   },
   {
     category: "football",
     packs: [
-      { slug: "football-elite", title: "Elite Pack", price: 50, image: clawIcon("elite-football-pack") },
-      { slug: "football-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-football-pack") },
-      { slug: "football-platinum", title: "Platinum Pack", price: 500, image: clawIcon("platinum-football-pack"), boost: true },
+      {
+        slug: "football-elite",
+        title: "Elite Pack",
+        price: 50,
+        image: clawIcon("elite-football-pack"),
+      },
+      {
+        slug: "football-starter",
+        title: "Starter Pack",
+        price: 25,
+        image: clawIcon("starter-football-pack"),
+      },
+      {
+        slug: "football-platinum",
+        title: "Platinum Pack",
+        price: 500,
+        image: clawIcon("platinum-football-pack"),
+        boost: true,
+      },
     ],
   },
   {
     category: "soccer",
-    packs: [{ slug: "soccer-pro", title: "Pro Pack", price: 100, image: clawIcon("pro-soccer-pack") }],
+    packs: [
+      {
+        slug: "soccer-pro",
+        title: "Pro Pack",
+        price: 100,
+        image: clawIcon("pro-soccer-pack"),
+      },
+    ],
   },
   {
     category: "yugioh",
-    packs: [{ slug: "yugioh-pro", title: "Pro Pack", price: 25, image: clawIcon("yugioh-pro-pack") }],
+    packs: [
+      {
+        slug: "yugioh-pro",
+        title: "Pro Pack",
+        price: 25,
+        image: clawIcon("yugioh-pro-pack"),
+      },
+    ],
   },
   {
     category: "riftbound",
-    packs: [{ slug: "riftbound-starter", title: "Starter Pack", price: 25, image: clawIcon("starter-riftbound-pack") }],
+    packs: [
+      {
+        slug: "riftbound-starter",
+        title: "Starter Pack",
+        price: 25,
+        image: clawIcon("starter-riftbound-pack"),
+      },
+    ],
   },
 ];
 
@@ -517,7 +1121,7 @@ const PACK_SEED: PackSeed[] = PACK_SEED_GROUPS.flatMap((group) =>
     boost: pack.boost ?? false,
     buyback_percent: pack.buyback ?? 90,
     in_stock: pack.inStock ?? true,
-  }))
+  })),
 );
 
 const PACK_SLUGS = PACK_SEED.map((p) => p.slug);
@@ -546,7 +1150,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   if (!defaultSalesChannel.length) {
     // create the default sales channel
     const { result: salesChannelResult } = await createSalesChannelsWorkflow(
-      container
+      container,
     ).run({
       input: {
         salesChannelsData: [
@@ -586,9 +1190,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const regionModuleService = container.resolve(Modules.REGION);
 
   // Check if any of the countries are already assigned to a region
-  const existingRegions = await regionModuleService.listRegions({}, {
-    relations: ["countries"],
-  });
+  const existingRegions = await regionModuleService.listRegions(
+    {},
+    {
+      relations: ["countries"],
+    },
+  );
 
   const assignedCountries = new Set<string>();
   for (const r of existingRegions) {
@@ -597,45 +1204,56 @@ export default async function seedDemoData({ container }: ExecArgs) {
     }
   }
 
-  const unassignedCountries = countries.filter(c => !assignedCountries.has(c));
+  const unassignedCountries = countries.filter(
+    (c) => !assignedCountries.has(c),
+  );
 
   let region;
   if (unassignedCountries.length === 0) {
     // All countries already assigned - find the region that has most of our countries
-    region = existingRegions.find(r =>
-      r.countries?.some(c => countries.includes(c.iso_2))
-    ) || existingRegions[0];
-    logger.info("Countries already assigned to a region, skipping region creation.");
+    region =
+      existingRegions.find((r) =>
+        r.countries?.some((c) => countries.includes(c.iso_2)),
+      ) || existingRegions[0];
+    logger.info(
+      "Countries already assigned to a region, skipping region creation.",
+    );
   } else if (unassignedCountries.length < countries.length) {
     // Some countries assigned, some not - only create with unassigned ones
-    logger.info(`Some countries already assigned, creating region with: ${unassignedCountries.join(", ")}`);
-    const { result: regionResult } = await createRegionsWorkflow(container).run({
-      input: {
-        regions: [
-          {
-            name: "Europe",
-            currency_code: "eur",
-            countries: unassignedCountries,
-            payment_providers: ["pp_system_default"],
-          },
-        ],
+    logger.info(
+      `Some countries already assigned, creating region with: ${unassignedCountries.join(", ")}`,
+    );
+    const { result: regionResult } = await createRegionsWorkflow(container).run(
+      {
+        input: {
+          regions: [
+            {
+              name: "Europe",
+              currency_code: "eur",
+              countries: unassignedCountries,
+              payment_providers: ["pp_system_default"],
+            },
+          ],
+        },
       },
-    });
+    );
     region = regionResult[0];
   } else {
     // No countries assigned - create full region
-    const { result: regionResult } = await createRegionsWorkflow(container).run({
-      input: {
-        regions: [
-          {
-            name: "Europe",
-            currency_code: "eur",
-            countries,
-            payment_providers: ["pp_system_default"],
-          },
-        ],
+    const { result: regionResult } = await createRegionsWorkflow(container).run(
+      {
+        input: {
+          regions: [
+            {
+              name: "Europe",
+              currency_code: "eur",
+              countries,
+              payment_providers: ["pp_system_default"],
+            },
+          ],
+        },
       },
-    });
+    );
     region = regionResult[0];
   }
 
@@ -649,7 +1267,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     // to one region); a USD region with no country still resolves USD prices.
     const usdCountries = assignedCountries.has("us") ? [] : ["us"];
     const { result: usdRegionResult } = await createRegionsWorkflow(
-      container
+      container,
     ).run({
       input: {
         regions: [
@@ -672,8 +1290,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Seeding tax regions...");
   const taxModuleService = container.resolve(Modules.TAX);
   const existingTaxRegions = await taxModuleService.listTaxRegions();
-  const existingCountryCodes = new Set(existingTaxRegions.map((tr) => tr.country_code));
-  const countriesToCreate = countries.filter((c) => !existingCountryCodes.has(c));
+  const existingCountryCodes = new Set(
+    existingTaxRegions.map((tr) => tr.country_code),
+  );
+  const countriesToCreate = countries.filter(
+    (c) => !existingCountryCodes.has(c),
+  );
 
   if (countriesToCreate.length > 0) {
     await createTaxRegionsWorkflow(container).run({
@@ -696,10 +1318,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
   let stockLocation;
   if (existingStockLocations.length) {
     stockLocation = existingStockLocations[0];
-    logger.info("Stock location 'European Warehouse' already exists, skipping.");
+    logger.info(
+      "Stock location 'European Warehouse' already exists, skipping.",
+    );
   } else {
     const { result: stockLocationResult } = await createStockLocationsWorkflow(
-      container
+      container,
     ).run({
       input: {
         locations: [
@@ -741,7 +1365,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
     if (!(error instanceof Error && error.message.includes("already exists"))) {
       throw error;
     }
-    logger.info("Stock location already linked to fulfillment provider, skipping.");
+    logger.info(
+      "Stock location already linked to fulfillment provider, skipping.",
+    );
   }
 
   logger.info("Seeding fulfillment data...");
@@ -765,14 +1391,17 @@ export default async function seedDemoData({ container }: ExecArgs) {
     shippingProfile = shippingProfileResult[0];
   }
 
-  const existingFulfillmentSets = await fulfillmentModuleService.listFulfillmentSets({
-    name: "European Warehouse delivery",
-  });
+  const existingFulfillmentSets =
+    await fulfillmentModuleService.listFulfillmentSets({
+      name: "European Warehouse delivery",
+    });
 
   let fulfillmentSet;
   if (existingFulfillmentSets.length) {
     fulfillmentSet = existingFulfillmentSets[0];
-    logger.info("Fulfillment set 'European Warehouse delivery' already exists, skipping.");
+    logger.info(
+      "Fulfillment set 'European Warehouse delivery' already exists, skipping.",
+    );
   } else {
     fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
       name: "European Warehouse delivery",
@@ -824,7 +1453,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
       });
     } catch (error: unknown) {
-      if (!(error instanceof Error && error.message.includes("already exists"))) {
+      if (
+        !(error instanceof Error && error.message.includes("already exists"))
+      ) {
         throw error;
       }
     }
@@ -956,7 +1587,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       },
     });
 
-    publishableApiKey = publishableApiKeyResult
+    publishableApiKey = publishableApiKeyResult;
   }
 
   // Link sales channel to API key (idempotent)
@@ -1022,7 +1653,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       logger.warn(
         `Could not purge demo apparel products: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
   }
@@ -1035,7 +1666,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   const existingCardHandles = new Set(existingCards.map((p) => p.handle));
   const cardsToCreate = CARD_PRODUCTS.filter(
-    (c) => !existingCardHandles.has(c.handle)
+    (c) => !existingCardHandles.has(c.handle),
   );
 
   if (cardsToCreate.length === 0) {
@@ -1064,8 +1695,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
               salesChannelId: defaultSalesChannel[0].id,
               status: ProductStatus.PUBLISHED,
               manageInventory: true,
-            }
-          )
+            },
+          ),
         ),
         additional_data: { seller_id: houseSeller.id },
       },
@@ -1086,7 +1717,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const existingLevels = await inventoryModule.listInventoryLevels({
     location_id: stockLocation.id,
   });
-  const existingItemIds = new Set(existingLevels.map((l) => l.inventory_item_id));
+  const existingItemIds = new Set(
+    existingLevels.map((l) => l.inventory_item_id),
+  );
 
   const inventoryLevels: CreateInventoryLevelInput[] = [];
   for (const inventoryItem of inventoryItems) {
@@ -1120,12 +1753,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
     container.resolve(PACKS_MODULE);
   const existingPacks = await packsModuleService.listPacks(
     { slug: PACK_SLUGS },
-    { select: ["slug"], take: PACK_SLUGS.length }
+    { select: ["slug"], take: PACK_SLUGS.length },
   );
   const existingPackSlugs = new Set(existingPacks.map((p) => p.slug));
-  const packsToCreate = PACK_SEED.filter(
-    (p) => !existingPackSlugs.has(p.slug)
-  );
+  const packsToCreate = PACK_SEED.filter((p) => !existingPackSlugs.has(p.slug));
 
   if (packsToCreate.length === 0) {
     logger.info("Gacha packs already exist, skipping.");
@@ -1149,13 +1780,13 @@ export default async function seedDemoData({ container }: ExecArgs) {
   // products check above); reuse it rather than redeclaring.
   const existingGachaCards = await packsModuleService.listCards(
     { handle: CARD_HANDLES },
-    { select: ["handle"], take: CARD_HANDLES.length }
+    { select: ["handle"], take: CARD_HANDLES.length },
   );
   const existingGachaCardHandles = new Set(
-    existingGachaCards.map((c) => c.handle)
+    existingGachaCards.map((c) => c.handle),
   );
   const gachaCardsToCreate = CARD_PRODUCTS.filter(
-    (c) => !existingGachaCardHandles.has(c.handle)
+    (c) => !existingGachaCardHandles.has(c.handle),
   ).map((c) => ({
     handle: c.handle,
     name: c.title,
@@ -1192,22 +1823,22 @@ export default async function seedDemoData({ container }: ExecArgs) {
     // +1 headroom over the full odds-table size: if a framework page cap ever
     // truncated this read, a pack would look odds-less and get re-inserted,
     // doubling its weights and skewing the aggregated pull %.
-    { select: ["pack_id"], take: PACK_SLUGS.length * CARD_HANDLES.length + 1 }
+    { select: ["pack_id"], take: PACK_SLUGS.length * CARD_HANDLES.length + 1 },
   );
   const packsWithOdds = new Set(existingOdds.map((o) => o.pack_id));
   const oddsToCreate = PACK_SEED.filter(
-    (p) => !packsWithOdds.has(p.slug)
+    (p) => !packsWithOdds.has(p.slug),
   ).flatMap((pack) => {
     // Per-category pool: a pack draws only cards whose category matches it
     // (the original 16 Pokemon cards carry no category → default "pokemon").
     const pool = CARD_PRODUCTS.filter(
-      (card) => (card.category ?? "pokemon") === pack.category
+      (card) => (card.category ?? "pokemon") === pack.category,
     );
     if (pool.length === 0) {
       // An empty pool makes roll-pack throw (Σweight<=0) and disables the
       // pack's open button — fail loud at seed time instead of silently.
       throw new Error(
-        `No gacha cards for category "${pack.category}" (pack ${pack.slug}); every active pack needs at least one card.`
+        `No gacha cards for category "${pack.category}" (pack ${pack.slug}); every active pack needs at least one card.`,
       );
     }
     return pool.map((card) => ({
@@ -1249,11 +1880,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const demoEmails = DEMO_COLLECTORS.map((c) => c.email);
   const existingDemoCustomers = await customerModuleService.listCustomers(
     { email: demoEmails },
-    { take: demoEmails.length }
+    { take: demoEmails.length },
   );
   const existingDemoEmails = new Set(existingDemoCustomers.map((c) => c.email));
   const demoToCreate = DEMO_COLLECTORS.filter(
-    (c) => !existingDemoEmails.has(c.email)
+    (c) => !existingDemoEmails.has(c.email),
   );
   const createdDemoCustomers = demoToCreate.length
     ? await customerModuleService.createCustomers(demoToCreate)
@@ -1262,17 +1893,36 @@ export default async function seedDemoData({ container }: ExecArgs) {
   // Order by the roster (createCustomers needn't preserve input order) so the
   // descending activity assignment below is stable.
   const demoByEmail = new Map(
-    [...existingDemoCustomers, ...createdDemoCustomers].map((c) => [c.email, c])
+    [...existingDemoCustomers, ...createdDemoCustomers].map((c) => [
+      c.email,
+      c,
+    ]),
   );
-  const orderedDemo = DEMO_COLLECTORS.map((d) => demoByEmail.get(d.email)).filter(
-    (c): c is NonNullable<typeof c> => !!c
-  );
+  const orderedDemo = DEMO_COLLECTORS.map((d) =>
+    demoByEmail.get(d.email),
+  ).filter((c): c is NonNullable<typeof c> => !!c);
+
+  // Public profile handles (Task B): every demo collector gets a stable
+  // metadata.handle so /store/profiles/:handle resolves them. Idempotent —
+  // derivation is deterministic and existing handles are left untouched.
+  for (const c of orderedDemo) {
+    const metadata = (c.metadata ?? {}) as Record<string, unknown>;
+    if (
+      typeof metadata.handle === "string" &&
+      HANDLE_RE.test(metadata.handle)
+    ) {
+      continue;
+    }
+    await customerModuleService.updateCustomers(c.id, {
+      metadata: { ...metadata, handle: deriveHandle(c.first_name, c.id) },
+    });
+  }
 
   const demoIds = orderedDemo.map((c) => c.id);
   const existingDemoPulls = demoIds.length
     ? await packsModuleService.listPulls(
         { customer_id: demoIds },
-        { select: ["id"], take: 1 }
+        { select: ["id"], take: 1 },
       )
     : [];
 
@@ -1289,11 +1939,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
       const cat = c.category ?? "pokemon";
       const n = Math.max(
         1,
-        Math.round((RARITY_WEIGHT[c.rarity] ?? 100) / BAG_SCALE)
+        Math.round((RARITY_WEIGHT[c.rarity] ?? 100) / BAG_SCALE),
       );
-      (cardBagByCategory[cat] ??= []).push(
-        ...Array<string>(n).fill(c.handle)
-      );
+      (cardBagByCategory[cat] ??= []).push(...Array<string>(n).fill(c.handle));
     }
     const WEEK_MIN = 7 * 24 * 60;
     const now = Date.now();
@@ -1327,7 +1975,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     });
     await packsModuleService.createPulls(pullsToCreate);
     logger.info(
-      `Seeded ${pullsToCreate.length} demo pull(s) across ${orderedDemo.length} collector(s).`
+      `Seeded ${pullsToCreate.length} demo pull(s) across ${orderedDemo.length} collector(s).`,
     );
   }
   logger.info("Finished seeding demo gacha activity.");
