@@ -34,6 +34,8 @@ type NavItem = {
   badge?: string;
   /** Render as a non-clickable, dimmed "coming soon" tab instead of a link. */
   disabled?: boolean;
+  /** Screen-reader label for a disabled tab (visible text stays short). */
+  ariaLabel?: string;
 };
 
 // Built from feature flags: Marketplace tab is omitted entirely while hidden, and
@@ -48,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
         href: '/pack-party',
         icon: PartyPopper,
         disabled: true,
+        ariaLabel: 'Pack Party — coming soon',
       },
   ...(features.marketplace
     ? [{ label: 'Marketplace', href: '/marketplace', icon: Store } as NavItem]
@@ -146,6 +149,7 @@ export default function SiteHeader() {
                   <span
                     key={item.label}
                     aria-disabled="true"
+                    aria-label={item.ariaLabel}
                     className="flex h-10 cursor-not-allowed items-center gap-2 rounded-lg px-3 text-[13px] font-medium text-neutral-500"
                   >
                     <Icon className="h-4 w-4 text-neutral-600" aria-hidden />
@@ -273,6 +277,7 @@ export default function SiteHeader() {
                 <span
                   key={item.label}
                   aria-disabled="true"
+                  aria-label={item.ariaLabel}
                   className="flex h-11 cursor-not-allowed items-center gap-2 rounded-lg px-3 text-sm font-medium text-neutral-500"
                 >
                   <Icon className="h-4 w-4 text-neutral-600" aria-hidden />
