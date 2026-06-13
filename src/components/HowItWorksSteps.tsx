@@ -26,7 +26,7 @@ const STEPS: Step[] = [
   {
     num: '1',
     title: 'Open a pack',
-    body: 'Choose from Pokemon, One Piece, sports, and more. Every pack contains a random graded card with live odds and provably fair pulls powered by public VRF.',
+    body: 'Choose from a range of Pokémon packs. Every pack contains a random graded card with live odds and provably fair pulls powered by public VRF.',
     pill: 'View all packs',
     pillSub: 'Browse every category and rip',
     pillVariant: 'packs',

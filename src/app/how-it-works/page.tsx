@@ -94,7 +94,7 @@ const CAPABILITIES: Capability[] = [
   {
     icon: Layers,
     title: 'Open Packs',
-    body: 'Hundreds of packs across Pokemon, sports, TCG, and more. New drops every week.',
+    body: 'Hundreds of Pokémon packs. New drops every week.',
   },
   {
     icon: Store,
@@ -210,7 +210,7 @@ export default function HowItWorksPage() {
             </Reveal>
           </div>
           {/* pack fan slides/scales in — matches the live site: a center Trainer pack
-              flanked by two faded, smaller packs (platinum left, One Piece right). */}
+              flanked by two faded, smaller packs (platinum left, diamond right). */}
           <Reveal
             delay={200}
             y={32}
@@ -228,7 +228,7 @@ export default function HowItWorksPage() {
               {/* right pack — behind, faded */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/claw/one-piece-sealed-claw-mcmnf5-icon.webp"
+                src="/images/claw/diamond-pack-icon.webp"
                 alt=""
                 aria-hidden="true"
                 className="absolute bottom-[8%] left-[68%] z-0 h-[72%] w-auto -translate-x-1/2 object-contain opacity-50 drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]"

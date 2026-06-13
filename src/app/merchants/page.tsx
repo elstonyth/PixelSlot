@@ -26,7 +26,7 @@ type Merchant = {
   badges: string[];
 };
 
-// Real, recognizable trading-card merchants (matching the live site's curated list).
+// Real, recognizable Pokémon trading-card merchants (Pokémon-only catalog).
 const MERCHANTS: Merchant[] = [
   {
     name: 'Cardmarket EU',
@@ -35,35 +35,35 @@ const MERCHANTS: Merchant[] = [
     cat: 'Pokémon',
     rating: 4.8,
     ago: '2h ago',
-    blurb: "Europe's premier trading card marketplace with worldwide shipping.",
+    blurb: "Europe's premier Pokémon card marketplace with worldwide shipping.",
     badges: ['Free Shipping €50+', 'Express Available'],
   },
   {
     name: 'Card Kingdom',
     country: 'United States',
     code: 'US',
-    cat: 'Magic',
+    cat: 'Pokémon',
     rating: 4.9,
     ago: '30m ago',
-    blurb: "America's trusted source for trading cards and gaming supplies.",
+    blurb: "America's trusted source for Pokémon cards and gaming supplies.",
     badges: ['Free Shipping $75+', 'Same Day Processing'],
   },
   {
     name: 'TCGPlayer',
     country: 'New York',
     code: 'US',
-    cat: 'Magic',
+    cat: 'Pokémon',
     rating: 4.7,
     ago: '1h ago',
     blurb:
-      'The largest online marketplace for collectible card games in North America.',
+      'The largest online marketplace for Pokémon singles in North America.',
     badges: ['Free Shipping $35+', 'Express Available'],
   },
   {
     name: 'Troll and Toad',
     country: 'United States',
     code: 'US',
-    cat: 'Yu-Gi-Oh!',
+    cat: 'Pokémon',
     rating: 4.6,
     ago: '3h ago',
     blurb:
@@ -74,10 +74,10 @@ const MERCHANTS: Merchant[] = [
     name: 'CoolStuffInc',
     country: 'Florida',
     code: 'US',
-    cat: 'Magic',
+    cat: 'Pokémon',
     rating: 4.7,
     ago: '1h ago',
-    blurb: 'Games, singles, and supplies with fast, reliable fulfillment.',
+    blurb: 'Pokémon singles and supplies with fast, reliable fulfillment.',
     badges: ['Free Shipping $99+', 'Same Day Processing'],
   },
   {
@@ -87,43 +87,43 @@ const MERCHANTS: Merchant[] = [
     cat: 'Pokémon',
     rating: 4.6,
     ago: '5h ago',
-    blurb: "Canada's largest game store with deep singles inventory.",
+    blurb: "Canada's largest game store with deep Pokémon singles inventory.",
     badges: ['Free Shipping $75+'],
   },
   {
     name: "Dave & Adam's",
     country: 'United States',
     code: 'US',
-    cat: 'Sports',
+    cat: 'Pokémon',
     rating: 4.7,
     ago: '2h ago',
     blurb:
-      'Sports cards, boxes, and collectibles with a 100% satisfaction guarantee.',
+      'Pokémon singles, boxes, and collectibles with a 100% satisfaction guarantee.',
     badges: ['Free Shipping $50+', 'Express Available'],
   },
   {
     name: 'Blowout Cards',
     country: 'United States',
     code: 'US',
-    cat: 'Sports',
+    cat: 'Pokémon',
     rating: 4.5,
     ago: '4h ago',
-    blurb: 'Sealed sports and TCG product at case-break-friendly prices.',
+    blurb: 'Sealed Pokémon product at case-break-friendly prices.',
     badges: ['Free Shipping $99+'],
   },
   {
-    name: 'Magic Madhouse',
+    name: 'Chaos Cards',
     country: 'United Kingdom',
     code: 'GB',
-    cat: 'Yu-Gi-Oh!',
+    cat: 'Pokémon',
     rating: 4.5,
     ago: '6h ago',
-    blurb: 'UK retailer for TCG singles, sealed product, and accessories.',
+    blurb: 'UK retailer for Pokémon singles, sealed product, and accessories.',
     badges: ['Free Shipping £50+', 'Express Available'],
   },
 ];
 
-const CATS = ['All', 'Pokémon', 'Magic', 'Yu-Gi-Oh!', 'Sports'];
+const CATS = ['All', 'Pokémon'];
 
 export default function MerchantsPage() {
   const [cat, setCat] = useState('All');

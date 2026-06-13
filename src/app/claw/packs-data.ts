@@ -40,14 +40,6 @@ export type PackCategory = {
 // Category badge icons (localized to public/pack-index-icons/).
 export const CAT_ICON = {
   pokemon: '/pack-index-icons/pokemon.webp',
-  onepiece: '/pack-index-icons/onepiece.webp',
-  nba: '/pack-index-icons/nba.webp',
-  mlb: '/pack-index-icons/mlb.webp',
-  nfl: '/pack-index-icons/nfl.webp',
-  soccer: '/pack-index-icons/soccer.webp',
-  yugioh: '/pack-index-icons/yugioh.webp',
-  riftbound: '/pack-index-icons/riftbound.webp',
-  dragonball: '/pack-index-icons/dragonball.webp',
 } as const;
 
 // Real categories, packs, prices, and artwork extracted from the live /claw DOM.
@@ -116,174 +108,6 @@ export const CATEGORIES: PackCategory[] = [
       },
     ],
   },
-  {
-    id: 'one-piece',
-    tab: 'One Piece',
-    heading: 'One Piece Packs',
-    icon: CAT_ICON.onepiece,
-    packs: [
-      {
-        id: 'onepiece-legend',
-        name: 'Legend Pack',
-        price: '$250',
-        image: '/images/claw/legend-one-piece-pack-icon.webp',
-        boost: true,
-      },
-      {
-        id: 'onepiece-platinum',
-        name: 'Platinum Pack',
-        price: '$500',
-        image: '/images/claw/one-piece-platinum-pack-icon.webp',
-        boost: true,
-      },
-      {
-        id: 'onepiece-elite',
-        name: 'Elite Pack',
-        price: '$50',
-        image: '/images/claw/elite-one-piece-pack-icon.webp',
-      },
-      {
-        id: 'onepiece-starter',
-        name: 'Starter Pack',
-        price: '$25',
-        image: '/images/claw/starter-one-piece-pack-icon.webp',
-      },
-    ],
-  },
-  {
-    id: 'basketball',
-    tab: 'Basketball',
-    heading: 'Basketball Packs',
-    icon: CAT_ICON.nba,
-    packs: [
-      {
-        id: 'nba-black',
-        name: 'Black Pack',
-        price: '$1,000',
-        image: '/images/claw/black-pack-jjnfuk-icon.webp',
-        boost: true,
-      },
-      {
-        id: 'nba-legend',
-        name: 'Legend Pack',
-        price: '$250',
-        image: '/images/claw/legend-pack-1dpaec-icon.webp',
-        boost: true,
-      },
-      {
-        id: 'nba-platinum',
-        name: 'Platinum Pack',
-        price: '$500',
-        image: '/images/claw/modern-grails-noafw0-icon.webp',
-        boost: true,
-      },
-    ],
-  },
-  {
-    id: 'baseball',
-    tab: 'Baseball',
-    heading: 'Baseball Packs',
-    icon: CAT_ICON.mlb,
-    packs: [
-      {
-        id: 'baseball-pro',
-        name: 'Pro Pack',
-        price: '$100',
-        image: '/images/claw/pro-baseball-pack-icon.webp',
-      },
-      {
-        id: 'baseball-legend',
-        name: 'Legend Pack',
-        price: '$250',
-        image: '/images/claw/legend-baseball-pack-icon.webp',
-        boost: true,
-      },
-      {
-        id: 'baseball-starter',
-        name: 'Starter Pack',
-        price: '$25',
-        image: '/images/claw/starter-baseball-pack-icon.webp',
-      },
-    ],
-  },
-  {
-    id: 'football',
-    tab: 'Football',
-    heading: 'Football Packs',
-    icon: CAT_ICON.nfl,
-    packs: [
-      {
-        id: 'football-elite',
-        name: 'Elite Pack',
-        price: '$50',
-        image: '/images/claw/elite-football-pack-icon.webp',
-      },
-      {
-        id: 'football-starter',
-        name: 'Starter Pack',
-        price: '$25',
-        image: '/images/claw/starter-football-pack-icon.webp',
-      },
-      {
-        id: 'football-platinum',
-        name: 'Platinum Pack',
-        price: '$500',
-        image: '/images/claw/platinum-football-pack-icon.webp',
-        boost: true,
-      },
-    ],
-  },
-  {
-    id: 'soccer',
-    tab: 'Soccer',
-    heading: 'Soccer Packs',
-    icon: CAT_ICON.soccer,
-    packs: [
-      {
-        id: 'soccer-pro',
-        name: 'Pro Pack',
-        price: '$100',
-        image: '/images/claw/pro-soccer-pack-icon.webp',
-      },
-    ],
-  },
-  {
-    id: 'yugioh',
-    tab: 'Yu-Gi-Oh!',
-    heading: 'Yu-Gi-Oh! Packs',
-    icon: CAT_ICON.yugioh,
-    packs: [
-      {
-        id: 'yugioh-pro',
-        name: 'Pro Pack',
-        price: '$25',
-        image: '/images/claw/yugioh-pro-pack-icon.webp',
-      },
-    ],
-  },
-  {
-    id: 'riftbound',
-    tab: 'Riftbound',
-    heading: 'Riftbound Packs',
-    icon: CAT_ICON.riftbound,
-    packs: [
-      {
-        id: 'riftbound-starter',
-        name: 'Starter Pack',
-        price: '$25',
-        image: '/images/claw/starter-riftbound-pack-icon.webp',
-      },
-    ],
-  },
-  {
-    // Live taxonomy includes Dragon Ball, but it currently has no in-stock packs
-    // — so it shows as a chip with an empty state (matches live), no section.
-    id: 'dragonball',
-    tab: 'Dragon Ball',
-    heading: 'Dragon Ball Packs',
-    icon: CAT_ICON.dragonball,
-    packs: [],
-  },
 ];
 
 export type ResolvedPack = Pack & {
@@ -325,27 +149,10 @@ const CLAW_HAS_ANIM = new Set([
   'platinum-pack',
   'rookie-pack',
   'trainer-pack',
-  'starter-riftbound-pack',
-  'legend-pack-1dpaec',
-  'modern-grails-noafw0',
-  'pro-soccer-pack',
   // premium pokemon tiers: full banner+placard+url rebrand on the busy red-neon / crystal-refraction
   // backgrounds (scripts/rebrand-premium-banner.mjs blur-patch + make_patch per-base BAND).
   'black-pack',
   'diamond-pack',
-  // NBA Black: 142-frame anim, banner+placard+url already rebranded "pokenic" (only a sub-pixel
-  // preview-card watermark remains, below render-scale legibility).
-  'black-pack-jjnfuk',
-  // One Piece + Yu-Gi-Oh: these have NO top "phygitals" banner (top = tier name / "PR-OH"), so only the
-  // bottom pedestal zones are rebranded — url "Pokenic.com", the "RIP & REVEAL by pokenic" pill, and
-  // (Yu-Gi-Oh) the "pokenic / claw." placard (scripts/rebrand-onepiece-yugioh.mjs blur-patch + redraw,
-  // make_patch BAND=0 so the bottom-only mask never freezes the claw). Platinum carries no legible
-  // phygitals (occluded by its silver waves), so its anim is the source re-used as-is.
-  'elite-one-piece-pack',
-  'legend-one-piece-pack',
-  'starter-one-piece-pack',
-  'one-piece-platinum-pack',
-  'yugioh-pro-pack',
 ]);
 
 // Packs that ship NO rebranded claw-machine render yet. Empty now that the premium tiers are baked;
