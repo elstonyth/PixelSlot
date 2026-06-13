@@ -29,7 +29,7 @@ const FAN_IMAGES: FanImage[] = [
     height: 'h-[120px] sm:h-[160px]',
   },
   {
-    src: '/home/hero/slabs/basketball1.webp',
+    src: '/home/hero/slabs/pokemon1.webp',
     left: '36%',
     rotate: '4deg',
     z: 1,
@@ -43,21 +43,21 @@ const FAN_IMAGES: FanImage[] = [
     height: 'h-[110px] sm:h-[150px]',
   },
   {
-    src: '/home/hero/slabs/football1.webp',
+    src: '/home/hero/slabs/pokemon3.webp',
     left: '64%',
     rotate: '-5deg',
     z: 1,
     height: 'h-[100px] sm:h-[140px]',
   },
   {
-    src: '/images/claw/elite-football-pack-icon.webp',
+    src: '/images/claw/legend-pack-icon.webp',
     left: '78%',
     rotate: '3deg',
     z: 1,
     height: 'h-[120px] sm:h-[160px]',
   },
   {
-    src: '/home/hero/slabs/yugioh1.webp',
+    src: '/images/claw/mythic-pack-icon.webp',
     left: '92%',
     rotate: '7deg',
     z: 2,
@@ -111,9 +111,9 @@ export default function CtaSection() {
             Splitting them onto two elements avoids the inline-style vs class
             specificity conflict that would otherwise kill the hover translate. */}
         <div className="relative mt-8 flex h-[180px] items-end justify-center sm:h-[220px]">
-          {FAN_IMAGES.map((img) => (
+          {FAN_IMAGES.map((img, i) => (
             <div
-              key={img.src}
+              key={i}
               className="absolute bottom-0"
               style={{
                 left: img.left,

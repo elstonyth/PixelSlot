@@ -13,36 +13,13 @@ type Theme = {
   pack: string;
 };
 
+// Pokémon-only catalog — the hero shows a single centered Pokémon card (the
+// carousel rotation no-ops at N=1, so it just renders the one theme).
 const THEMES: Theme[] = [
   {
     name: 'pokemon',
     slab: '/home/hero/slabs/pokemon1.webp',
     pack: '/home/hero/ripped-packs/pokemon.webp',
-  },
-  {
-    name: 'onepiece',
-    slab: '/home/hero/slabs/onepiece2.webp',
-    pack: '/home/hero/ripped-packs/onepiece.webp',
-  },
-  {
-    name: 'basketball',
-    slab: '/home/hero/slabs/basketball3.webp',
-    pack: '/home/hero/ripped-packs/basketball.webp',
-  },
-  {
-    name: 'football',
-    slab: '/home/hero/slabs/football4.webp',
-    pack: '/home/hero/ripped-packs/football.webp',
-  },
-  {
-    name: 'baseball',
-    slab: '/home/hero/slabs/baseball1.webp',
-    pack: '/home/hero/ripped-packs/baseball.webp',
-  },
-  {
-    name: 'yugioh',
-    slab: '/home/hero/slabs/yugioh2.webp',
-    pack: '/home/hero/ripped-packs/yugioh.webp',
   },
 ];
 

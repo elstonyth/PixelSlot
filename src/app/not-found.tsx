@@ -11,9 +11,7 @@ import { features } from '@/lib/features';
 // "OPEN ONE OF THESE INSTEAD". Normal site chrome stays (live keeps it too).
 const pixel = Press_Start_2P({ weight: '400', subsets: ['latin'] });
 
-// Live suggests "Pokemon Elite / One Piece Mythic / Basketball Pro"; the clone
-// catalog has no One Piece Mythic or Basketball Pro, so use the closest real
-// packs in the same category+tier label format.
+// Catalog is Pokémon-only — suggest three real Pokémon packs.
 const SUGGESTIONS = [
   {
     label: 'Pokemon Elite',
@@ -21,14 +19,14 @@ const SUGGESTIONS = [
     image: '/images/claw/elite-pack-icon.webp',
   },
   {
-    label: 'One Piece Legend',
-    href: '/claw/onepiece-legend',
-    image: '/images/claw/legend-one-piece-pack-icon.webp',
+    label: 'Pokemon Legend',
+    href: '/claw/pokemon-legend',
+    image: '/images/claw/legend-pack-icon.webp',
   },
   {
-    label: 'Basketball Platinum',
-    href: '/claw/nba-platinum',
-    image: '/images/claw/modern-grails-noafw0-icon.webp',
+    label: 'Pokemon Platinum',
+    href: '/claw/pokemon-platinum',
+    image: '/images/claw/platinum-pack-icon.webp',
   },
 ];
 
