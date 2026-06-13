@@ -207,9 +207,8 @@ function PackRow({
 // Client — per-category sections (matches live /claw: "Pokémon Packs / 5 packs"
 // headings). Desktop renders a horizontally-scrolling card row per section (the
 // live layout); mobile renders list rows. The chip rail shows every category
-// (incl. ones with no in-stock packs, e.g. Dragon Ball — selecting one shows an
-// empty state). `initialCategory` lets a deep link (/claw?category=<key>)
-// preselect a tab.
+// (incl. ones with no in-stock packs — selecting one shows an empty state).
+// `initialCategory` lets a deep link (/claw?category=<key>) preselect a tab.
 // ---------------------------------------------------------------------------
 
 export default function ClawClient({

@@ -88,9 +88,9 @@ export async function getPackCategories(): Promise<PackCategory[]> {
       packs: byCategory.get(cat.id) ?? [],
     }));
 
-    // Keep empty categories (e.g. Dragon Ball) so they still render a chip; the
-    // client hides empty sections on "All" and shows an empty state when one is
-    // selected directly. Fall back to the full mock only if NOTHING resolved.
+    // Keep empty categories so they still render a chip; the client hides empty
+    // sections on "All" and shows an empty state when one is selected directly.
+    // Fall back to the full mock only if NOTHING resolved.
     return categories.some((c) => c.packs.length > 0)
       ? categories
       : MOCK_CATEGORIES;

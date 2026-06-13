@@ -94,7 +94,7 @@ const CAPABILITIES: Capability[] = [
   {
     icon: Layers,
     title: 'Open Packs',
-    body: 'Hundreds of packs across Pokemon, sports, TCG, and more. New drops every week.',
+    body: 'Hundreds of Pokémon packs. New drops every week.',
   },
   {
     icon: Store,
