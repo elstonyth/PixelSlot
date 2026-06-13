@@ -1,16 +1,18 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-nekst: var(--font-nekst), "Nekst", ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-nekst), "Nekst", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist', 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
+  --font-nekst:
+    var(--font-nekst), 'Nekst', ui-sans-serif, system-ui, sans-serif;
+  --font-heading:
+    var(--font-nekst), 'Nekst', ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -120,12 +122,22 @@
 
 /* Modal enter animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Hero decorative gradient-blob motion */
@@ -189,60 +201,136 @@
 /* ---- Pack-opening reveal (/claw/[slug] "Open Pack") ---- */
 /* The pack drops in, then charges (pulse + shake) before it bursts. */
 @keyframes packCharge {
-  0% { transform: translateY(-28px) scale(0.85); opacity: 0; }
-  18% { transform: translateY(0) scale(1); opacity: 1; }
-  62% { transform: translateY(0) scale(1.04) rotate(-1.5deg); }
-  70% { transform: translateY(0) scale(1.05) rotate(1.6deg); }
-  78% { transform: translateY(0) scale(1.06) rotate(-1.3deg); }
-  86% { transform: translateY(0) scale(1.07) rotate(1deg); }
-  100% { transform: translateY(0) scale(1.16) rotate(0deg); opacity: 1; }
+  0% {
+    transform: translateY(-28px) scale(0.85);
+    opacity: 0;
+  }
+  18% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  62% {
+    transform: translateY(0) scale(1.04) rotate(-1.5deg);
+  }
+  70% {
+    transform: translateY(0) scale(1.05) rotate(1.6deg);
+  }
+  78% {
+    transform: translateY(0) scale(1.06) rotate(-1.3deg);
+  }
+  86% {
+    transform: translateY(0) scale(1.07) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0) scale(1.16) rotate(0deg);
+    opacity: 1;
+  }
 }
 /* Central flash on burst (white core → rarity tint, scales out + fades). */
 @keyframes revealFlash {
-  0% { transform: scale(0.2); opacity: 0; }
-  25% { opacity: 1; }
-  100% { transform: scale(2.6); opacity: 0; }
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
 /* Expanding ring shockwave from the burst point. */
 @keyframes revealRing {
-  0% { transform: scale(0.25); opacity: 0.85; }
-  100% { transform: scale(2.8); opacity: 0; }
+  0% {
+    transform: scale(0.25);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
 }
 /* A particle shard flying outward (direction via --tx/--ty), then fading. */
 @keyframes shardFly {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(0.25); opacity: 0; }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0.25);
+    opacity: 0;
+  }
 }
 /* Celestial shimmer: a diagonal sheen sweeping across the face-down slab
    (live `revealv4-celestial-sweep`, 6.5s ease-in-out loop — most of the cycle idle). */
 @keyframes celestialSweep {
-  0% { transform: translateX(-160%); opacity: 0; }
-  6% { opacity: 1; }
-  22% { transform: translateX(320%); opacity: 0; }
-  100% { transform: translateX(320%); opacity: 0; }
+  0% {
+    transform: translateX(-160%);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  22% {
+    transform: translateX(320%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(320%);
+    opacity: 0;
+  }
 }
 /* Spinning rarity glow behind the revealed card (live `revealv4-glow-spin`, 3.5s linear). */
 @keyframes glowSpin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 /* Pull-celebration diagonal ribbon sweeps in (scales from a thin line, settles). */
 @keyframes pullRibbonIn {
-  0% { transform: rotate(-11deg) scaleX(0); opacity: 0; }
-  30% { transform: rotate(-11deg) scaleX(1.04); opacity: 1; }
-  100% { transform: rotate(-11deg) scaleX(1); opacity: 1; }
+  0% {
+    transform: rotate(-11deg) scaleX(0);
+    opacity: 0;
+  }
+  30% {
+    transform: rotate(-11deg) scaleX(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-11deg) scaleX(1);
+    opacity: 1;
+  }
 }
 /* Repeating marquee text scrolling across the ribbon (track is 2x, slide one half). */
 @keyframes pullMarquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 /* The big rarity word shouts in over the ribbon. */
 @keyframes pullShout {
-  0% { transform: scale(0.5) rotate(-11deg); opacity: 0; }
-  40% { transform: scale(1.14) rotate(-11deg); opacity: 1; }
-  70% { transform: scale(0.98) rotate(-11deg); }
-  100% { transform: scale(1) rotate(-11deg); opacity: 1; }
+  0% {
+    transform: scale(0.5) rotate(-11deg);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.14) rotate(-11deg);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.98) rotate(-11deg);
+  }
+  100% {
+    transform: scale(1) rotate(-11deg);
+    opacity: 1;
+  }
 }
 
 @layer base {

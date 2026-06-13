@@ -1,12 +1,18 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { type Pokemon, GENS, REGION, spriteGif, spritePng } from "@/lib/mock/pokedex";
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  type Pokemon,
+  GENS,
+  REGION,
+  spriteGif,
+  spritePng,
+} from '@/lib/mock/pokedex';
 
-const LANGS = ["US", "JP", "KR"];
+const LANGS = ['US', 'JP', 'KR'];
 
 function PokeSprite({ dex, name }: { dex: number; name: string }) {
   const [src, setSrc] = useState(spriteGif(dex));
@@ -22,14 +28,25 @@ function PokeSprite({ dex, name }: { dex: number; name: string }) {
   );
 }
 
-export default function PokedexClient({ gen, pokemon }: { gen: string; pokemon: Pokemon[] }) {
-  const [query, setQuery] = useState("");
-  const [lang, setLang] = useState("US");
+export default function PokedexClient({
+  gen,
+  pokemon,
+}: {
+  gen: string;
+  pokemon: Pokemon[];
+}) {
+  const [query, setQuery] = useState('');
+  const [lang, setLang] = useState('US');
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return pokemon;
-    return pokemon.filter((p) => p.name.toLowerCase().includes(q) || String(p.dex) === q || `#${p.dex}` === q);
+    return pokemon.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        String(p.dex) === q ||
+        `#${p.dex}` === q,
+    );
   }, [pokemon, query]);
 
   return (
@@ -38,7 +55,10 @@ export default function PokedexClient({ gen, pokemon }: { gen: string; pokemon: 
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
           <div className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" aria-hidden />
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+              aria-hidden
+            />
             <input
               type="search"
               value={query}
@@ -54,8 +74,10 @@ export default function PokedexClient({ gen, pokemon }: { gen: string; pokemon: 
                 type="button"
                 onClick={() => setLang(l)}
                 className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-[12px] font-semibold transition-colors",
-                  lang === l ? "bg-white/10 text-white" : "text-white/45 hover:text-white/70",
+                  'rounded-lg px-2.5 py-1.5 text-[12px] font-semibold transition-colors',
+                  lang === l
+                    ? 'bg-white/10 text-white'
+                    : 'text-white/45 hover:text-white/70',
                 )}
               >
                 {l}
@@ -71,8 +93,10 @@ export default function PokedexClient({ gen, pokemon }: { gen: string; pokemon: 
               key={n}
               href={`/pokemon/generation/${n}`}
               className={cn(
-                "-mb-px shrink-0 border-b-2 px-3 py-2 text-[13px] font-medium transition-colors",
-                n === gen ? "border-white text-white" : "border-transparent text-white/45 hover:text-white",
+                '-mb-px shrink-0 border-b-2 px-3 py-2 text-[13px] font-medium transition-colors',
+                n === gen
+                  ? 'border-white text-white'
+                  : 'border-transparent text-white/45 hover:text-white',
               )}
             >
               Gen {n}
@@ -91,17 +115,24 @@ export default function PokedexClient({ gen, pokemon }: { gen: string; pokemon: 
             <div className="flex h-20 items-end justify-center">
               <PokeSprite dex={p.dex} name={p.name} />
             </div>
-            <span className="font-heading text-sm font-bold text-white">{p.name}</span>
-            <span className="text-[11px] tabular-nums text-white/40">#{p.dex}</span>
+            <span className="font-heading text-sm font-bold text-white">
+              {p.name}
+            </span>
+            <span className="text-[11px] tabular-nums text-white/40">
+              #{p.dex}
+            </span>
           </li>
         ))}
       </ul>
 
       {visible.length === 0 && (
-        <p className="py-16 text-center text-sm text-white/40">No Pokémon match “{query}”.</p>
+        <p className="py-16 text-center text-sm text-white/40">
+          No Pokémon match “{query}”.
+        </p>
       )}
       <p className="mt-6 text-center text-[11px] text-white/30">
-        Sprites courtesy of PokeAPI · Generation {gen} ({REGION[gen]}) · {pokemon.length} Pokémon
+        Sprites courtesy of PokeAPI · Generation {gen} ({REGION[gen]}) ·{' '}
+        {pokemon.length} Pokémon
       </p>
     </div>
   );

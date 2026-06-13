@@ -1,39 +1,48 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Reveal from "@/components/Reveal";
-import { usd } from "@/lib/format";
-import { MOCK_CARDS } from "@/lib/mock/cards";
-import { MOCK_USERS, findUser } from "@/lib/mock/users";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import Reveal from '@/components/Reveal';
+import { usd } from '@/lib/format';
+import { MOCK_CARDS } from '@/lib/mock/cards';
+import { MOCK_USERS, findUser } from '@/lib/mock/users';
 
 export const metadata: Metadata = {
-  title: "Marketplace Activity — Pokenic",
-  description: "Track all marketplace activities and transactions in real-time.",
+  title: 'Marketplace Activity — Pokenic',
+  description:
+    'Track all marketplace activities and transactions in real-time.',
 };
 
 const STATS = [
-  { value: "2.6M", label: "transactions" },
-  { value: "$322.7MM", label: "volume" },
-  { value: "19.8K", label: "listings" },
+  { value: '2.6M', label: 'transactions' },
+  { value: '$322.7MM', label: 'volume' },
+  { value: '19.8K', label: 'listings' },
 ];
 
-type TxType = "BUY" | "CLAW" | "SALE" | "LIST";
+type TxType = 'BUY' | 'CLAW' | 'SALE' | 'LIST';
 const TYPE_TONE: Record<TxType, string> = {
-  BUY: "bg-emerald-500/15 text-emerald-400",
-  CLAW: "bg-sky-500/15 text-sky-400",
-  SALE: "bg-amber-500/15 text-amber-400",
-  LIST: "bg-fuchsia-500/15 text-fuchsia-400",
+  BUY: 'bg-emerald-500/15 text-emerald-400',
+  CLAW: 'bg-sky-500/15 text-sky-400',
+  SALE: 'bg-amber-500/15 text-amber-400',
+  LIST: 'bg-fuchsia-500/15 text-fuchsia-400',
 };
-const CLAW = "Claw Machine";
-const MARKET = "Marketplace";
+const CLAW = 'Claw Machine';
+const MARKET = 'Marketplace';
 
 // Mock transaction feed (real-time stream is a backend/Socket.io feed).
 const FEED = MOCK_CARDS.slice(0, 16).map((card, i) => {
-  const type = (["BUY", "CLAW", "SALE", "LIST"] as TxType[])[i % 4];
+  const type = (['BUY', 'CLAW', 'SALE', 'LIST'] as TxType[])[i % 4];
   const a = MOCK_USERS[i % MOCK_USERS.length].username;
   const b = MOCK_USERS[(i + 3) % MOCK_USERS.length].username;
-  const from = type === "CLAW" ? CLAW : a;
-  const to = type === "BUY" ? CLAW : type === "LIST" ? MARKET : type === "CLAW" ? a : b;
-  return { card, type, from, to, price: card.price, time: `${(i + 1) * 2}m ago` };
+  const from = type === 'CLAW' ? CLAW : a;
+  const to =
+    type === 'BUY' ? CLAW : type === 'LIST' ? MARKET : type === 'CLAW' ? a : b;
+  return {
+    card,
+    type,
+    from,
+    to,
+    price: card.price,
+    time: `${(i + 1) * 2}m ago`,
+  };
 });
 
 function Actor({ name }: { name: string }) {
@@ -42,7 +51,10 @@ function Actor({ name }: { name: string }) {
   }
   const u = findUser(name);
   return (
-    <Link href={`/profile/${name}`} className="inline-flex items-center gap-1.5 text-white/80 hover:text-white hover:underline">
+    <Link
+      href={`/profile/${name}`}
+      className="inline-flex items-center gap-1.5 text-white/80 hover:text-white hover:underline"
+    >
       {u && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={u.pfp} alt="" className="h-5 w-5 rounded-full object-cover" />
@@ -75,8 +87,15 @@ export default function ActivityPage() {
         <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[13px] text-white/60 sm:text-sm">
           {STATS.map((s, i) => (
             <span key={s.label} className="flex items-center gap-3">
-              {i > 0 && <span aria-hidden className="text-white/20">·</span>}
-              <span><span className="font-bold text-white">{s.value}</span> {s.label}</span>
+              {i > 0 && (
+                <span aria-hidden className="text-white/20">
+                  ·
+                </span>
+              )}
+              <span>
+                <span className="font-bold text-white">{s.value}</span>{' '}
+                {s.label}
+              </span>
             </span>
           ))}
         </div>
@@ -97,27 +116,53 @@ export default function ActivityPage() {
           </thead>
           <tbody>
             {FEED.map((row, i) => (
-              <tr key={i} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+              <tr
+                key={i}
+                className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]"
+              >
                 <td className="px-4 py-2.5">
-                  <Link href={`/card/${row.card.id}`} className="flex items-center gap-2.5 hover:underline">
+                  <Link
+                    href={`/card/${row.card.id}`}
+                    className="flex items-center gap-2.5 hover:underline"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={row.card.image} alt="" className="h-10 w-7 shrink-0 rounded object-contain" />
-                    <span className="max-w-[260px] truncate text-white/85">{row.card.name}</span>
+                    <img
+                      src={row.card.image}
+                      alt=""
+                      className="h-10 w-7 shrink-0 rounded object-contain"
+                    />
+                    <span className="max-w-[260px] truncate text-white/85">
+                      {row.card.name}
+                    </span>
                   </Link>
                 </td>
-                <td className="whitespace-nowrap px-4 py-2.5 font-semibold text-white">{usd(row.price)}</td>
-                <td className="px-4 py-2.5">
-                  <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${TYPE_TONE[row.type]}`}>{row.type}</span>
+                <td className="whitespace-nowrap px-4 py-2.5 font-semibold text-white">
+                  {usd(row.price)}
                 </td>
-                <td className="whitespace-nowrap px-4 py-2.5"><Actor name={row.from} /></td>
-                <td className="whitespace-nowrap px-4 py-2.5"><Actor name={row.to} /></td>
-                <td className="whitespace-nowrap px-4 py-2.5 text-right text-[12px] text-white/40">{row.time}</td>
+                <td className="px-4 py-2.5">
+                  <span
+                    className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${TYPE_TONE[row.type]}`}
+                  >
+                    {row.type}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5">
+                  <Actor name={row.from} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5">
+                  <Actor name={row.to} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-right text-[12px] text-white/40">
+                  {row.time}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-center text-[11px] text-white/35">Demo feed — the live activity stream goes live with the backend.</p>
+      <p className="mt-3 text-center text-[11px] text-white/35">
+        Demo feed — the live activity stream goes live with the backend.
+      </p>
     </div>
   );
 }

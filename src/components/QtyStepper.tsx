@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Minus, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Minus, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type QtyStepperProps = {
   qty: number;
@@ -16,9 +16,19 @@ type QtyStepperProps = {
  * pack cards (the live site shows it on both). The caller owns the qty state;
  * this component just clamps to [1, max] and reports the new value.
  */
-export default function QtyStepper({ qty, onChange, max = 10, className }: QtyStepperProps) {
+export default function QtyStepper({
+  qty,
+  onChange,
+  max = 10,
+  className,
+}: QtyStepperProps) {
   return (
-    <div className={cn("flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1", className)}>
+    <div
+      className={cn(
+        'flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1',
+        className,
+      )}
+    >
       <button
         type="button"
         onClick={() => onChange(Math.max(1, qty - 1))}
@@ -28,7 +38,9 @@ export default function QtyStepper({ qty, onChange, max = 10, className }: QtySt
       >
         <Minus className="h-3.5 w-3.5" aria-hidden />
       </button>
-      <span className="min-w-[1.75rem] text-center text-[13px] font-semibold tabular-nums text-white">{qty}</span>
+      <span className="min-w-[1.75rem] text-center text-[13px] font-semibold tabular-nums text-white">
+        {qty}
+      </span>
       <button
         type="button"
         onClick={() => onChange(Math.min(max, qty + 1))}
