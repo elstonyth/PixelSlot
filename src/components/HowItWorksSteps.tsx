@@ -100,24 +100,38 @@ export default function HowItWorksSteps() {
       {STEPS.map((step, i) => (
         <div
           key={step.num}
-          style={{ transitionDelay: shown && !reduced ? `${i * 120}ms` : "0ms" }}
+          style={{
+            transitionDelay: shown && !reduced ? `${i * 120}ms` : "0ms",
+          }}
           className={cn(
             "group relative flex h-full flex-col overflow-hidden rounded-2xl p-6 sm:p-7",
             "border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02]",
             "shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:border-white/20",
             !reduced && "transition-all duration-700 ease-out",
-            shown || reduced ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
+            shown || reduced
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6",
           )}
         >
           <div className="mb-4 flex items-center gap-3">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">
               {step.num}
             </span>
-            <h3 className="font-heading text-xl font-bold text-white">{step.title}</h3>
+            <h3 className="font-heading text-xl font-bold text-white">
+              {step.title}
+            </h3>
           </div>
-          <p className="mb-5 text-[13px] leading-relaxed text-white/60">{step.body}</p>
-          <div className="relative flex h-44 items-center justify-center">{step.media}</div>
-          <StepInfoPill variant={step.pillVariant} title={step.pill} sub={step.pillSub} />
+          <p className="mb-5 text-[13px] leading-relaxed text-white/60">
+            {step.body}
+          </p>
+          <div className="relative flex h-44 items-center justify-center">
+            {step.media}
+          </div>
+          <StepInfoPill
+            variant={step.pillVariant}
+            title={step.pill}
+            sub={step.pillSub}
+          />
         </div>
       ))}
     </div>

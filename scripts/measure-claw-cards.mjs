@@ -5,7 +5,9 @@ import { chromium } from "playwright";
 const browser = await chromium.launch();
 
 async function measure(label, url) {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1440, height: 1000 },
+  });
   const page = await ctx.newPage();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -26,7 +28,8 @@ async function measure(label, url) {
           return null;
         })
         .filter(Boolean);
-      if (!cards.length) return { error: "no cards found", openCount: opens.length };
+      if (!cards.length)
+        return { error: "no cards found", openCount: opens.length };
       const card = cards[0];
       const cr = card.getBoundingClientRect();
       const img = card.querySelector("img");
@@ -36,9 +39,25 @@ async function measure(label, url) {
       const gcs = getComputedStyle(grid);
       return {
         cardCount: cards.length,
-        card: { w: Math.round(cr.width), h: Math.round(cr.height), aspect: +(cr.width / cr.height).toFixed(2) },
-        img: { w: Math.round(ir.width), h: Math.round(ir.height), natW: img.naturalWidth, natH: img.naturalHeight, natAspect: img.naturalHeight ? +(img.naturalWidth / img.naturalHeight).toFixed(2) : null },
-        grid: { display: gcs.display, cols: gcs.gridTemplateColumns?.split(" ").length, gap: gcs.gap || gcs.columnGap },
+        card: {
+          w: Math.round(cr.width),
+          h: Math.round(cr.height),
+          aspect: +(cr.width / cr.height).toFixed(2),
+        },
+        img: {
+          w: Math.round(ir.width),
+          h: Math.round(ir.height),
+          natW: img.naturalWidth,
+          natH: img.naturalHeight,
+          natAspect: img.naturalHeight
+            ? +(img.naturalWidth / img.naturalHeight).toFixed(2)
+            : null,
+        },
+        grid: {
+          display: gcs.display,
+          cols: gcs.gridTemplateColumns?.split(" ").length,
+          gap: gcs.gap || gcs.columnGap,
+        },
         cardPadding: getComputedStyle(card).padding,
       };
     });

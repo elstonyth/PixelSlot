@@ -39,13 +39,20 @@ export default function ThirtiethPage() {
             Prizes Have Been Picked!
           </h1>
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-white/65 sm:text-base">
-            The 30th Edition celebration has wrapped. Head to our announcement channel for the full breakdown of winners and prizes.
+            The 30th Edition celebration has wrapped. Head to our announcement
+            channel for the full breakdown of winners and prizes.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#" className="inline-flex h-12 items-center justify-center rounded-2xl bg-white px-7 text-sm font-semibold text-neutral-950 shadow-lg transition-opacity hover:opacity-90">
+            <a
+              href="#"
+              className="inline-flex h-12 items-center justify-center rounded-2xl bg-white px-7 text-sm font-semibold text-neutral-950 shadow-lg transition-opacity hover:opacity-90"
+            >
               View Winners on Discord
             </a>
-            <Link href="/leaderboard" className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-7 text-sm font-medium text-white transition-colors hover:bg-white/10">
+            <Link
+              href="/leaderboard"
+              className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-7 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            >
               View Leaderboard
             </Link>
           </div>
@@ -54,7 +61,9 @@ export default function ThirtiethPage() {
 
       {/* Prize fan */}
       <Reveal as="section" className="text-center">
-        <p className="mb-5 text-[13px] font-medium text-white/50">This edition&apos;s prize pool</p>
+        <p className="mb-5 text-[13px] font-medium text-white/50">
+          This edition&apos;s prize pool
+        </p>
         <div className="flex items-end justify-center gap-2 sm:gap-4">
           {PRIZES.map((src, i) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -65,7 +74,9 @@ export default function ThirtiethPage() {
               aria-hidden
               loading="lazy"
               className="h-24 w-auto object-contain drop-shadow-[0_16px_40px_rgba(0,0,0,0.5)] sm:h-36"
-              style={{ transform: `translateY(${Math.abs(i - 2) * 10}px) rotate(${(i - 2) * 5}deg)` }}
+              style={{
+                transform: `translateY(${Math.abs(i - 2) * 10}px) rotate(${(i - 2) * 5}deg)`,
+              }}
             />
           ))}
         </div>

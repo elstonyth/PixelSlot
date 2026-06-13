@@ -8,22 +8,38 @@ import { mkdirSync } from "node:fs";
 const OUT = "docs/research/gap";
 mkdirSync(OUT, { recursive: true });
 
-const ROUTES = ["/", "/claw", "/pack-party", "/marketplace", "/leaderboard", "/how-it-works"];
-const nameOf = (r) => (r === "/" ? "home" : r.replace(/\//g, "").replace(/-/g, ""));
+const ROUTES = [
+  "/",
+  "/claw",
+  "/pack-party",
+  "/marketplace",
+  "/leaderboard",
+  "/how-it-works",
+];
+const nameOf = (r) =>
+  r === "/" ? "home" : r.replace(/\//g, "").replace(/-/g, "");
 
 const browser = await chromium.launch();
 
 async function shoot(base, prefix, route) {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({
+    viewport: { width: 1440, height: 1000 },
+    deviceScaleFactor: 1,
+  });
   const page = await ctx.newPage();
   const name = nameOf(route);
   try {
-    await page.goto(base + route, { waitUntil: "networkidle", timeout: 45000 }).catch(() => {});
+    await page
+      .goto(base + route, { waitUntil: "networkidle", timeout: 45000 })
+      .catch(() => {});
     await page.waitForTimeout(1500);
     // Measure the tallest content height (document, body, or inner main scroller)
     const h = await page.evaluate(() => {
       const main = document.querySelector("main");
-      const c = [document.documentElement.scrollHeight, document.body.scrollHeight];
+      const c = [
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+      ];
       if (main) c.push(main.scrollHeight);
       return Math.min(Math.max(Math.max(...c) + 120, 1000), 16000);
     });

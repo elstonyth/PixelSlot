@@ -160,8 +160,8 @@ export function AddCreditsPanel({
 
       <p className="mt-3 text-[12px] text-white/35">
         Demo checkout: card details stay in your browser and are never sent or
-        stored. Amounts ending in .13 are declined on purpose so you can see
-        the error path.
+        stored. Amounts ending in .13 are declined on purpose so you can see the
+        error path.
       </p>
     </div>
   );

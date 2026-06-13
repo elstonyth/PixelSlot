@@ -47,24 +47,164 @@ type Party = {
 // Active parties — the live, joinable ones.
 // `entry < avg` flags the green "Great Deal!" badge + highlights the Entry value.
 const ACTIVE_PARTIES: Party[] = [
-  { id: "a1", image: "/home/hero/slabs/pokemon1.webp", title: "Pokemon Chase", entry: 54, chase: 103, avg: 56, filled: 1, seats: 2, time: "4d" },
-  { id: "a2", image: "/home/hero/slabs/pokemon3.webp", title: "Pokemon Vintage", entry: 38, chase: 38, avg: 34, filled: 1, seats: 2, time: "2d" },
-  { id: "a3", image: "/home/hero/slabs/onepiece2.webp", title: "One Piece OP-05", entry: 41, chase: 50, avg: 40, filled: 1, seats: 2, time: "4d" },
-  { id: "a4", image: "/home/hero/slabs/basketball2.webp", title: "Prizm Basketball", entry: 39, chase: 52, avg: 39, filled: 1, seats: 2, time: "3d" },
-  { id: "a5", image: "/home/hero/slabs/onepiece4.webp", title: "One Piece Romance Dawn", entry: 47, chase: 88, avg: 49, filled: 1, seats: 2, time: "5d" },
-  { id: "a6", image: "/home/hero/slabs/football1.webp", title: "Select Football", entry: 33, chase: 41, avg: 33, filled: 2, seats: 4, time: "6d" },
-  { id: "a7", image: "/home/hero/slabs/yugioh1.webp", title: "Yu-Gi-Oh! 25th", entry: 29, chase: 44, avg: 30, filled: 1, seats: 2, time: "2d" },
-  { id: "a8", image: "/home/hero/slabs/baseball1.webp", title: "Topps Chrome Baseball", entry: 45, chase: 72, avg: 46, filled: 2, seats: 4, time: "4d" },
+  {
+    id: "a1",
+    image: "/home/hero/slabs/pokemon1.webp",
+    title: "Pokemon Chase",
+    entry: 54,
+    chase: 103,
+    avg: 56,
+    filled: 1,
+    seats: 2,
+    time: "4d",
+  },
+  {
+    id: "a2",
+    image: "/home/hero/slabs/pokemon3.webp",
+    title: "Pokemon Vintage",
+    entry: 38,
+    chase: 38,
+    avg: 34,
+    filled: 1,
+    seats: 2,
+    time: "2d",
+  },
+  {
+    id: "a3",
+    image: "/home/hero/slabs/onepiece2.webp",
+    title: "One Piece OP-05",
+    entry: 41,
+    chase: 50,
+    avg: 40,
+    filled: 1,
+    seats: 2,
+    time: "4d",
+  },
+  {
+    id: "a4",
+    image: "/home/hero/slabs/basketball2.webp",
+    title: "Prizm Basketball",
+    entry: 39,
+    chase: 52,
+    avg: 39,
+    filled: 1,
+    seats: 2,
+    time: "3d",
+  },
+  {
+    id: "a5",
+    image: "/home/hero/slabs/onepiece4.webp",
+    title: "One Piece Romance Dawn",
+    entry: 47,
+    chase: 88,
+    avg: 49,
+    filled: 1,
+    seats: 2,
+    time: "5d",
+  },
+  {
+    id: "a6",
+    image: "/home/hero/slabs/football1.webp",
+    title: "Select Football",
+    entry: 33,
+    chase: 41,
+    avg: 33,
+    filled: 2,
+    seats: 4,
+    time: "6d",
+  },
+  {
+    id: "a7",
+    image: "/home/hero/slabs/yugioh1.webp",
+    title: "Yu-Gi-Oh! 25th",
+    entry: 29,
+    chase: 44,
+    avg: 30,
+    filled: 1,
+    seats: 2,
+    time: "2d",
+  },
+  {
+    id: "a8",
+    image: "/home/hero/slabs/baseball1.webp",
+    title: "Topps Chrome Baseball",
+    entry: 45,
+    chase: 72,
+    avg: 46,
+    filled: 2,
+    seats: 4,
+    time: "4d",
+  },
 ];
 
 // Completed parties — already drawn. Buttons disabled, badge muted "Ended".
 const COMPLETED_PARTIES: Party[] = [
-  { id: "c1", image: "/home/hero/slabs/basketball1.webp", title: "Prizm Basketball", entry: 62, chase: 140, avg: 64, filled: 2, seats: 2, time: "Ended" },
-  { id: "c2", image: "/home/hero/slabs/football3.webp", title: "Mosaic Football", entry: 35, chase: 48, avg: 36, filled: 2, seats: 2, time: "Ended" },
-  { id: "c3", image: "/home/hero/slabs/yugioh2.webp", title: "Yu-Gi-Oh! Legend", entry: 28, chase: 39, avg: 29, filled: 2, seats: 2, time: "Ended" },
-  { id: "c4", image: "/home/hero/slabs/football4.webp", title: "Donruss Football", entry: 31, chase: 55, avg: 33, filled: 4, seats: 4, time: "Ended" },
-  { id: "c5", image: "/home/hero/slabs/basketball3.webp", title: "Select Basketball", entry: 49, chase: 96, avg: 50, filled: 2, seats: 2, time: "Ended" },
-  { id: "c6", image: "/home/hero/slabs/onepiece2.webp", title: "One Piece OP-04", entry: 42, chase: 61, avg: 43, filled: 2, seats: 2, time: "Ended" },
+  {
+    id: "c1",
+    image: "/home/hero/slabs/basketball1.webp",
+    title: "Prizm Basketball",
+    entry: 62,
+    chase: 140,
+    avg: 64,
+    filled: 2,
+    seats: 2,
+    time: "Ended",
+  },
+  {
+    id: "c2",
+    image: "/home/hero/slabs/football3.webp",
+    title: "Mosaic Football",
+    entry: 35,
+    chase: 48,
+    avg: 36,
+    filled: 2,
+    seats: 2,
+    time: "Ended",
+  },
+  {
+    id: "c3",
+    image: "/home/hero/slabs/yugioh2.webp",
+    title: "Yu-Gi-Oh! Legend",
+    entry: 28,
+    chase: 39,
+    avg: 29,
+    filled: 2,
+    seats: 2,
+    time: "Ended",
+  },
+  {
+    id: "c4",
+    image: "/home/hero/slabs/football4.webp",
+    title: "Donruss Football",
+    entry: 31,
+    chase: 55,
+    avg: 33,
+    filled: 4,
+    seats: 4,
+    time: "Ended",
+  },
+  {
+    id: "c5",
+    image: "/home/hero/slabs/basketball3.webp",
+    title: "Select Basketball",
+    entry: 49,
+    chase: 96,
+    avg: 50,
+    filled: 2,
+    seats: 2,
+    time: "Ended",
+  },
+  {
+    id: "c6",
+    image: "/home/hero/slabs/onepiece2.webp",
+    title: "One Piece OP-04",
+    entry: 42,
+    chase: 61,
+    avg: 43,
+    filled: 2,
+    seats: 2,
+    time: "Ended",
+  },
 ];
 
 const TABS = ["Active", "Completed"] as const;
@@ -102,7 +242,15 @@ const RARITY_RINGS = [
 // Party card
 // ---------------------------------------------------------------------------
 
-function PartyCard({ party, ended, ring }: { party: Party; ended: boolean; ring: string }) {
+function PartyCard({
+  party,
+  ended,
+  ring,
+}: {
+  party: Party;
+  ended: boolean;
+  ring: string;
+}) {
   const greatDeal = !ended && party.entry < party.avg;
   const pct = Math.min(100, Math.round((party.filled / party.seats) * 100));
 
@@ -112,7 +260,8 @@ function PartyCard({ party, ended, ring }: { party: Party; ended: boolean; ring:
         "group rounded-2xl p-px transition-all duration-300 hover:-translate-y-1",
         // Live parties get a slowly-drifting gradient ring (matches the live site's
         // animated gradient-xy borders); ended cards stay static.
-        !ended && "[background-size:180%_180%] motion-safe:animate-[gradientShift_7s_ease-in-out_infinite]",
+        !ended &&
+          "[background-size:180%_180%] motion-safe:animate-[gradientShift_7s_ease-in-out_infinite]",
       )}
       style={{
         background: ended
@@ -122,112 +271,125 @@ function PartyCard({ party, ended, ring }: { party: Party; ended: boolean; ring:
       }}
     >
       <div className="flex h-full flex-col overflow-hidden rounded-[15px] bg-neutral-900">
-      {/* Chase card image */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-neutral-950">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={party.image}
-          alt={party.title}
-          className={cn(
-            "h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]",
-            ended && "opacity-60 saturate-[0.7]",
-          )}
-        />
-        {/* "Live" pulse on joinable parties (matches the live site's pinging dots) */}
-        {!ended && (
-          <span className="absolute right-2 top-2 z-10 flex h-2.5 w-2.5" aria-hidden>
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-          </span>
-        )}
-        {/* Status badge over the image */}
-        <div className="absolute left-2 top-2">
-          {ended ? (
-            <span className="inline-flex items-center rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/60 ring-1 ring-white/10 backdrop-blur-sm">
-              Ended
-            </span>
-          ) : greatDeal ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-              <Sparkles className="h-3 w-3" aria-hidden />
-              Great Deal!
-            </span>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-1 flex-col gap-3 p-3">
-        {/* Three-value row */}
-        <div className="grid grid-cols-3 gap-1 text-center">
-          <div>
-            <div
-              className={cn(
-                "text-sm font-bold",
-                greatDeal ? "text-emerald-400" : "text-white",
-              )}
-            >
-              {fmt(party.entry)}
-            </div>
-            <div className="text-[10px] uppercase tracking-wide text-white/40">Entry</div>
-          </div>
-          <div className="border-x border-white/10">
-            <div className="text-sm font-bold text-white">{fmt(party.chase)}</div>
-            <div className="text-[10px] uppercase tracking-wide text-white/40">Chase</div>
-          </div>
-          <div>
-            <div className="text-sm font-bold text-white/80">{fmt(party.avg)}</div>
-            <div className="text-[10px] uppercase tracking-wide text-white/40">Avg</div>
-          </div>
-        </div>
-
-        {/* Progress + count + time */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-[11px] text-white/55">
-            <span className="inline-flex items-center gap-1">
-              <Users className="h-3 w-3" aria-hidden />
-              {party.filled}/{party.seats}
-            </span>
+        {/* Chase card image */}
+        <div className="relative aspect-[3/4] overflow-hidden bg-neutral-950">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={party.image}
+            alt={party.title}
+            className={cn(
+              "h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]",
+              ended && "opacity-60 saturate-[0.7]",
+            )}
+          />
+          {/* "Live" pulse on joinable parties (matches the live site's pinging dots) */}
+          {!ended && (
             <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5",
-                ended ? "text-white/35" : "bg-white/10 text-white/70",
-              )}
+              className="absolute right-2 top-2 z-10 flex h-2.5 w-2.5"
+              aria-hidden
             >
-              <Clock className="h-3 w-3" aria-hidden />
-              {party.time}
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className={cn(
-                "h-full rounded-full",
-                ended
-                  ? "bg-white/25"
-                  : "bg-gradient-to-r from-emerald-500 to-green-500",
-              )}
-              style={{ width: `${pct}%` }}
-            />
+          )}
+          {/* Status badge over the image */}
+          <div className="absolute left-2 top-2">
+            {ended ? (
+              <span className="inline-flex items-center rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/60 ring-1 ring-white/10 backdrop-blur-sm">
+                Ended
+              </span>
+            ) : greatDeal ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                <Sparkles className="h-3 w-3" aria-hidden />
+                Great Deal!
+              </span>
+            ) : null}
           </div>
         </div>
 
-        {/* Action button */}
-        {ended ? (
-          <button
-            type="button"
-            disabled
-            className="mt-auto w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/40"
-          >
-            Ended
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="mt-auto w-full rounded-xl bg-neutral-200 py-2 text-xs font-semibold text-neutral-950 transition-colors duration-200 hover:bg-white"
-          >
-            Join Party
-          </button>
-        )}
-      </div>
+        {/* Body */}
+        <div className="flex flex-1 flex-col gap-3 p-3">
+          {/* Three-value row */}
+          <div className="grid grid-cols-3 gap-1 text-center">
+            <div>
+              <div
+                className={cn(
+                  "text-sm font-bold",
+                  greatDeal ? "text-emerald-400" : "text-white",
+                )}
+              >
+                {fmt(party.entry)}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-white/40">
+                Entry
+              </div>
+            </div>
+            <div className="border-x border-white/10">
+              <div className="text-sm font-bold text-white">
+                {fmt(party.chase)}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-white/40">
+                Chase
+              </div>
+            </div>
+            <div>
+              <div className="text-sm font-bold text-white/80">
+                {fmt(party.avg)}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-white/40">
+                Avg
+              </div>
+            </div>
+          </div>
+
+          {/* Progress + count + time */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-[11px] text-white/55">
+              <span className="inline-flex items-center gap-1">
+                <Users className="h-3 w-3" aria-hidden />
+                {party.filled}/{party.seats}
+              </span>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5",
+                  ended ? "text-white/35" : "bg-white/10 text-white/70",
+                )}
+              >
+                <Clock className="h-3 w-3" aria-hidden />
+                {party.time}
+              </span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className={cn(
+                  "h-full rounded-full",
+                  ended
+                    ? "bg-white/25"
+                    : "bg-gradient-to-r from-emerald-500 to-green-500",
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Action button */}
+          {ended ? (
+            <button
+              type="button"
+              disabled
+              className="mt-auto w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/40"
+            >
+              Ended
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="mt-auto w-full rounded-xl bg-neutral-200 py-2 text-xs font-semibold text-neutral-950 transition-colors duration-200 hover:bg-white"
+            >
+              Join Party
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -263,17 +425,28 @@ export default function PackPartyPage() {
 
         <div className="relative flex flex-col gap-6 px-6 py-8 sm:px-10 sm:py-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-2xl">
-            <Reveal as="h1" className="flex items-center gap-3 font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+            <Reveal
+              as="h1"
+              className="flex items-center gap-3 font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
+            >
               Pack Party
               <span className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
                 Beta
               </span>
             </Reveal>
-            <Reveal as="p" delay={90} className="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">
-              Rip packs with friends! Multiple players enter, one pack is opened,
-              and cards are allocated to every player at random.
+            <Reveal
+              as="p"
+              delay={90}
+              className="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base"
+            >
+              Rip packs with friends! Multiple players enter, one pack is
+              opened, and cards are allocated to every player at random.
             </Reveal>
-            <Reveal as="p" delay={160} className="mt-3 inline-flex items-center gap-2 text-xs text-white/50">
+            <Reveal
+              as="p"
+              delay={160}
+              className="mt-3 inline-flex items-center gap-2 text-xs text-white/50"
+            >
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-500" />
               = Entry &lt; Avg (great deal!)
             </Reveal>
@@ -364,7 +537,8 @@ export default function PackPartyPage() {
           Previous
         </button>
         <span className="text-[13px] text-white/55">
-          Page <span className="font-medium text-white">1</span> of {ended ? 2 : 4}
+          Page <span className="font-medium text-white">1</span> of{" "}
+          {ended ? 2 : 4}
         </span>
         <button
           type="button"

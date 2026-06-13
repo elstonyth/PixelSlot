@@ -55,7 +55,9 @@ const ROUTES = [
 ];
 
 const slugOf = (route) =>
-  route === "/" ? "home" : route.replace(/^\//, "").replace(/\//g, "_").replace(/[[\]]/g, "");
+  route === "/"
+    ? "home"
+    : route.replace(/^\//, "").replace(/\//g, "_").replace(/[[\]]/g, "");
 
 const browser = await chromium.launch();
 const manifest = [];
@@ -70,15 +72,28 @@ for (const { route, url } of ROUTES) {
   });
   const page = await ctx.newPage();
   const consoleErrors = [];
-  page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300)); });
-  page.on("pageerror", (e) => consoleErrors.push("PAGEERROR: " + (e.message || String(e)).slice(0, 300)));
+  page.on("console", (m) => {
+    if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300));
+  });
+  page.on("pageerror", (e) =>
+    consoleErrors.push("PAGEERROR: " + (e.message || String(e)).slice(0, 300)),
+  );
 
-  let httpStatus = null, finalUrl = url, stats = {}, error = null;
+  let httpStatus = null,
+    finalUrl = url,
+    stats = {},
+    error = null;
   try {
-    const resp = await page.goto(BASE + url, { waitUntil: "load", timeout: 60000 });
+    const resp = await page.goto(BASE + url, {
+      waitUntil: "load",
+      timeout: 60000,
+    });
     httpStatus = resp ? resp.status() : null;
     // trigger any lazy/scroll-reveal content, then return to top
-    for (let y = 0; y < 4000; y += 500) { await page.evaluate((v) => scrollTo(0, v), y); await page.waitForTimeout(120); }
+    for (let y = 0; y < 4000; y += 500) {
+      await page.evaluate((v) => scrollTo(0, v), y);
+      await page.waitForTimeout(120);
+    }
     await page.evaluate(() => scrollTo(0, 0));
     await page.waitForTimeout(500);
     finalUrl = page.url().replace(BASE, "");
@@ -87,10 +102,16 @@ for (const { route, url } of ROUTES) {
       const scopedToMain = !!document.querySelector("main");
       const q = (sel) => scope.querySelectorAll(sel).length;
       const text = scope.innerText || "";
-      const moneyRe = /\b(coin|coins|balance|withdraw|withdrawal|payout|cash\s?out|token|tokens|wallet|airdrop|earnings|on[-\s]?chain|mint|minted|staking|stake|crypto|deposit|borrow|lend|lending|voucher|vouchers|referral|referrals|\$[\d,]+)\b/gi;
-      const moneyHits = Array.from(new Set((text.match(moneyRe) || []).map((s) => s.toLowerCase()))).slice(0, 18);
-      const demoRe = /\b(demo|coming soon|backend|goes? live|not yet|placeholder|sign in to|log in to|connect your|stay tuned|under construction)\b/gi;
-      const demoHits = Array.from(new Set((text.match(demoRe) || []).map((s) => s.toLowerCase()))).slice(0, 12);
+      const moneyRe =
+        /\b(coin|coins|balance|withdraw|withdrawal|payout|cash\s?out|token|tokens|wallet|airdrop|earnings|on[-\s]?chain|mint|minted|staking|stake|crypto|deposit|borrow|lend|lending|voucher|vouchers|referral|referrals|\$[\d,]+)\b/gi;
+      const moneyHits = Array.from(
+        new Set((text.match(moneyRe) || []).map((s) => s.toLowerCase())),
+      ).slice(0, 18);
+      const demoRe =
+        /\b(demo|coming soon|backend|goes? live|not yet|placeholder|sign in to|log in to|connect your|stay tuned|under construction)\b/gi;
+      const demoHits = Array.from(
+        new Set((text.match(demoRe) || []).map((s) => s.toLowerCase())),
+      ).slice(0, 12);
       return {
         title: document.title,
         scopedToMain,
@@ -112,18 +133,30 @@ for (const { route, url } of ROUTES) {
   }
 
   const interactiveCount =
-    (stats.buttons || 0) + (stats.inputs || 0) + (stats.selects || 0) + (stats.textareas || 0) +
-    (stats.forms || 0) + (stats.roleButtons || 0);
+    (stats.buttons || 0) +
+    (stats.inputs || 0) +
+    (stats.selects || 0) +
+    (stats.textareas || 0) +
+    (stats.forms || 0) +
+    (stats.roleButtons || 0);
 
   manifest.push({
-    route, url, finalUrl, slug, screenshot: `${OUT}/${slug}.png`,
-    httpStatus, error, interactiveCount, ...stats, consoleErrors,
+    route,
+    url,
+    finalUrl,
+    slug,
+    screenshot: `${OUT}/${slug}.png`,
+    httpStatus,
+    error,
+    interactiveCount,
+    ...stats,
+    consoleErrors,
   });
   log.push(
     `${route.padEnd(28)} http=${httpStatus ?? "ERR"} int=${interactiveCount} ` +
-    `(btn=${stats.buttons ?? "?"} inp=${stats.inputs ?? "?"} form=${stats.forms ?? "?"}) ` +
-    `money=${(stats.moneyHits || []).length} demo=${(stats.demoHits || []).length} ` +
-    `errs=${consoleErrors.length}${error ? " FAIL:" + error : ""}`
+      `(btn=${stats.buttons ?? "?"} inp=${stats.inputs ?? "?"} form=${stats.forms ?? "?"}) ` +
+      `money=${(stats.moneyHits || []).length} demo=${(stats.demoHits || []).length} ` +
+      `errs=${consoleErrors.length}${error ? " FAIL:" + error : ""}`,
   );
   await ctx.close();
 }

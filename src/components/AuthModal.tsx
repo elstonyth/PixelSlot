@@ -65,7 +65,9 @@ export default function AuthModal() {
       }
       // Trap focus within the dialog so background content stays unreachable (WCAG 2.1.2).
       if (e.key !== "Tab" || !panel) return;
-      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+      const focusables = Array.from(
+        panel.querySelectorAll<HTMLElement>(FOCUSABLE),
+      );
       if (focusables.length === 0) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
@@ -121,7 +123,11 @@ export default function AuthModal() {
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
-        <AuthForm mode={mode} onSwitchMode={setMode} onSuccess={() => setOpen(false)} />
+        <AuthForm
+          mode={mode}
+          onSwitchMode={setMode}
+          onSuccess={() => setOpen(false)}
+        />
       </div>
     </div>,
     document.body,

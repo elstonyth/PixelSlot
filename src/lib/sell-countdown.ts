@@ -11,11 +11,11 @@ export const SELL_HARD_CAP_MS = 75_000;
 /** Epoch ms when the keep/sell offer expires. */
 export function sellOfferDeadlineMs(
   cardShownAtMs: number,
-  openedAtMs: number
+  openedAtMs: number,
 ): number {
   return Math.min(
     cardShownAtMs + SELL_COUNTDOWN_SECS * 1000,
-    openedAtMs + SELL_HARD_CAP_MS
+    openedAtMs + SELL_HARD_CAP_MS,
   );
 }
 

@@ -7,16 +7,26 @@ export function generateStaticParams() {
   return GENS.map((gen) => ({ gen }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ gen: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ gen: string }>;
+}): Promise<Metadata> {
   const { gen } = await params;
   const region = REGION[gen];
   return {
-    title: region ? `Pokémon · Generation ${gen} (${region}) — Pokenic` : "Pokémon — Pokenic",
+    title: region
+      ? `Pokémon · Generation ${gen} (${region}) — Pokenic`
+      : "Pokémon — Pokenic",
     description: "Browse the Pokédex by generation.",
   };
 }
 
-export default async function PokemonGenerationPage({ params }: { params: Promise<{ gen: string }> }) {
+export default async function PokemonGenerationPage({
+  params,
+}: {
+  params: Promise<{ gen: string }>;
+}) {
   const { gen } = await params;
   if (!REGION[gen]) notFound();
   const pokemon = getGeneration(gen);

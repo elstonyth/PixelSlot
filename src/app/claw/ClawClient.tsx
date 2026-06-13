@@ -45,7 +45,14 @@ function PackCard({ pack, icon }: { pack: Pack; icon: string }) {
 
       {/* Category badge (top-right) — real per-category icon from the live site */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={icon} alt="" aria-hidden="true" width={24} height={24} className="absolute right-3 top-3 z-[2] h-6 w-6 object-contain opacity-80" />
+      <img
+        src={icon}
+        alt=""
+        aria-hidden="true"
+        width={24}
+        height={24}
+        className="absolute right-3 top-3 z-[2] h-6 w-6 object-contain opacity-80"
+      />
 
       {/* Pack image — the tall vertical pack art dominates the card, matching the
           live /claw's tall, narrow cards (art is natively ~0.57 aspect). */}
@@ -68,8 +75,12 @@ function PackCard({ pack, icon }: { pack: Pack; icon: string }) {
 
       {/* Name + price */}
       <div className="mb-3 flex items-baseline justify-between gap-2">
-        <span className="truncate text-[13px] font-semibold text-white sm:text-sm">{pack.name}</span>
-        <span className="shrink-0 text-[13px] font-semibold text-white/90 sm:text-sm">{pack.price}</span>
+        <span className="truncate text-[13px] font-semibold text-white sm:text-sm">
+          {pack.name}
+        </span>
+        <span className="shrink-0 text-[13px] font-semibold text-white/90 sm:text-sm">
+          {pack.price}
+        </span>
       </div>
 
       {oos ? (
@@ -100,7 +111,15 @@ function PackCard({ pack, icon }: { pack: Pack; icon: string }) {
 // Out-of-stock rows render greyed + non-interactive with a "Sold out" pill.
 // ---------------------------------------------------------------------------
 
-function PackRow({ pack, icon, categoryName }: { pack: Pack; icon: string; categoryName: string }) {
+function PackRow({
+  pack,
+  icon,
+  categoryName,
+}: {
+  pack: Pack;
+  icon: string;
+  categoryName: string;
+}) {
   const oos = pack.inStock === false;
   const buyback = pack.buybackPercent ?? 90;
 
@@ -109,31 +128,54 @@ function PackRow({ pack, icon, categoryName }: { pack: Pack; icon: string; categ
       {/* Thumbnail + category chip */}
       <div className="relative flex h-16 w-14 shrink-0 items-center justify-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={pack.image} alt={pack.name} className={cn("h-16 w-auto object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.5)]", oos && "grayscale")} />
+        <img
+          src={pack.image}
+          alt={pack.name}
+          className={cn(
+            "h-16 w-auto object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.5)]",
+            oos && "grayscale",
+          )}
+        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={icon} alt="" aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full object-contain" />
+        <img
+          src={icon}
+          alt=""
+          aria-hidden="true"
+          className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full object-contain"
+        />
       </div>
 
       {/* Name + buyback line */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-0.5 text-sm font-semibold text-white">
           <span className="truncate">{pack.name}</span>
-          {!oos && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-white/40" aria-hidden />}
+          {!oos && (
+            <ChevronRight
+              className="h-3.5 w-3.5 shrink-0 text-white/40"
+              aria-hidden
+            />
+          )}
         </div>
         {oos ? (
-          <span className="mt-1 block text-[11px] text-white/40">Out of stock</span>
+          <span className="mt-1 block text-[11px] text-white/40">
+            Out of stock
+          </span>
         ) : pack.boost ? (
           <span className="mt-1 inline-block rounded bg-emerald-500/90 px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-white">
             +{buyback}% Buyback Boost
           </span>
         ) : (
-          <span className="mt-1 block text-[11px] text-white/45">{categoryName} · {buyback}% buyback</span>
+          <span className="mt-1 block text-[11px] text-white/45">
+            {categoryName} · {buyback}% buyback
+          </span>
         )}
       </div>
 
       {/* Price pill (tap target) / sold-out */}
       {oos ? (
-        <span className="flex shrink-0 items-center rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white/40">Sold out</span>
+        <span className="flex shrink-0 items-center rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white/40">
+          Sold out
+        </span>
       ) : (
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-neutral-950">
           {pack.price}
@@ -144,7 +186,11 @@ function PackRow({ pack, icon, categoryName }: { pack: Pack; icon: string; categ
   );
 
   if (oos) {
-    return <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2.5 opacity-60">{inner}</div>;
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2.5 opacity-60">
+        {inner}
+      </div>
+    );
   }
 
   return (
@@ -176,10 +222,16 @@ export default function ClawClient({
   const [active, setActive] = useState<string>(initialCategory);
   const [creatorPacks, setCreatorPacks] = useState(false);
 
-  const tabs = [{ id: "all", tab: "All Packs", icon: "" }, ...categories.map((c) => ({ id: c.id, tab: c.tab, icon: c.icon }))];
+  const tabs = [
+    { id: "all", tab: "All Packs", icon: "" },
+    ...categories.map((c) => ({ id: c.id, tab: c.tab, icon: c.icon })),
+  ];
   // "All" hides empty categories from the sections (but keeps their chip); a
   // directly-selected empty category renders an empty state.
-  const visible = active === "all" ? categories.filter((c) => c.packs.length > 0) : categories.filter((c) => c.id === active);
+  const visible =
+    active === "all"
+      ? categories.filter((c) => c.packs.length > 0)
+      : categories.filter((c) => c.id === active);
 
   return (
     <div className="mx-auto w-full px-fluid py-4">
@@ -195,12 +247,19 @@ export default function ClawClient({
               aria-pressed={active === t.id}
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors sm:text-[13px]",
-                active === t.id ? "bg-white text-neutral-950" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
+                active === t.id
+                  ? "bg-white text-neutral-950"
+                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
               )}
             >
               {t.icon ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={t.icon} alt="" aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full object-cover" />
+                <img
+                  src={t.icon}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 rounded-full object-cover"
+                />
               ) : (
                 <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden />
               )}
@@ -224,8 +283,18 @@ export default function ClawClient({
             aria-pressed={creatorPacks}
             className="inline-flex items-center gap-2 text-[12px] font-medium text-white/70 transition-colors hover:text-white sm:text-[13px]"
           >
-            <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", creatorPacks ? "bg-emerald-500" : "bg-white/15")}>
-              <span className={cn("absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform", creatorPacks && "translate-x-4")} />
+            <span
+              className={cn(
+                "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+                creatorPacks ? "bg-emerald-500" : "bg-white/15",
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform",
+                  creatorPacks && "translate-x-4",
+                )}
+              />
             </span>
             Creator Packs
           </button>
@@ -238,9 +307,18 @@ export default function ClawClient({
           {/* Section header */}
           <div className="mb-4 flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={cat.icon} alt="" aria-hidden="true" className="h-6 w-6 shrink-0 rounded-full object-cover" />
-            <h2 className="font-heading text-lg font-bold tracking-tight text-white sm:text-xl">{cat.heading}</h2>
-            <span className="ml-auto text-[13px] text-white/45">{cat.packs.length} packs</span>
+            <img
+              src={cat.icon}
+              alt=""
+              aria-hidden="true"
+              className="h-6 w-6 shrink-0 rounded-full object-cover"
+            />
+            <h2 className="font-heading text-lg font-bold tracking-tight text-white sm:text-xl">
+              {cat.heading}
+            </h2>
+            <span className="ml-auto text-[13px] text-white/45">
+              {cat.packs.length} packs
+            </span>
           </div>
 
           {cat.packs.length === 0 ? (
@@ -252,7 +330,11 @@ export default function ClawClient({
               {/* Desktop: horizontally-scrolling card row (matches live) */}
               <div className="hidden gap-4 overflow-x-auto pb-2 sm:flex [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {cat.packs.map((p, i) => (
-                  <Reveal key={p.id} delay={Math.min(i, 6) * 50} className="h-full w-44 shrink-0 lg:w-48">
+                  <Reveal
+                    key={p.id}
+                    delay={Math.min(i, 6) * 50}
+                    className="h-full w-44 shrink-0 lg:w-48"
+                  >
                     <PackCard pack={p} icon={cat.icon} />
                   </Reveal>
                 ))}
@@ -261,7 +343,12 @@ export default function ClawClient({
               {/* Mobile: list rows */}
               <div className="flex flex-col gap-2 sm:hidden">
                 {cat.packs.map((p) => (
-                  <PackRow key={p.id} pack={p} icon={cat.icon} categoryName={cat.tab} />
+                  <PackRow
+                    key={p.id}
+                    pack={p}
+                    icon={cat.icon}
+                    categoryName={cat.tab}
+                  />
                 ))}
               </div>
             </>

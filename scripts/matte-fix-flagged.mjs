@@ -44,20 +44,34 @@ const median = (arr) => {
 // ---- fixed-fraction bottom crop (template-measured, see CFG comment) ----
 async function cropBottomFrac(buf, frac) {
   const { width: W, height: H } = await sharp(buf).metadata();
-  return sharp(buf).extract({ left: 0, top: 0, width: W, height: Math.round(H * frac) }).toBuffer();
+  return sharp(buf)
+    .extract({ left: 0, top: 0, width: W, height: Math.round(H * frac) })
+    .toBuffer();
 }
 
 // ---- matte v2: dual-ref flood + closing + largest-component + feather ----
 async function matte(buf, { tol, close = 6, refsMode = "dark", point } = {}) {
-  const cfgRefsMode = refsMode, cfgPoint = point;
-  const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  const W = info.width, H = info.height, N = W * H;
+  const cfgRefsMode = refsMode,
+    cfgPoint = point;
+  const { data, info } = await sharp(buf)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const W = info.width,
+    H = info.height,
+    N = W * H;
 
   // border pixels -> split into dark/light luminance clusters
   const border = [];
   const push = (i) => border.push(i);
-  for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
-  for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
+  for (let x = 0; x < W; x++) {
+    push(x);
+    push((H - 1) * W + x);
+  }
+  for (let y = 0; y < H; y++) {
+    push(y * W);
+    push(y * W + W - 1);
+  }
   const lumOf = (i) => Math.max(data[i * 4], data[i * 4 + 1], data[i * 4 + 2]);
   const refFor = (idxs) => {
     if (!idxs.length) return null;
@@ -73,30 +87,48 @@ async function matte(buf, { tol, close = 6, refsMode = "dark", point } = {}) {
   // the slab's own rim and must never seed the flood
   refs.push(refFor(border.filter((i, k) => lums[k] <= mid)));
   if (cfgRefsMode === "darkPlusPoint" && cfgPoint) {
-    const px = Math.round(W * cfgPoint[0]), py = Math.round(H * cfgPoint[1]);
+    const px = Math.round(W * cfgPoint[0]),
+      py = Math.round(H * cfgPoint[1]);
     const idxs = [];
-    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
-      const x = px + dx, y = py + dy;
-      if (x >= 0 && x < W && y >= 0 && y < H) idxs.push(y * W + x);
-    }
+    for (let dy = -2; dy <= 2; dy++)
+      for (let dx = -2; dx <= 2; dx++) {
+        const x = px + dx,
+          y = py + dy;
+        if (x >= 0 && x < W && y >= 0 && y < H) idxs.push(y * W + x);
+      }
     refs.push(refFor(idxs));
   }
   const tolFor = (ref) => tol ?? (ref.lum < 80 ? 38 : 26);
   const near = (i, ref, t) =>
-    Math.abs(data[i * 4] - ref.r) < t && Math.abs(data[i * 4 + 1] - ref.g) < t && Math.abs(data[i * 4 + 2] - ref.b) < t;
+    Math.abs(data[i * 4] - ref.r) < t &&
+    Math.abs(data[i * 4 + 1] - ref.g) < t &&
+    Math.abs(data[i * 4 + 2] - ref.b) < t;
 
   // flood per ref, union
   const bg = new Uint8Array(N);
   const queue = new Int32Array(N);
   for (const ref of refs.filter(Boolean)) {
     const t = tolFor(ref);
-    let qh = 0, qt = 0;
-    const seed = (i) => { if (!bg[i] && near(i, ref, t)) { bg[i] = 1; queue[qt++] = i; } };
-    for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x); }
-    for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1); }
+    let qh = 0,
+      qt = 0;
+    const seed = (i) => {
+      if (!bg[i] && near(i, ref, t)) {
+        bg[i] = 1;
+        queue[qt++] = i;
+      }
+    };
+    for (let x = 0; x < W; x++) {
+      seed(x);
+      seed((H - 1) * W + x);
+    }
+    for (let y = 0; y < H; y++) {
+      seed(y * W);
+      seed(y * W + W - 1);
+    }
     while (qh < qt) {
       const i = queue[qh++];
-      const x = i % W, y = (i / W) | 0;
+      const x = i % W,
+        y = (i / W) | 0;
       if (x > 0) seed(i - 1);
       if (x < W - 1) seed(i + 1);
       if (y > 0) seed(i - W);
@@ -109,7 +141,8 @@ async function matte(buf, { tol, close = 6, refsMode = "dark", point } = {}) {
   let keep = new Uint8Array(N);
   for (let i = 0; i < N; i++) keep[i] = bg[i] ? 0 : 1;
   const pass = (src, hit) => {
-    const tmp = new Uint8Array(N), out = new Uint8Array(N);
+    const tmp = new Uint8Array(N),
+      out = new Uint8Array(N);
     for (let y = 0; y < H; y++) {
       let run = 0;
       for (let x = 0; x < W + R; x++) {
@@ -138,23 +171,36 @@ async function matte(buf, { tol, close = 6, refsMode = "dark", point } = {}) {
 
   // largest connected component only (sweeps detached residue blobs/segments)
   const comp = new Int32Array(N).fill(-1);
-  let best = -1, bestSize = 0, nComp = 0;
+  let best = -1,
+    bestSize = 0,
+    nComp = 0;
   for (let s = 0; s < N; s++) {
     if (!keep[s] || comp[s] !== -1) continue;
-    let qh = 0, qt = 0, size = 0;
+    let qh = 0,
+      qt = 0,
+      size = 0;
     queue[qt++] = s;
     comp[s] = nComp;
     while (qh < qt) {
       const i = queue[qh++];
       size++;
-      const x = i % W, y = (i / W) | 0;
-      const tryN = (j) => { if (keep[j] && comp[j] === -1) { comp[j] = nComp; queue[qt++] = j; } };
+      const x = i % W,
+        y = (i / W) | 0;
+      const tryN = (j) => {
+        if (keep[j] && comp[j] === -1) {
+          comp[j] = nComp;
+          queue[qt++] = j;
+        }
+      };
       if (x > 0) tryN(i - 1);
       if (x < W - 1) tryN(i + 1);
       if (y > 0) tryN(i - W);
       if (y < H - 1) tryN(i + W);
     }
-    if (size > bestSize) { bestSize = size; best = nComp; }
+    if (size > bestSize) {
+      bestSize = size;
+      best = nComp;
+    }
     nComp++;
   }
   for (let i = 0; i < N; i++) if (keep[i] && comp[i] !== best) keep[i] = 0;
@@ -164,17 +210,38 @@ async function matte(buf, { tol, close = 6, refsMode = "dark", point } = {}) {
   for (let i = 0; i < N; i++) alpha[i] = keep[i] ? 255 : 0;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      let sum = 0, cnt = 0;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const nx = x + dx, ny = y + dy;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H) { sum += alpha[ny * W + nx]; cnt++; }
-      }
+      let sum = 0,
+        cnt = 0;
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx,
+            ny = y + dy;
+          if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+            sum += alpha[ny * W + nx];
+            cnt++;
+          }
+        }
       data[(y * W + x) * 4 + 3] = Math.round(sum / cnt);
     }
   }
-  const out = await sharp(Buffer.from(data.buffer), { raw: { width: W, height: H, channels: 4 } }).webp({ quality: 92 }).toBuffer();
-  const transparent = (() => { let n = 0; for (let i = 0; i < N; i++) if (data[i * 4 + 3] < 16) n++; return n; })();
-  return { out, W, H, transparentPct: +((transparent / N) * 100).toFixed(1), components: nComp, refs: refs.filter(Boolean).map((r) => `rgb(${r.r},${r.g},${r.b})`) };
+  const out = await sharp(Buffer.from(data.buffer), {
+    raw: { width: W, height: H, channels: 4 },
+  })
+    .webp({ quality: 92 })
+    .toBuffer();
+  const transparent = (() => {
+    let n = 0;
+    for (let i = 0; i < N; i++) if (data[i * 4 + 3] < 16) n++;
+    return n;
+  })();
+  return {
+    out,
+    W,
+    H,
+    transparentPct: +((transparent / N) * 100).toFixed(1),
+    components: nComp,
+    refs: refs.filter(Boolean).map((r) => `rgb(${r.r},${r.g},${r.b})`),
+  };
 }
 
 for (const [name, cfg] of Object.entries(CFG)) {
@@ -186,7 +253,9 @@ for (const [name, cfg] of Object.entries(CFG)) {
     buf = cfg.cropBottomPx
       ? await (async () => {
           const { width: W } = await sharp(buf).metadata();
-          return sharp(buf).extract({ left: 0, top: 0, width: W, height: cfg.cropBottomPx }).toBuffer();
+          return sharp(buf)
+            .extract({ left: 0, top: 0, width: W, height: cfg.cropBottomPx })
+            .toBuffer();
         })()
       : await cropBottomFrac(buf, cfg.cropBottomFrac);
     const after = (await sharp(buf).metadata()).height;
@@ -194,6 +263,8 @@ for (const [name, cfg] of Object.entries(CFG)) {
   }
   const m = await matte(buf, cfg);
   fs.writeFileSync(file, m.out);
-  console.log(`${name}: ${m.W}x${m.H} transparent=${m.transparentPct}% comps=${m.components} refs=[${m.refs}] ${note}`);
+  console.log(
+    `${name}: ${m.W}x${m.H} transparent=${m.transparentPct}% comps=${m.components} refs=[${m.refs}] ${note}`,
+  );
 }
 console.log("done");

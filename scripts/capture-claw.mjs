@@ -13,7 +13,10 @@ const r = {};
 const browser = await chromium.launch();
 // reducedMotion: 'reduce' makes <Reveal> render content visible immediately, so
 // the full-page screenshot proves every section renders (not just above-fold).
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: "reduce" });
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1000 },
+  reducedMotion: "reduce",
+});
 const page = await ctx.newPage();
 
 const activeTab = () =>
@@ -31,16 +34,25 @@ r.claw_sectionHeadings = await page
   .locator("section h2")
   .allTextContents()
   .then((a) => a.map((s) => s.trim()));
-r.claw_openButtons = await page.getByRole("link", { name: "Open", exact: true }).count();
+r.claw_openButtons = await page
+  .getByRole("link", { name: "Open", exact: true })
+  .count();
 r.claw_activeTab = await activeTab();
 await page.screenshot({ path: `${OUT}/01-claw-all.png`, fullPage: true });
 
 // 2) Deep link → One Piece (label "One Piece" → key "one-piece").
-await page.goto(`${BASE}/claw?category=one-piece`, { waitUntil: "networkidle" });
+await page.goto(`${BASE}/claw?category=one-piece`, {
+  waitUntil: "networkidle",
+});
 await page.waitForTimeout(400);
 r.onepiece_activeTab = await activeTab();
-r.onepiece_sections = await page.locator("section h2").allTextContents().then((a) => a.map((s) => s.trim()));
-r.onepiece_openButtons = await page.getByRole("link", { name: "Open", exact: true }).count();
+r.onepiece_sections = await page
+  .locator("section h2")
+  .allTextContents()
+  .then((a) => a.map((s) => s.trim()));
+r.onepiece_openButtons = await page
+  .getByRole("link", { name: "Open", exact: true })
+  .count();
 await page.screenshot({ path: `${OUT}/02-claw-onepiece.png` });
 
 // 3) Deep link → Yu-Gi-Oh! (label "Yu-Gi-Oh!" → key "yugioh") — the second
@@ -48,10 +60,15 @@ await page.screenshot({ path: `${OUT}/02-claw-onepiece.png` });
 await page.goto(`${BASE}/claw?category=yugioh`, { waitUntil: "networkidle" });
 await page.waitForTimeout(400);
 r.yugioh_activeTab = await activeTab();
-r.yugioh_sections = await page.locator("section h2").allTextContents().then((a) => a.map((s) => s.trim()));
+r.yugioh_sections = await page
+  .locator("section h2")
+  .allTextContents()
+  .then((a) => a.map((s) => s.trim()));
 
 // 4) Unknown category → falls back to All Packs (no crash).
-await page.goto(`${BASE}/claw?category=does-not-exist`, { waitUntil: "networkidle" });
+await page.goto(`${BASE}/claw?category=does-not-exist`, {
+  waitUntil: "networkidle",
+});
 await page.waitForTimeout(300);
 r.unknown_activeTab = await activeTab();
 

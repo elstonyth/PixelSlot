@@ -11,15 +11,26 @@ const SHOTS = [
 
 const browser = await chromium.launch();
 for (const [url, name, w, h] of SHOTS) {
-  const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({
+    viewport: { width: w, height: h },
+    deviceScaleFactor: 1,
+  });
   const page = await ctx.newPage();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-    for (let i = 0; i < 25; i++) { const r = await page.evaluate(() => document.images.length > 2).catch(() => false); if (r) break; await page.waitForTimeout(500); }
+    for (let i = 0; i < 25; i++) {
+      const r = await page
+        .evaluate(() => document.images.length > 2)
+        .catch(() => false);
+      if (r) break;
+      await page.waitForTimeout(500);
+    }
     await page.waitForTimeout(2500);
     await page.screenshot({ path: `docs/research/packdetail/NEW_${name}.png` });
     console.log(`${name} OK`);
-  } catch (e) { console.log(`${name} FAIL ${e.message}`); }
+  } catch (e) {
+    console.log(`${name} FAIL ${e.message}`);
+  }
   await ctx.close();
 }
 await browser.close();

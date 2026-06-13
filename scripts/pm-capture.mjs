@@ -22,11 +22,13 @@ const VIEWPORTS = [
 // Find the real scroll container and scroll it by dy; returns the new scrollTop.
 const SCROLL_FN = (dy) => {
   const cands = [document.scrollingElement, ...document.querySelectorAll("*")];
-  let best = null, bestH = 0;
+  let best = null,
+    bestH = 0;
   for (const el of cands) {
     if (!el) continue;
     const oy = getComputedStyle(el).overflowY;
-    const scrollable = el === document.scrollingElement || oy === "auto" || oy === "scroll";
+    const scrollable =
+      el === document.scrollingElement || oy === "auto" || oy === "scroll";
     if (scrollable && el.scrollHeight - el.clientHeight > bestH) {
       bestH = el.scrollHeight - el.clientHeight;
       best = el;
@@ -51,7 +53,9 @@ for (const [url, site] of SITES) {
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
       // wait for real content / images to populate (heavy SPA on ORIG)
       for (let i = 0; i < 25; i++) {
-        const ready = await page.evaluate(() => document.images.length > 3).catch(() => false);
+        const ready = await page
+          .evaluate(() => document.images.length > 3)
+          .catch(() => false);
         if (ready) break;
         await page.waitForTimeout(600);
       }

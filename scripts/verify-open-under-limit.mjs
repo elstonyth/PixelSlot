@@ -9,7 +9,9 @@ const EMAIL = "pull-test-8654@pokenic.local";
 const PW = "pulltest2026";
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1600 } });
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1600 },
+});
 const page = await ctx.newPage();
 const errors = [];
 page.on("console", (m) => {
@@ -17,7 +19,10 @@ page.on("console", (m) => {
 });
 await page.goto(`${BASE}/claw/pokemon-mythic`, { waitUntil: "networkidle" });
 
-await page.getByRole("button", { name: /Log in to open/i }).first().click();
+await page
+  .getByRole("button", { name: /Log in to open/i })
+  .first()
+  .click();
 const dialog = page.getByRole("dialog");
 await dialog.waitFor({ state: "visible", timeout: 8000 });
 await dialog.locator('input[name="email"]').fill(EMAIL);
@@ -55,8 +60,8 @@ const continueBtn = await page
   .catch(() => false);
 const cardImg = await page.evaluate(() =>
   [...document.querySelectorAll("img")].some(
-    (i) => i.src.includes("/static/") && i.naturalWidth > 50
-  )
+    (i) => i.src.includes("/static/") && i.naturalWidth > 50,
+  ),
 );
 const bodyText = (await page.locator("body").innerText()).replace(/\s+/g, " ");
 const rateLimited = /too fast/i.test(bodyText);
@@ -69,7 +74,9 @@ console.log("failure copy shown:", failed);
 if (errors.length) console.log("console errors:", errors.slice(0, 3));
 console.log(
   "VERDICT:",
-  continueBtn && cardImg && !failed ? "PASS — authenticated open works under the limit" : "FAIL"
+  continueBtn && cardImg && !failed
+    ? "PASS — authenticated open works under the limit"
+    : "FAIL",
 );
 await page.screenshot({
   path: "docs/research/rl-open-under-limit.png",

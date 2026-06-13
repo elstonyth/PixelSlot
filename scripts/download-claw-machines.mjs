@@ -8,7 +8,9 @@ const DIR = "public/images/claw";
 const REMOTE = "https://www.phygitals.com/images/claw";
 
 const files = await readdir(DIR);
-const bases = files.filter((f) => f.endsWith("-icon.webp")).map((f) => f.replace("-icon.webp", ""));
+const bases = files
+  .filter((f) => f.endsWith("-icon.webp"))
+  .map((f) => f.replace("-icon.webp", ""));
 console.log(`${bases.length} pack slugs derived from icons`);
 
 async function tryDownload(url, dest) {
@@ -27,12 +29,20 @@ async function tryDownload(url, dest) {
 const report = [];
 for (const base of bases) {
   // claw machine = {base}-1 ; prefer avif, fallback webp
-  const avif = await tryDownload(`${REMOTE}/${base}-1.avif`, `${DIR}/${base}-machine.avif`);
-  const webp = await tryDownload(`${REMOTE}/${base}-1.webp`, `${DIR}/${base}-machine.webp`);
+  const avif = await tryDownload(
+    `${REMOTE}/${base}-1.avif`,
+    `${DIR}/${base}-machine.avif`,
+  );
+  const webp = await tryDownload(
+    `${REMOTE}/${base}-1.webp`,
+    `${DIR}/${base}-machine.webp`,
+  );
   const got = [];
   if (avif.ok) got.push(`avif ${avif.bytes}`);
   if (webp.ok) got.push(`webp ${webp.bytes}`);
-  report.push(`${base.padEnd(34)} ${got.length ? got.join(" + ") : "FAILED (" + (avif.status || "") + "/" + (webp.status || "") + ")"}`);
+  report.push(
+    `${base.padEnd(34)} ${got.length ? got.join(" + ") : "FAILED (" + (avif.status || "") + "/" + (webp.status || "") + ")"}`,
+  );
 }
 console.log(report.join("\n"));
 console.log("\ndone");

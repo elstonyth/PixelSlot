@@ -3,9 +3,14 @@
 import { chromium } from "playwright";
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1000 },
+});
 const page = await ctx.newPage();
-await page.goto("https://www.phygitals.com/claw", { waitUntil: "domcontentloaded", timeout: 30000 });
+await page.goto("https://www.phygitals.com/claw", {
+  waitUntil: "domcontentloaded",
+  timeout: 30000,
+});
 await page.waitForTimeout(4500);
 
 const arts = await page.evaluate(() => {
@@ -20,10 +25,21 @@ const arts = await page.evaluate(() => {
       const img = el.querySelector("img");
       if (img) {
         // pick the tallest img in the card (the pack art, not a tiny badge)
-        const imgs = [...el.querySelectorAll("img")].sort((a, b2) => b2.naturalHeight - a.naturalHeight);
+        const imgs = [...el.querySelectorAll("img")].sort(
+          (a, b2) => b2.naturalHeight - a.naturalHeight,
+        );
         const art = imgs[0];
-        const name = (el.innerText || "").split("\n").map((s) => s.trim()).filter(Boolean)[0] || "";
-        out.push({ name: name.slice(0, 30), src: (art.currentSrc || art.src || "").slice(0, 160), natW: art.naturalWidth, natH: art.naturalHeight });
+        const name =
+          (el.innerText || "")
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean)[0] || "";
+        out.push({
+          name: name.slice(0, 30),
+          src: (art.currentSrc || art.src || "").slice(0, 160),
+          natW: art.naturalWidth,
+          natH: art.naturalHeight,
+        });
         break;
       }
     }

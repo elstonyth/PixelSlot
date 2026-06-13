@@ -50,7 +50,9 @@ async function worker() {
   while (idx < entries.length) {
     const [url, dest] = entries[idx++];
     try {
-      const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0" },
+      });
       if (!res.ok) {
         results.push({ url, dest, ok: false, status: res.status });
         continue;
@@ -75,7 +77,7 @@ for (const f of files) {
     // Replace the cardImg helper body to point at the localized files.
     s = s.replace(
       /const cardImg = \(id: string\) =>[\s\S]*?;\n/,
-      'const cardImg = (id: string) => `/cdn/cards/${id.replace(/[^\\w.-]/g, "_")}.webp`;\n'
+      'const cardImg = (id: string) => `/cdn/cards/${id.replace(/[^\\w.-]/g, "_")}.webp`;\n',
     );
   }
   // Strip the host (CDN consts become "", full URLs become /path)

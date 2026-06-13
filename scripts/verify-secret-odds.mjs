@@ -48,7 +48,9 @@ await page.goto(`${BASE}/claw/pokemon-mythic`, { waitUntil: "networkidle" });
 await page.waitForTimeout(400);
 
 const pullOdds = page
-  .locator("section", { has: page.getByRole("heading", { name: /Pull Odds/i }) })
+  .locator("section", {
+    has: page.getByRole("heading", { name: /Pull Odds/i }),
+  })
   .first();
 r.rarityRows = await pullOdds
   .locator("li")
@@ -72,7 +74,10 @@ r.topHitValues = await topHits
 r.backendTopValuePresent = r.topHitValues.some((v) => /\$39\.80/.test(v));
 r.mockTopValuePresent = r.topHitValues.some((v) => /\$912\.00/.test(v));
 
-await page.screenshot({ path: `${OUT}/01-secret-odds-pokemon-mythic.png`, fullPage: true });
+await page.screenshot({
+  path: `${OUT}/01-secret-odds-pokemon-mythic.png`,
+  fullPage: true,
+});
 await browser.close();
 
 r.verdict =

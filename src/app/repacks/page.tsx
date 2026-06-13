@@ -51,19 +51,116 @@ type CommunityPack = {
 };
 
 const COMMUNITY_PACKS: CommunityPack[] = [
-  { id: "mini-5050", name: "Mini 50/50 Pack", categoryId: "pokemon", image: "/images/claw/rookie-pack-icon.webp", price: 50, creator: 0, boost: true },
-  { id: "5050", name: "50/50 Pack", categoryId: "pokemon", image: "/images/claw/elite-pack-icon.webp", price: 100, creator: 5 },
-  { id: "super-mini-fire", name: "Super Mini Fire Pack", categoryId: "pokemon", image: "/images/claw/mythic-pack-icon.webp", price: 25, creator: 11, boost: true },
-  { id: "phantom-pika", name: "Phantom Pika Pack", categoryId: "pokemon", image: "/images/claw/legend-pack-icon.webp", price: 250, creator: 3, boost: true },
-  { id: "daily-ripper", name: "Daily Ripper", categoryId: "one-piece", image: "/images/claw/starter-one-piece-pack-icon.webp", price: 15, creator: 7 },
-  { id: "grail-hunter", name: "Grail Hunter", categoryId: "one-piece", image: "/images/claw/legend-one-piece-pack-icon.webp", price: 250, creator: 13, boost: true },
-  { id: "court-kings-mini", name: "Court Kings Mini", categoryId: "basketball", image: "/images/claw/legend-pack-1dpaec-icon.webp", price: 40, creator: 2 },
-  { id: "black-ice-whale", name: "Black Ice Whale", categoryId: "basketball", image: "/images/claw/black-pack-jjnfuk-icon.webp", price: 1000, creator: 16, boost: true },
-  { id: "diamond-rookie", name: "Diamond Rookie", categoryId: "baseball", image: "/images/claw/starter-baseball-pack-icon.webp", price: 20, creator: 9 },
-  { id: "gridiron-grail", name: "Gridiron Grail", categoryId: "football", image: "/images/claw/platinum-football-pack-icon.webp", price: 500, creator: 4, boost: true },
-  { id: "pitch-perfect", name: "Pitch Perfect", categoryId: "soccer", image: "/images/claw/pro-soccer-pack-icon.webp", price: 100, creator: 15 },
-  { id: "duelist-daily", name: "Duelist Daily", categoryId: "yugioh", image: "/images/claw/yugioh-pro-pack-icon.webp", price: 10, creator: 8 },
-  { id: "rift-starter", name: "Rift Starter", categoryId: "riftbound", image: "/images/claw/starter-riftbound-pack-icon.webp", price: 25, creator: 17 },
+  {
+    id: "mini-5050",
+    name: "Mini 50/50 Pack",
+    categoryId: "pokemon",
+    image: "/images/claw/rookie-pack-icon.webp",
+    price: 50,
+    creator: 0,
+    boost: true,
+  },
+  {
+    id: "5050",
+    name: "50/50 Pack",
+    categoryId: "pokemon",
+    image: "/images/claw/elite-pack-icon.webp",
+    price: 100,
+    creator: 5,
+  },
+  {
+    id: "super-mini-fire",
+    name: "Super Mini Fire Pack",
+    categoryId: "pokemon",
+    image: "/images/claw/mythic-pack-icon.webp",
+    price: 25,
+    creator: 11,
+    boost: true,
+  },
+  {
+    id: "phantom-pika",
+    name: "Phantom Pika Pack",
+    categoryId: "pokemon",
+    image: "/images/claw/legend-pack-icon.webp",
+    price: 250,
+    creator: 3,
+    boost: true,
+  },
+  {
+    id: "daily-ripper",
+    name: "Daily Ripper",
+    categoryId: "one-piece",
+    image: "/images/claw/starter-one-piece-pack-icon.webp",
+    price: 15,
+    creator: 7,
+  },
+  {
+    id: "grail-hunter",
+    name: "Grail Hunter",
+    categoryId: "one-piece",
+    image: "/images/claw/legend-one-piece-pack-icon.webp",
+    price: 250,
+    creator: 13,
+    boost: true,
+  },
+  {
+    id: "court-kings-mini",
+    name: "Court Kings Mini",
+    categoryId: "basketball",
+    image: "/images/claw/legend-pack-1dpaec-icon.webp",
+    price: 40,
+    creator: 2,
+  },
+  {
+    id: "black-ice-whale",
+    name: "Black Ice Whale",
+    categoryId: "basketball",
+    image: "/images/claw/black-pack-jjnfuk-icon.webp",
+    price: 1000,
+    creator: 16,
+    boost: true,
+  },
+  {
+    id: "diamond-rookie",
+    name: "Diamond Rookie",
+    categoryId: "baseball",
+    image: "/images/claw/starter-baseball-pack-icon.webp",
+    price: 20,
+    creator: 9,
+  },
+  {
+    id: "gridiron-grail",
+    name: "Gridiron Grail",
+    categoryId: "football",
+    image: "/images/claw/platinum-football-pack-icon.webp",
+    price: 500,
+    creator: 4,
+    boost: true,
+  },
+  {
+    id: "pitch-perfect",
+    name: "Pitch Perfect",
+    categoryId: "soccer",
+    image: "/images/claw/pro-soccer-pack-icon.webp",
+    price: 100,
+    creator: 15,
+  },
+  {
+    id: "duelist-daily",
+    name: "Duelist Daily",
+    categoryId: "yugioh",
+    image: "/images/claw/yugioh-pro-pack-icon.webp",
+    price: 10,
+    creator: 8,
+  },
+  {
+    id: "rift-starter",
+    name: "Rift Starter",
+    categoryId: "riftbound",
+    image: "/images/claw/starter-riftbound-pack-icon.webp",
+    price: 25,
+    creator: 17,
+  },
 ];
 
 // Blurred pack-art slabs behind the hero (atmosphere — verified to exist).
@@ -96,7 +193,14 @@ function PackCard({ pack }: { pack: CommunityPack }) {
       {/* Category badge (top-right) */}
       {icon && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={icon} alt="" aria-hidden="true" width={24} height={24} className="absolute right-3 top-3 z-[2] h-6 w-6 object-contain opacity-80" />
+        <img
+          src={icon}
+          alt=""
+          aria-hidden="true"
+          width={24}
+          height={24}
+          className="absolute right-3 top-3 z-[2] h-6 w-6 object-contain opacity-80"
+        />
       )}
 
       {/* Big pack art */}
@@ -114,14 +218,25 @@ function PackCard({ pack }: { pack: CommunityPack }) {
 
       {/* Name + price */}
       <div className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span className="truncate text-[13px] font-semibold text-white sm:text-sm">{pack.name}</span>
-        <span className="shrink-0 text-[13px] font-semibold text-white/90 sm:text-sm">{usd0(pack.price)}</span>
+        <span className="truncate text-[13px] font-semibold text-white sm:text-sm">
+          {pack.name}
+        </span>
+        <span className="shrink-0 text-[13px] font-semibold text-white/90 sm:text-sm">
+          {usd0(pack.price)}
+        </span>
       </div>
 
       {/* Creator attribution */}
-      <Link href={`/profile/${creator.username}`} className="mb-3 flex items-center gap-1.5 text-[11px] text-white/40 transition-colors hover:text-white/70">
+      <Link
+        href={`/profile/${creator.username}`}
+        className="mb-3 flex items-center gap-1.5 text-[11px] text-white/40 transition-colors hover:text-white/70"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={creator.pfp} alt="" className="h-4 w-4 rounded-full object-cover" />
+        <img
+          src={creator.pfp}
+          alt=""
+          className="h-4 w-4 rounded-full object-cover"
+        />
         <span className="truncate">by {creator.username}</span>
       </Link>
 
@@ -145,7 +260,10 @@ function PackCard({ pack }: { pack: CommunityPack }) {
 
 export default function RepacksPage() {
   const [cat, setCat] = useState("all");
-  const packs = cat === "all" ? COMMUNITY_PACKS : COMMUNITY_PACKS.filter((p) => p.categoryId === cat);
+  const packs =
+    cat === "all"
+      ? COMMUNITY_PACKS
+      : COMMUNITY_PACKS.filter((p) => p.categoryId === cat);
 
   return (
     <div className="mx-auto w-full px-fluid py-4">
@@ -155,18 +273,32 @@ export default function RepacksPage() {
         <div className="pointer-events-none absolute inset-0 flex">
           {HERO_SLABS.map((src, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={src} alt="" aria-hidden="true" className="h-full flex-1 object-cover opacity-30 blur-3xl saturate-150" />
+            <img
+              key={i}
+              src={src}
+              alt=""
+              aria-hidden="true"
+              className="h-full flex-1 object-cover opacity-30 blur-3xl saturate-150"
+            />
           ))}
         </div>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/85 to-neutral-950/30" />
 
         <div className="relative flex flex-col gap-6 px-6 py-10 sm:px-10 sm:py-12 md:flex-row md:items-center md:justify-between">
           <div className="max-w-xl">
-            <Reveal as="h1" className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+            <Reveal
+              as="h1"
+              className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
+            >
               Packs created by anyone
             </Reveal>
-            <Reveal as="p" delay={90} className="mt-3 max-w-md text-sm leading-relaxed text-white/65 sm:text-base">
-              Curated pulls with 85% guaranteed buyback. Filter and sort to find your next rip.
+            <Reveal
+              as="p"
+              delay={90}
+              className="mt-3 max-w-md text-sm leading-relaxed text-white/65 sm:text-base"
+            >
+              Curated pulls with 85% guaranteed buyback. Filter and sort to find
+              your next rip.
             </Reveal>
             <Reveal delay={150}>
               <Link
@@ -179,7 +311,10 @@ export default function RepacksPage() {
           </div>
 
           {/* Featured pack render (desktop) */}
-          <Reveal delay={120} className="pointer-events-none hidden shrink-0 md:block">
+          <Reveal
+            delay={120}
+            className="pointer-events-none hidden shrink-0 md:block"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/claw/legend-pack-icon.webp"
@@ -202,12 +337,19 @@ export default function RepacksPage() {
               aria-pressed={cat === t.id}
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors sm:text-[13px]",
-                cat === t.id ? "bg-white text-neutral-950" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
+                cat === t.id
+                  ? "bg-white text-neutral-950"
+                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
               )}
             >
               {t.icon && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={t.icon} alt="" aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full object-cover" />
+                <img
+                  src={t.icon}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 rounded-full object-cover"
+                />
               )}
               {t.tab}
             </button>

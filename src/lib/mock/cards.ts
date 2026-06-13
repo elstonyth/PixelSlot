@@ -19,27 +19,73 @@ export type MockCard = {
 };
 
 const SUBJECTS = [
-  "Charizard ex", "Pikachu VMAX", "Mewtwo ex", "Umbreon VMAX", "Gengar VMAX",
-  "Lugia V", "Rayquaza VMAX", "Mew ex", "Giratina V", "Lucario VSTAR",
-  "Greninja ex", "Snorlax", "Blastoise ex", "Venusaur ex", "Sylveon VMAX",
-  "Arceus VSTAR", "Dialga VSTAR", "Palkia VSTAR", "Darkrai VSTAR", "Celebi V",
-  "Ho-Oh V", "Jolteon ex", "Flareon ex", "Glaceon ex", "Leafeon VSTAR",
-  "Monkey D. Luffy", "Roronoa Zoro", "Trafalgar Law", "Nico Robin", "Boa Hancock",
+  "Charizard ex",
+  "Pikachu VMAX",
+  "Mewtwo ex",
+  "Umbreon VMAX",
+  "Gengar VMAX",
+  "Lugia V",
+  "Rayquaza VMAX",
+  "Mew ex",
+  "Giratina V",
+  "Lucario VSTAR",
+  "Greninja ex",
+  "Snorlax",
+  "Blastoise ex",
+  "Venusaur ex",
+  "Sylveon VMAX",
+  "Arceus VSTAR",
+  "Dialga VSTAR",
+  "Palkia VSTAR",
+  "Darkrai VSTAR",
+  "Celebi V",
+  "Ho-Oh V",
+  "Jolteon ex",
+  "Flareon ex",
+  "Glaceon ex",
+  "Leafeon VSTAR",
+  "Monkey D. Luffy",
+  "Roronoa Zoro",
+  "Trafalgar Law",
+  "Nico Robin",
+  "Boa Hancock",
 ];
 const SETS = [
-  "Scarlet & Violet 151", "Crown Zenith", "Obsidian Flames", "Paradox Rift",
-  "Surging Sparks", "Twilight Masquerade", "VSTAR Universe", "Eevee Heroes",
-  "Romance Dawn", "Wings of the Captain",
+  "Scarlet & Violet 151",
+  "Crown Zenith",
+  "Obsidian Flames",
+  "Paradox Rift",
+  "Surging Sparks",
+  "Twilight Masquerade",
+  "VSTAR Universe",
+  "Eevee Heroes",
+  "Romance Dawn",
+  "Wings of the Captain",
 ];
 const GRADERS: Grader[] = ["PSA", "CGC", "Fanatics"];
 const GRADES = ["10 GEM MINT", "10 PRISTINE", "9.5 MINT+", "9 MINT"];
 const YEARS = [2021, 2022, 2023, 2024, 2025];
 
-const HARVEST = Array.from({ length: 48 }, (_, i) => `/cdn/cards/h-${String(i + 1).padStart(3, "0")}.webp`);
+const HARVEST = Array.from(
+  { length: 48 },
+  (_, i) => `/cdn/cards/h-${String(i + 1).padStart(3, "0")}.webp`,
+);
 
-const kebab = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const kebab = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 const rarityFor = (fmv: number): Rarity =>
-  fmv > 800 ? "Legendary" : fmv > 400 ? "Epic" : fmv > 180 ? "Rare" : fmv > 80 ? "Uncommon" : "Common";
+  fmv > 800
+    ? "Legendary"
+    : fmv > 400
+      ? "Epic"
+      : fmv > 180
+        ? "Rare"
+        : fmv > 80
+          ? "Uncommon"
+          : "Common";
 
 function build(i: number, image: string): MockCard {
   const subject = SUBJECTS[i % SUBJECTS.length];
@@ -91,7 +137,10 @@ export function cardOrGeneric(id: string): MockCard {
   if (found) return found;
   const h = hash(id);
   const image = HARVEST[h % HARVEST.length];
-  const name = id.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 80);
+  const name = id
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase())
+    .slice(0, 80);
   const fmv = 40 + (h % 960);
   return {
     id,

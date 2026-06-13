@@ -20,16 +20,24 @@ for (const f of files) {
 
 const jobs = [];
 for (const p of refs) {
-  if (p.startsWith("/cdn/cards/") || p.startsWith("/fonts/") || p.startsWith("/seo/")) continue;
+  if (
+    p.startsWith("/cdn/cards/") ||
+    p.startsWith("/fonts/") ||
+    p.startsWith("/seo/")
+  )
+    continue;
   const dest = path.join(PUB, p);
   if (fs.existsSync(dest)) continue; // already have it
   // restore Windows-illegal colon for the remote social filenames
   const remote =
-    "https://www.phygitals.com" + p.replace(/(\/social\/tweets\/\d+)_media-1\.webp/, "$1:media-1.webp");
+    "https://www.phygitals.com" +
+    p.replace(/(\/social\/tweets\/\d+)_media-1\.webp/, "$1:media-1.webp");
   jobs.push({ p, remote, dest });
 }
 
-console.log(`Referenced image paths: ${refs.size} | missing on disk: ${jobs.length}`);
+console.log(
+  `Referenced image paths: ${refs.size} | missing on disk: ${jobs.length}`,
+);
 
 const results = [];
 let idx = 0;
@@ -37,8 +45,13 @@ async function worker() {
   while (idx < jobs.length) {
     const { p, remote, dest } = jobs[idx++];
     try {
-      const res = await fetch(remote, { headers: { "User-Agent": "Mozilla/5.0" } });
-      if (!res.ok) { results.push({ p, ok: false, status: res.status }); continue; }
+      const res = await fetch(remote, {
+        headers: { "User-Agent": "Mozilla/5.0" },
+      });
+      if (!res.ok) {
+        results.push({ p, ok: false, status: res.status });
+        continue;
+      }
       const buf = Buffer.from(await res.arrayBuffer());
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.writeFileSync(dest, buf);
@@ -54,4 +67,7 @@ const ok = results.filter((r) => r.ok);
 console.log(`Downloaded ${ok.length}/${jobs.length}`);
 for (const r of ok) console.log(`  OK  ${r.p} (${r.bytes}b)`);
 const bad = results.filter((r) => !r.ok);
-if (bad.length) { console.log("FAILED:"); for (const b of bad) console.log(`  [${b.status}] ${b.p}`); }
+if (bad.length) {
+  console.log("FAILED:");
+  for (const b of bad) console.log(`  [${b.status}] ${b.p}`);
+}

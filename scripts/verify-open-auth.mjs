@@ -18,12 +18,17 @@ mkdirSync(OUT, { recursive: true });
 
 const r = {};
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1600 } });
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1600 },
+});
 const page = await ctx.newPage();
 await page.goto(`${BASE}/claw/pokemon-mythic`, { waitUntil: "networkidle" });
 
 // 1. Logged-out: footer button gates to login. Click it -> auth modal opens.
-await page.getByRole("button", { name: /Log in to open/i }).first().click();
+await page
+  .getByRole("button", { name: /Log in to open/i })
+  .first()
+  .click();
 const dialog = page.getByRole("dialog");
 await dialog.waitFor({ state: "visible", timeout: 8000 });
 
@@ -39,7 +44,8 @@ await dialog.waitFor({ state: "detached", timeout: 12000 });
 //    includes the points/price badges, so match by substring, not exact).
 const openBtn = page.getByRole("button", { name: /Open Pack/i }).first();
 await openBtn.waitFor({ state: "visible", timeout: 12000 });
-r.buttonAfterLogin = (await openBtn.textContent())?.replace(/\s+/g, " ").trim() ?? "";
+r.buttonAfterLogin =
+  (await openBtn.textContent())?.replace(/\s+/g, " ").trim() ?? "";
 r.buttonFlipped =
   /Open Pack/i.test(r.buttonAfterLogin) && !/Log in/i.test(r.buttonAfterLogin);
 
@@ -59,12 +65,15 @@ r.revealHasRealCard = r.revealWonName.length > 4;
 
 // 5. The won card is optimistically prepended to Recent Pulls ("just now").
 const recentSection = page
-  .locator("section", { has: page.getByRole("heading", { name: /Recent Pulls/i }) })
+  .locator("section", {
+    has: page.getByRole("heading", { name: /Recent Pulls/i }),
+  })
   .first();
 await recentSection.scrollIntoViewIfNeeded();
-const firstRecent = (await recentSection.locator("li").first().textContent())
-  ?.replace(/\s+/g, " ")
-  .trim() ?? "";
+const firstRecent =
+  (await recentSection.locator("li").first().textContent())
+    ?.replace(/\s+/g, " ")
+    .trim() ?? "";
 r.firstRecentRow = firstRecent;
 r.prependedWonCard =
   r.revealWonName.length > 0 &&
@@ -76,6 +85,9 @@ r.verdict =
     ? "PASS (authenticated open->reveal->feed)"
     : "FAIL";
 
-await page.screenshot({ path: `${OUT}/03-open-authenticated.png`, fullPage: true });
+await page.screenshot({
+  path: `${OUT}/03-open-authenticated.png`,
+  fullPage: true,
+});
 console.log(JSON.stringify(r, null, 2));
 await browser.close();

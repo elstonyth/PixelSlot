@@ -7,26 +7,49 @@ async function test(w, h, label) {
   await p.waitForTimeout(800);
   // BEFORE scroll: cards should be hidden (opacity ~0) if not yet in view
   const before = await p.evaluate(() => {
-    const h = [...document.querySelectorAll("h2")].find(e => e.textContent.trim() === "How It Works");
+    const h = [...document.querySelectorAll("h2")].find(
+      (e) => e.textContent.trim() === "How It Works",
+    );
     if (!h) return { err: "no HIW" };
     const sec = h.closest("section");
     const cards = [...sec.querySelectorAll(".grid > div")];
-    return { count: cards.length, op: cards.map(c => +(+getComputedStyle(c).opacity).toFixed(2)) };
+    return {
+      count: cards.length,
+      op: cards.map((c) => +(+getComputedStyle(c).opacity).toFixed(2)),
+    };
   });
   // scroll HIW into view
-  await p.evaluate(() => { const h=[...document.querySelectorAll("h2")].find(e=>e.textContent.trim()==="How It Works"); h.closest("section").scrollIntoView({block:"center"}); });
+  await p.evaluate(() => {
+    const h = [...document.querySelectorAll("h2")].find(
+      (e) => e.textContent.trim() === "How It Works",
+    );
+    h.closest("section").scrollIntoView({ block: "center" });
+  });
   await p.waitForTimeout(1200);
   const after = await p.evaluate(() => {
-    const h = [...document.querySelectorAll("h2")].find(e => e.textContent.trim() === "How It Works");
+    const h = [...document.querySelectorAll("h2")].find(
+      (e) => e.textContent.trim() === "How It Works",
+    );
     const sec = h.closest("section");
     const cards = [...sec.querySelectorAll(".grid > div")];
-    const txt = sec.innerText.replace(/\n+/g," ").slice(0,160);
-    const broken = [...sec.querySelectorAll("img")].filter(i=>i.complete&&i.naturalWidth===0).length;
-    return { op: cards.map(c => +(+getComputedStyle(c).opacity).toFixed(2)), txt, broken, secW: Math.round(sec.getBoundingClientRect().width) };
+    const txt = sec.innerText.replace(/\n+/g, " ").slice(0, 160);
+    const broken = [...sec.querySelectorAll("img")].filter(
+      (i) => i.complete && i.naturalWidth === 0,
+    ).length;
+    return {
+      op: cards.map((c) => +(+getComputedStyle(c).opacity).toFixed(2)),
+      txt,
+      broken,
+      secW: Math.round(sec.getBoundingClientRect().width),
+    };
   });
   console.log(`\n[${label} ${w}x${h}]`);
   console.log("  before-scroll card opacities:", JSON.stringify(before.op));
-  console.log("  after-scroll  card opacities:", JSON.stringify(after.op), "(should be ~1)");
+  console.log(
+    "  after-scroll  card opacities:",
+    JSON.stringify(after.op),
+    "(should be ~1)",
+  );
   console.log("  broken imgs:", after.broken, "| secW:", after.secW);
   console.log("  content:", after.txt);
   await p.screenshot({ path: `docs/research/HIW_${w}.png`, fullPage: false });

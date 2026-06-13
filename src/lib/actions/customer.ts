@@ -68,7 +68,10 @@ export async function updateProfile(input: {
     logger.error("[profile] update failed:", error);
     return {
       ok: false,
-      error: friendlyError(error, "Could not save your changes. Please try again."),
+      error: friendlyError(
+        error,
+        "Could not save your changes. Please try again.",
+      ),
     };
   }
 }

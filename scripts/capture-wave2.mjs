@@ -59,7 +59,7 @@ async function scrollAndMeasure(page) {
       const el =
         main && main.scrollHeight > main.clientHeight + 50
           ? main
-          : document.scrollingElement ?? document.documentElement;
+          : (document.scrollingElement ?? document.documentElement);
       await new Promise((res) => {
         let total = 0;
         let ticks = 0;
@@ -79,7 +79,7 @@ async function scrollAndMeasure(page) {
       return Math.max(
         el.scrollHeight,
         document.body.scrollHeight,
-        document.documentElement.scrollHeight
+        document.documentElement.scrollHeight,
       );
     })
     .catch(() => 900);
@@ -107,7 +107,10 @@ async function run(site, base, path) {
       .catch((e) => rec.errors.push("goto:" + e.message.slice(0, 50)));
     await page.waitForTimeout(site === "live" ? 8000 : 2500);
     for (const [w, fullContent] of WIDTHS) {
-      await page.setViewportSize({ width: w, height: fullContent ? 900 : 2160 });
+      await page.setViewportSize({
+        width: w,
+        height: fullContent ? 900 : 2160,
+      });
       await page.waitForTimeout(site === "live" ? 1500 : 500);
       if (fullContent) {
         const h = await scrollAndMeasure(page);
@@ -132,8 +135,10 @@ async function run(site, base, path) {
   manifest.push(rec);
   console.log(
     `${site.padEnd(5)} ${path.padEnd(24)} ${
-      rec.errors.length ? "ERR " + rec.errors.join("|") : "ok h=" + JSON.stringify(rec.heights)
-    }`
+      rec.errors.length
+        ? "ERR " + rec.errors.join("|")
+        : "ok h=" + JSON.stringify(rec.heights)
+    }`,
   );
 }
 

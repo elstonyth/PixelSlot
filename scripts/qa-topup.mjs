@@ -34,7 +34,10 @@ const balanceStat = async () => {
 
 try {
   await page.goto(`${BASE}/claw`, { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: /^login$/i }).first().click();
+  await page
+    .getByRole("button", { name: /^login$/i })
+    .first()
+    .click();
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.press('input[name="password"]', "Enter");
@@ -53,7 +56,8 @@ try {
   await page.getByText(/added to your balance/i).waitFor({ timeout: 15000 });
   const after = await balanceStat();
   const delta = Math.round((after - before) * 100) / 100;
-  if (delta === TOPUP) ok(`top-up credited: balance $${after.toFixed(2)} (+$${TOPUP})`);
+  if (delta === TOPUP)
+    ok(`top-up credited: balance $${after.toFixed(2)} (+$${TOPUP})`);
   else fail(`balance delta ${delta}, expected ${TOPUP}`);
 
   // Decline path: .13 must error and leave the balance untouched.
@@ -61,7 +65,8 @@ try {
   await page.getByRole("button", { name: /^Add \$5\.13$/ }).click();
   await page.getByText(/declined/i).waitFor({ timeout: 15000 });
   const afterDecline = await balanceStat();
-  if (afterDecline === after) ok("decline path: error shown, balance unchanged");
+  if (afterDecline === after)
+    ok("decline path: error shown, balance unchanged");
   else fail(`balance moved on decline: $${after} → $${afterDecline}`);
 
   await page.screenshot({ path: "docs/research/qa-topup-decline.png" });

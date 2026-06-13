@@ -11,17 +11,32 @@ const SLUGS = [
 ];
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 1500 }, deviceScaleFactor: 1.5 });
+const page = await browser.newPage({
+  viewport: { width: 1440, height: 1500 },
+  deviceScaleFactor: 1.5,
+});
 for (const [slug, label] of SLUGS) {
-  await page.goto(`http://localhost:4000/claw/${slug}`, { waitUntil: "networkidle" });
+  await page.goto(`http://localhost:4000/claw/${slug}`, {
+    waitUntil: "networkidle",
+  });
   await page.waitForTimeout(1000);
-  const img = page.locator('img[src*="-anim.avif"], img[src*="-machine.webp"]').first();
+  const img = page
+    .locator('img[src*="-anim.avif"], img[src*="-machine.webp"]')
+    .first();
   const shot = `docs/research/packdetail/live_${slug}.png`;
   try {
     await img.waitFor({ state: "visible", timeout: 8000 });
     const src = await img.getAttribute("src");
     const box = await img.boundingBox();
-    await page.screenshot({ path: shot, clip: { x: Math.max(0, box.x), y: Math.max(0, box.y), width: box.width, height: box.height } });
+    await page.screenshot({
+      path: shot,
+      clip: {
+        x: Math.max(0, box.x),
+        y: Math.max(0, box.y),
+        width: box.width,
+        height: box.height,
+      },
+    });
     console.log(`${slug}\t${label}\tsrc=${src}`);
   } catch (e) {
     await page.screenshot({ path: shot, fullPage: false });

@@ -139,7 +139,13 @@ function PodiumColumn({ player }: { player: PodiumPlayer }) {
           The fixed-height box clips it, so it never pushes the layout below down. */}
       <div
         aria-hidden
-        style={{ animationDelay: isFirst ? "180ms" : player.rank === 2 ? "0ms" : "90ms" }}
+        style={{
+          animationDelay: isFirst
+            ? "180ms"
+            : player.rank === 2
+              ? "0ms"
+              : "90ms",
+        }}
         className={cn(
           "mt-2 w-16 origin-bottom rounded-t-xl border border-b-0 border-white/10",
           "bg-gradient-to-b from-white/[0.14] to-white/[0.05] sm:w-20",
@@ -174,7 +180,9 @@ function PrizesPanel() {
             className="flex items-center justify-between gap-4 px-6 py-4"
           >
             <span className="text-sm font-medium text-white">{tier.place}</span>
-            <span className="text-right text-[13px] text-white/45">{tier.reward}</span>
+            <span className="text-right text-[13px] text-white/45">
+              {tier.reward}
+            </span>
           </li>
         ))}
       </ul>
@@ -318,7 +326,11 @@ export default function LeaderboardClient({
         <>
           {/* Re-mount the table when switching Weekly/All Time so its reveal
               animation re-runs and the content visibly changes. */}
-          <LeaderboardSection key={tab} showHeading={false} entries={activeEntries} />
+          <LeaderboardSection
+            key={tab}
+            showHeading={false}
+            entries={activeEntries}
+          />
           <Pagination count={activeEntries.length} />
         </>
       )}

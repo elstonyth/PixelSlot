@@ -8,8 +8,14 @@ import { readFileSync } from "node:fs";
 const slug = process.argv[2] || "pokemon-legend";
 const OUT = "docs/research/packdetail";
 const browser = await chromium.launch({ headless: false });
-const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
-await page.goto(`http://localhost:4000/claw/${slug}`, { waitUntil: "networkidle", timeout: 60000 });
+const page = await browser.newPage({
+  viewport: { width: 1440, height: 1000 },
+  deviceScaleFactor: 1,
+});
+await page.goto(`http://localhost:4000/claw/${slug}`, {
+  waitUntil: "networkidle",
+  timeout: 60000,
+});
 await page.bringToFront();
 await page.waitForTimeout(1500);
 
@@ -24,7 +30,10 @@ await page.screenshot({ path: `${OUT}/clone-anim-b.png`, clip });
 await browser.close();
 
 const md5 = (f) => createHash("md5").update(readFileSync(f)).digest("hex");
-const a = md5(`${OUT}/clone-anim-a.png`), b = md5(`${OUT}/clone-anim-b.png`);
+const a = md5(`${OUT}/clone-anim-a.png`),
+  b = md5(`${OUT}/clone-anim-b.png`);
 console.log(`slug=${slug}`);
 console.log(`served src = ${src}`);
-console.log(`frame A md5 ${a.slice(0, 10)} | frame B md5 ${b.slice(0, 10)} | ${a === b ? "IDENTICAL (NOT animating!)" : "DIFFERENT (animating ✓)"}`);
+console.log(
+  `frame A md5 ${a.slice(0, 10)} | frame B md5 ${b.slice(0, 10)} | ${a === b ? "IDENTICAL (NOT animating!)" : "DIFFERENT (animating ✓)"}`,
+);

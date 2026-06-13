@@ -16,13 +16,15 @@ describe("sellOfferDeadlineMs", () => {
   it("gives the full 30s countdown when the card is shown promptly", () => {
     const shownAt = OPENED + 5_000; // normal reveal animation time
     expect(sellOfferDeadlineMs(shownAt, OPENED)).toBe(
-      shownAt + SELL_COUNTDOWN_SECS * 1000
+      shownAt + SELL_COUNTDOWN_SECS * 1000,
     );
   });
 
   it("caps the deadline at 75s after the open when the user lingers pre-card", () => {
     const shownAt = OPENED + 60_000; // dawdled a minute on the tap-gated stages
-    expect(sellOfferDeadlineMs(shownAt, OPENED)).toBe(OPENED + SELL_HARD_CAP_MS);
+    expect(sellOfferDeadlineMs(shownAt, OPENED)).toBe(
+      OPENED + SELL_HARD_CAP_MS,
+    );
   });
 
   it("yields an already-expired deadline when the card is shown past the cap", () => {

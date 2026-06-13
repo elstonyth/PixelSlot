@@ -109,8 +109,12 @@ export async function updateCustomerProfile(
 ): Promise<HttpTypes.StoreCustomer> {
   const token = await getAuthToken();
   if (!token) throw new Error("Not authenticated.");
-  const { customer } = await sdk.store.customer.update(body, {}, {
-    Authorization: `Bearer ${token}`,
-  });
+  const { customer } = await sdk.store.customer.update(
+    body,
+    {},
+    {
+      Authorization: `Bearer ${token}`,
+    },
+  );
   return customer;
 }

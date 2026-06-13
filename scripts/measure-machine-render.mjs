@@ -10,17 +10,29 @@ const WIDTHS = [390, 768, 1024, 1440, 1920, 2560, 3840];
 const browser = await chromium.launch();
 const rows = [];
 for (const w of WIDTHS) {
-  const ctx = await browser.newContext({ viewport: { width: w, height: 1000 }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({
+    viewport: { width: w, height: 1000 },
+    deviceScaleFactor: 1,
+  });
   const page = await ctx.newPage();
   await page.goto(URL, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(800);
-  const box = await page.locator('img[alt*="claw machine"]').first().boundingBox().catch(() => null);
+  const box = await page
+    .locator('img[alt*="claw machine"]')
+    .first()
+    .boundingBox()
+    .catch(() => null);
   if (box) {
     const mw = box.width;
     // displayed machine: object-contain in aspect-36/25 box; source 1440x1000.
     // displayed height fits; url text native ~12px of 1000 → css height:
-    const urlCss = (12 * (mw * 25 / 36) / 1000);
-    rows.push({ vw: w, machineW: Math.round(mw), machineH: Math.round(box.height), urlTextCssPx: +urlCss.toFixed(2) });
+    const urlCss = (12 * ((mw * 25) / 36)) / 1000;
+    rows.push({
+      vw: w,
+      machineW: Math.round(mw),
+      machineH: Math.round(box.height),
+      urlTextCssPx: +urlCss.toFixed(2),
+    });
   } else {
     rows.push({ vw: w, machineW: null });
   }

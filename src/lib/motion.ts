@@ -8,7 +8,9 @@ export const EASE_EXIT: [number, number, number, number] = [0.55, 0, 0.85, 0.4];
 /** slab rise + card flip (live `swipe-card-back-first` / `swipe-card-flip`, 0.6s) */
 export const EASE_RISE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 /** metadata rows / rarity pill pop with overshoot (live `swipe-suspense-*`) */
-export const EASE_BACK: [number, number, number, number] = [0.34, 1.56, 0.64, 1];
+export const EASE_BACK: [number, number, number, number] = [
+  0.34, 1.56, 0.64, 1,
+];
 /** Tailwind's default transition curve — live uses it for UI fades + hover zoom */
 export const EASE_TW: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
@@ -30,7 +32,11 @@ export const HERO_SLIDE = { duration: 0.65, ease: "easeOut" } as const;
 export const HERO_ROTATE_MS = 4500;
 
 /** cylinder release spring — soft enough to carry release velocity (fling) */
-export const CYL_SPRING = { type: "spring", stiffness: 170, damping: 26 } as const;
+export const CYL_SPRING = {
+  type: "spring",
+  stiffness: 170,
+  damping: 26,
+} as const;
 /** seconds of release velocity projected into the fling target (inertia feel) */
 export const FLING_PROJECT = 0.22;
 /** velocity cap so a wild swipe can't spin absurdly (deg/s) */

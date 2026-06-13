@@ -49,7 +49,10 @@ const FILTER_GROUPS: FilterGroup[] = [
 ];
 
 const fmt = (n: number) =>
-  n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 function FilterSidebar({
   open,
@@ -83,7 +86,9 @@ function FilterSidebar({
         <div className="flex items-center justify-between border-b border-white/10 px-1 pb-3">
           <div className="flex items-center gap-2 text-white">
             <Filter className="h-4 w-4" aria-hidden />
-            <span className="font-heading text-sm font-bold tracking-tight">Filters</span>
+            <span className="font-heading text-sm font-bold tracking-tight">
+              Filters
+            </span>
           </div>
           <button
             type="button"
@@ -102,7 +107,9 @@ function FilterSidebar({
             onClick={() => onBuyNow(true)}
             className={cn(
               "rounded-lg py-1.5 text-xs font-semibold transition-colors",
-              buyNow ? "bg-white/10 text-white" : "text-white/45 hover:text-white/70",
+              buyNow
+                ? "bg-white/10 text-white"
+                : "text-white/45 hover:text-white/70",
             )}
           >
             Buy Now
@@ -112,7 +119,9 @@ function FilterSidebar({
             onClick={() => onBuyNow(false)}
             className={cn(
               "rounded-lg py-1.5 text-xs font-semibold transition-colors",
-              !buyNow ? "bg-white/10 text-white" : "text-white/45 hover:text-white/70",
+              !buyNow
+                ? "bg-white/10 text-white"
+                : "text-white/45 hover:text-white/70",
             )}
           >
             All
@@ -127,7 +136,9 @@ function FilterSidebar({
           >
             <span className="flex items-center gap-2.5">
               <Store className="h-4 w-4 text-white/55" aria-hidden />
-              <span className="text-[13px] font-medium text-white">Marketplace</span>
+              <span className="text-[13px] font-medium text-white">
+                Marketplace
+              </span>
             </span>
             <ChevronDown className="h-4 w-4 text-white/40" aria-hidden />
           </button>
@@ -145,7 +156,9 @@ function FilterSidebar({
               >
                 <span className="flex items-center gap-2.5">
                   <Icon className="h-4 w-4 text-white/55" aria-hidden />
-                  <span className="text-[13px] font-medium text-white">{label}</span>
+                  <span className="text-[13px] font-medium text-white">
+                    {label}
+                  </span>
                 </span>
                 <span className="flex items-center gap-2">
                   {count !== undefined && (
@@ -202,7 +215,11 @@ function MarketCard({ card }: { card: MarketplaceCard }) {
         >
           <Heart className="h-3.5 w-3.5" aria-hidden />
         </button>
-        <Link href={`/card/${card.id}`} className="block h-full w-full" aria-label={card.title}>
+        <Link
+          href={`/card/${card.id}`}
+          className="block h-full w-full"
+          aria-label={card.title}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={card.image}
@@ -215,11 +232,16 @@ function MarketCard({ card }: { card: MarketplaceCard }) {
 
       {/* Footer */}
       <div className="flex flex-col gap-2 p-3">
-        <Link href={`/card/${card.id}`} className="line-clamp-2 min-h-[32px] text-[12px] font-medium leading-4 text-white hover:text-white/80">
+        <Link
+          href={`/card/${card.id}`}
+          className="line-clamp-2 min-h-[32px] text-[12px] font-medium leading-4 text-white hover:text-white/80"
+        >
           {card.title}
         </Link>
         <div className="flex items-baseline justify-between">
-          <span className="text-sm font-bold text-white">${fmt(card.price)}</span>
+          <span className="text-sm font-bold text-white">
+            ${fmt(card.price)}
+          </span>
           <span className="text-[11px] font-medium text-white/45">
             FMV ${fmt(card.fmv)}
           </span>
@@ -328,7 +350,10 @@ export default function MarketplaceClient({
               type="button"
               className="flex shrink-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-white/[0.08]"
             >
-              <ChevronsUpDown className="h-3.5 w-3.5 text-white/55" aria-hidden />
+              <ChevronsUpDown
+                className="h-3.5 w-3.5 text-white/55"
+                aria-hidden
+              />
               <span className="text-white/55">Price:</span> Low to High
             </button>
           </div>
@@ -345,7 +370,11 @@ export default function MarketplaceClient({
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {cards.map((card, i) => (
-                <Reveal key={card.id} delay={Math.min(i, 11) * 45} className="h-full">
+                <Reveal
+                  key={card.id}
+                  delay={Math.min(i, 11) * 45}
+                  className="h-full"
+                >
                   <MarketCard card={card} />
                 </Reveal>
               ))}

@@ -11,17 +11,28 @@ const SLUGS = [
   ["soccer-pro", "pro-soccer"],
 ];
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 1400 }, deviceScaleFactor: 2 });
+const page = await browser.newPage({
+  viewport: { width: 1440, height: 1400 },
+  deviceScaleFactor: 2,
+});
 await page.emulateMedia({ reducedMotion: "reduce" });
 for (const [slug, label] of SLUGS) {
-  await page.goto(`http://localhost:4000/claw/${slug}`, { waitUntil: "networkidle" });
-  await page.addStyleTag({ content: "*{animation:none!important;transition:none!important;transform:none!important}" });
+  await page.goto(`http://localhost:4000/claw/${slug}`, {
+    waitUntil: "networkidle",
+  });
+  await page.addStyleTag({
+    content:
+      "*{animation:none!important;transition:none!important;transform:none!important}",
+  });
   await page.waitForTimeout(500);
   const img = page.locator('img[src*="-machine.webp"]').first();
   try {
     await img.waitFor({ state: "visible", timeout: 6000 });
     const box = await img.boundingBox();
-    await page.screenshot({ path: `docs/research/packdetail/full_${slug}.png`, clip: { x: box.x, y: box.y, width: box.width, height: box.height } });
+    await page.screenshot({
+      path: `docs/research/packdetail/full_${slug}.png`,
+      clip: { x: box.x, y: box.y, width: box.width, height: box.height },
+    });
     console.log(`${slug} (${label}) ok`);
   } catch (e) {
     console.log(`${slug} (${label}) FAIL ${e.message}`);

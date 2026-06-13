@@ -28,11 +28,14 @@ await page.waitForTimeout(400);
 
 // Pull Odds (by rarity) — read the rows under the "Pull Odds" heading.
 const pullOddsSection = page
-  .locator("section", { has: page.getByRole("heading", { name: /Pull Odds/i }) })
+  .locator("section", {
+    has: page.getByRole("heading", { name: /Pull Odds/i }),
+  })
   .first();
-r.rarityRows = await pullOddsSection.locator("li").allTextContents().then(
-  (a) => a.map((s) => s.replace(/\s+/g, " ").trim()),
-);
+r.rarityRows = await pullOddsSection
+  .locator("li")
+  .allTextContents()
+  .then((a) => a.map((s) => s.replace(/\s+/g, " ").trim()));
 r.rarityCount = r.rarityRows.length;
 
 // Top Hits — the value labels under each card.
@@ -51,11 +54,17 @@ r.hasLegendaryRow = r.rarityRows.some((t) => /Legendary/i.test(t));
 r.backendTopValuePresent = r.topHitValues.some((v) => /\$39\.80/.test(v));
 r.mockTopValuePresent = r.topHitValues.some((v) => /\$912\.00/.test(v));
 r.verdict =
-  r.rarityCount === 4 && !r.hasLegendaryRow && r.backendTopValuePresent && !r.mockTopValuePresent
+  r.rarityCount === 4 &&
+  !r.hasLegendaryRow &&
+  r.backendTopValuePresent &&
+  !r.mockTopValuePresent
     ? "PASS (backend-wired)"
     : "FAIL (mock fallback or wrong data)";
 
-await page.screenshot({ path: `${OUT}/01-detail-pokemon-mythic.png`, fullPage: true });
+await page.screenshot({
+  path: `${OUT}/01-detail-pokemon-mythic.png`,
+  fullPage: true,
+});
 
 console.log(JSON.stringify(r, null, 2));
 await browser.close();

@@ -9,10 +9,13 @@ const OUT = "docs/research/phase6/open-anim";
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } }); // motion ON
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1000 },
+}); // motion ON
 const page = await ctx.newPage();
 const r = { checks: {} };
-const ok = (k, c, d) => (r.checks[k] = c ? "PASS" : `FAIL${d ? " — " + d : ""}`);
+const ok = (k, c, d) =>
+  (r.checks[k] = c ? "PASS" : `FAIL${d ? " — " + d : ""}`);
 
 await page.goto(`${BASE}/claw/pokemon-mythic`, { waitUntil: "networkidle" });
 await page.waitForTimeout(600);
@@ -29,10 +32,14 @@ await page.screenshot({ path: `${OUT}/01-cylinder.png` });
 
 // Test drag-to-spin: drag horizontally across the cylinder, screenshot the rotated state
 const box = await dlg.boundingBox();
-const cx = box.x + box.width / 2, cy = box.y + box.height / 2 - 40;
+const cx = box.x + box.width / 2,
+  cy = box.y + box.height / 2 - 40;
 await page.mouse.move(cx, cy);
 await page.mouse.down();
-for (let i = 1; i <= 12; i++) { await page.mouse.move(cx - i * 24, cy); await page.waitForTimeout(16); }
+for (let i = 1; i <= 12; i++) {
+  await page.mouse.move(cx - i * 24, cy);
+  await page.waitForTimeout(16);
+}
 await page.mouse.up();
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${OUT}/02-after-drag.png` });
@@ -67,5 +74,7 @@ ok("shows_open_another", /Open another/i.test(txt));
 ok("has_card_img", (await dlg.locator("img").count()) >= 1);
 
 await browser.close();
-r.verdict = Object.values(r.checks).every((v) => v === "PASS") ? "PASS" : "FAIL";
+r.verdict = Object.values(r.checks).every((v) => v === "PASS")
+  ? "PASS"
+  : "FAIL";
 console.log(JSON.stringify(r, null, 2));

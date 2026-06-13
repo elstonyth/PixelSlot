@@ -16,7 +16,9 @@ const password = "Sup3rSecret!";
 const r = {};
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1000 },
+});
 const page = await ctx.newPage();
 const val = (loc) => loc.inputValue().catch(() => "<none>");
 const vis = (loc) => loc.isVisible().catch(() => false);
@@ -30,12 +32,18 @@ await page.getByPlaceholder("Password", { exact: true }).fill(password);
 await page.getByPlaceholder("Confirm password").fill(password);
 await page.getByRole("button", { name: "Create account" }).click();
 await page.waitForTimeout(1500);
-r.signedIn = await vis(page.getByRole("button", { name: "Account menu" }).first());
+r.signedIn = await vis(
+  page.getByRole("button", { name: "Account menu" }).first(),
+);
 
 // 2) ORDERS — empty state (no orders exist pre-checkout).
 await page.goto(`${BASE}/orders`, { waitUntil: "networkidle" });
-r.ordersEmptyHeading = await vis(page.getByRole("heading", { name: "No orders yet" }));
-r.ordersCta = await vis(page.getByRole("link", { name: "Browse the marketplace" }));
+r.ordersEmptyHeading = await vis(
+  page.getByRole("heading", { name: "No orders yet" }),
+);
+r.ordersCta = await vis(
+  page.getByRole("link", { name: "Browse the marketplace" }),
+);
 await page.screenshot({ path: `${OUT}/04-orders-empty.png` });
 
 // 3) SETTINGS — form prefilled from the real customer record.
@@ -51,15 +59,22 @@ await page.screenshot({ path: `${OUT}/05-settings-prefilled.png` });
 await displayName.fill(updatedName);
 await page.getByRole("button", { name: "Save changes" }).click();
 await page.waitForTimeout(1500);
-r.saveStatus = await page.getByRole("status").textContent().catch(() => "<none>");
+r.saveStatus = await page
+  .getByRole("status")
+  .textContent()
+  .catch(() => "<none>");
 // Header user-menu reflects the new name without a manual refetch.
-r.headerShowsUpdatedName = await vis(page.getByText(updatedName, { exact: false }).first());
+r.headerShowsUpdatedName = await vis(
+  page.getByText(updatedName, { exact: false }).first(),
+);
 await page.screenshot({ path: `${OUT}/06-settings-saved.png` });
 
 // 5) RELOAD → the change persisted to the backend (the round-trip proof).
 await page.reload({ waitUntil: "networkidle" });
 await page.waitForTimeout(1000);
-r.persistedAfterReload = await val(page.getByRole("textbox", { name: "Display name" }));
+r.persistedAfterReload = await val(
+  page.getByRole("textbox", { name: "Display name" }),
+);
 
 console.log(JSON.stringify(r, null, 2));
 await browser.close();

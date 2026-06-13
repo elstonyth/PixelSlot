@@ -32,11 +32,25 @@ import { writeFileSync } from "node:fs";
 writeFileSync("docs/research/packdetail/calibrate.html", html);
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1800, height: 900 }, deviceScaleFactor: 1.5 });
-await page.goto("file:///" + resolve("docs/research/packdetail/calibrate.html").replace(/\\/g, "/"), { waitUntil: "load" });
+const page = await browser.newPage({
+  viewport: { width: 1800, height: 900 },
+  deviceScaleFactor: 1.5,
+});
+await page.goto(
+  "file:///" +
+    resolve("docs/research/packdetail/calibrate.html").replace(/\\/g, "/"),
+  { waitUntil: "load" },
+);
 await page.waitForTimeout(1500);
 // also dump natural dims
-const dims = await page.evaluate(() => [...document.querySelectorAll("img")].map((i) => i.naturalWidth + "x" + i.naturalHeight));
-await page.screenshot({ path: "docs/research/packdetail/calibrate.png", fullPage: true });
+const dims = await page.evaluate(() =>
+  [...document.querySelectorAll("img")].map(
+    (i) => i.naturalWidth + "x" + i.naturalHeight,
+  ),
+);
+await page.screenshot({
+  path: "docs/research/packdetail/calibrate.png",
+  fullPage: true,
+});
 await browser.close();
 console.log("natural dims:", dims.join(", "));

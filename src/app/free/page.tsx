@@ -5,7 +5,8 @@ import AuthButton from "@/components/AuthButton";
 
 export const metadata: Metadata = {
   title: "Your Free Pack is Waiting — Pokenic",
-  description: "Join thousands of collectors pulling rare cards daily. Create your account and claim a free pack.",
+  description:
+    "Join thousands of collectors pulling rare cards daily. Create your account and claim a free pack.",
 };
 
 const PACKS = [
@@ -17,9 +18,21 @@ const PACKS = [
 ];
 
 const STEPS = [
-  { icon: UserPlus, title: "Create your account in seconds", body: "Sign up free — no card required to start." },
-  { icon: Gamepad2, title: "Try our $1 claw machine risk free", body: "Rip your first pack and reveal a real graded card." },
-  { icon: Banknote, title: "Keep or sell back for up to $500", body: "Hold it, ship it, or sell back instantly at 85–90%." },
+  {
+    icon: UserPlus,
+    title: "Create your account in seconds",
+    body: "Sign up free — no card required to start.",
+  },
+  {
+    icon: Gamepad2,
+    title: "Try our $1 claw machine risk free",
+    body: "Rip your first pack and reveal a real graded card.",
+  },
+  {
+    icon: Banknote,
+    title: "Keep or sell back for up to $500",
+    body: "Hold it, ship it, or sell back instantly at 85–90%.",
+  },
 ];
 
 export default function FreePage() {
@@ -55,7 +68,9 @@ export default function FreePage() {
                 alt=""
                 aria-hidden
                 className="h-20 w-auto object-contain drop-shadow-[0_16px_40px_rgba(0,0,0,0.5)] sm:h-28"
-                style={{ transform: `translateY(${Math.abs(i - 2) * 8}px) rotate(${(i - 2) * 5}deg)` }}
+                style={{
+                  transform: `translateY(${Math.abs(i - 2) * 8}px) rotate(${(i - 2) * 5}deg)`,
+                }}
               />
             ))}
           </div>
@@ -78,8 +93,12 @@ export default function FreePage() {
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-white/15 to-white/5 text-white">
                   <Icon className="h-5 w-5" aria-hidden />
                 </div>
-                <h3 className="mb-1.5 font-heading text-sm font-semibold text-white">{s.title}</h3>
-                <p className="text-[13px] leading-relaxed text-white/55">{s.body}</p>
+                <h3 className="mb-1.5 font-heading text-sm font-semibold text-white">
+                  {s.title}
+                </h3>
+                <p className="text-[13px] leading-relaxed text-white/55">
+                  {s.body}
+                </p>
               </div>
             </Reveal>
           );

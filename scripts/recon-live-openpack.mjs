@@ -12,7 +12,10 @@ mkdirSync(OUT, { recursive: true });
 
 const log = {};
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, userAgent: "Mozilla/5.0" });
+const ctx = await browser.newContext({
+  viewport: { width: 1440, height: 1000 },
+  userAgent: "Mozilla/5.0",
+});
 const page = await ctx.newPage();
 
 await page.goto(LIVE, { waitUntil: "domcontentloaded", timeout: 60000 });
@@ -27,14 +30,22 @@ log.buttons = await page.evaluate(() =>
 );
 
 // click the demo-spin trigger
-const demo = page.getByText(/free demo|demo spin|try a free|free spin/i).first();
+const demo = page
+  .getByText(/free demo|demo spin|try a free|free spin/i)
+  .first();
 let opened = false;
 try {
   await demo.click({ timeout: 8000 });
   opened = true;
 } catch {
   // fallback: any button containing "demo"
-  try { await page.getByRole("button", { name: /demo/i }).first().click({ timeout: 5000 }); opened = true; } catch {}
+  try {
+    await page
+      .getByRole("button", { name: /demo/i })
+      .first()
+      .click({ timeout: 5000 });
+    opened = true;
+  } catch {}
 }
 log.demo_opened = opened;
 await page.waitForTimeout(2500);
@@ -45,8 +56,11 @@ log.overlay = await page.evaluate(() => {
   // the overlay is typically a fixed full-screen node
   const fixed = [...document.querySelectorAll("div")].filter((d) => {
     const s = getComputedStyle(d);
-    return s.position === "fixed" && d.getBoundingClientRect().width > window.innerWidth * 0.8 &&
-      d.getBoundingClientRect().height > window.innerHeight * 0.8;
+    return (
+      s.position === "fixed" &&
+      d.getBoundingClientRect().width > window.innerWidth * 0.8 &&
+      d.getBoundingClientRect().height > window.innerHeight * 0.8
+    );
   });
   const overlay = fixed[fixed.length - 1];
   if (!overlay) return null;
@@ -57,34 +71,60 @@ log.overlay = await page.evaluate(() => {
       const tr = s.transform;
       if (tr && tr !== "none" && tr.includes("matrix3d")) {
         const r = el.getBoundingClientRect();
-        return { tag: el.tagName, cls: (el.className || "").toString().slice(0, 60), transform: tr, perspective: getComputedStyle(el.parentElement).perspective, w: Math.round(r.width), h: Math.round(r.height), x: Math.round(r.x), y: Math.round(r.y) };
+        return {
+          tag: el.tagName,
+          cls: (el.className || "").toString().slice(0, 60),
+          transform: tr,
+          perspective: getComputedStyle(el.parentElement).perspective,
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+          x: Math.round(r.x),
+          y: Math.round(r.y),
+        };
       }
       return null;
     })
     .filter(Boolean);
   // captions / pills text in overlay
-  const texts = [...overlay.querySelectorAll("*")].map((e) => e.childElementCount === 0 ? (e.textContent || "").trim() : "").filter((t) => t && t.length < 40);
-  return { transformedCount: transformed.length, transformed: transformed.slice(0, 12), texts: [...new Set(texts)].slice(0, 20) };
+  const texts = [...overlay.querySelectorAll("*")]
+    .map((e) => (e.childElementCount === 0 ? (e.textContent || "").trim() : ""))
+    .filter((t) => t && t.length < 40);
+  return {
+    transformedCount: transformed.length,
+    transformed: transformed.slice(0, 12),
+    texts: [...new Set(texts)].slice(0, 20),
+  };
 });
 
 // Test drag-to-rotate: drag horizontally across the center and screenshot before/after
-const cx = 720, cy = 460;
+const cx = 720,
+  cy = 460;
 await page.mouse.move(cx, cy);
 await page.mouse.down();
-for (let i = 1; i <= 10; i++) { await page.mouse.move(cx - i * 28, cy); await page.waitForTimeout(20); }
+for (let i = 1; i <= 10; i++) {
+  await page.mouse.move(cx - i * 28, cy);
+  await page.waitForTimeout(20);
+}
 await page.mouse.up();
 await page.waitForTimeout(900);
 await page.screenshot({ path: `${OUT}/02-after-drag.png` });
 log.afterDrag = await page.evaluate(() => {
-  const fixed = [...document.querySelectorAll("div")].filter((d) => getComputedStyle(d).position === "fixed");
+  const fixed = [...document.querySelectorAll("div")].filter(
+    (d) => getComputedStyle(d).position === "fixed",
+  );
   const o = fixed[fixed.length - 1];
-  const t = [...(o?.querySelectorAll("*") || [])].map((el) => getComputedStyle(el).transform).filter((x) => x && x.includes("matrix3d"));
+  const t = [...(o?.querySelectorAll("*") || [])]
+    .map((el) => getComputedStyle(el).transform)
+    .filter((x) => x && x.includes("matrix3d"));
   return { matrix3dCount: t.length, sample: t[0] };
 });
 
 // Film the carousel area for ~2s (in case it auto-rotates)
 for (let i = 0; i < 12; i++) {
-  await page.screenshot({ path: `${OUT}/film-${String(i).padStart(2, "0")}.png`, clip: { x: 360, y: 180, width: 720, height: 560 } });
+  await page.screenshot({
+    path: `${OUT}/film-${String(i).padStart(2, "0")}.png`,
+    clip: { x: 360, y: 180, width: 720, height: 560 },
+  });
   await page.waitForTimeout(130);
 }
 

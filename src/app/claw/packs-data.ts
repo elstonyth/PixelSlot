@@ -58,14 +58,62 @@ export const CATEGORIES: PackCategory[] = [
     heading: "Pokémon Packs",
     icon: CAT_ICON.pokemon,
     packs: [
-      { id: "pokemon-black", name: "Black Pack", price: "$2,500", image: "/images/claw/black-pack-icon.webp", boost: true, buybackPercent: 92 },
-      { id: "pokemon-diamond", name: "Diamond Pack", price: "$5,000", image: "/images/claw/diamond-pack-icon.webp", boost: true, buybackPercent: 92 },
-      { id: "pokemon-mythic", name: "Mythic Pack", price: "$1,000", image: "/images/claw/mythic-pack-icon.webp", boost: true },
-      { id: "pokemon-legend", name: "Legend Pack", price: "$250", image: "/images/claw/legend-pack-icon.webp", boost: true },
-      { id: "pokemon-elite", name: "Elite Pack", price: "$50", image: "/images/claw/elite-pack-icon.webp" },
-      { id: "pokemon-platinum", name: "Platinum Pack", price: "$500", image: "/images/claw/platinum-pack-icon.webp", boost: true },
-      { id: "pokemon-rookie", name: "Rookie Pack", price: "$25", image: "/images/claw/rookie-pack-icon.webp" },
-      { id: "pokemon-trainer", name: "Trainer Pack", price: "$10", image: "/images/claw/trainer-pack-icon.webp", inStock: false },
+      {
+        id: "pokemon-black",
+        name: "Black Pack",
+        price: "$2,500",
+        image: "/images/claw/black-pack-icon.webp",
+        boost: true,
+        buybackPercent: 92,
+      },
+      {
+        id: "pokemon-diamond",
+        name: "Diamond Pack",
+        price: "$5,000",
+        image: "/images/claw/diamond-pack-icon.webp",
+        boost: true,
+        buybackPercent: 92,
+      },
+      {
+        id: "pokemon-mythic",
+        name: "Mythic Pack",
+        price: "$1,000",
+        image: "/images/claw/mythic-pack-icon.webp",
+        boost: true,
+      },
+      {
+        id: "pokemon-legend",
+        name: "Legend Pack",
+        price: "$250",
+        image: "/images/claw/legend-pack-icon.webp",
+        boost: true,
+      },
+      {
+        id: "pokemon-elite",
+        name: "Elite Pack",
+        price: "$50",
+        image: "/images/claw/elite-pack-icon.webp",
+      },
+      {
+        id: "pokemon-platinum",
+        name: "Platinum Pack",
+        price: "$500",
+        image: "/images/claw/platinum-pack-icon.webp",
+        boost: true,
+      },
+      {
+        id: "pokemon-rookie",
+        name: "Rookie Pack",
+        price: "$25",
+        image: "/images/claw/rookie-pack-icon.webp",
+      },
+      {
+        id: "pokemon-trainer",
+        name: "Trainer Pack",
+        price: "$10",
+        image: "/images/claw/trainer-pack-icon.webp",
+        inStock: false,
+      },
     ],
   },
   {
@@ -74,10 +122,32 @@ export const CATEGORIES: PackCategory[] = [
     heading: "One Piece Packs",
     icon: CAT_ICON.onepiece,
     packs: [
-      { id: "onepiece-legend", name: "Legend Pack", price: "$250", image: "/images/claw/legend-one-piece-pack-icon.webp", boost: true },
-      { id: "onepiece-platinum", name: "Platinum Pack", price: "$500", image: "/images/claw/one-piece-platinum-pack-icon.webp", boost: true },
-      { id: "onepiece-elite", name: "Elite Pack", price: "$50", image: "/images/claw/elite-one-piece-pack-icon.webp" },
-      { id: "onepiece-starter", name: "Starter Pack", price: "$25", image: "/images/claw/starter-one-piece-pack-icon.webp" },
+      {
+        id: "onepiece-legend",
+        name: "Legend Pack",
+        price: "$250",
+        image: "/images/claw/legend-one-piece-pack-icon.webp",
+        boost: true,
+      },
+      {
+        id: "onepiece-platinum",
+        name: "Platinum Pack",
+        price: "$500",
+        image: "/images/claw/one-piece-platinum-pack-icon.webp",
+        boost: true,
+      },
+      {
+        id: "onepiece-elite",
+        name: "Elite Pack",
+        price: "$50",
+        image: "/images/claw/elite-one-piece-pack-icon.webp",
+      },
+      {
+        id: "onepiece-starter",
+        name: "Starter Pack",
+        price: "$25",
+        image: "/images/claw/starter-one-piece-pack-icon.webp",
+      },
     ],
   },
   {
@@ -86,9 +156,27 @@ export const CATEGORIES: PackCategory[] = [
     heading: "Basketball Packs",
     icon: CAT_ICON.nba,
     packs: [
-      { id: "nba-black", name: "Black Pack", price: "$1,000", image: "/images/claw/black-pack-jjnfuk-icon.webp", boost: true },
-      { id: "nba-legend", name: "Legend Pack", price: "$250", image: "/images/claw/legend-pack-1dpaec-icon.webp", boost: true },
-      { id: "nba-platinum", name: "Platinum Pack", price: "$500", image: "/images/claw/modern-grails-noafw0-icon.webp", boost: true },
+      {
+        id: "nba-black",
+        name: "Black Pack",
+        price: "$1,000",
+        image: "/images/claw/black-pack-jjnfuk-icon.webp",
+        boost: true,
+      },
+      {
+        id: "nba-legend",
+        name: "Legend Pack",
+        price: "$250",
+        image: "/images/claw/legend-pack-1dpaec-icon.webp",
+        boost: true,
+      },
+      {
+        id: "nba-platinum",
+        name: "Platinum Pack",
+        price: "$500",
+        image: "/images/claw/modern-grails-noafw0-icon.webp",
+        boost: true,
+      },
     ],
   },
   {
@@ -97,9 +185,25 @@ export const CATEGORIES: PackCategory[] = [
     heading: "Baseball Packs",
     icon: CAT_ICON.mlb,
     packs: [
-      { id: "baseball-pro", name: "Pro Pack", price: "$100", image: "/images/claw/pro-baseball-pack-icon.webp" },
-      { id: "baseball-legend", name: "Legend Pack", price: "$250", image: "/images/claw/legend-baseball-pack-icon.webp", boost: true },
-      { id: "baseball-starter", name: "Starter Pack", price: "$25", image: "/images/claw/starter-baseball-pack-icon.webp" },
+      {
+        id: "baseball-pro",
+        name: "Pro Pack",
+        price: "$100",
+        image: "/images/claw/pro-baseball-pack-icon.webp",
+      },
+      {
+        id: "baseball-legend",
+        name: "Legend Pack",
+        price: "$250",
+        image: "/images/claw/legend-baseball-pack-icon.webp",
+        boost: true,
+      },
+      {
+        id: "baseball-starter",
+        name: "Starter Pack",
+        price: "$25",
+        image: "/images/claw/starter-baseball-pack-icon.webp",
+      },
     ],
   },
   {
@@ -108,9 +212,25 @@ export const CATEGORIES: PackCategory[] = [
     heading: "Football Packs",
     icon: CAT_ICON.nfl,
     packs: [
-      { id: "football-elite", name: "Elite Pack", price: "$50", image: "/images/claw/elite-football-pack-icon.webp" },
-      { id: "football-starter", name: "Starter Pack", price: "$25", image: "/images/claw/starter-football-pack-icon.webp" },
-      { id: "football-platinum", name: "Platinum Pack", price: "$500", image: "/images/claw/platinum-football-pack-icon.webp", boost: true },
+      {
+        id: "football-elite",
+        name: "Elite Pack",
+        price: "$50",
+        image: "/images/claw/elite-football-pack-icon.webp",
+      },
+      {
+        id: "football-starter",
+        name: "Starter Pack",
+        price: "$25",
+        image: "/images/claw/starter-football-pack-icon.webp",
+      },
+      {
+        id: "football-platinum",
+        name: "Platinum Pack",
+        price: "$500",
+        image: "/images/claw/platinum-football-pack-icon.webp",
+        boost: true,
+      },
     ],
   },
   {
@@ -118,21 +238,42 @@ export const CATEGORIES: PackCategory[] = [
     tab: "Soccer",
     heading: "Soccer Packs",
     icon: CAT_ICON.soccer,
-    packs: [{ id: "soccer-pro", name: "Pro Pack", price: "$100", image: "/images/claw/pro-soccer-pack-icon.webp" }],
+    packs: [
+      {
+        id: "soccer-pro",
+        name: "Pro Pack",
+        price: "$100",
+        image: "/images/claw/pro-soccer-pack-icon.webp",
+      },
+    ],
   },
   {
     id: "yugioh",
     tab: "Yu-Gi-Oh!",
     heading: "Yu-Gi-Oh! Packs",
     icon: CAT_ICON.yugioh,
-    packs: [{ id: "yugioh-pro", name: "Pro Pack", price: "$25", image: "/images/claw/yugioh-pro-pack-icon.webp" }],
+    packs: [
+      {
+        id: "yugioh-pro",
+        name: "Pro Pack",
+        price: "$25",
+        image: "/images/claw/yugioh-pro-pack-icon.webp",
+      },
+    ],
   },
   {
     id: "riftbound",
     tab: "Riftbound",
     heading: "Riftbound Packs",
     icon: CAT_ICON.riftbound,
-    packs: [{ id: "riftbound-starter", name: "Starter Pack", price: "$25", image: "/images/claw/starter-riftbound-pack-icon.webp" }],
+    packs: [
+      {
+        id: "riftbound-starter",
+        name: "Starter Pack",
+        price: "$25",
+        image: "/images/claw/starter-riftbound-pack-icon.webp",
+      },
+    ],
   },
   {
     // Live taxonomy includes Dragon Ball, but it currently has no in-stock packs
@@ -145,10 +286,19 @@ export const CATEGORIES: PackCategory[] = [
   },
 ];
 
-export type ResolvedPack = Pack & { categoryId: string; categoryName: string; icon: string };
+export type ResolvedPack = Pack & {
+  categoryId: string;
+  categoryName: string;
+  icon: string;
+};
 
 export const ALL_PACKS: ResolvedPack[] = CATEGORIES.flatMap((c) =>
-  c.packs.map((p) => ({ ...p, categoryId: c.id, categoryName: c.tab, icon: c.icon })),
+  c.packs.map((p) => ({
+    ...p,
+    categoryId: c.id,
+    categoryName: c.tab,
+    icon: c.icon,
+  })),
 );
 
 export function findPack(slug: string): ResolvedPack | null {
@@ -169,11 +319,20 @@ export function findCategory(slug: string): PackCategory | null {
 // animated AVIF (claw slides L-R inside the file); these are rebranded frame-by-frame. The rest
 // fall back to the static rebranded webp.
 const CLAW_HAS_ANIM = new Set([
-  "mythic-pack", "legend-pack", "elite-pack", "platinum-pack", "rookie-pack", "trainer-pack",
-  "starter-riftbound-pack", "legend-pack-1dpaec", "modern-grails-noafw0", "pro-soccer-pack",
+  "mythic-pack",
+  "legend-pack",
+  "elite-pack",
+  "platinum-pack",
+  "rookie-pack",
+  "trainer-pack",
+  "starter-riftbound-pack",
+  "legend-pack-1dpaec",
+  "modern-grails-noafw0",
+  "pro-soccer-pack",
   // premium pokemon tiers: full banner+placard+url rebrand on the busy red-neon / crystal-refraction
   // backgrounds (scripts/rebrand-premium-banner.mjs blur-patch + make_patch per-base BAND).
-  "black-pack", "diamond-pack",
+  "black-pack",
+  "diamond-pack",
   // NBA Black: 142-frame anim, banner+placard+url already rebranded "pokenic" (only a sub-pixel
   // preview-card watermark remains, below render-scale legibility).
   "black-pack-jjnfuk",
@@ -182,8 +341,11 @@ const CLAW_HAS_ANIM = new Set([
   // (Yu-Gi-Oh) the "pokenic / claw." placard (scripts/rebrand-onepiece-yugioh.mjs blur-patch + redraw,
   // make_patch BAND=0 so the bottom-only mask never freezes the claw). Platinum carries no legible
   // phygitals (occluded by its silver waves), so its anim is the source re-used as-is.
-  "elite-one-piece-pack", "legend-one-piece-pack", "starter-one-piece-pack",
-  "one-piece-platinum-pack", "yugioh-pro-pack",
+  "elite-one-piece-pack",
+  "legend-one-piece-pack",
+  "starter-one-piece-pack",
+  "one-piece-platinum-pack",
+  "yugioh-pro-pack",
 ]);
 
 // Packs that ship NO rebranded claw-machine render yet. Empty now that the premium tiers are baked;
@@ -196,11 +358,15 @@ const CLAW_NO_MACHINE = new Set<string>([]);
 const CLAW_REV = "17";
 
 export function clawMachine(pack: Pack): { webp: string; anim?: string } {
-  const base = pack.image.replace("/images/claw/", "").replace("-icon.webp", "");
+  const base = pack.image
+    .replace("/images/claw/", "")
+    .replace("-icon.webp", "");
   if (CLAW_NO_MACHINE.has(base)) return { webp: pack.image };
   return {
     webp: `/images/claw/${base}-machine.webp?v=${CLAW_REV}`,
-    anim: CLAW_HAS_ANIM.has(base) ? `/images/claw/${base}-anim.avif?v=${CLAW_REV}` : undefined,
+    anim: CLAW_HAS_ANIM.has(base)
+      ? `/images/claw/${base}-anim.avif?v=${CLAW_REV}`
+      : undefined,
   };
 }
 
@@ -214,19 +380,67 @@ export function priceNumber(price: string): number {
 // ---------------------------------------------------------------------------
 
 export type Rarity = "Legendary" | "Epic" | "Rare" | "Uncommon" | "Common";
-export type PackCard = { id: string; name: string; image: string; value: string; rarity: Rarity };
+export type PackCard = {
+  id: string;
+  name: string;
+  image: string;
+  value: string;
+  rarity: Rarity;
+};
 
 const cardImg = (id: string) => `/cdn/cards/${id}.webp`;
 
 // Real localized graded-card art (shared with Recent Pulls / Marketplace).
 export const CARD_POOL: PackCard[] = [
-  { id: "celebi", name: "Jet-Black Spirit Celebi V CGC 10", image: cardImg("FQEYWuGiKTkJpZSG6XqGHDBmH6EmxctEqk1kAT2MYzHc"), value: "$912.00", rarity: "Legendary" },
-  { id: "mewtwo", name: "Rocket Gang Mewtwo ex CGC 10", image: cardImg("9kRLkdbbvzm335GBvraQrWrNVs72gzEzynvP1RPvftTx"), value: "$540.00", rarity: "Epic" },
-  { id: "darkrai", name: "Crown Zenith Darkrai VSTAR PSA 10", image: cardImg("4h13RDtFX4MWNYjvgMPeBS1hcL4AewupiFzDvyFUUTkd"), value: "$318.00", rarity: "Epic" },
-  { id: "jolteon", name: "Terastal Fest Jolteon ex CGC 10", image: cardImg("BEnddEeBXBHyL5qWXCg6sKS5VmUbUtZaKJ1aVB8yCWHN"), value: "$156.00", rarity: "Rare" },
-  { id: "rapidash", name: "Mega Start Deck Rapidash CGC 10", image: cardImg("FFbo5jfXHHQWN8bmc88UDYSDP5QzYCCj6RwUkiWYyffC"), value: "$84.50", rarity: "Uncommon" },
-  { id: "hooh", name: "Incandescent Arcana Ho-Oh V CGC 10", image: cardImg("FjAJZ7en585MpnoLUGbuALHEmbBAPd61EZCefQzFMmRX"), value: "$213.00", rarity: "Rare" },
-  { id: "gengar", name: "Scarlet & Violet 151 Gengar CGC 10", image: cardImg("6noxMybjBLtLqicAUTrG63VhWG2FgWzDBsQGnnZEyNCG"), value: "$299.00", rarity: "Epic" },
+  {
+    id: "celebi",
+    name: "Jet-Black Spirit Celebi V CGC 10",
+    image: cardImg("FQEYWuGiKTkJpZSG6XqGHDBmH6EmxctEqk1kAT2MYzHc"),
+    value: "$912.00",
+    rarity: "Legendary",
+  },
+  {
+    id: "mewtwo",
+    name: "Rocket Gang Mewtwo ex CGC 10",
+    image: cardImg("9kRLkdbbvzm335GBvraQrWrNVs72gzEzynvP1RPvftTx"),
+    value: "$540.00",
+    rarity: "Epic",
+  },
+  {
+    id: "darkrai",
+    name: "Crown Zenith Darkrai VSTAR PSA 10",
+    image: cardImg("4h13RDtFX4MWNYjvgMPeBS1hcL4AewupiFzDvyFUUTkd"),
+    value: "$318.00",
+    rarity: "Epic",
+  },
+  {
+    id: "jolteon",
+    name: "Terastal Fest Jolteon ex CGC 10",
+    image: cardImg("BEnddEeBXBHyL5qWXCg6sKS5VmUbUtZaKJ1aVB8yCWHN"),
+    value: "$156.00",
+    rarity: "Rare",
+  },
+  {
+    id: "rapidash",
+    name: "Mega Start Deck Rapidash CGC 10",
+    image: cardImg("FFbo5jfXHHQWN8bmc88UDYSDP5QzYCCj6RwUkiWYyffC"),
+    value: "$84.50",
+    rarity: "Uncommon",
+  },
+  {
+    id: "hooh",
+    name: "Incandescent Arcana Ho-Oh V CGC 10",
+    image: cardImg("FjAJZ7en585MpnoLUGbuALHEmbBAPd61EZCefQzFMmRX"),
+    value: "$213.00",
+    rarity: "Rare",
+  },
+  {
+    id: "gengar",
+    name: "Scarlet & Violet 151 Gengar CGC 10",
+    image: cardImg("6noxMybjBLtLqicAUTrG63VhWG2FgWzDBsQGnnZEyNCG"),
+    value: "$299.00",
+    rarity: "Epic",
+  },
 ];
 
 // Per-rarity pull odds (MOCK — published transparently by the backend in production).

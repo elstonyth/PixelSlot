@@ -14,8 +14,15 @@ const html = `<!doctype html><body style="margin:0;background:#000">
 writeFileSync("docs/research/packdetail/zoom.html", html);
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1600, height: 520 }, deviceScaleFactor: 2 });
-await page.goto("file:///" + resolve("docs/research/packdetail/zoom.html").replace(/\\/g, "/"), { waitUntil: "load" });
+const page = await browser.newPage({
+  viewport: { width: 1600, height: 520 },
+  deviceScaleFactor: 2,
+});
+await page.goto(
+  "file:///" +
+    resolve("docs/research/packdetail/zoom.html").replace(/\\/g, "/"),
+  { waitUntil: "load" },
+);
 await page.waitForTimeout(1000);
 await page.screenshot({ path: "docs/research/packdetail/zoom-mythic.png" });
 await browser.close();

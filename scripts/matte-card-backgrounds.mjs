@@ -21,7 +21,9 @@ import sharp from "sharp";
 
 const DIR = path.resolve("public/cdn/cards");
 const DRY = process.argv.includes("--dry");
-const METRICS_OUT = path.resolve("docs/research/clone-film/v2/matte-metrics.json");
+const METRICS_OUT = path.resolve(
+  "docs/research/clone-film/v2/matte-metrics.json",
+);
 
 const median = (arr) => {
   const s = [...arr].sort((a, b) => a - b);
@@ -30,33 +32,71 @@ const median = (arr) => {
 
 async function matteOne(file) {
   const buf = fs.readFileSync(file);
-  const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  const W = info.width, H = info.height, N = W * H;
+  const { data, info } = await sharp(buf)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const W = info.width,
+    H = info.height,
+    N = W * H;
 
   // --- 1. bg reference from the border ring ---
-  const rs = [], gs = [], bs = [];
-  const pushPx = (i) => { rs.push(data[i * 4]); gs.push(data[i * 4 + 1]); bs.push(data[i * 4 + 2]); };
-  for (let x = 0; x < W; x++) { pushPx(x); pushPx((H - 1) * W + x); }
-  for (let y = 0; y < H; y++) { pushPx(y * W); pushPx(y * W + W - 1); }
-  const bgR = median(rs), bgG = median(gs), bgB = median(bs);
+  const rs = [],
+    gs = [],
+    bs = [];
+  const pushPx = (i) => {
+    rs.push(data[i * 4]);
+    gs.push(data[i * 4 + 1]);
+    bs.push(data[i * 4 + 2]);
+  };
+  for (let x = 0; x < W; x++) {
+    pushPx(x);
+    pushPx((H - 1) * W + x);
+  }
+  for (let y = 0; y < H; y++) {
+    pushPx(y * W);
+    pushPx(y * W + W - 1);
+  }
+  const bgR = median(rs),
+    bgG = median(gs),
+    bgB = median(bs);
   const bgLum = Math.max(bgR, bgG, bgB);
   // dark studio backdrop -> tight tolerance; white scan bg -> looser
   const TOL = bgLum < 80 ? 38 : 26;
   const isBg = (i) => {
-    const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
-    return Math.abs(r - bgR) < TOL && Math.abs(g - bgG) < TOL && Math.abs(b - bgB) < TOL;
+    const r = data[i * 4],
+      g = data[i * 4 + 1],
+      b = data[i * 4 + 2];
+    return (
+      Math.abs(r - bgR) < TOL &&
+      Math.abs(g - bgG) < TOL &&
+      Math.abs(b - bgB) < TOL
+    );
   };
 
   // --- 2. BFS from the border through near-bg pixels ---
   const bg = new Uint8Array(N); // 1 = background
   const queue = new Int32Array(N);
-  let qh = 0, qt = 0;
-  const seed = (i) => { if (!bg[i] && isBg(i)) { bg[i] = 1; queue[qt++] = i; } };
-  for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x); }
-  for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1); }
+  let qh = 0,
+    qt = 0;
+  const seed = (i) => {
+    if (!bg[i] && isBg(i)) {
+      bg[i] = 1;
+      queue[qt++] = i;
+    }
+  };
+  for (let x = 0; x < W; x++) {
+    seed(x);
+    seed((H - 1) * W + x);
+  }
+  for (let y = 0; y < H; y++) {
+    seed(y * W);
+    seed(y * W + W - 1);
+  }
   while (qh < qt) {
     const i = queue[qh++];
-    const x = i % W, y = (i / W) | 0;
+    const x = i % W,
+      y = (i / W) | 0;
     if (x > 0) seed(i - 1);
     if (x < W - 1) seed(i + 1);
     if (y > 0) seed(i - W);
@@ -69,13 +109,16 @@ async function matteOne(file) {
   for (let i = 0; i < N; i++) keep[i] = bg[i] ? 0 : 1;
   const pass = (src, hit) => {
     // separable square dilation: out=1 if any src=hit within Chebyshev radius R
-    const tmp = new Uint8Array(N), out = new Uint8Array(N);
+    const tmp = new Uint8Array(N),
+      out = new Uint8Array(N);
     for (let y = 0; y < H; y++) {
       let run = 0;
       for (let x = 0; x < W + R; x++) {
         if (x < W && src[y * W + x] === hit) run = 2 * R + 1;
         const ox = x - R;
-        if (ox >= 0 && ox < W) { tmp[y * W + ox] = run > 0 ? 1 : 0; }
+        if (ox >= 0 && ox < W) {
+          tmp[y * W + ox] = run > 0 ? 1 : 0;
+        }
         if (run > 0) run--;
       }
     }
@@ -101,26 +144,43 @@ async function matteOne(file) {
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const i = y * W + x;
-      let sum = 0, cnt = 0;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const nx = x + dx, ny = y + dy;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H) { sum += alpha[ny * W + nx]; cnt++; }
-      }
+      let sum = 0,
+        cnt = 0;
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx,
+            ny = y + dy;
+          if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+            sum += alpha[ny * W + nx];
+            cnt++;
+          }
+        }
       soft[i] = Math.round(sum / cnt);
     }
   }
   for (let i = 0; i < N; i++) data[i * 4 + 3] = soft[i];
 
   // --- 5. metrics + save ---
-  let transparent = 0, opaqueBorder = 0, interiorHoles = 0;
+  let transparent = 0,
+    opaqueBorder = 0,
+    interiorHoles = 0;
   for (let i = 0; i < N; i++) if (soft[i] < 16) transparent++;
-  for (let x = 0; x < W; x++) { if (soft[x] > 128) opaqueBorder++; if (soft[(H - 1) * W + x] > 128) opaqueBorder++; }
-  for (let y = 0; y < H; y++) { if (soft[y * W] > 128) opaqueBorder++; if (soft[y * W + W - 1] > 128) opaqueBorder++; }
+  for (let x = 0; x < W; x++) {
+    if (soft[x] > 128) opaqueBorder++;
+    if (soft[(H - 1) * W + x] > 128) opaqueBorder++;
+  }
+  for (let y = 0; y < H; y++) {
+    if (soft[y * W] > 128) opaqueBorder++;
+    if (soft[y * W + W - 1] > 128) opaqueBorder++;
+  }
   // interior holes = transparent pixels NOT in the flood bg (shouldn't exist after closing)
-  for (let i = 0; i < N; i++) if (soft[i] < 16 && !bg[i] && keep[i]) interiorHoles++;
+  for (let i = 0; i < N; i++)
+    if (soft[i] < 16 && !bg[i] && keep[i]) interiorHoles++;
 
   if (!DRY) {
-    const out = await sharp(Buffer.from(data.buffer), { raw: { width: W, height: H, channels: 4 } })
+    const out = await sharp(Buffer.from(data.buffer), {
+      raw: { width: W, height: H, channels: 4 },
+    })
       .webp({ quality: 92 })
       .toBuffer();
     fs.writeFileSync(file, out);
@@ -135,17 +195,28 @@ async function matteOne(file) {
   };
 }
 
-const files = fs.readdirSync(DIR).filter((f) => f.endsWith(".webp")).map((f) => path.join(DIR, f));
+const files = fs
+  .readdirSync(DIR)
+  .filter((f) => f.endsWith(".webp"))
+  .map((f) => path.join(DIR, f));
 const metrics = [];
 let warn = 0;
 for (const f of files) {
   const m = await matteOne(f);
   metrics.push(m);
   // sanity: a slab cutout should clear 15-60% of the frame and leave the border transparent
-  const bad = m.transparentPct < 8 || m.transparentPct > 70 || m.opaqueBorderPx > 40 || m.interiorHoles > 0;
+  const bad =
+    m.transparentPct < 8 ||
+    m.transparentPct > 70 ||
+    m.opaqueBorderPx > 40 ||
+    m.interiorHoles > 0;
   if (bad) warn++;
-  console.log(`${bad ? "WARN " : "ok   "}${m.file}  bg=${m.bg}  transparent=${m.transparentPct}%  opaqueBorder=${m.opaqueBorderPx}px  holes=${m.interiorHoles}`);
+  console.log(
+    `${bad ? "WARN " : "ok   "}${m.file}  bg=${m.bg}  transparent=${m.transparentPct}%  opaqueBorder=${m.opaqueBorderPx}px  holes=${m.interiorHoles}`,
+  );
 }
 fs.mkdirSync(path.dirname(METRICS_OUT), { recursive: true });
 fs.writeFileSync(METRICS_OUT, JSON.stringify(metrics, null, 1));
-console.log(`\n${files.length} files matted, ${warn} warnings${DRY ? " (dry run)" : ""} — metrics: ${METRICS_OUT}`);
+console.log(
+  `\n${files.length} files matted, ${warn} warnings${DRY ? " (dry run)" : ""} — metrics: ${METRICS_OUT}`,
+);

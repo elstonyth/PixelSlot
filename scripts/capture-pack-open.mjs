@@ -11,7 +11,8 @@ import { mkdirSync } from "node:fs";
 
 const BASE = "http://localhost:4000";
 const API = "http://localhost:9000";
-const PK = "pk_a23d4482ee6673a760097f3d013aab59679ceaebab54f987638cbeeb0132863c";
+const PK =
+  "pk_a23d4482ee6673a760097f3d013aab59679ceaebab54f987638cbeeb0132863c";
 const OUT = "docs/research/phase5";
 mkdirSync(OUT, { recursive: true });
 
@@ -38,7 +39,9 @@ await page.waitForTimeout(400);
 
 // Recent Pulls — the live feed.
 const recentSection = page
-  .locator("section", { has: page.getByRole("heading", { name: /Recent Pulls/i }) })
+  .locator("section", {
+    has: page.getByRole("heading", { name: /Recent Pulls/i }),
+  })
   .first();
 const recentRows = await recentSection
   .locator("li")
@@ -50,7 +53,9 @@ r.domShowsEmptyState = recentRows.some((t) => /No pulls yet/i.test(t));
 
 // Pull Odds (5a regression) — 4 rarities, no Legendary.
 const oddsSection = page
-  .locator("section", { has: page.getByRole("heading", { name: /Pull Odds/i }) })
+  .locator("section", {
+    has: page.getByRole("heading", { name: /Pull Odds/i }),
+  })
   .first();
 const oddsRows = await oddsSection.locator("li").allTextContents();
 r.rarityCount = oddsRows.length;
@@ -81,6 +86,9 @@ r.verdict =
     ? "PASS (5b backend-wired)"
     : "FAIL (mock fallback / not gated / odds regressed / PII leak)";
 
-await page.screenshot({ path: `${OUT}/02-open-pokemon-mythic.png`, fullPage: true });
+await page.screenshot({
+  path: `${OUT}/02-open-pokemon-mythic.png`,
+  fullPage: true,
+});
 console.log(JSON.stringify(r, null, 2));
 await browser.close();

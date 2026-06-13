@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Package } from "lucide-react";
 import type { HttpTypes } from "@medusajs/types";
-import { AccountHeader, MockTable, Badge, Panel } from "@/components/account/ui";
+import {
+  AccountHeader,
+  MockTable,
+  Badge,
+  Panel,
+} from "@/components/account/ui";
 import { getOrders } from "@/lib/data/customer";
 import { features } from "@/lib/features";
 
@@ -74,7 +79,9 @@ function EmptyState() {
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
         <Package className="h-6 w-6 text-white/50" aria-hidden />
       </span>
-      <h2 className="font-heading text-lg font-bold text-white">No orders yet</h2>
+      <h2 className="font-heading text-lg font-bold text-white">
+        No orders yet
+      </h2>
       <p className="max-w-sm text-sm text-white/50">
         When you buy or rip a pack, your purchases, shipments, and vaulted cards
         will show up here.
@@ -122,7 +129,10 @@ export default async function OrdersPage() {
         title="Orders"
         sub="Your purchases, shipments, and vaulted items."
       />
-      <MockTable head={["Order", "Item", "Date", "Total", "Status"]} rows={rows} />
+      <MockTable
+        head={["Order", "Item", "Date", "Total", "Status"]}
+        rows={rows}
+      />
     </>
   );
 }

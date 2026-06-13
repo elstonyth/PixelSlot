@@ -2,7 +2,9 @@
 // Names are factual catalog data; sprites are hotlinked from PokeAPI at render time.
 import { writeFileSync } from "node:fs";
 
-const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1025", { headers: { "User-Agent": "Mozilla/5.0" } });
+const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1025", {
+  headers: { "User-Agent": "Mozilla/5.0" },
+});
 const data = await res.json();
 
 const titdle = (s) =>
@@ -15,7 +17,10 @@ const titdle = (s) =>
     .replace(/\bM$/, "♂");
 
 const names = data.results.map((p) => titdle(p.name));
-console.log(`fetched ${names.length} names; first 6:`, names.slice(0, 6).join(", "));
+console.log(
+  `fetched ${names.length} names; first 6:`,
+  names.slice(0, 6).join(", "),
+);
 
 const file =
   "// AUTO-GENERATED from PokeAPI (national-dex order). Index i => dex #(i+1).\n" +

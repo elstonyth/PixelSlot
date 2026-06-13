@@ -12,7 +12,9 @@ fs.mkdirSync(OUT, { recursive: true });
 async function run(name, type) {
   const browser = await type.launch();
   // Fresh context = no cache, no cookies, no extensions, no stored state.
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+  });
   const page = await context.newPage();
 
   const failed = [];
@@ -41,7 +43,13 @@ async function run(name, type) {
       loaded: imgs.filter((x) => x.complete && x.naturalWidth > 0).length,
       pending: imgs.filter((x) => !x.complete).length,
       broken: broken.length,
-      brokenSrcs: broken.map((x) => { try { return new URL(x.src).pathname; } catch { return "?"; } }),
+      brokenSrcs: broken.map((x) => {
+        try {
+          return new URL(x.src).pathname;
+        } catch {
+          return "?";
+        }
+      }),
     };
   });
 
@@ -57,7 +65,10 @@ async function run(name, type) {
 }
 
 const results = [];
-for (const [name, type] of [["chromium", chromium], ["firefox", firefox]]) {
+for (const [name, type] of [
+  ["chromium", chromium],
+  ["firefox", firefox],
+]) {
   try {
     results.push(await run(name, type));
   } catch (e) {

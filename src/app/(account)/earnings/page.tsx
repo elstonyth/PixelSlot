@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { AccountHeader, StatCards, MockTable, Badge, DemoNote } from "@/components/account/ui";
+import {
+  AccountHeader,
+  StatCards,
+  MockTable,
+  Badge,
+  DemoNote,
+} from "@/components/account/ui";
 import { usd } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Earnings | Pokenic" };
@@ -11,7 +17,9 @@ export default function EarningsPage() {
     `2026-0${6 - i}-15`,
     TYPES[i],
     usd(120 + i * 47.5),
-    <Badge key="s" tone="green">Paid</Badge>,
+    <Badge key="s" tone="green">
+      Paid
+    </Badge>,
   ]);
   return (
     <>
@@ -27,7 +35,10 @@ export default function EarningsPage() {
       <div className="mt-5">
         <MockTable head={["Date", "Type", "Amount", "Status"]} rows={rows} />
       </div>
-      <button type="button" className="mt-5 rounded-xl bg-neutral-200 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white">
+      <button
+        type="button"
+        className="mt-5 rounded-xl bg-neutral-200 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white"
+      >
         Withdraw to bank
       </button>
       <DemoNote />

@@ -92,7 +92,7 @@ export default function HeroSection() {
         className={cn(
           "group/hero relative flex overflow-hidden rounded-2xl bg-neutral-950",
           "h-[420px] sm:h-[450px] lg:h-[480px]",
-          "shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+          "shadow-[0_4px_20px_rgba(0,0,0,0.15)]",
         )}
       >
         {/* Color glow = a blurred, over-saturated copy of the active pack image
@@ -108,7 +108,7 @@ export default function HeroSection() {
               "pointer-events-none absolute inset-0 h-full w-full scale-125 object-cover blur-[20px] saturate-[2]",
               // glow crossfade runs in the same ~650ms ease-out window as the cards
               !reduced && "transition-opacity duration-[650ms] ease-out",
-              i === center ? "opacity-100" : "opacity-0"
+              i === center ? "opacity-100" : "opacity-0",
             )}
           />
         ))}
@@ -124,7 +124,8 @@ export default function HeroSection() {
               Packs available now
             </p>
             <h2 className="font-heading text-2xl font-bold tracking-tight text-white md:text-3xl lg:max-w-[39rem] lg:text-5xl lg:leading-[1.1]">
-              Rip packs. <span className="text-white/40">Pull graded cards.</span>
+              Rip packs.{" "}
+              <span className="text-white/40">Pull graded cards.</span>
             </h2>
             <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-white/70 sm:text-sm lg:mt-4 lg:max-w-md lg:text-base">
               Choose to hold, trade, redeem, or sell it back to us at up to{" "}
@@ -138,7 +139,7 @@ export default function HeroSection() {
                   "inline-flex items-center rounded-full border border-white/15",
                   "bg-white/90 px-6 py-2.5 text-sm font-semibold text-neutral-950 shadow-lg",
                   "transition-colors duration-300 group-hover/hero:bg-white",
-                  "lg:px-8 lg:py-3 lg:text-base"
+                  "lg:px-8 lg:py-3 lg:text-base",
                 )}
               >
                 Open Packs
@@ -169,10 +170,12 @@ export default function HeroSection() {
                     <div
                       className={cn(
                         "relative h-full w-full max-w-[300px]",
-                        isCenter ? "pointer-events-auto" : "pointer-events-none",
+                        isCenter
+                          ? "pointer-events-auto"
+                          : "pointer-events-none",
                         isCenter &&
                           !reduced &&
-                          "transition-transform duration-200 ease-out hover:-translate-y-2 hover:scale-[1.03]"
+                          "transition-transform duration-200 ease-out hover:-translate-y-2 hover:scale-[1.03]",
                       )}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}

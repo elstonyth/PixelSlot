@@ -15,12 +15,17 @@ const pass = (name, ok) => results.push({ name, ok: !!ok });
 
 const browser = await chromium.launch();
 try {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+  });
   const page = await ctx.newPage();
 
   // --- /claw desktop ---
   await page.goto(`${BASE}/claw`, { waitUntil: "networkidle", timeout: 60000 });
-  await page.getByRole("link", { name: "Open", exact: true }).first().waitFor({ timeout: 30000 });
+  await page
+    .getByRole("link", { name: "Open", exact: true })
+    .first()
+    .waitFor({ timeout: 30000 });
   await page.screenshot({ path: `${OUT}/claw-stepper-1440.png` });
 
   const dec = page.locator('button[aria-label="Decrease quantity"]');
@@ -33,7 +38,9 @@ try {
   pass("Open links present", (await open.count()) > 0);
 
   // First card's qty span sits inside the stepper container next to the − button.
-  const stepper = page.locator('div:has(> button[aria-label="Decrease quantity"])').first();
+  const stepper = page
+    .locator('div:has(> button[aria-label="Decrease quantity"])')
+    .first();
   const qty = stepper.locator("span").first();
   const start = (await qty.innerText()).trim();
   pass("qty starts at 1", start === "1");
@@ -56,7 +63,10 @@ try {
   ]);
   await page.waitForTimeout(600);
   await page.screenshot({ path: `${OUT}/claw-open-to-detail-1440.png` });
-  pass("Open navigates to a pack detail page (no login wall)", /\/claw\/[^/]+$/.test(page.url()));
+  pass(
+    "Open navigates to a pack detail page (no login wall)",
+    /\/claw\/[^/]+$/.test(page.url()),
+  );
 
   // --- /claw mobile (informs whether mobile rows need the stepper too) ---
   await page.setViewportSize({ width: 390, height: 844 });
@@ -66,10 +76,16 @@ try {
 
   // --- /repacks regression (shared QtyStepper) ---
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${BASE}/repacks`, { waitUntil: "networkidle", timeout: 60000 });
+  await page.goto(`${BASE}/repacks`, {
+    waitUntil: "networkidle",
+    timeout: 60000,
+  });
   await page.waitForTimeout(600);
   await page.screenshot({ path: `${OUT}/repacks-stepper-1440.png` });
-  pass("repacks stepper still present", (await page.locator('button[aria-label="Increase quantity"]').count()) > 0);
+  pass(
+    "repacks stepper still present",
+    (await page.locator('button[aria-label="Increase quantity"]').count()) > 0,
+  );
 
   await ctx.close();
 } finally {
@@ -82,5 +98,7 @@ for (const r of results) {
   if (r.ok) ok++;
 }
 console.log(`\n${ok}/${results.length} checks passed`);
-console.log(`screenshots → ${OUT}/claw-stepper-{1440,390}.png, claw-open-to-detail-1440.png, repacks-stepper-1440.png`);
+console.log(
+  `screenshots → ${OUT}/claw-stepper-{1440,390}.png, claw-open-to-detail-1440.png, repacks-stepper-1440.png`,
+);
 process.exit(ok === results.length ? 0 : 1);
