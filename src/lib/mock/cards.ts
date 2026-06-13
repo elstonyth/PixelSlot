@@ -44,11 +44,11 @@ const SUBJECTS = [
   'Flareon ex',
   'Glaceon ex',
   'Leafeon VSTAR',
-  'Monkey D. Luffy',
-  'Roronoa Zoro',
-  'Trafalgar Law',
-  'Nico Robin',
-  'Boa Hancock',
+  'Tyranitar ex',
+  'Garchomp ex',
+  'Dragonite V',
+  'Gardevoir ex',
+  'Zoroark VSTAR',
 ];
 const SETS = [
   'Scarlet & Violet 151',
@@ -59,8 +59,8 @@ const SETS = [
   'Twilight Masquerade',
   'VSTAR Universe',
   'Eevee Heroes',
-  'Romance Dawn',
-  'Wings of the Captain',
+  'Paldea Evolved',
+  'Temporal Forces',
 ];
 const GRADERS: Grader[] = ['PSA', 'CGC', 'Fanatics'];
 const GRADES = ['10 GEM MINT', '10 PRISTINE', '9.5 MINT+', '9 MINT'];

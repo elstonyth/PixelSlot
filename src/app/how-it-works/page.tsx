@@ -210,7 +210,7 @@ export default function HowItWorksPage() {
             </Reveal>
           </div>
           {/* pack fan slides/scales in — matches the live site: a center Trainer pack
-              flanked by two faded, smaller packs (platinum left, One Piece right). */}
+              flanked by two faded, smaller packs (platinum left, diamond right). */}
           <Reveal
             delay={200}
             y={32}
