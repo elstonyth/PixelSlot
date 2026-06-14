@@ -11,8 +11,17 @@
 //                         uploads at :9000/static and any localhost:4000 links)
 // RENDER-ONLY — never persist the resolved value.
 
-// Port the storefront is served on (see `next ... -p 4000`).
+// Port the storefront is served on locally (see `next ... -p 4000`).
 const STOREFRONT_PORT = 4000;
+
+// Prod storefront origin, baked into the bundle at build time (vite define from
+// MERCUR_STOREFRONT_URL). In prod the storefront is a SEPARATE domain from the
+// admin, so storefront-relative asset paths (/cdn, /home, /images) must resolve
+// against it — not against the admin host on :4000 (the local-dev assumption,
+// which 404s in prod). Empty when unset (local dev) -> fall back to host:4000.
+declare const __STOREFRONT_URL__: string;
+const STOREFRONT_ORIGIN =
+  typeof __STOREFRONT_URL__ !== "undefined" ? __STOREFRONT_URL__ : "";
 
 function dashboardHost(): { proto: string; host: string } {
   if (typeof window !== "undefined" && window.location) {
@@ -27,9 +36,13 @@ export function resolveImageUrl(url: string | null | undefined): string {
 
   const { proto, host } = dashboardHost();
 
-  // Storefront-relative path -> serve from the storefront on this host.
+  // Storefront-relative path -> serve from the storefront. Prod: the baked
+  // storefront origin (separate domain). Local dev: same host on :4000.
   if (url.startsWith("/")) {
-    return `${proto}//${host}:${STOREFRONT_PORT}${url}`;
+    const base = STOREFRONT_ORIGIN
+      ? STOREFRONT_ORIGIN.replace(/\/$/, "")
+      : `${proto}//${host}:${STOREFRONT_PORT}`;
+    return `${base}${url}`;
   }
 
   // Absolute localhost/127.0.0.1 URL (e.g. admin uploads) -> swap in the current

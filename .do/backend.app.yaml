@@ -34,6 +34,12 @@ envs:
   - key: MERCUR_BACKEND_URL
     scope: BUILD_TIME
     value: https://pokenic-backend-tltfm.ondigitalocean.app
+  # Storefront origin baked into the admin bundle (vite __STOREFRONT_URL__) so the
+  # admin resolves storefront-relative asset paths (/cdn, /home, /images) against
+  # the real storefront domain. Also defaulted in backend/Dockerfile.
+  - key: MERCUR_STOREFRONT_URL
+    scope: BUILD_TIME
+    value: https://pokenic-storefront-ijfiu.ondigitalocean.app
   # Explicit PUBLIC endpoints (not the ${cluster.DATABASE_URL} binding): on an
   # attached production cluster the binding resolves to the PRIVATE host, which
   # the app (not in the DB's VPC) can't reach -> KnexTimeoutError. The public

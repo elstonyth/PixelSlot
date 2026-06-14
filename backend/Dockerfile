@@ -45,6 +45,14 @@ RUN corepack yarn install --immutable
 ARG MERCUR_BACKEND_URL=https://pokenic-backend-tltfm.ondigitalocean.app
 ENV MERCUR_BACKEND_URL=$MERCUR_BACKEND_URL
 
+# Storefront origin baked into the admin bundle (vite define __STOREFRONT_URL__):
+# the admin resolves storefront-relative asset paths (/cdn, /home, /images)
+# against this, since in prod the storefront is a SEPARATE domain from the admin.
+# Hardcoded default like MERCUR_BACKEND_URL above (App Platform doesn't reliably
+# pass build-time env as build-args). Update if the storefront gets a custom domain.
+ARG MERCUR_STOREFRONT_URL=https://pokenic-storefront-ijfiu.ondigitalocean.app
+ENV MERCUR_STOREFRONT_URL=$MERCUR_STOREFRONT_URL
+
 # Full source, then build (turbo: medusa build -> packages/api/.medusa,
 # vite build -> apps/{admin,vendor}/dist). No DB/Redis needed at build time.
 COPY . .

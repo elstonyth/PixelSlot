@@ -31,6 +31,13 @@ export default defineConfig(() => ({
   // to derive this from medusa-config but its loader fails in the prod build,
   // so set it explicitly.
   base: '/dashboard/',
+  // Prod storefront origin baked into the bundle so the admin resolves
+  // storefront-relative asset paths (/cdn, /home, /images) against the real
+  // storefront domain instead of the admin host on :4000 (which 404s in prod).
+  // Empty in local dev -> image-url.ts falls back to host:4000. See image-url.ts.
+  define: {
+    __STOREFRONT_URL__: JSON.stringify(process.env.MERCUR_STOREFRONT_URL || ''),
+  },
   server: { port: 7000 },
   plugins: [
     react(),
