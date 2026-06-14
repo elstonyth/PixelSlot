@@ -11,6 +11,11 @@
 name: pokenic-storefront
 region: sgp
 
+# App Platform alerts → email on failed deploys / failed custom-domain certs.
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+
 services:
   - name: storefront
     dockerfile_path: Dockerfile
@@ -22,7 +27,20 @@ services:
     instance_size_slug: basic-xxs
     instance_count: 1
     health_check:
-      http_path: /
+      http_path: /healthz
+    alerts:
+      - rule: CPU_UTILIZATION
+        value: 80
+        operator: GREATER_THAN
+        window: FIVE_MINUTES
+      - rule: MEM_UTILIZATION
+        value: 85
+        operator: GREATER_THAN
+        window: FIVE_MINUTES
+      - rule: RESTART_COUNT
+        value: 5
+        operator: GREATER_THAN
+        window: FIVE_MINUTES
     envs:
       - key: NODE_ENV
         scope: RUN_AND_BUILD_TIME
@@ -33,3 +51,9 @@ services:
       - key: NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
         scope: RUN_AND_BUILD_TIME
         value: pk_86273b7c12ca5b2fd838bf1c1cf6427dbb6ef41c723d8af1efa20db183517534
+      # Spaces CDN media host — baked into the client bundle (next.config.ts
+      # remotePatterns) so next/image renders uploaded card/pack art from the
+      # bucket. Host only, no protocol. Must rebuild the storefront to change it.
+      - key: NEXT_PUBLIC_MEDIA_HOST
+        scope: RUN_AND_BUILD_TIME
+        value: pokenic-media.sgp1.cdn.digitaloceanspaces.com

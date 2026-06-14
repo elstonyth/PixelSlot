@@ -56,8 +56,10 @@ ENV NODE_ENV=production
 # --build-arg. Update these if the backend gets a custom domain.
 ARG NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://pokenic-backend-tltfm.ondigitalocean.app
 ARG NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_86273b7c12ca5b2fd838bf1c1cf6427dbb6ef41c723d8af1efa20db183517534
+ARG NEXT_PUBLIC_MEDIA_HOST=pokenic-media.sgp1.cdn.digitaloceanspaces.com
 ENV NEXT_PUBLIC_MEDUSA_BACKEND_URL=$NEXT_PUBLIC_MEDUSA_BACKEND_URL
 ENV NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_MEDIA_HOST=$NEXT_PUBLIC_MEDIA_HOST
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
