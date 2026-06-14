@@ -1,0 +1,26 @@
+# Everything here is rebuilt inside the image. Copying the local (Windows)
+# versions would ship broken native binaries (sharp, etc.) and stale builds.
+node_modules
+**/node_modules
+.medusa
+**/.medusa
+.turbo
+**/.turbo
+dist
+**/dist
+.next
+**/.next
+
+# Secrets + local-only — provided by DO App Platform env, never baked in
+.env
+.env.*
+**/.env
+**/.env.*
+
+# VCS / noise
+.git
+.gitignore
+**/*.log
+.DS_Store
+**/coverage
+**/.cache

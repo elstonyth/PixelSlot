@@ -49,6 +49,44 @@ const fileModule = s3Configured
       },
     ]
   : [];
+
+// Redis-backed infra modules are env-gated, same pattern as fileModule above:
+// with REDIS_URL present (production / distributed deploy) we register the Redis
+// cache, event bus, workflow engine, and locking provider so the separate web
+// and worker instances share one event queue, workflow state, cache, and lock
+// namespace. Without REDIS_URL (local dev) Medusa's in-memory defaults stay
+// active — single-process only, lost on restart, which is fine for dev.
+const redisModules = process.env.REDIS_URL
+  ? [
+      {
+        resolve: '@medusajs/medusa/cache-redis',
+        options: { redisUrl: process.env.REDIS_URL },
+      },
+      {
+        resolve: '@medusajs/medusa/event-bus-redis',
+        options: { redisUrl: process.env.REDIS_URL },
+      },
+      {
+        resolve: '@medusajs/medusa/workflow-engine-redis',
+        // workflow-engine-redis nests the URL under options.redis.redisUrl
+        // (unlike cache/event-bus which take redisUrl at the top level).
+        options: { redis: { redisUrl: process.env.REDIS_URL } },
+      },
+      {
+        resolve: '@medusajs/medusa/locking',
+        options: {
+          providers: [
+            {
+              resolve: '@medusajs/medusa/locking-redis',
+              id: 'locking-redis',
+              is_default: true,
+              options: { redisUrl: process.env.REDIS_URL },
+            },
+          ],
+        },
+      },
+    ]
+  : [];
 const secretFromEnv = (
   name: 'JWT_SECRET' | 'COOKIE_SECRET',
 ): string | undefined => {
@@ -69,6 +107,16 @@ module.exports = defineConfig({
   admin: { disable: true },
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    // worker mode splits the deploy: the web instance serves HTTP (server) while
+    // a second instance drains the event/workflow queues (worker). DO App
+    // Platform sets MEDUSA_WORKER_MODE per component; dev stays 'shared'
+    // (one process does both). Requires the redisModules above to share state.
+    workerMode:
+      (process.env.MEDUSA_WORKER_MODE as
+        | 'shared'
+        | 'worker'
+        | 'server'
+        | undefined) ?? 'shared',
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -87,6 +135,9 @@ module.exports = defineConfig({
     // Empty in dev (built-in local file provider stays active); registers the
     // S3 provider in prod when S3_* env is set.
     ...fileModule,
+    // Empty in dev; registers Redis cache / event-bus / workflow-engine /
+    // locking in prod when REDIS_URL is set (see redisModules above).
+    ...redisModules,
     {
       resolve: '@medusajs/medusa/rbac',
     },

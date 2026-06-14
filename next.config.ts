@@ -56,6 +56,10 @@ if (mediaHost) {
 }
 
 const nextConfig: NextConfig = {
+  // Standalone output: the production Dockerfile (and DO App Platform) run the
+  // server from `.next/standalone/server.js`. Without this, that dir is never
+  // emitted and the Dockerfile's runner stage has nothing to copy.
+  output: 'standalone',
   images: { remotePatterns },
 };
 
