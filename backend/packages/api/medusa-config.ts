@@ -56,21 +56,29 @@ const fileModule = s3Configured
 // and worker instances share one event queue, workflow state, cache, and lock
 // namespace. Without REDIS_URL (local dev) Medusa's in-memory defaults stay
 // active — single-process only, lost on restart, which is fine for dev.
+// DO Managed Valkey serves TLS (rediss://) with a SELF-SIGNED CA that ioredis
+// rejects by default — so every redis connection needs tls.rejectUnauthorized
+// = false (encrypted, but skip CA verification of DO's own cert). Only applied
+// for rediss:// URLs; a plain redis:// (local) gets no tls block. All four
+// modules read redisUrl + redisOptions at the TOP level of options (the
+// installed workflow-engine-redis reads top-level redisUrl, NOT a nested
+// `redis:` object — that shape silently left it unconfigured).
+const redisOptions = process.env.REDIS_URL?.startsWith('rediss://')
+  ? { tls: { rejectUnauthorized: false } }
+  : undefined;
 const redisModules = process.env.REDIS_URL
   ? [
       {
         resolve: '@medusajs/medusa/cache-redis',
-        options: { redisUrl: process.env.REDIS_URL },
+        options: { redisUrl: process.env.REDIS_URL, redisOptions },
       },
       {
         resolve: '@medusajs/medusa/event-bus-redis',
-        options: { redisUrl: process.env.REDIS_URL },
+        options: { redisUrl: process.env.REDIS_URL, redisOptions },
       },
       {
         resolve: '@medusajs/medusa/workflow-engine-redis',
-        // workflow-engine-redis nests the URL under options.redis.redisUrl
-        // (unlike cache/event-bus which take redisUrl at the top level).
-        options: { redis: { redisUrl: process.env.REDIS_URL } },
+        options: { redisUrl: process.env.REDIS_URL, redisOptions },
       },
       {
         resolve: '@medusajs/medusa/locking',
@@ -80,7 +88,7 @@ const redisModules = process.env.REDIS_URL
               resolve: '@medusajs/medusa/locking-redis',
               id: 'locking-redis',
               is_default: true,
-              options: { redisUrl: process.env.REDIS_URL },
+              options: { redisUrl: process.env.REDIS_URL, redisOptions },
             },
           ],
         },
@@ -107,6 +115,21 @@ module.exports = defineConfig({
   admin: { disable: true },
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    // DO Managed Postgres presents a SELF-SIGNED CA → node-postgres rejects it
+    // (SELF_SIGNED_CERT_IN_CHAIN), the connection times out, and migrate/boot
+    // fail. Skip CA verification for the DB connection in production (still
+    // TLS-encrypted, just not cert-verified — acceptable for DO's own managed
+    // DB). NOTE: DATABASE_URL must NOT carry `?sslmode=require` — the framework
+    // only strips `ssl_mode` (underscore), so a literal `sslmode=require`
+    // survives, forces strict verify, and overrides this option. Dev
+    // (localhost, no TLS) leaves driver options untouched.
+    ...(isProduction
+      ? {
+          databaseDriverOptions: {
+            connection: { ssl: { rejectUnauthorized: false } },
+          },
+        }
+      : {}),
     // worker mode splits the deploy: the web instance serves HTTP (server) while
     // a second instance drains the event/workflow queues (worker). DO App
     // Platform sets MEDUSA_WORKER_MODE per component; dev stays 'shared'
