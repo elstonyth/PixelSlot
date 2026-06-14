@@ -50,6 +50,19 @@ ENV MERCUR_BACKEND_URL=$MERCUR_BACKEND_URL
 COPY . .
 RUN corepack yarn build
 
+# Slim the runtime image: drop apps/{admin,vendor}/node_modules. The dashboards
+# are served from the pre-built static apps/*/dist (self-contained vite bundles);
+# their node_modules are build-only dead weight at runtime (~600MB).
+#
+# NOTE: we deliberately do NOT `yarn workspaces focus --production` to prune dev
+# deps. `medusa start` runs from packages/api and loads the medusa-config.ts
+# SOURCE via @medusajs/utils dynamic-import (a plain require with a TS hook that
+# lives in dev deps) — pruning them breaks config load ("Cannot find module
+# .../medusa-config"). Running from the compiled .medusa/server would avoid that
+# but breaks the appDir -> apps/*/dist resolution. So dev deps stay. Verified by
+# scripts/preflight.ps1 (boot + /dashboard + /seller render).
+RUN rm -rf apps/admin/node_modules apps/vendor/node_modules
+
 # ============================================================
 # Stage 2: runtime — preserve the built monorepo, start the API
 # ============================================================
@@ -60,13 +73,17 @@ WORKDIR /app
 # Pre-activate Yarn 4 at build time so container start needs no network.
 RUN corepack enable && corepack prepare yarn@4.5.0 --activate
 
-# Copy the entire built workspace (node_modules + .medusa + apps/*/dist +
-# sources). Large but correct — matches the verified-working local layout.
-# TODO(optimize): prune dev deps / slim to .medusa/server + apps/*/dist later.
+# Copy the built workspace from the builder. node_modules was pruned to prod-only
+# above (workspaces focus --production), so this is the slim layout: prod deps +
+# .medusa + apps/*/dist + sources. Matches the verified-working appDir layout.
 COPY --from=builder /app ./
 
 # Medusa listens on :9000; App Platform routes to http_port: 9000 (see app.yaml).
 # Worker instances override the run command with MEDUSA_WORKER_MODE=worker.
 WORKDIR /app/packages/api
 EXPOSE 9000
+# In-image health probe (App Platform has its own; this helps local/compose +
+# `docker` orchestration). Node's global fetch (Node 18+) avoids needing curl.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "fetch('http://localhost:9000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["corepack", "yarn", "start"]
