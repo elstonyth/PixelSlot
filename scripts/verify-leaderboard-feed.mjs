@@ -44,8 +44,12 @@ const ctx = await browser.newContext({
 const page = await ctx.newPage();
 
 // --- /leaderboard ---
-await page.goto(`${BASE}/leaderboard`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(800);
+await page.goto(`${BASE}/leaderboard`, { waitUntil: 'domcontentloaded' });
+await page
+  .locator('table tbody tr')
+  .first()
+  .waitFor({ timeout: 15000 })
+  .catch(() => {});
 const lbHtml = await page.content();
 ok(
   'leaderboard_live_top_name',
@@ -69,7 +73,11 @@ await page
   .getByRole('tab', { name: /All Time/i })
   .click()
   .catch(() => {});
-await page.waitForTimeout(500);
+await page
+  .locator('table tbody tr')
+  .first()
+  .waitFor({ timeout: 15000 })
+  .catch(() => {});
 const allTimeRows = await page
   .locator('table tbody tr')
   .count()
@@ -77,9 +85,15 @@ const allTimeRows = await page
 ok('leaderboard_alltime_tab', allTimeRows > 0, `rows ${allTimeRows}`);
 
 // --- home live feed ---
-await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
 // Give the on-mount poll of /api/recent-pulls time to swap in live data.
-await page.waitForTimeout(3000);
+await page
+  .locator('section', {
+    has: page.getByRole('heading', { name: /Recent Pulls/i }),
+  })
+  .first()
+  .waitFor({ timeout: 15000 })
+  .catch(() => {});
 const feedText = await page
   .locator('section', {
     has: page.getByRole('heading', { name: /Recent Pulls/i }),
@@ -114,6 +128,18 @@ ok('home_feed_live_pack_present', liveOnlyPack);
 
 // Home "Weekly Leaderboard" teaser must swap its mock board for the live one on
 // mount (via /api/leaderboard) — same live-without-dynamic pattern as the feed.
+// Wait for that swap to land (mock name gone, live top collector present) before
+// snapshotting the HTML, instead of relying on networkidle.
+await page
+  .waitForFunction(
+    (name) => {
+      const t = document.body.innerText;
+      return !t.includes('FightingProdigy3098') && t.includes(name);
+    },
+    topName,
+    { timeout: 15000 },
+  )
+  .catch(() => {});
 const homeHtml = await page.content();
 ok(
   'home_leaderboard_live',

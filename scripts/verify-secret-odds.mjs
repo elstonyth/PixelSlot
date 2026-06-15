@@ -44,8 +44,14 @@ const ctx = await browser.newContext({
   reducedMotion: 'reduce', // <Reveal> renders immediately so below-fold is captured
 });
 const page = await ctx.newPage();
-await page.goto(`${BASE}/claw/pokemon-mythic`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(400);
+await page.goto(`${BASE}/claw/pokemon-mythic`, {
+  waitUntil: 'domcontentloaded',
+});
+await page
+  .getByRole('heading', { name: /Pull Odds/i })
+  .first()
+  .waitFor({ timeout: 15000 })
+  .catch(() => {});
 
 const pullOdds = page
   .locator('section', {

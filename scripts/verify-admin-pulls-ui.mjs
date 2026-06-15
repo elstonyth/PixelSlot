@@ -7,7 +7,8 @@
 // Playwright hit-testing (built-in pages render the same way).
 import { chromium } from 'playwright';
 
-const ADMIN = 'http://localhost:7000';
+// Admin vite serves under base '/dashboard/' (see apps/admin/vite.config.ts).
+const ADMIN = process.env.ADMIN_BASE || 'http://localhost:7000/dashboard';
 const API = 'http://localhost:9000';
 const r = { checks: {} };
 const ok = (k, c, d) =>
@@ -43,15 +44,31 @@ page.on(
   (m) => m.type() === 'error' && consoleErrors.push(m.text().slice(0, 140)),
 );
 
-await page.goto(`${ADMIN}/login`, { waitUntil: 'networkidle' }).catch(() => {});
+await page
+  .goto(`${ADMIN}/login`, { waitUntil: 'domcontentloaded' })
+  .catch(() => {});
 await page.waitForSelector('input[name="email"]', { timeout: 15000 });
 await page.fill('input[name="email"]', 'admin@pokenic.local');
 await page.fill('input[name="password"]', 'pokenicadmin2026');
 await page.click('button[type="submit"]');
-await page.waitForTimeout(3000);
+// login redirects away from /login once auth succeeds
+await page
+  .waitForFunction(() => !/\/login/.test(location.pathname), { timeout: 15000 })
+  .catch(() => {});
 
-await page.goto(`${ADMIN}/pulls`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(2500);
+await page.goto(`${ADMIN}/pulls`, { waitUntil: 'domcontentloaded' });
+// wait for the live-loaded ledger TABLE ROWS to render (the title paints before
+// the data loads), polling the DOM directly since this admin's flex layout
+// mis-targets Playwright hit-testing.
+await page
+  .waitForFunction(
+    () =>
+      /Pull Ledger/i.test(document.body.innerText) &&
+      document.querySelectorAll('table tbody tr').length > 0,
+    null,
+    { timeout: 15000 },
+  )
+  .catch(() => {});
 
 const dom = await page.evaluate(() => ({
   bodyHasTitle: /Pull Ledger/i.test(document.body.innerText),

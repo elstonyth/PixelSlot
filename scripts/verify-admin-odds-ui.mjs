@@ -8,7 +8,8 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
-const ADMIN = 'http://localhost:7000';
+// Admin vite serves under base '/dashboard/' (see apps/admin/vite.config.ts).
+const ADMIN = process.env.ADMIN_BASE || 'http://localhost:7000/dashboard';
 const API = 'http://localhost:9000';
 const SLUG = 'pokemon-mythic';
 const OUT = 'docs/research/phase6';
@@ -25,7 +26,9 @@ const ctx = await browser.newContext({
 const page = await ctx.newPage();
 
 // --- login ---
-await page.goto(`${ADMIN}/login`, { waitUntil: 'networkidle' }).catch(() => {});
+await page
+  .goto(`${ADMIN}/login`, { waitUntil: 'domcontentloaded' })
+  .catch(() => {});
 await page.waitForSelector('input[type="email"], input[name="email"]', {
   timeout: 15000,
 });
@@ -38,12 +41,20 @@ await page.fill(
   'pokenicadmin2026',
 );
 await page.click('button[type="submit"]');
-await page.waitForTimeout(2500);
+// login redirects away from /login once auth succeeds
+await page
+  .waitForFunction(() => !/\/login/.test(location.pathname), { timeout: 15000 })
+  .catch(() => {});
 ok('logged_in', !/\/login/.test(page.url()), `url ${page.url()}`);
 
 // --- list page ---
-await page.goto(`${ADMIN}/packs`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(1200);
+await page.goto(`${ADMIN}/packs`, { waitUntil: 'domcontentloaded' });
+// wait for the live-loaded list heading before reading it
+await page
+  .getByText('Gacha Packs')
+  .first()
+  .waitFor({ timeout: 15000 })
+  .catch(() => {});
 const listHeading = await page
   .getByText('Gacha Packs')
   .first()
@@ -61,13 +72,13 @@ await page.screenshot({
 });
 
 // --- editor page (wait for the data-loaded table, not just networkidle) ---
-await page.goto(`${ADMIN}/packs/${SLUG}`, { waitUntil: 'networkidle' });
+await page.goto(`${ADMIN}/packs/${SLUG}`, { waitUntil: 'domcontentloaded' });
 await page
   .locator('table tbody tr')
   .first()
   .waitFor({ state: 'visible', timeout: 20000 })
   .catch(() => {});
-await page.waitForTimeout(500);
+await page.waitForTimeout(500); // render settle — no clean end-signal for all 16 rows mounted
 const editorRows = await page
   .locator('table tbody tr')
   .count()
@@ -91,31 +102,24 @@ await page.screenshot({
 //     Playwright hit-testing, which mis-targets this admin's headless flex
 //     layout (built-in pages render the same way — a platform render quirk,
 //     not our bug). ---
-const interaction = await page.evaluate(async () => {
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const tr = document.querySelector('table tbody tr');
-  const sw = tr.querySelector('button[role="switch"]');
-  sw.click(); // toggle lock ON
-  await sleep(150);
-  const input = tr.querySelector('input[type="number"]');
-  const setVal = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    'value',
-  ).set;
-  setVal.call(input, '40');
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  await sleep(250);
-  const lockedAfterToggle = sw.getAttribute('aria-checked') === 'true';
-  const saveBtn = [...document.querySelectorAll('button')].find((b) =>
-    /Save win rates/i.test(b.innerText),
-  );
-  saveBtn.click(); // -> packsApi.admin.packs.$slug.odds.mutate(...)
-  await sleep(2800);
-  const toast = !!document.body.innerText.match(/Win rates saved/i);
-  return { lockedAfterToggle, toast };
-});
-ok('ui_toggle_locked', interaction.lockedAfterToggle);
-ok('save_toast', interaction.toast);
+// Drive the editor with native Playwright actions scoped to the first row:
+// synthetic in-page DOM events no longer move the controlled <input> or the
+// Radix switch's React state (React 19), so set them via real click/fill which
+// dispatch the events React actually listens for.
+const row = page.locator('table tbody tr').first();
+const sw = row.locator('button[role="switch"]');
+await sw.click();
+const lockedAfterToggle = (await sw.getAttribute('aria-checked')) === 'true';
+await row.locator('input[type="number"]').first().fill('40');
+await page.getByRole('button', { name: /Save win rates/i }).click();
+const toast = await page
+  .getByText(/Win rates saved/i)
+  .first()
+  .waitFor({ timeout: 15000 })
+  .then(() => true)
+  .catch(() => false);
+ok('ui_toggle_locked', lockedAfterToggle);
+ok('save_toast', toast);
 await page.screenshot({
   path: `${OUT}/05-admin-odds-saved.png`,
   fullPage: true,
@@ -148,8 +152,11 @@ ok(
   JSON.stringify({ id: top.card_id, pct: top.pct, locked: top.locked }),
 );
 
+// rarity lives on pack_odds (denormalised), so restore the seed weights from the
+// row's own rarity — the old `FROM card c ... c.rarity` join is stale (card no
+// longer carries rarity).
 execSync(
-  `docker exec pokenic-postgres psql -U medusa -d medusa -c "UPDATE pack_odds po SET weight = CASE c.rarity WHEN 'Legendary' THEN 5 WHEN 'Epic' THEN 45 WHEN 'Rare' THEN 150 WHEN 'Uncommon' THEN 300 WHEN 'Common' THEN 500 ELSE 100 END, locked = false FROM card c WHERE po.card_id = c.handle AND po.pack_id = '${SLUG}';"`,
+  `docker exec pokenic-postgres psql -U medusa -d medusa -c "UPDATE pack_odds SET weight = CASE rarity WHEN 'Legendary' THEN 5 WHEN 'Epic' THEN 45 WHEN 'Rare' THEN 150 WHEN 'Uncommon' THEN 300 WHEN 'Common' THEN 500 ELSE 100 END, locked = false WHERE pack_id = '${SLUG}';"`,
   { stdio: 'pipe' },
 );
 

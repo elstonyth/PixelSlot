@@ -105,27 +105,27 @@ async function tapOverlay(page) {
 
 // Reveal theater: cylinder → tap pack → slab → tap → metadata → card → keep.
 async function playRevealAndKeep(page) {
-  await page.waitForTimeout(2600);
+  await page.waitForTimeout(2600); // animation settle — no clean end-signal (cylinder shuffle)
   await selectPack(page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000); // animation settle — no clean end-signal
   await tapOverlay(page);
   const keep = page.getByRole('button', { name: /keep in vault/i });
   await keep.waitFor({ timeout: 25000 });
   await keep.click();
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(800); // animation settle — no clean end-signal (keep/dismiss transition)
 }
 
 // Demo theater (no keep button — demo result has Spin again instead).
 async function playDemoToCard(page) {
   await page.getByRole('button', { name: /demo spin/i }).click();
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1200); // animation settle — no clean end-signal
   await selectPack(page);
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(900); // animation settle — no clean end-signal
   await tapOverlay(page);
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(600); // animation settle — no clean end-signal
   await tapOverlay(page);
   await page.getByText('Demo', { exact: true }).waitFor({ timeout: 25000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000); // animation settle — no clean end-signal
 }
 
 const browser = await chromium.launch({ headless: true });
@@ -141,7 +141,7 @@ try {
   });
 
   // ── 1. Home page ──────────────────────────────────────────────────────────
-  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
   for (const section of [/recent pulls/i, /how it works/i, /leaderboard/i]) {
     const hit = await page.getByText(section).first().isVisible();
     if (hit) ok(`home section renders: ${section}`);
@@ -304,7 +304,7 @@ try {
   const sellBtn = page.getByRole('button', { name: /sell for/i }).first();
   await sellBtn.waitFor({ timeout: 20000 });
   await sellBtn.click();
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(2500); // screenshot settle — no clean end-signal (sell-back verified via backend API below)
   await page.screenshot({ path: 'docs/research/qa-e2e-vault.png' });
   ok('vault sell-back clicked');
 

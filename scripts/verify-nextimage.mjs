@@ -3,9 +3,14 @@
 // + recent pulls), claw (pack grid), a pack detail (claw machine + top hits),
 // activity (coin + card thumbs). Reads back as PNGs in docs/research/.
 // Run: node scripts/verify-nextimage.mjs [packSlug]
-import { chromium } from 'playwright';
+import {
+  launch,
+  newContext,
+  gotoStable,
+  settleImages,
+  BASE,
+} from './lib/pw.mjs';
 
-const BASE = 'http://localhost:4000';
 const slug = process.argv[2] || 'pokemon-black';
 const shots = [
   ['/', 'verify-ni-home'],
@@ -14,8 +19,11 @@ const shots = [
   ['/activity', 'verify-ni-activity'],
 ];
 
-const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
+const browser = await launch();
+const ctx = await newContext(browser, {
+  viewport: { width: 1440, height: 1200 },
+});
+const page = await ctx.newPage();
 const errors = [];
 page.on('console', (m) => {
   if (m.type() === 'error') errors.push(m.text());
@@ -29,11 +37,8 @@ page.on('response', (r) => {
 });
 
 for (const [path, name] of shots) {
-  const res = await page.goto(`${BASE}${path}`, {
-    waitUntil: 'networkidle',
-    timeout: 30000,
-  });
-  await page.waitForTimeout(1200);
+  const res = await gotoStable(page, `${BASE}${path}`);
+  await settleImages(page);
   await page.screenshot({ path: `docs/research/${name}.png`, fullPage: true });
   // Count optimized images actually rendered (next/image rewrites src to /_next/image).
   const imgStats = await page.evaluate(() => {

@@ -19,9 +19,17 @@ try {
   for (const url of urls) {
     const page = await browser.newPage();
     try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      // Let the SPA router settle.
-      await page.waitForTimeout(1500);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Let the SPA router populate #root (its own 404 text also lives here, so
+      // a blank/empty root must still fall through to the checks below).
+      await page
+        .waitForFunction(
+          () =>
+            (document.getElementById('root')?.childElementCount ?? 0) > 0 ||
+            /there is no page at this address/i.test(document.body.innerText),
+          { timeout: 15000 },
+        )
+        .catch(() => {});
       const bodyText = (await page.locator('body').innerText()).slice(0, 4000);
       const rootChildren = await page.evaluate(
         () => document.getElementById('root')?.childElementCount ?? 0,

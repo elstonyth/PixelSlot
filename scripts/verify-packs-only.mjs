@@ -8,9 +8,7 @@
 //   - The 404 CTA reads "Back to packs" → /claw (never links to /marketplace).
 //   - Mobile menu mirrors the same (Coming Soon span, no Marketplace link).
 // Headless; screenshots to docs/research/. Run: node scripts/verify-packs-only.mjs
-import { chromium } from 'playwright';
-
-const BASE = 'http://localhost:4000';
+import { launch, newContext, gotoStable, BASE } from './lib/pw.mjs';
 
 const fail = (m) => {
   console.error(`✗ ${m}`);
@@ -18,15 +16,15 @@ const fail = (m) => {
 };
 const ok = (m) => console.log(`✓ ${m}`);
 
-const browser = await chromium.launch({ headless: true });
+const browser = await launch({ headless: true });
 
 try {
   // ── Desktop home: nav + footer state ───────────────────────────────────────
-  const ctx = await browser.newContext({
+  const ctx = await newContext(browser, {
     viewport: { width: 1440, height: 900 },
   });
   const page = await ctx.newPage();
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await gotoStable(page, `${BASE}/`);
 
   const mpLinks = await page.locator('a[href="/marketplace"]').count();
   if (mpLinks === 0)
@@ -57,7 +55,12 @@ try {
   // ── Mobile menu mirrors the same gating ────────────────────────────────────
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: /open menu/i }).click();
-  await page.waitForTimeout(400);
+  // Wait for the mobile panel to lay out (reduced-motion makes the max-height
+  // transition instant) instead of a fixed sleep.
+  await page
+    .locator('a[href="/leaderboard"]')
+    .last()
+    .waitFor({ state: 'visible' });
   const mMp = await page.locator('a[href="/marketplace"]').count();
   if (mMp === 0) ok('mobile menu: no Marketplace link');
   else fail(`mobile menu: ${mMp} Marketplace link(s)`);
@@ -67,7 +70,7 @@ try {
   await ctx.close();
 
   // ── Hidden routes 404 ──────────────────────────────────────────────────────
-  const ctx2 = await browser.newContext({
+  const ctx2 = await newContext(browser, {
     viewport: { width: 1440, height: 900 },
   });
   const page2 = await ctx2.newPage();

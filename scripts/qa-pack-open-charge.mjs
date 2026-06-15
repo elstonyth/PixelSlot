@@ -51,20 +51,22 @@ async function readPriceAndBalance(page) {
 }
 
 async function playRevealAndKeep(page) {
-  await page.waitForTimeout(2600); // cylinder shuffle settles
+  await page.waitForTimeout(2600); // animation settle — no clean end-signal (cylinder shuffle)
   await page.mouse.click(720, 420); // pack → slab
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000); // animation settle — no clean end-signal
   await page.mouse.click(720, 420); // slab → metadata → card
   const keep = page.getByRole('button', { name: /keep in vault/i });
   await keep.waitFor({ timeout: 25000 });
   await keep.click();
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(800); // animation settle — no clean end-signal (keep/dismiss transition)
 }
 
 try {
   // ── Flow A: funded loop on the stocktest customer ────────────────────────
   const page = await (
-    await browser.newContext({ viewport: { width: 1440, height: 860 } })
+    await browser.newContext({
+      viewport: { width: 1440, height: 860 },
+    })
   ).newPage();
 
   await login(page, EMAIL, PASSWORD);
@@ -100,7 +102,22 @@ try {
   const sellBtn = page.getByRole('button', { name: /sell for/i }).first();
   await sellBtn.waitFor({ timeout: 20000 });
   await sellBtn.click();
-  await page.waitForTimeout(2500);
+  // Post-condition: the Credit balance stat re-renders above the post-open
+  // balance once the sell-back credits land.
+  await page
+    .waitForFunction(
+      (prev) => {
+        const el = [...document.querySelectorAll('div')]
+          .find((d) => /^Credit balance/.test(d.textContent ?? ''))
+          ?.querySelector('p.font-heading');
+        if (!el) return false;
+        const n = Number((el.textContent ?? '').replace(/[$,]/g, ''));
+        return Number.isFinite(n) && n > prev;
+      },
+      after.balance,
+      { timeout: 15000 },
+    )
+    .catch(() => {});
   const vaultText = await page
     .locator('div', { hasText: /^Credit balance/ })
     .locator('p.font-heading')
@@ -131,7 +148,9 @@ try {
   });
 
   const page2 = await (
-    await browser.newContext({ viewport: { width: 1440, height: 860 } })
+    await browser.newContext({
+      viewport: { width: 1440, height: 860 },
+    })
   ).newPage();
   await login(page2, email, PASSWORD);
   await page2.getByRole('button', { name: /open pack/i }).click();

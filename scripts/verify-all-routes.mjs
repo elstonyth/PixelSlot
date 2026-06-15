@@ -1,8 +1,7 @@
 // Verify-all sweep: every clone route at mobile->4K for horizontal overflow +
 // broken images (natural size 0). Concrete, fast soundness check of the clone.
-import { chromium } from 'playwright';
+import { launch, newContext, gotoStable, BASE } from './lib/pw.mjs';
 
-const BASE = 'http://localhost:4000';
 const ROUTES = [
   '/',
   '/claw',
@@ -14,22 +13,17 @@ const ROUTES = [
 ];
 const WIDTHS = [390, 768, 1440, 1920, 2560, 3840];
 
-const browser = await chromium.launch();
+const browser = await launch();
 const report = [];
 for (const route of ROUTES) {
   const row = { route, overflow: [], brokenImgs: 0 };
   for (const w of WIDTHS) {
-    const ctx = await browser.newContext({
+    const ctx = await newContext(browser, {
       viewport: { width: w, height: 900 },
-      reducedMotion: 'reduce',
     });
     const page = await ctx.newPage();
     try {
-      await page.goto(`${BASE}${route}`, {
-        waitUntil: 'networkidle',
-        timeout: 30000,
-      });
-      await page.waitForTimeout(500);
+      await gotoStable(page, `${BASE}${route}`);
       const r = await page.evaluate(() => {
         const over =
           document.documentElement.scrollWidth -
