@@ -7,7 +7,7 @@
 
 ## Running the app (IMPORTANT)
 - Use **production server** not dev (machine gets overloaded; dev serves images slowly â†’ looks "broken"):
-  - `npm run build` then `npx next start -p 4000` (run_in_background).
+  - `npm run build` then `pwsh scripts/serve-standalone.ps1 -Port 4000` (run_in_background). `npx next start` is broken by `output: standalone`; the script copies `.next/static` + `public/` into `.next/standalone` and boots `server.js`.
   - Clear stuck port: `PID=$(netstat -ano | grep ':4000' | grep LISTENING | awk '{print $5}' | head -1); powershell -NoProfile -Command "Stop-Process -Id $PID -Force"`
 - **Verify with Playwright** (installed), NOT Chrome MCP (cache confusion across ports caused hours of false "still broken"). Screenshots â†’ `docs/research/*.png`, read via Read tool.
 - Browser MCP: TWO Chromes connect ("Work" + "Claude") â€” must select_browser by deviceId first. Avoid; prefer Playwright scripts.

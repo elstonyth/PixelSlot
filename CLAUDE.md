@@ -16,10 +16,10 @@ Despite the name `Pokenic_Game`, this is a **pixel-perfect clone of [phygitals.c
 
 These are hard-won constraints from `docs/HANDOFF.md`, not preferences:
 
-- **Verify against the production server, not `next dev`.** `next dev` serves images slowly on this machine and makes a correct build _look_ broken. Use:
+- **Verify against the production server, not `next dev`.** `next dev` serves images slowly on this machine and makes a correct build _look_ broken. `next.config.ts` sets `output: 'standalone'`, which makes `npx next start` unusable — serve the standalone bundle instead (copies `.next/static` + `public/` in, then boots `.next/standalone/server.js`):
   ```
   npm run build
-  npx next start -p 4000   # run in background
+  pwsh scripts/serve-standalone.ps1 -Port 4000   # run in background
   ```
 - **Verify with the Playwright scripts in `scripts/*.mjs`, NOT Chrome MCP.** Chrome MCP caused hours of false "still broken" from port/cache confusion. Scripts screenshot to `docs/research/*.png`; read those PNGs back with the Read tool.
 - **Watch for runaway node processes** (this has hit thousands of processes / 90+ GB). Check `@(Get-Process node).Count`; kill all with `Get-Process node | Stop-Process -Force`.
@@ -72,7 +72,7 @@ The Radmin-VPN PM2 preview stack was torn down 2026-06-12 (apps deleted, logon
 `backendUrl` and the DB card-image URLs reverted to localhost). Start servers
 manually when needed:
 
-- **Storefront (verify):** `npm run build` then `npx next start -p 4000` — never verify on `next dev`.
+- **Storefront (verify):** `npm run build` then `pwsh scripts/serve-standalone.ps1 -Port 4000` (NOT `npx next start` — `output: standalone` breaks it) — never verify on `next dev`.
 - **Backend:** `corepack yarn dev` from `backend/packages/api` (`medusa develop`; health check `:9000/health`).
 - **Admin dashboard:** vite in `backend/apps/admin` (`:7000`, backendUrl `http://localhost:9000`).
 - **Infra:** `pokenic-postgres` / `pokenic-redis` Docker containers stay up (`--restart unless-stopped`).

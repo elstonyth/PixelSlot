@@ -44,6 +44,28 @@ const remotePatterns: NonNullable<
   },
 ];
 
+// Next 16 added an SSRF guard to the image optimizer: after a remotePattern
+// matches, fetchExternalImage() resolves the upstream host and rejects it with
+// `400 "url" parameter is not allowed` if it lands on a private/loopback IP —
+// the SAME error text as a host-allowlist miss (see node_modules/next/dist/
+// server/image-optimizer.js — fetchExternalImage + is-private-ip). The local
+// file provider serves from localhost:9000, which resolves to 127.0.0.1/::1, so
+// every local card image 400s even though the pattern matches. The opt-out is
+// `images.dangerouslyAllowLocalIP`. Scope it to local backends only so prod
+// (public DO Spaces CDN host) keeps the guard. Self-hosted-on-LAN backends with
+// the local provider also need it, hence the private-range check.
+const isLocalHostname = (h: string): boolean => {
+  if (h === 'localhost' || h.endsWith('.localhost')) return true;
+  if (h === '0.0.0.0' || h === '::1' || h === '[::1]') return true;
+  if (/^127\./.test(h)) return true; // loopback
+  if (/^10\./.test(h)) return true; // private class A
+  if (/^192\.168\./.test(h)) return true; // private class C
+  if (/^172\.(1[6-9]|2[0-9]|3[01])\./.test(h)) return true; // private class B
+  if (/^169\.254\./.test(h)) return true; // link-local
+  return false;
+};
+const dangerouslyAllowLocalIP = isLocalHostname(backend.hostname);
+
 // Optional dedicated S3/R2/CDN media host (prod). It is the bucket's own public
 // host, so the whole host is media — scope to its served prefix if you use one.
 const mediaHost = process.env.NEXT_PUBLIC_MEDIA_HOST;
@@ -60,7 +82,7 @@ const nextConfig: NextConfig = {
   // server from `.next/standalone/server.js`. Without this, that dir is never
   // emitted and the Dockerfile's runner stage has nothing to copy.
   output: 'standalone',
-  images: { remotePatterns },
+  images: { remotePatterns, dangerouslyAllowLocalIP },
 };
 
 export default nextConfig;
