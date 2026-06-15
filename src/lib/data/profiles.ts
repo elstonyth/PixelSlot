@@ -15,6 +15,11 @@ import { FetchError } from '@medusajs/js-sdk';
 import { sdk } from '@/lib/medusa';
 import { logger } from '@/lib/logger';
 import { getAuthToken } from '@/lib/data/customer';
+import {
+  parseOne,
+  PublicProfileSchema,
+  ProfileHandleSchema,
+} from '@/lib/data/schemas';
 
 export type ProfileRarity =
   | 'Legendary'
@@ -65,10 +70,8 @@ export const getPublicProfile = cache(
       const profile = await sdk.client.fetch<PublicProfile>(
         `/store/profiles/${encodeURIComponent(handle)}`,
       );
-      if (!profile || typeof profile.handle !== 'string' || !profile.stats) {
-        return null;
-      }
-      return profile;
+      const valid = parseOne(PublicProfileSchema, profile);
+      return valid ? (profile as PublicProfile) : null;
     } catch (error) {
       // 404 = not a collector handle (e.g. a mock-pool username) — expected.
       if (error instanceof FetchError && error.status === 404) return null;
@@ -83,11 +86,13 @@ export async function fetchProfileHandle(
   token: string,
 ): Promise<string | null> {
   try {
-    const { handle } = await sdk.client.fetch<{ handle: string }>(
-      '/store/profiles/me',
-      { headers: { Authorization: `Bearer ${token}` } },
+    const parsed = parseOne(
+      ProfileHandleSchema,
+      await sdk.client.fetch('/store/profiles/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
     );
-    return typeof handle === 'string' ? handle : null;
+    return parsed ? parsed.handle : null;
   } catch (error) {
     logger.error('[profiles] failed to load own profile handle:', error);
     return null;
