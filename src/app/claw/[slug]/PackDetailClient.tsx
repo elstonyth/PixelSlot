@@ -125,6 +125,12 @@ export default function PackDetailClient({
     pullId: string | null;
     marketValue: number | null;
     openedAt: number | null;
+    // Authoritative instant sell-back offer from the open response (backend's
+    // resolveBuybackRate) — the reveal quotes THIS, not the catalog rate, so the
+    // shown % always matches what selling credits. Null for demo spins / older
+    // backend (then the reveal falls back to the catalog rate).
+    buybackPercent: number | null;
+    buybackAmount: number | null;
   } | null>(null);
 
   const claw = clawMachine(active);
@@ -166,6 +172,8 @@ export default function PackDetailClient({
       pullId: null,
       marketValue: null,
       openedAt: null,
+      buybackPercent: null,
+      buybackAmount: null,
     });
   }
 
@@ -199,6 +207,8 @@ export default function PackDetailClient({
         pullId: res.pullId,
         marketValue: res.marketValue,
         openedAt: Date.now(),
+        buybackPercent: res.buyback?.percent ?? null,
+        buybackAmount: res.buyback?.amount ?? null,
       });
       const justPulled: RecentPull = {
         id: `${res.card.id}-${Date.now()}`,
@@ -241,7 +251,7 @@ export default function PackDetailClient({
           <div className="relative flex aspect-[36/25] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-200 to-zinc-400">
             {active.boost && (
               <span className="absolute left-4 top-4 z-20 rounded-md bg-emerald-500 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-                +90% Buyback Boost
+                +{active.buybackPercent ?? FLAT_BUYBACK_PERCENT}% Buyback Boost
               </span>
             )}
             {/* Claw-machine render. Like the live site this is an ANIMATED AVIF (the claw slides
@@ -581,8 +591,16 @@ export default function PackDetailClient({
             reveal.pullId !== null && reveal.marketValue !== null
               ? {
                   pullId: reveal.pullId,
-                  percent: active.buybackPercent ?? FLAT_BUYBACK_PERCENT,
+                  // Authoritative from the open response (backend quote == credit).
+                  // Fall back to the catalog rate only if an older backend omitted
+                  // it — never let the catalog override a backend-supplied offer,
+                  // or a stale/mock catalog re-introduces the 99-vs-90 mismatch.
+                  percent:
+                    reveal.buybackPercent ??
+                    active.buybackPercent ??
+                    FLAT_BUYBACK_PERCENT,
                   amount:
+                    reveal.buybackAmount ??
                     Math.round(
                       reveal.marketValue *
                         (active.buybackPercent ?? FLAT_BUYBACK_PERCENT),

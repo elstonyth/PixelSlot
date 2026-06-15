@@ -3,6 +3,12 @@ import {
   MedusaResponse,
 } from "@medusajs/framework/http";
 import { openPackWorkflow } from "../../../../../workflows/open-pack";
+import { PACKS_MODULE } from "../../../../../modules/packs";
+import type PacksModuleService from "../../../../../modules/packs/service";
+import {
+  buybackAmount,
+  resolveBuybackRate,
+} from "../../../../../modules/packs/buyback-rate";
 
 // POST /store/packs/:slug/open — open a pack: roll a winner over the pack's
 // weighted odds and append the result to the Pull ledger.
@@ -29,6 +35,19 @@ export async function POST(
     input: { pack_id: slug, customer_id: customerId },
   });
 
+  // Quote the instant sell-back offer for THIS pull from the SAME helper the
+  // buyback workflow credits with (resolveBuybackRate + buybackAmount), so the
+  // reveal's "sell on the spot" number is authoritative and can never disagree
+  // with what selling actually credits. The storefront must NOT recompute this
+  // from its own pack catalog — that value drifts from the DB on a mock-catalog
+  // fallback, a stale page, or a sibling-pack switch, which is how the reveal
+  // ended up quoting the flat 90% on a 99%-boosted pack. Freshly rolled, so this
+  // is inside the instant window (rate_type "instant").
+  const packsService = req.scope.resolve<PacksModuleService>(PACKS_MODULE);
+  const [pack] = await packsService.listPacks({ slug }, { take: 1 });
+  const { percent, rate_type } = resolveBuybackRate(pack, result.pull.rolled_at);
+  const amount = buybackAmount(Number(result.card.market_value), percent);
+
   // result.card is already a plain, JSON-safe object (normalized in roll-pack);
   // market_value is a USD decimal, never cents. balance is the post-charge
   // credit balance (Task A2 — opens debit the pack price from the ledger).
@@ -37,5 +56,6 @@ export async function POST(
     card: result.card,
     balance: result.balance,
     price: result.price,
+    buyback: { percent, amount, rate_type },
   });
 }

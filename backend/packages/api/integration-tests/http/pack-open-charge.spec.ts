@@ -194,6 +194,16 @@ medusaIntegrationTestRunner({
         expect(opened.data.price).toBe(PACK_PRICE);
         expect(opened.data.balance).toBe(0);
         expect(opened.data.card.handle).toBe(CARD_HANDLE);
+        // The reveal's instant sell-back offer is AUTHORITATIVE from the open
+        // response (resolveBuybackRate), so the reveal quote can never disagree
+        // with the credit — the storefront must not recompute it from its own
+        // (possibly stale/mock) pack catalog. This is the freshly-opened pull,
+        // so it is inside the instant window: percent == the pack's buyback %.
+        expect(opened.data.buyback).toMatchObject({
+          percent: INSTANT_PERCENT,
+          amount: INSTANT_AMOUNT,
+          rate_type: "instant",
+        });
         expect(await pullCount()).toBe(1);
         expect(await stockedQuantity()).toBe(STOCKED - 1);
 

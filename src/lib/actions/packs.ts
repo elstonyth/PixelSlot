@@ -31,8 +31,13 @@ export type OpenPackResult =
       /** Ledger id of this pull — keys the instant sell-back; null only if the
        *  backend response shape regresses. */
       pullId: string | null;
-      /** Raw USD FMV (decimal) — the client computes the buyback offer from it. */
+      /** Raw USD FMV (decimal) — kept for the reveal's display fallback. */
       marketValue: number;
+      /** Authoritative instant sell-back offer for THIS pull, quoted by the
+       *  backend from the SAME helper the buyback credits with — so the reveal's
+       *  number always matches what selling pays. Null only if an older backend
+       *  omitted it (the reveal then falls back to the catalog rate). */
+      buyback: { percent: number; amount: number } | null;
       /** Credit balance AFTER the charge (opens debit the pack price — A2);
        *  null only if the backend response shape regresses. */
       balance: number | null;
@@ -46,6 +51,12 @@ interface BackendWonCard {
   image: string;
   market_value: number;
   rarity: string;
+}
+
+// Shape of the `buyback` offer returned by the open route.
+interface BackendBuyback {
+  percent?: unknown;
+  amount?: unknown;
 }
 
 // Map known backend failures to friendly copy; never surface raw errors.
@@ -78,10 +89,11 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
   }
 
   try {
-    const { pull, card, balance } = await sdk.client.fetch<{
+    const { pull, card, balance, buyback } = await sdk.client.fetch<{
       pull?: { id?: unknown };
       card: BackendWonCard;
       balance?: unknown;
+      buyback?: BackendBuyback;
     }>(`/store/packs/${encodeURIComponent(slug)}/open`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
@@ -114,6 +126,14 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
       },
       pullId: typeof pull?.id === 'string' ? pull.id : null,
       marketValue: card.market_value,
+      buyback:
+        buyback &&
+        typeof buyback.percent === 'number' &&
+        Number.isFinite(buyback.percent) &&
+        typeof buyback.amount === 'number' &&
+        Number.isFinite(buyback.amount)
+          ? { percent: buyback.percent, amount: buyback.amount }
+          : null,
       balance:
         typeof balance === 'number' && Number.isFinite(balance)
           ? balance
