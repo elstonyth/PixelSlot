@@ -14,6 +14,7 @@ import { sdk } from '@/lib/medusa';
 import { logger } from '@/lib/logger';
 import { avatarForSeed } from '@/lib/profile-view';
 import { money } from '@/lib/format';
+import { parseList, LeaderboardEntrySchema } from '@/lib/data/schemas';
 
 export type LeaderboardPeriod = 'weekly' | 'alltime';
 
@@ -150,24 +151,17 @@ export async function getLeaderboard(
     if (!Array.isArray(entries) || entries.length === 0)
       return MOCK_LEADERBOARD;
 
-    const mapped = entries
-      .filter(
-        (e) =>
-          e &&
-          typeof e.name === 'string' &&
-          Number.isFinite(e.points) &&
-          Number.isFinite(e.volume) &&
-          Number.isFinite(e.pulls),
-      )
-      .map((e, i) => ({
-        rank: i + 1,
-        name: e.name,
-        handle: typeof e.handle === 'string' ? e.handle : null,
-        volume: fmtUsd(e.volume),
-        pulls: String(e.pulls),
-        points: Math.round(e.points).toLocaleString('en-US'),
-        avatar: avatarForSeed(e.seed),
-      }));
+    const mapped = (
+      parseList(LeaderboardEntrySchema, entries) as unknown as BackendEntry[]
+    ).map((e, i) => ({
+      rank: i + 1,
+      name: e.name,
+      handle: typeof e.handle === 'string' ? e.handle : null,
+      volume: fmtUsd(e.volume),
+      pulls: String(e.pulls),
+      points: Math.round(e.points).toLocaleString('en-US'),
+      avatar: avatarForSeed(e.seed),
+    }));
 
     return mapped.length ? mapped : MOCK_LEADERBOARD;
   } catch (error) {
