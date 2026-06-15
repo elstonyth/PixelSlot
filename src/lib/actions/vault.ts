@@ -16,6 +16,13 @@ import { sdk } from '@/lib/medusa';
 import { logger } from '@/lib/logger';
 import { getAuthToken } from '@/lib/data/customer';
 import { friendlyError, isAuthError, type ErrorRule } from '@/lib/errors';
+import {
+  parseList,
+  parseOne,
+  VaultItemSchema,
+  BalanceSchema,
+  AmountBalanceSchema,
+} from '@/lib/data/schemas';
 
 export type VaultItem = {
   pullId: string;
@@ -88,46 +95,39 @@ export async function getVault(): Promise<VaultResult> {
   }
 
   try {
-    const [{ items }, { balance }] = await Promise.all([
-      sdk.client.fetch<{ items: BackendVaultItem[] }>('/store/vault', {
+    const [vaultRes, creditRes] = await Promise.all([
+      sdk.client.fetch('/store/vault', {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
       }),
-      sdk.client.fetch<{ balance: number }>('/store/credits', {
+      sdk.client.fetch('/store/credits', {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
       }),
     ]);
 
-    const safeItems = (Array.isArray(items) ? items : [])
-      .filter(
-        (i) =>
-          i &&
-          typeof i.pull_id === 'string' &&
-          i.card &&
-          typeof i.card.name === 'string' &&
-          Number.isFinite(i.buyback?.amount),
-      )
-      .map((i) => ({
-        pullId: i.pull_id,
-        rolledAt: i.rolled_at,
-        packId: i.pack_id,
-        packTitle: i.pack_title,
-        card: {
-          handle: i.card.handle,
-          name: i.card.name,
-          image: i.card.image,
-          rarity: i.card.rarity,
-          marketValue: i.card.market_value,
-        },
-        buyback: { percent: i.buyback.percent, amount: i.buyback.amount },
-      }));
+    const items = (
+      parseList(
+        VaultItemSchema,
+        (vaultRes as { items?: unknown }).items,
+      ) as unknown as BackendVaultItem[]
+    ).map((i) => ({
+      pullId: i.pull_id,
+      rolledAt: i.rolled_at,
+      packId: i.pack_id,
+      packTitle: i.pack_title,
+      card: {
+        handle: i.card.handle,
+        name: i.card.name,
+        image: i.card.image,
+        rarity: i.card.rarity,
+        marketValue: i.card.market_value,
+      },
+      buyback: { percent: i.buyback.percent, amount: i.buyback.amount },
+    }));
+    const credit = parseOne(BalanceSchema, creditRes);
 
-    return {
-      ok: true,
-      items: safeItems,
-      balance: Number.isFinite(balance) ? balance : 0,
-    };
+    return { ok: true, items, balance: credit ? credit.balance : 0 };
   } catch (error) {
     logger.error('[vault] load failed:', error);
     return {
@@ -145,11 +145,14 @@ export async function getCreditBalance(): Promise<number | null> {
   const token = await getAuthToken();
   if (!token) return null;
   try {
-    const { balance } = await sdk.client.fetch<{ balance: number }>(
-      '/store/credits',
-      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
+    const credit = parseOne(
+      BalanceSchema,
+      await sdk.client.fetch('/store/credits', {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      }),
     );
-    return Number.isFinite(balance) ? balance : null;
+    return credit ? credit.balance : null;
   } catch (error) {
     logger.error('[vault] balance read failed:', error);
     return null;
@@ -175,22 +178,21 @@ export async function topUpCredits(amount: number): Promise<TopUpActionResult> {
   }
 
   try {
-    const res = await sdk.client.fetch<{ amount: number; balance: number }>(
-      '/store/credits/topup',
-      {
+    const parsed = parseOne(
+      AmountBalanceSchema,
+      await sdk.client.fetch('/store/credits/topup', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: { amount },
-      },
+      }),
     );
-
-    if (!Number.isFinite(res.amount) || !Number.isFinite(res.balance)) {
+    if (!parsed) {
       return {
         ok: false,
         error: 'Got an unexpected response. Please try again.',
       };
     }
-    return { ok: true, amount: res.amount, balance: res.balance };
+    return { ok: true, amount: parsed.amount, balance: parsed.balance };
   } catch (error) {
     logger.error('[vault] top-up failed:', error);
     return {
@@ -215,27 +217,29 @@ export async function sellBackPull(pullId: string): Promise<SellBackResult> {
   }
 
   try {
-    const res = await sdk.client.fetch<{
-      amount: number;
-      percent: number;
-      balance: number;
-    }>(`/store/vault/${encodeURIComponent(pullId)}/buyback`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: {},
-    });
-
-    if (!Number.isFinite(res.amount) || !Number.isFinite(res.balance)) {
+    const parsed = parseOne(
+      AmountBalanceSchema,
+      await sdk.client.fetch(
+        `/store/vault/${encodeURIComponent(pullId)}/buyback`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: {},
+        },
+      ),
+    );
+    if (!parsed) {
       return {
         ok: false,
         error: 'Got an unexpected response. Please try again.',
       };
     }
+    const percent = (parsed as { percent?: unknown }).percent;
     return {
       ok: true,
-      amount: res.amount,
-      percent: res.percent,
-      balance: res.balance,
+      amount: parsed.amount,
+      percent: percent as number,
+      balance: parsed.balance,
     };
   } catch (error) {
     logger.error(`[vault] buyback failed for '${pullId}':`, error);
