@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { useInView, usePrefersReducedMotion } from '@/lib/use-reveal';
+import {
+  useInView,
+  usePrefersReducedMotion,
+  staggerDelay,
+} from '@/lib/use-reveal';
 import {
   MOCK_LEADERBOARD,
   type LeaderboardEntry,
@@ -87,9 +91,7 @@ export default function LeaderboardSection({
           {rows.map((e, i) => (
             <div
               key={e.rank}
-              style={{
-                transitionDelay: show && !reduced ? `${i * 45}ms` : '0ms',
-              }}
+              style={staggerDelay(shown, reduced, i, 45)}
               className={cn(
                 'flex items-center justify-between px-4 py-3 hover:bg-neutral-800/50',
                 !reduced &&
@@ -144,9 +146,7 @@ export default function LeaderboardSection({
               {rows.map((e, i) => (
                 <tr
                   key={e.rank}
-                  style={{
-                    transitionDelay: show && !reduced ? `${i * 45}ms` : '0ms',
-                  }}
+                  style={staggerDelay(shown, reduced, i, 45)}
                   className={cn(
                     'border-b border-neutral-800 last:border-0 hover:bg-neutral-800/50',
                     !reduced &&

@@ -59,3 +59,19 @@ export function useInView<T extends HTMLElement = HTMLDivElement>() {
 
   return [ref, shown] as const;
 }
+
+/**
+ * Per-item stagger delay for a container-driven reveal: child `index` fades in
+ * `index * stepMs` after the container scrolls into view. Returns a `style`-ready
+ * object so staggered sections (HowItWorksSteps, LeaderboardSection) share the
+ * one timing formula instead of re-deriving the ternary. Delay is suppressed
+ * under reduced motion (the items are shown immediately, no transition).
+ */
+export function staggerDelay(
+  shown: boolean,
+  reduced: boolean,
+  index: number,
+  stepMs: number,
+): { transitionDelay: string } {
+  return { transitionDelay: shown && !reduced ? `${index * stepMs}ms` : '0ms' };
+}

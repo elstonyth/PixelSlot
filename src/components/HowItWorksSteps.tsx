@@ -2,7 +2,11 @@
 
 import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { useInView, usePrefersReducedMotion } from '@/lib/use-reveal';
+import {
+  useInView,
+  usePrefersReducedMotion,
+  staggerDelay,
+} from '@/lib/use-reveal';
 import StepInfoPill from '@/components/StepInfoPill';
 
 /**
@@ -100,9 +104,7 @@ export default function HowItWorksSteps() {
       {STEPS.map((step, i) => (
         <div
           key={step.num}
-          style={{
-            transitionDelay: shown && !reduced ? `${i * 120}ms` : '0ms',
-          }}
+          style={staggerDelay(shown, reduced, i, 120)}
           className={cn(
             'group relative flex h-full flex-col overflow-hidden rounded-2xl p-6 sm:p-7',
             'border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02]',
