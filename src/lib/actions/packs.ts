@@ -39,7 +39,16 @@ export type OpenPackResult =
        *  backend from the SAME helper the buyback credits with — so the reveal's
        *  number always matches what selling pays. Null only if an older backend
        *  omitted it (the reveal then falls back to the catalog rate). */
-      buyback: { percent: number; amount: number } | null;
+      buyback: {
+        percent: number;
+        amount: number;
+        /** Flat vault rate/amount for the post-expiry sell; null if an older
+         *  backend omitted them. */
+        vaultPercent: number | null;
+        vaultAmount: number | null;
+        /** Fallback instant deadline (epoch ms) when the reveal ping fails. */
+        instantDeadlineMs: number | null;
+      } | null;
       /** Credit balance AFTER the charge (opens debit the pack price — A2);
        *  null only if the backend response shape regresses. */
       balance: number | null;
@@ -59,6 +68,9 @@ interface BackendWonCard {
 interface BackendBuyback {
   percent?: unknown;
   amount?: unknown;
+  vault_percent?: unknown;
+  vault_amount?: unknown;
+  instant_deadline_ms?: unknown;
 }
 
 // Patterns local to the open-pack action; never surface raw errors.
@@ -123,7 +135,15 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
       },
       pullId: typeof pull?.id === 'string' ? pull.id : null,
       marketValue: wonCard.market_value,
-      buyback: offer ? { percent: offer.percent, amount: offer.amount } : null,
+      buyback: offer
+        ? {
+            percent: offer.percent,
+            amount: offer.amount,
+            vaultPercent: offer.vault_percent ?? null,
+            vaultAmount: offer.vault_amount ?? null,
+            instantDeadlineMs: offer.instant_deadline_ms ?? null,
+          }
+        : null,
       balance:
         typeof balance === 'number' && Number.isFinite(balance)
           ? balance
@@ -140,5 +160,36 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
       needsAuth,
       needsTopUp,
     };
+  }
+}
+
+export type RevealResult =
+  | { ok: true; instantDeadlineMs: number }
+  | { ok: false };
+
+// Reveal ping — stamps revealed_at server-side so the 30s instant window counts
+// from when the card is shown. Best-effort: any failure returns { ok: false }
+// and the overlay falls back to the open response's deadline. The backend
+// derives the customer from the bearer token; ownership is enforced there.
+export async function revealPull(pullId: string): Promise<RevealResult> {
+  if (typeof pullId !== 'string' || pullId.trim() === '') return { ok: false };
+  const token = await getAuthToken();
+  if (!token) return { ok: false };
+  try {
+    const data = await sdk.client.fetch<{ instant_deadline_ms?: unknown }>(
+      `/store/pulls/${encodeURIComponent(pullId)}/reveal`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: {},
+      },
+    );
+    const ms = data?.instant_deadline_ms;
+    return typeof ms === 'number' && Number.isFinite(ms)
+      ? { ok: true, instantDeadlineMs: ms }
+      : { ok: false };
+  } catch (error) {
+    logger.error(`[packs] reveal ping failed for '${pullId}':`, error);
+    return { ok: false };
   }
 }

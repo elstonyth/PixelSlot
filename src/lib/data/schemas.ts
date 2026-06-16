@@ -125,8 +125,12 @@ export const WonCardSchema = z.looseObject({
   market_value: finite,
 });
 
-/** Open-route `buyback` offer — finite percent + amount (both required). */
+/** Open-route `buyback` offer — instant percent/amount (required) + the vault
+ *  rate/amount and instant deadline (optional; older backends omit them). */
 export const OpenBuybackSchema = z.looseObject({
   percent: finite,
   amount: finite,
+  vault_percent: finite.optional(),
+  vault_amount: finite.optional(),
+  instant_deadline_ms: finite.optional(),
 });
