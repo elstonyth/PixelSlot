@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Package } from 'lucide-react';
-import type { HttpTypes } from '@medusajs/types';
 import {
   AccountHeader,
   MockTable,
   Badge,
   Panel,
 } from '@/components/account/ui';
-import { getOrders } from '@/lib/data/customer';
+import {
+  getDeliveryOrders,
+  type DeliveryOrderView,
+} from '@/lib/actions/delivery';
 import { features } from '@/lib/features';
 
 export const metadata: Metadata = { title: 'Orders | Pokenic' };
@@ -18,32 +20,17 @@ export const dynamic = 'force-dynamic';
 
 type Tone = 'green' | 'sky' | 'amber' | 'neutral';
 
-// Map Medusa fulfillment status → badge tone + readable label.
-const FULFILLMENT: Record<string, Tone> = {
-  delivered: 'green',
-  partially_delivered: 'green',
+// Map delivery-order status → badge tone.
+const STATUS_TONE: Record<DeliveryOrderView['status'], Tone> = {
+  requested: 'amber',
+  packing: 'amber',
   shipped: 'sky',
-  partially_shipped: 'sky',
-  fulfilled: 'sky',
-  partially_fulfilled: 'amber',
-  not_fulfilled: 'amber',
+  delivered: 'green',
   canceled: 'neutral',
 };
 
 const humanize = (s: string) =>
   s.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
-
-const money = (amount: number, currency: string) => {
-  try {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-    });
-  } catch {
-    // Malformed/empty currency_code — degrade gracefully instead of 500-ing.
-    return `${currency.toUpperCase()} ${amount.toFixed(2)}`.trim();
-  }
-};
 
 const orderDate = (value: string | Date) =>
   new Date(value).toLocaleDateString('en-US', {
@@ -52,22 +39,22 @@ const orderDate = (value: string | Date) =>
     day: 'numeric',
   });
 
-function OrderItems({ items }: { items: HttpTypes.StoreOrderLineItem[] }) {
+function DeliveryItems({ items }: { items: DeliveryOrderView['items'] }) {
   const first = items[0];
   const extra = items.length - 1;
   return (
     <span className="flex items-center gap-2">
-      {first?.thumbnail && (
+      {first?.card?.image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={first.thumbnail}
+          src={first.card.image}
           alt=""
           width={24}
           height={32}
           className="h-8 w-6 shrink-0 rounded object-contain"
         />
       )}
-      <span className="max-w-[220px] truncate">{first?.title ?? '—'}</span>
+      <span className="max-w-[220px] truncate">{first?.card?.name ?? '—'}</span>
       {extra > 0 && <span className="text-white/45">+{extra} more</span>}
     </span>
   );
@@ -83,8 +70,7 @@ function EmptyState() {
         No orders yet
       </h2>
       <p className="max-w-sm text-sm text-white/50">
-        When you buy or rip a pack, your purchases, shipments, and vaulted cards
-        will show up here.
+        Request delivery of a vaulted card and your shipments will show up here.
       </p>
       <Link
         href={features.marketplace ? '/marketplace' : '/claw'}
@@ -97,14 +83,15 @@ function EmptyState() {
 }
 
 export default async function OrdersPage() {
-  const orders = await getOrders();
+  const res = await getDeliveryOrders();
+  const orders = res.ok ? res.orders : [];
 
   if (orders.length === 0) {
     return (
       <>
         <AccountHeader
           title="Orders"
-          sub="Your purchases, shipments, and vaulted items."
+          sub="Your delivery requests and shipments."
         />
         <EmptyState />
       </>
@@ -113,13 +100,21 @@ export default async function OrdersPage() {
 
   const rows = orders.map((o) => [
     <span key="o" className="font-mono text-[12px] text-white/60">
-      #{o.display_id ?? o.id.slice(-6)}
+      #{o.id.slice(-6)}
     </span>,
-    <OrderItems key="i" items={o.items ?? []} />,
-    orderDate(o.created_at),
-    money(o.total, o.currency_code),
-    <Badge key="s" tone={FULFILLMENT[o.fulfillment_status] ?? 'neutral'}>
-      {humanize(o.fulfillment_status)}
+    <DeliveryItems key="i" items={o.items} />,
+    orderDate(o.createdAt),
+    o.trackingNumber ? (
+      <span key="t" className="font-mono text-[12px] text-white/70">
+        {o.trackingNumber}
+      </span>
+    ) : (
+      <span key="t" className="text-white/35">
+        —
+      </span>
+    ),
+    <Badge key="s" tone={STATUS_TONE[o.status] ?? 'neutral'}>
+      {humanize(o.status)}
     </Badge>,
   ]);
 
@@ -127,10 +122,10 @@ export default async function OrdersPage() {
     <>
       <AccountHeader
         title="Orders"
-        sub="Your purchases, shipments, and vaulted items."
+        sub="Your delivery requests and shipments."
       />
       <MockTable
-        head={['Order', 'Item', 'Date', 'Total', 'Status']}
+        head={['Order', 'Cards', 'Requested', 'Tracking', 'Status']}
         rows={rows}
       />
     </>
