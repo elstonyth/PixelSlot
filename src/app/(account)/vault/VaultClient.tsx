@@ -12,6 +12,7 @@ import {
   type VaultResult,
 } from '@/lib/actions/vault';
 import { FLAT_BUYBACK_PERCENT } from '@/app/claw/packs-data';
+import SellConfirmModal from '@/components/SellConfirmModal';
 
 // The customer's vault: every pulled card still held, each with a sell-back
 // offer (current FMV × the flat buyback rate — the server quotes the percent).
@@ -27,6 +28,7 @@ export default function VaultClient({ initial }: { initial: VaultResult }) {
   const [error, setError] = useState<string | null>(
     initial.ok ? null : initial.error,
   );
+  const [confirmItem, setConfirmItem] = useState<VaultItem | null>(null);
 
   const vaultValue = items.reduce((sum, i) => sum + i.card.marketValue, 0);
 
@@ -125,7 +127,7 @@ export default function VaultClient({ initial }: { initial: VaultResult }) {
               </p>
               <button
                 type="button"
-                onClick={() => sell(item)}
+                onClick={() => setConfirmItem(item)}
                 disabled={sellingId !== null}
                 className="mt-2.5 inline-flex h-9 items-center justify-center rounded-lg border border-amber-400/60 bg-amber-400/10 text-[12px] font-bold text-amber-300 transition-colors hover:bg-amber-400/20 disabled:opacity-50"
               >
@@ -143,6 +145,25 @@ export default function VaultClient({ initial }: { initial: VaultResult }) {
         {FLAT_BUYBACK_PERCENT}% buyback rate. Physical shipping of vaulted cards
         arrives with checkout.
       </p>
+
+      {confirmItem && (
+        <SellConfirmModal
+          open
+          cardName={confirmItem.card.name}
+          image={confirmItem.card.image}
+          fmv={confirmItem.card.marketValue}
+          rateType="flat"
+          percent={confirmItem.buyback.percent}
+          netCredit={confirmItem.buyback.amount}
+          busy={sellingId === confirmItem.pullId}
+          onConfirm={async () => {
+            const item = confirmItem;
+            await sell(item);
+            setConfirmItem(null);
+          }}
+          onCancel={() => setConfirmItem(null)}
+        />
+      )}
     </>
   );
 }
