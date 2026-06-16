@@ -13,6 +13,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { sdk } from '@/lib/medusa';
 import { logger } from '@/lib/logger';
 import { getAuthToken, getCustomer } from '@/lib/data/customer';
+import { parseList, DeliveryOrderSchema } from '@/lib/data/schemas';
 import { friendlyError, isAuthError, type ErrorRule } from '@/lib/errors';
 
 export type DeliveryOrderItemView = {
@@ -95,7 +96,10 @@ export async function getDeliveryOrders(): Promise<DeliveryOrdersResult> {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
-    const raw = (res as { items?: BackendDeliveryOrder[] }).items ?? [];
+    const raw = parseList(
+      DeliveryOrderSchema,
+      (res as { items?: unknown }).items,
+    ) as unknown as BackendDeliveryOrder[];
     const orders: DeliveryOrderView[] = raw.map((o) => ({
       id: o.id,
       status: o.status,

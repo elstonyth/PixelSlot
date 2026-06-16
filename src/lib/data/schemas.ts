@@ -150,12 +150,3 @@ export const DeliveryOrderSchema = z.looseObject({
   status: z.enum(['requested', 'packing', 'shipped', 'delivered', 'canceled']),
   created_at: z.string(),
 });
-
-/** A Medusa customer address as the delivery picker needs it. */
-export const DeliveryAddressSchema = z.looseObject({
-  id: z.string(),
-  address_1: z.string(),
-  city: z.string(),
-  postal_code: z.string(),
-  country_code: z.string(),
-});
