@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   Settings,
   Package,
-  TrendingUp,
+  Receipt,
   Gift,
   Award,
   Ticket,
@@ -20,7 +20,7 @@ export const ACCOUNT_NAV: { label: string; href: string; icon: LucideIcon }[] =
     { label: 'Vault', href: '/vault', icon: Vault },
     { label: 'Settings', href: '/settings', icon: Settings },
     { label: 'Orders', href: '/orders', icon: Package },
-    { label: 'Earnings', href: '/earnings', icon: TrendingUp },
+    { label: 'Transactions', href: '/transactions', icon: Receipt },
     { label: 'Referrals', href: '/referrals', icon: Gift },
     { label: 'Achievements', href: '/achievements', icon: Award },
     { label: 'Vouchers', href: '/vouchers', icon: Ticket },
