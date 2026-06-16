@@ -1,4 +1,5 @@
 import type PacksModuleService from './service';
+import { pageAll } from '../../api/utils/page-all';
 
 type DeliveryOrderRow = {
   id: string;
@@ -26,9 +27,10 @@ export async function serializeDeliveryOrders(
 ) {
   if (orders.length === 0) return [];
 
-  const allItems = await packs.listDeliveryOrderItems(
-    { delivery_order_id: orders.map((o) => o.id) },
-    { take: 5000 },
+  // Paginate to exhaustion — never silently truncate a large batch.
+  const orderIds = orders.map((o) => o.id);
+  const allItems = await pageAll((opts) =>
+    packs.listDeliveryOrderItems({ delivery_order_id: orderIds }, opts),
   );
   const pullIds = [...new Set(allItems.map((i) => i.pull_id))];
   const pulls = pullIds.length

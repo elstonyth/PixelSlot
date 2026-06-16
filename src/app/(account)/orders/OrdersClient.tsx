@@ -68,18 +68,19 @@ function DeliveryItems({ items }: { items: DeliveryOrderView['items'] }) {
 function EditAddressModal({
   order,
   addresses,
+  onAddAddress,
   onClose,
   onSaved,
 }: {
   order: DeliveryOrderView;
   addresses: AddressView[];
+  onAddAddress: (address: AddressView) => void;
   onClose: () => void;
   onSaved: (address: DeliveryOrderView['address']) => void;
 }) {
-  const [addrList, setAddrList] = useState<AddressView[]>(addresses);
-  const [selectedAddr, setSelectedAddr] = useState<string>(
-    addresses[0]?.id ?? '',
-  );
+  // No default selection in edit mode — changing an order's destination must be
+  // an explicit choice (avoids silently re-shipping to addresses[0] on save).
+  const [selectedAddr, setSelectedAddr] = useState<string>('');
   const [adding, setAdding] = useState(addresses.length === 0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +113,7 @@ function EditAddressModal({
       countryCode: form.countryCode,
       phone: form.phone ?? null,
     };
-    setAddrList((p) => [...p, view]);
+    onAddAddress(view);
     setSelectedAddr(res.addressId);
     setAdding(false);
   }
@@ -131,7 +132,7 @@ function EditAddressModal({
       return;
     }
     // Reflect the new destination in the row from the selected address book entry.
-    const chosen = addrList.find((a) => a.id === selectedAddr);
+    const chosen = addresses.find((a) => a.id === selectedAddr);
     onSaved({
       name: chosen?.name ?? order.address.name,
       city: chosen?.city ?? order.address.city,
@@ -153,7 +154,7 @@ function EditAddressModal({
         {/* Address picker / add form */}
         {!adding ? (
           <div className="mt-4 space-y-2">
-            {addrList.map((a) => (
+            {addresses.map((a) => (
               <label
                 key={a.id}
                 className="flex items-start gap-2 rounded-xl border border-white/10 p-3 text-[13px] text-white/80"
@@ -274,7 +275,7 @@ function EditAddressModal({
               >
                 Save address
               </button>
-              {addrList.length > 0 && (
+              {addresses.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setAdding(false)}
@@ -323,6 +324,9 @@ export default function OrdersClient({
   addresses: AddressView[];
 }) {
   const [orders, setOrders] = useState<DeliveryOrderView[]>(initialOrders);
+  // Address book lifted to the parent so a newly added address persists across
+  // modal open/close (instead of vanishing with the modal's local state).
+  const [addrList, setAddrList] = useState<AddressView[]>(addresses);
   const [editing, setEditing] = useState<DeliveryOrderView | null>(null);
 
   return (
@@ -391,7 +395,8 @@ export default function OrdersClient({
       {editing && (
         <EditAddressModal
           order={editing}
-          addresses={addresses}
+          addresses={addrList}
+          onAddAddress={(a) => setAddrList((p) => [...p, a])}
           onClose={() => setEditing(null)}
           onSaved={(address) => {
             setOrders((prev) =>

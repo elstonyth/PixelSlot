@@ -58,9 +58,14 @@ try {
   const unauth = await fetch(`${BACKEND}/store/delivery-orders`, {
     method: 'GET',
   });
-  if (unauth.status !== 404)
-    ok(`GET /store/delivery-orders registered + gated (${unauth.status})`);
-  else fail('GET /store/delivery-orders missing — got 404');
+  // A missing route (404) or a server error (5xx) is a real failure; any 4xx
+  // here is the gate doing its job (this route returns 400 without a publishable
+  // key, 401 without auth — both prove it's registered + protected).
+  if (unauth.status === 404 || unauth.status >= 500)
+    fail(
+      `GET /store/delivery-orders not properly gated (got ${unauth.status})`,
+    );
+  else ok(`GET /store/delivery-orders registered + gated (${unauth.status})`);
 
   const ctx = await browser.newContext({
     reducedMotion: 'reduce',

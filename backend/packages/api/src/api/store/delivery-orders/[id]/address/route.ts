@@ -55,6 +55,22 @@ export async function POST(
     );
   }
 
-  await packs.updateDeliveryOrders([{ id: order.id, ...snapshot }]);
+  // Atomic write: only update while the order is STILL in the status we read,
+  // so an admin shipping the order between our check and this write can't be
+  // silently overwritten (0 rows updated → reject).
+  const updated = await packs.updateDeliveryOrders({
+    selector: {
+      id: order.id,
+      customer_id: customerId,
+      status: order.status,
+    },
+    data: snapshot,
+  });
+  if (!updated || updated.length === 0) {
+    throw new MedusaError(
+      MedusaError.Types.NOT_ALLOWED,
+      'This order can no longer be edited (its status changed).',
+    );
+  }
   res.json({ order_id: order.id, address: snapshot });
 }

@@ -144,9 +144,32 @@ export const OpenBuybackSchema = z.looseObject({
 
 // --- actions/delivery.ts ----------------------------------------------------
 
-/** GET /store/delivery-orders item — id + status + items[]. */
+/** GET /store/delivery-orders item — guards the fields the mapper consumes. */
 export const DeliveryOrderSchema = z.looseObject({
   id: z.string(),
   status: z.enum(['requested', 'packing', 'shipped', 'delivered', 'canceled']),
   created_at: z.string(),
+  tracking_number: z.string().nullable().optional(),
+  address: z
+    .looseObject({
+      name: z.string(),
+      city: z.string(),
+      country_code: z.string(),
+    })
+    .optional(),
+  items: z
+    .array(
+      z.looseObject({
+        pull_id: z.string(),
+        card: z
+          .looseObject({
+            handle: z.string(),
+            name: z.string(),
+            image: z.string(),
+          })
+          .nullable()
+          .optional(),
+      }),
+    )
+    .optional(),
 });

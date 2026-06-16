@@ -38,7 +38,26 @@ export default async function OrdersPage() {
     getDeliveryOrders(),
     getAddresses(),
   ]);
-  const orders = ordersRes.ok ? ordersRes.orders : [];
+  // A failed read (expired auth, backend error) must NOT masquerade as "no
+  // orders" — surface it so the customer isn't sent down the wrong path.
+  if (!ordersRes.ok) {
+    return (
+      <>
+        <AccountHeader
+          title="Orders"
+          sub="Your delivery requests and shipments."
+        />
+        <Panel className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <h2 className="font-heading text-lg font-bold text-white">
+            Couldn’t load your orders
+          </h2>
+          <p className="max-w-sm text-sm text-white/50">{ordersRes.error}</p>
+        </Panel>
+      </>
+    );
+  }
+
+  const orders = ordersRes.orders;
 
   if (orders.length === 0) {
     return (

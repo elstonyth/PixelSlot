@@ -24,7 +24,8 @@ export async function POST(
   const addressId = body?.address_id;
   if (
     !Array.isArray(pullIds) ||
-    pullIds.some((id) => typeof id !== 'string') ||
+    pullIds.length === 0 ||
+    pullIds.some((id) => typeof id !== 'string' || id.trim() === '') ||
     typeof addressId !== 'string' ||
     addressId.trim() === ''
   ) {
