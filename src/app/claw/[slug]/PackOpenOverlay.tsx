@@ -177,6 +177,7 @@ export default function PackOpenOverlay({
         setConfirmOpen(false);
       } else {
         setSell({ phase: 'error', message: res.error });
+        setConfirmOpen(false);
       }
     } catch {
       // A transport-level throw must never strand the button on "Selling…".
@@ -184,6 +185,7 @@ export default function PackOpenOverlay({
         phase: 'error',
         message: 'Something went wrong. Please try again.',
       });
+      setConfirmOpen(false);
     }
   }
   const rgb = RARITY_RGB[card.rarity];

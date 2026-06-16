@@ -114,17 +114,15 @@ export default function PackDetailClient({
   const [recent, setRecent] = useState<RecentPull[]>(recentPulls);
   // The pack-opening reveal overlay — non-null while showing the won/demo card.
   // `nonce` keys the overlay so "Open another" remounts it and re-runs the burst.
-  // pullId/marketValue drive the instant sell-back offer (null for demo spins);
-  // openedAt (ms epoch, when the open call resolved) caps the offer so a user
-  // who lingers on the pre-card stages can't see a quote the server window no
-  // longer honors.
+  // pullId/marketValue drive the sell-back offer (null for demo spins). The
+  // instant window is now anchored server-side (revealed_at) via the reveal
+  // ping, so the client no longer caps the offer from an open-call timestamp.
   const [reveal, setReveal] = useState<{
     card: PackCard;
     isReal: boolean;
     nonce: number;
     pullId: string | null;
     marketValue: number | null;
-    openedAt: number | null;
     // Authoritative instant sell-back offer from the open response (backend's
     // resolveBuybackRate) — the reveal quotes THIS, not the catalog rate, so the
     // shown % always matches what selling credits. Null for demo spins / older
@@ -174,7 +172,6 @@ export default function PackDetailClient({
       nonce: Date.now(),
       pullId: null,
       marketValue: null,
-      openedAt: null,
       buybackPercent: null,
       buybackAmount: null,
       vaultPercent: null,
@@ -212,7 +209,6 @@ export default function PackDetailClient({
         nonce: Date.now(),
         pullId: res.pullId,
         marketValue: res.marketValue,
-        openedAt: Date.now(),
         buybackPercent: res.buyback?.percent ?? null,
         buybackAmount: res.buyback?.amount ?? null,
         vaultPercent: res.buyback?.vaultPercent ?? null,
