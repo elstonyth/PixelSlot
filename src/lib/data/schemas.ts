@@ -94,6 +94,21 @@ export const VaultItemSchema = z.looseObject({
 /** GET /store/credits — finite balance. */
 export const BalanceSchema = z.looseObject({ balance: finite });
 
+/** GET /store/credits — lifetime totals (balance is also validated by BalanceSchema). */
+export const CreditsSchema = z.looseObject({
+  balance: finite,
+  topup_total: finite,
+  spend_total: finite,
+});
+
+/** GET /store/credits transaction row. `amount` is signed (credit +, spend −). */
+export const CreditTransactionSchema = z.looseObject({
+  id: z.string(),
+  amount: finite,
+  reason: z.enum(['buyback', 'topup', 'pack_open', 'adjustment']),
+  created_at: z.string(),
+});
+
 /** POST /store/credits/topup + buyback responses — finite amount + balance. */
 export const AmountBalanceSchema = z.looseObject({
   amount: finite,
@@ -110,8 +125,12 @@ export const WonCardSchema = z.looseObject({
   market_value: finite,
 });
 
-/** Open-route `buyback` offer — finite percent + amount (both required). */
+/** Open-route `buyback` offer — instant percent/amount (required) + the vault
+ *  rate/amount and instant deadline (optional; older backends omit them). */
 export const OpenBuybackSchema = z.looseObject({
   percent: finite,
   amount: finite,
+  vault_percent: finite.optional(),
+  vault_amount: finite.optional(),
+  instant_deadline_ms: finite.optional(),
 });

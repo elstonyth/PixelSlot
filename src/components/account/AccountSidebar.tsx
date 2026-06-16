@@ -5,15 +5,11 @@ import { usePathname } from 'next/navigation';
 import {
   Settings,
   Package,
-  MessageSquare,
-  TrendingUp,
+  Receipt,
   Gift,
   Award,
   Ticket,
   Landmark,
-  HandCoins,
-  Coins,
-  Zap,
   Vault,
   type LucideIcon,
 } from 'lucide-react';
@@ -24,15 +20,11 @@ export const ACCOUNT_NAV: { label: string; href: string; icon: LucideIcon }[] =
     { label: 'Vault', href: '/vault', icon: Vault },
     { label: 'Settings', href: '/settings', icon: Settings },
     { label: 'Orders', href: '/orders', icon: Package },
-    { label: 'Messages', href: '/messages', icon: MessageSquare },
-    { label: 'Earnings', href: '/earnings', icon: TrendingUp },
+    { label: 'Transactions', href: '/transactions', icon: Receipt },
     { label: 'Referrals', href: '/referrals', icon: Gift },
     { label: 'Achievements', href: '/achievements', icon: Award },
     { label: 'Vouchers', href: '/vouchers', icon: Ticket },
     { label: 'Withdraw', href: '/bank-withdrawal', icon: Landmark },
-    { label: 'Borrow / Lend', href: '/borrow-lend', icon: HandCoins },
-    { label: 'PokéCoin', href: '/pokecoin', icon: Coins },
-    { label: 'Accelerate Claim', href: '/accelerate-claim', icon: Zap },
   ];
 
 export default function AccountSidebar() {
