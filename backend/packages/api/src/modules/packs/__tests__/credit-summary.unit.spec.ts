@@ -28,6 +28,7 @@ describe("credit-summary fold", () => {
     const totals = rows.reduce(foldLedgerRow, EMPTY_TOTALS);
     expect(totalsToUsd(totals).balance).toBe(0.3);
     expect(totalsToUsd(totals).topupTotal).toBe(0.3);
+    expect(totalsToUsd(totals).spendTotal).toBe(0);
   });
 
   it("treats a positive adjustment as a credit but not a top-up or spend", () => {

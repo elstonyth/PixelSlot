@@ -9,11 +9,14 @@ export interface LedgerTotals {
   spendCents: number;
 }
 
-export const EMPTY_TOTALS: LedgerTotals = {
+// Frozen: this is the shared fold SEED. foldLedgerRow is non-mutating today, but
+// freezing makes any future in-place mutation fail loudly instead of silently
+// corrupting the singleton across concurrent requests.
+export const EMPTY_TOTALS: Readonly<LedgerTotals> = Object.freeze({
   balanceCents: 0,
   topupCents: 0,
   spendCents: 0,
-};
+});
 
 export function foldLedgerRow(
   acc: LedgerTotals,
