@@ -9,6 +9,12 @@ import {
   buybackAmount,
   type BuybackRate,
 } from "./buyback-rate";
+import {
+  EMPTY_TOTALS,
+  foldLedgerRow,
+  totalsToUsd,
+  type LedgerTotals,
+} from "./credit-summary";
 
 // Auto-generates CRUD for each model: list/retrieve/create/update/delete<Model>s
 // (e.g. listPacks, listCards, listPackOdds, createPulls,
@@ -40,22 +46,37 @@ class PacksModuleService extends MedusaService({
     return { percent, amount: buybackAmount(marketValue, percent), rate_type };
   }
 
-  // Customer credit balance = Σ(amount) over the append-only ledger, paged so
-  // the result is exact at any ledger size. Integer-cent sum avoids float drift.
-  async creditBalance(customerId: string): Promise<number> {
-    // Sum in INTEGER CENTS: amounts are 2dp decimals, so per-row conversion is
-    // exact and the running total can never accumulate float drift the way a
-    // running decimal sum can over a long ledger.
-    let cents = 0;
+  // Lifetime ledger totals (balance + money-in/out), paged so the result is
+  // exact at any ledger size. Reuses the pure fold so the arithmetic is
+  // unit-tested. balance == Σ(amount); topupTotal == Σ top-ups; spendTotal == Σ
+  // |negatives|.
+  async creditSummary(customerId: string): Promise<{
+    balance: number;
+    topupTotal: number;
+    spendTotal: number;
+  }> {
+    let totals: LedgerTotals = EMPTY_TOTALS;
     for (let skip = 0; ; skip += BALANCE_PAGE) {
       const page = await this.listCreditTransactions(
         { customer_id: customerId },
         { skip, take: BALANCE_PAGE, order: { created_at: "ASC" } }
       );
-      for (const t of page) cents += Math.round(Number(t.amount) * 100);
+      for (const t of page) {
+        totals = foldLedgerRow(totals, {
+          amount: Number(t.amount),
+          reason: t.reason,
+        });
+      }
       if (page.length < BALANCE_PAGE) break;
     }
-    return cents / 100;
+    return totalsToUsd(totals);
+  }
+
+  // Customer credit balance = Σ(amount) over the append-only ledger. Kept as a
+  // thin delegate so existing callers (pack detail affordability, etc.) are
+  // unchanged.
+  async creditBalance(customerId: string): Promise<number> {
+    return (await this.creditSummary(customerId)).balance;
   }
 }
 
