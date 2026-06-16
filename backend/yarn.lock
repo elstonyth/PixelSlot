@@ -10,6 +10,7 @@ __metadata:
   resolution: "@acme/admin@workspace:apps/admin"
   dependencies:
     "@acme/api": "workspace:*"
+    "@acme/odds-math": "workspace:*"
     "@medusajs/ui-preset": "npm:2.15.5"
     "@mercurjs/admin": "npm:2.1.6"
     "@types/node": "npm:^24.10.1"
