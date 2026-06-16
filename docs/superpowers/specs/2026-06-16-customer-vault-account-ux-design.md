@@ -110,19 +110,32 @@ component.
     show a **`Sell for $Y (flat %)`** button + **"Add to vault"**. The flat sell
     routes through the same `sellBackPull` (the backend already credits the flat
     rate post-window).
-- **Strict 30s window** (user decision): set `BUYBACK_INSTANT_WINDOW_MS=30000`
-  so the server window equals the visible 30s. To keep "what you see = what you
-  get" safe, the **client countdown is re-anchored to the server deadline**:
-  - The open route + `openPack` action return, in `buyback`:
-    `instantDeadlineMs` (= `rolled_at` ms + window), `vaultPercent`,
-    `vaultAmount` (cent-accurate via `buybackAmount(fmv, FLAT_PERCENT)`).
-  - `sell-countdown.ts` counts down to `instantDeadlineMs` (drop the
-    `cardShownAt + 30s` anchor and the 75s hard cap — the server deadline is now
-    the single source). Update its unit tests accordingly.
-  - **Consequence (documented):** the decision window counts from the pull, so
-    animation/lingering on tap-gated reveal stages eats into the visible 30s. If
-    a full 30s *from card-reveal* is required instead, that needs a
-    server-stamped reveal ping (out of scope unless requested at review).
+- **Strict 30s from card-reveal, server-stamped** (user decision): the instant
+  window is exactly 30s and starts when the card is **revealed**, not when it was
+  pulled — stamped server-side so the visible countdown and the credited rate
+  always agree, and animation/lingering never eats into the 30s.
+  - `Pull + revealed_at (dateTime, nullable)`.
+  - `POST /store/pulls/:id/reveal` — customer-scoped; stamps
+    `revealed_at = now()` on the **first** call only (idempotent; later calls
+    return the existing deadline). Honored only if
+    `now - rolled_at <= BUYBACK_REVEAL_GRACE_MS` (hard ceiling, default 5 min) —
+    past that the instant rate is already gone (prevents a client from delaying
+    the ping to start its 30s arbitrarily late). Returns `{ instantDeadlineMs }`.
+  - Window resolution (`buyback-rate.ts`): instant if
+    `now <= min(revealed_at + 30s, rolled_at + REVEAL_GRACE)`. If `revealed_at`
+    is null (reduced-motion jump, ping failed, or a card already in the vault)
+    fall back to `rolled_at + 30s`. Env: `BUYBACK_INSTANT_WINDOW_MS=30000`
+    (per-reveal window) + `BUYBACK_REVEAL_GRACE_MS` (ceiling).
+    `resolveBuybackRate` takes `{ rolled_at, revealed_at }` and is shared by the
+    reveal route, the vault quote, and the buyback workflow so all three agree.
+  - Client (`PackOpenOverlay.tsx`): when the card stage mounts, fire the reveal
+    ping once and drive the countdown from the returned `instantDeadlineMs`. On
+    ping failure fall back to the open response's `rolled_at + 30s` deadline so
+    the countdown still works. `sell-countdown.ts` counts to the server deadline
+    (drop the `cardShownAt + 30s` anchor and the 75s cap); update its unit tests.
+  - Open route + `openPack` action also return `vaultPercent` + `vaultAmount`
+    (cent-accurate `buybackAmount(fmv, FLAT_PERCENT)`) for the post-expiry flat
+    sell, plus a fallback `rolled_at`-based deadline.
 - The sold-state already shows the actual credited amount returned by the
   backend — keep that (authoritative).
 
@@ -184,12 +197,16 @@ component.
   (pulls → `delivered`); `canceled` (pulls → `vaulted`).
 
 ### 3.3 Storefront
-- Vault: multi-select mode → "Request delivery" → address step (select/add via
-  the **Medusa customer address book**) → review selected cards + address →
-  submit (`POST /store/delivery-orders`).
+- Vault: multi-select mode → "Request delivery" → address step (select / add /
+  **edit** via the **Medusa customer address book**, store address routes) →
+  review selected cards + address → submit (`POST /store/delivery-orders`).
 - Orders tab: replace the stock-Medusa `getOrders()` read with
   `GET /store/delivery-orders` — list the customer's delivery orders with status,
   item thumbnails, and tracking.
+- Edit shipping address on an order: while status is `requested` or `packing`
+  (not yet `shipped`), the customer can update that order's snapshot via
+  `PATCH /store/delivery-orders/:id` (address only). The snapshot stays
+  denormalized so editing the address book later never rewrites a shipped order.
 
 ### 3.4 Admin
 - New page `backend/apps/admin/src/routes/orders/` (RouteConfig nav entry, Truck
@@ -212,6 +229,7 @@ component.
 
 | Model | Change | Phase |
 |---|---|---|
+| `Pull` | `+ revealed_at dateTime nullable` | 1 |
 | `Pull` | `+ showcased boolean default false` | 2 |
 | `Pull` | `status` enum `+ "delivering" + "delivered"` | 3 |
 | `DeliveryOrder` | new model | 3 |
@@ -222,8 +240,10 @@ component.
 | Route | Phase | Purpose |
 |---|---|---|
 | `GET /store/credits` (extend frontend read) | 1 | ledger rows for Transactions |
-| open route + `openPack` action `buyback` payload `+ instantDeadlineMs, vaultPercent, vaultAmount` | 1 | strict-30s anchoring + post-expiry flat sell |
+| `POST /store/pulls/:id/reveal` | 1 | server-stamp reveal time; returns instant deadline |
+| open route + `openPack` action `buyback` payload `+ vaultPercent, vaultAmount, fallback deadline` | 1 | post-expiry flat sell + reveal-ping fallback |
 | `POST /store/vault/:id/showcase` | 2 | toggle showcase |
+| `PATCH /store/delivery-orders/:id` | 3 | customer edits address (pre-ship) |
 | `GET /store/profiles/:handle` (filter) | 2 | showcased-only Collection |
 | `POST /store/delivery-orders` | 3 | request batch delivery |
 | `GET /store/delivery-orders` | 3 | customer's orders |
@@ -238,18 +258,24 @@ component.
   charge logic yet.
 - **Sequencing:** phased (cleanup → showcase → delivery); each phase its own
   implementation plan.
-- **Instant window:** strict 30s (`BUYBACK_INSTANT_WINDOW_MS=30000`); client
-  countdown re-anchored to the server deadline (removes the 90s grace + 75s cap).
+- **Instant window:** strict 30s, **server-stamped from card-reveal** via a
+  reveal ping (`revealed_at`), capped by `BUYBACK_REVEAL_GRACE_MS`. Full 30s from
+  reveal, what-you-see = what-you-get, replay-safe.
+- **Activity feed:** stays **ungated** (shows all recent pulls); only the profile
+  Collection is showcase-gated.
+- **Address:** reuse the Medusa customer address book; customer can add / edit /
+  select, and edit an order's address snapshot until it ships.
+- **Removed tabs:** delete the account routes outright (git history restores).
 
-## Open Items for Reviewer
+## Resolved at Review
 
-1. Activity feed gating — left **ungated** (shows all recent pulls). Gate too?
-2. Address source — **reuse Medusa customer address book** (vs free-form). OK?
-3. Strict-30s side effect — decision window counts from the pull, so animation
-   eats into the visible 30s. Accept, or invest in a server-stamped reveal ping
-   for a full 30s from card-reveal?
-4. Removed-tab routes — confirm none of the four are shared with non-account
-   navigation before deletion.
+All open items resolved 2026-06-16:
+
+1. Activity feed — left ungated.
+2. Address — Medusa address book, customer-editable (incl. pre-ship order edit).
+3. Instant window — invest in the server-stamped reveal ping (full 30s from
+   reveal).
+4. Removed tabs — delete outright.
 
 ## Verification Notes (repo-specific)
 
