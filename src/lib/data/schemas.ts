@@ -84,12 +84,14 @@ export const ProfileHandleSchema = z.looseObject({ handle: z.string() });
 
 // --- actions/vault.ts -------------------------------------------------------
 
-/** GET /store/vault item — pull_id + card.name + finite buyback.amount. */
+/** GET /store/vault item — pull_id + card.name + finite buyback.amount/percent.
+ *  `percent` is required (mirrors OpenBuybackSchema): the sell modal renders it
+ *  as the customer commits, so a dropped field must drop the row, not show NaN%. */
 export const VaultItemSchema = z.looseObject({
   pull_id: z.string(),
   showcased: z.boolean().optional(),
   card: z.looseObject({ name: z.string() }),
-  buyback: z.looseObject({ amount: finite }),
+  buyback: z.looseObject({ amount: finite, percent: finite }),
 });
 
 /** POST /store/vault/:id/showcase response — pull_id + final showcased state. */
@@ -116,10 +118,19 @@ export const CreditTransactionSchema = z.looseObject({
   created_at: z.string(),
 });
 
-/** POST /store/credits/topup + buyback responses — finite amount + balance. */
+/** POST /store/credits/topup response — finite amount + balance. */
 export const AmountBalanceSchema = z.looseObject({
   amount: finite,
   balance: finite,
+});
+
+/** POST /store/vault/:id/buyback response — finite amount + balance + percent.
+ *  Unlike top-up, the buyback response carries the rate `percent` shown back to
+ *  the customer; require it so a dropped field is a friendly error, not "NaN%". */
+export const BuybackResultSchema = z.looseObject({
+  amount: finite,
+  balance: finite,
+  percent: finite,
 });
 
 // --- actions/packs.ts -------------------------------------------------------

@@ -23,6 +23,7 @@ import {
   VaultShowcaseSchema,
   BalanceSchema,
   AmountBalanceSchema,
+  BuybackResultSchema,
   CreditsSchema,
   CreditTransactionSchema,
 } from '@/lib/data/schemas';
@@ -344,7 +345,7 @@ export async function sellBackPull(pullId: string): Promise<SellBackResult> {
 
   try {
     const parsed = parseOne(
-      AmountBalanceSchema,
+      BuybackResultSchema,
       await sdk.client.fetch(
         `/store/vault/${encodeURIComponent(pullId)}/buyback`,
         {
@@ -360,11 +361,10 @@ export async function sellBackPull(pullId: string): Promise<SellBackResult> {
         error: 'Got an unexpected response. Please try again.',
       };
     }
-    const percent = (parsed as { percent?: unknown }).percent;
     return {
       ok: true,
       amount: parsed.amount,
-      percent: percent as number,
+      percent: parsed.percent,
       balance: parsed.balance,
     };
   } catch (error) {
