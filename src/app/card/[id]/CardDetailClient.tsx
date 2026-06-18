@@ -11,10 +11,9 @@ import {
   ShieldCheck,
   TrendingUp,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import Reveal from '@/components/Reveal';
 import { features } from '@/lib/features';
-import { usd, num } from '@/lib/format';
+import { usd } from '@/lib/format';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { openAuth } from '@/components/AuthButton';
 import { type MockCard, RARITY_RGB, moreFromSet } from '@/lib/mock/cards';
