@@ -35,30 +35,41 @@ export function SlotStatusBar({
           </p>
         </div>
       </div>
-      {/* RECENT WINS marquee — reuses sp-scroll-x (frozen under reduced motion).
-          sp-scroll-x is defined inline in CommunitySection.tsx (not globals.css),
-          so the Tailwind arbitrary class won't resolve — use inline style fallback. */}
+      {/* RECENT WINS marquee — self-contained: injects @keyframes sp-scroll-x so
+          the marquee animates wherever this component is used, even on pages that
+          don't render CommunitySection (which is the only other place the keyframe
+          is defined). Frozen under reduced motion. */}
       {recent.length > 0 && (
-        <div className="relative max-w-full overflow-hidden sm:max-w-[55%]">
-          <div
-            className="flex w-max gap-4"
-            style={{
-              animation: reduced
-                ? undefined
-                : 'sp-scroll-x 30s linear infinite',
-            }}
-          >
-            {[...recent, ...recent].map((p, i) => (
-              <span
-                key={`${p.id}-${i}`}
-                className="flex shrink-0 items-center gap-1.5 text-[11px] text-white/50"
-              >
-                <span className="font-medium text-white/75">{p.name}</span>
-                <span className="tabular-nums text-white/40">{p.value}</span>
-              </span>
-            ))}
+        <>
+          {!reduced && (
+            <style>{`
+              @keyframes sp-scroll-x {
+                from { transform: translate3d(0, 0, 0); }
+                to   { transform: translate3d(-50%, 0, 0); }
+              }
+            `}</style>
+          )}
+          <div className="relative max-w-full overflow-hidden sm:max-w-[55%]">
+            <div
+              className="flex w-max gap-4"
+              style={{
+                animation: reduced
+                  ? undefined
+                  : 'sp-scroll-x 30s linear infinite',
+              }}
+            >
+              {[...recent, ...recent].map((p, i) => (
+                <span
+                  key={`${p.id}-${i}`}
+                  className="flex shrink-0 items-center gap-1.5 text-[11px] text-white/50"
+                >
+                  <span className="font-medium text-white/75">{p.name}</span>
+                  <span className="tabular-nums text-white/40">{p.value}</span>
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
