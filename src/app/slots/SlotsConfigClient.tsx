@@ -51,7 +51,7 @@ function PackTile({ pack }: { pack: Pack }) {
   );
 }
 
-export default function SlotsConfigClient({ packs }: { packs: Pack[] }) {
+export function SlotsConfigClient({ packs }: { packs: Pack[] }) {
   return (
     <main className="px-fluid py-10">
       <h1 className="font-heading text-3xl font-black text-neutral-50">

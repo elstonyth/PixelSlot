@@ -372,7 +372,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import QtyStepper from '@/components/QtyStepper';
-import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { Pack } from '@/app/claw/packs-data';
 
@@ -420,7 +419,7 @@ function PackTile({ pack }: { pack: Pack }) {
   );
 }
 
-export default function SlotsConfigClient({ packs }: { packs: Pack[] }) {
+export function SlotsConfigClient({ packs }: { packs: Pack[] }) {
   return (
     <main className="px-fluid py-10">
       <h1 className="font-heading text-3xl font-black text-neutral-50">
@@ -446,7 +445,7 @@ export default function SlotsConfigClient({ packs }: { packs: Pack[] }) {
 import type { Metadata } from 'next';
 import { getPackCategories } from '@/lib/data/packs';
 import type { Pack } from '@/app/claw/packs-data';
-import SlotsConfigClient from './SlotsConfigClient';
+import { SlotsConfigClient } from './SlotsConfigClient';
 
 export const metadata: Metadata = {
   title: 'Slot Machine | Pokenic',

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getPackCategories } from '@/lib/data/packs';
 import type { Pack } from '@/app/claw/packs-data';
-import SlotsConfigClient from './SlotsConfigClient';
+import { SlotsConfigClient } from './SlotsConfigClient';
 
 export const metadata: Metadata = {
   title: 'Slot Machine | Pokenic',

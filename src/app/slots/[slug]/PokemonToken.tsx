@@ -1,7 +1,7 @@
 // src/app/slots/[slug]/PokemonToken.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { spriteGif, spritePng } from '@/lib/mock/pokedex';
 import { TIER_COLOR, type Tier } from '@/lib/price-tier';
 import { cn } from '@/lib/utils';
@@ -33,21 +33,26 @@ export function PokemonToken({
   reduced = false,
 }: PokemonTokenProps) {
   const [src, setSrc] = useState(spriteGif(dex));
+  // Re-sync the sprite if a recycled reel cell receives a new dex (Phase B reuse).
+  useEffect(() => {
+    setSrc(spriteGif(dex));
+  }, [dex]);
   const rgb = TIER_COLOR[tier];
   return (
     <div
       className={cn(
-        'relative flex items-center justify-center rounded-2xl',
+        'relative flex h-[var(--token-size)] w-[var(--token-size)] items-center justify-center rounded-2xl',
         !reduced && 'transition-transform duration-300 ease-out',
         landed && !reduced && 'scale-110',
       )}
-      style={{
-        width: size,
-        height: size,
-        boxShadow: landed
-          ? `0 0 18px 4px rgba(${rgb}, 0.85), 0 0 42px 10px rgba(${rgb}, 0.45)`
-          : 'none',
-      }}
+      style={
+        {
+          '--token-size': `${size}px`,
+          boxShadow: landed
+            ? `0 0 18px 4px rgba(${rgb}, 0.85), 0 0 42px 10px rgba(${rgb}, 0.45)`
+            : 'none',
+        } as CSSProperties
+      }
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
