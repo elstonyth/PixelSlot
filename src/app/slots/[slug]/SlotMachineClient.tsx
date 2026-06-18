@@ -66,6 +66,14 @@ export default function SlotMachineClient({
   } | null>(null);
   const [offer, setOffer] = useState<SellBackOffer | null>(null);
   const [announce, setAnnounce] = useState('');
+  // Cooldown timer id — cleared on unmount so it can't setState after teardown.
+  const cooldownTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (cooldownTimer.current !== null) clearTimeout(cooldownTimer.current);
+    },
+    [],
+  );
 
   // Load balance on mount / auth change (PackDetailClient.tsx:98-110).
   useEffect(() => {
@@ -186,7 +194,11 @@ export default function SlotMachineClient({
 
     // Brief cooldown so a mash can't re-fire before re-enable (PRD §10).
     setCooldown(true);
-    window.setTimeout(() => setCooldown(false), COOLDOWN_MS);
+    if (cooldownTimer.current !== null) clearTimeout(cooldownTimer.current);
+    cooldownTimer.current = window.setTimeout(
+      () => setCooldown(false),
+      COOLDOWN_MS,
+    );
   }, [spin, pack.name, pack.image, play, vibrate]);
 
   const refreshBalance = useCallback((b: number) => setBalance(b), []);

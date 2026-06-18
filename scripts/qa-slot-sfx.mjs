@@ -6,6 +6,7 @@
 // Full "spin → audible win" needs the live backend; this proves the plumbing.
 // Run: node scripts/qa-slot-sfx.mjs
 import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
 
 const BASE = 'http://localhost:4000';
 const PACK = 'pokemon-rookie';
@@ -23,6 +24,7 @@ const fail = (m) => {
 };
 const ok = (m) => console.log(`✓ ${m}`);
 
+mkdirSync('docs/research', { recursive: true });
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
@@ -31,7 +33,6 @@ try {
   await page.addInitScript(() => {
     window.__audioSrcs = [];
     const Orig = window.Audio;
-    // eslint-disable-next-line no-global-assign
     window.Audio = function (src) {
       if (src) window.__audioSrcs.push(src);
       return new Orig(src);

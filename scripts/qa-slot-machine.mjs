@@ -4,6 +4,7 @@
 // sell-back offer appears → reduced-motion lands centered with no spin.
 // Headless; screenshots to docs/research/. Run: node scripts/qa-slot-machine.mjs
 import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
 
 const BASE = 'http://localhost:4000';
 const EMAIL = process.env.QA_SLOT_EMAIL;
@@ -22,6 +23,7 @@ const fail = (m) => {
 };
 const ok = (m) => console.log(`✓ ${m}`);
 
+mkdirSync('docs/research', { recursive: true });
 const browser = await chromium.launch({ headless: true });
 
 async function login(page) {
@@ -87,4 +89,5 @@ try {
 } catch (e) {
   await browser.close();
   fail(e.message);
+  console.log('\nFAILED');
 }
