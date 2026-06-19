@@ -270,7 +270,12 @@ const PackOddsEditorPage = () => {
                             type="button"
                             onClick={() => toggleGroup(g.key)}
                             className="text-ui-fg-subtle hover:text-ui-fg-base"
-                            aria-label={g.key}
+                            aria-expanded={!isCollapsed}
+                            aria-label={
+                              g.pokemon
+                                ? g.pokemon.name
+                                : t('packs.editor.group.other')
+                            }
                           >
                             {isCollapsed ? '▸' : '▾'}
                           </button>
