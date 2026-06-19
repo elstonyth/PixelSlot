@@ -1,14 +1,14 @@
-import { CreateInventoryLevelInput, ExecArgs } from "@medusajs/framework/types";
+import { CreateInventoryLevelInput, ExecArgs } from '@medusajs/framework/types';
 import {
   ContainerRegistrationKeys,
   Modules,
   ProductStatus,
-} from "@medusajs/framework/utils";
+} from '@medusajs/framework/utils';
 import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk";
+} from '@medusajs/framework/workflows-sdk';
 import {
   createApiKeysWorkflow,
   createInventoryLevelsWorkflow,
@@ -24,16 +24,17 @@ import {
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresStep,
   updateStoresWorkflow,
-} from "@medusajs/medusa/core-flows";
-import { MercurModules, SellerStatus } from "@mercurjs/types";
-import PacksModuleService from "../modules/packs/service";
-import { PACKS_MODULE } from "../modules/packs";
-import { buildCardProductInput } from "../modules/packs/card-product";
-import { HANDLE_RE, deriveHandle } from "../utils/profile-handle";
-import { RARITY_WEIGHT, type OddsRarity } from "@acme/odds-math";
+} from '@medusajs/medusa/core-flows';
+import { MercurModules, SellerStatus } from '@mercurjs/types';
+import PacksModuleService from '../modules/packs/service';
+import { PACKS_MODULE } from '../modules/packs';
+import type { HouseSellerService } from '../modules/packs/card-product';
+import { buildCardProductInput } from '../modules/packs/card-product';
+import { HANDLE_RE, deriveHandle } from '../utils/profile-handle';
+import { RARITY_WEIGHT, type OddsRarity } from '@acme/odds-math';
 
 const updateStoreCurrencies = createWorkflow(
-  "update-store-currencies",
+  'update-store-currencies',
   (input: {
     supported_currencies: { currency_code: string; is_default?: boolean }[];
     store_id: string;
@@ -73,9 +74,9 @@ const updateStoreCurrencies = createWorkflow(
 // public/cdn/cards/ and are stored as site-relative URLs.
 // ---------------------------------------------------------------------------
 const HOUSE_SELLER = {
-  name: "House",
-  handle: "house",
-  email: "house@pokenic.local",
+  name: 'House',
+  handle: 'house',
+  email: 'house@pokenic.local',
 } as const;
 
 // Only 7 real graded-slab images were harvested from the live site; the 16
@@ -83,13 +84,13 @@ const HOUSE_SELLER = {
 // Each id maps to an existing public/cdn/cards/<id>.webp — adding a new card
 // without a real image should reuse one of these, not invent a missing filename.
 const CARD_IMG = {
-  celebi: "FQEYWuGiKTkJpZSG6XqGHDBmH6EmxctEqk1kAT2MYzHc",
-  mewtwo: "9kRLkdbbvzm335GBvraQrWrNVs72gzEzynvP1RPvftTx",
-  darkrai: "4h13RDtFX4MWNYjvgMPeBS1hcL4AewupiFzDvyFUUTkd",
-  jolteon: "BEnddEeBXBHyL5qWXCg6sKS5VmUbUtZaKJ1aVB8yCWHN",
-  rapidash: "FFbo5jfXHHQWN8bmc88UDYSDP5QzYCCj6RwUkiWYyffC",
-  hooh: "FjAJZ7en585MpnoLUGbuALHEmbBAPd61EZCefQzFMmRX",
-  gengar: "6noxMybjBLtLqicAUTrG63VhWG2FgWzDBsQGnnZEyNCG",
+  celebi: 'FQEYWuGiKTkJpZSG6XqGHDBmH6EmxctEqk1kAT2MYzHc',
+  mewtwo: '9kRLkdbbvzm335GBvraQrWrNVs72gzEzynvP1RPvftTx',
+  darkrai: '4h13RDtFX4MWNYjvgMPeBS1hcL4AewupiFzDvyFUUTkd',
+  jolteon: 'BEnddEeBXBHyL5qWXCg6sKS5VmUbUtZaKJ1aVB8yCWHN',
+  rapidash: 'FFbo5jfXHHQWN8bmc88UDYSDP5QzYCCj6RwUkiWYyffC',
+  hooh: 'FjAJZ7en585MpnoLUGbuALHEmbBAPd61EZCefQzFMmRX',
+  gengar: '6noxMybjBLtLqicAUTrG63VhWG2FgWzDBsQGnnZEyNCG',
 } as const;
 
 const cardImage = (id: string) => `/cdn/cards/${id}.webp`;
@@ -124,225 +125,225 @@ type CardSeed = {
 
 const CARD_PRODUCTS: CardSeed[] = [
   {
-    handle: "celebi",
+    handle: 'celebi',
     title:
-      "2021 Pokemon Japanese Sword & Shield Jet-Black Spirit Celebi V #3 CGC 10 GEM MINT",
+      '2021 Pokemon Japanese Sword & Shield Jet-Black Spirit Celebi V #3 CGC 10 GEM MINT',
     price: 18.4,
     fmv: 19.2,
     points: 93,
-    grade: "10 GEM MINT",
-    grader: "CGC",
-    set: "Jet-Black Spirit",
-    rarity: "Rare",
+    grade: '10 GEM MINT',
+    grader: 'CGC',
+    set: 'Jet-Black Spirit',
+    rarity: 'Rare',
     year: 2021,
     image: cardImage(CARD_IMG.celebi),
   },
   {
-    handle: "mewtwo",
+    handle: 'mewtwo',
     title:
-      "2025 Pokemon Japanese SV Glory Of Rocket Gang Holo Team Rockets Mewtwo ex CGC 10",
+      '2025 Pokemon Japanese SV Glory Of Rocket Gang Holo Team Rockets Mewtwo ex CGC 10',
     price: 24.75,
     fmv: 23.9,
     points: 100,
-    grade: "10 GEM MINT",
-    grader: "CGC",
-    set: "Glory of Team Rocket",
-    rarity: "Rare",
+    grade: '10 GEM MINT',
+    grader: 'CGC',
+    set: 'Glory of Team Rocket',
+    rarity: 'Rare',
     year: 2025,
     image: cardImage(CARD_IMG.mewtwo),
   },
   {
-    handle: "darkrai-gg",
+    handle: 'darkrai-gg',
     title:
-      "2023 Pokemon Sword and Shield Crown Zenith Galarian Gallery Darkrai Vstar #GG50 PSA 10",
+      '2023 Pokemon Sword and Shield Crown Zenith Galarian Gallery Darkrai Vstar #GG50 PSA 10',
     price: 41.2,
     fmv: 39.8,
     points: 100,
-    grade: "10",
-    grader: "PSA",
-    set: "Crown Zenith",
-    rarity: "Epic",
+    grade: '10',
+    grader: 'PSA',
+    set: 'Crown Zenith',
+    rarity: 'Epic',
     year: 2023,
     image: cardImage(CARD_IMG.darkrai),
   },
   {
-    handle: "jolteon",
+    handle: 'jolteon',
     title:
-      "2024 Pokemon Japanese Scarlet & Violet Terastal Fest ex Holo Jolteon ex #52 CGC 10 PRISTINE",
+      '2024 Pokemon Japanese Scarlet & Violet Terastal Fest ex Holo Jolteon ex #52 CGC 10 PRISTINE',
     price: 15.6,
     fmv: 16.1,
     points: 96,
-    grade: "10 PRISTINE",
-    grader: "CGC",
-    set: "Terastal Festival ex",
-    rarity: "Uncommon",
+    grade: '10 PRISTINE',
+    grader: 'CGC',
+    set: 'Terastal Festival ex',
+    rarity: 'Uncommon',
     year: 2024,
     image: cardImage(CARD_IMG.jolteon),
   },
   {
-    handle: "shaymin",
+    handle: 'shaymin',
     title:
-      "2022 Pokemon Japanese Sword & Shield Star Birth Holo Shaymin VSTAR #13 CGC 9.5 MINT+",
+      '2022 Pokemon Japanese Sword & Shield Star Birth Holo Shaymin VSTAR #13 CGC 9.5 MINT+',
     price: 12.9,
     fmv: 13.4,
     points: 95,
-    grade: "9.5 MINT+",
-    grader: "CGC",
-    set: "Star Birth",
-    rarity: "Uncommon",
+    grade: '9.5 MINT+',
+    grader: 'CGC',
+    set: 'Star Birth',
+    rarity: 'Uncommon',
     year: 2022,
     image: cardImage(CARD_IMG.celebi),
   },
   {
-    handle: "rapidash",
+    handle: 'rapidash',
     title:
-      "2025 Pokemon Japanese Mega Start Deck 100 Battle Collection Reverse Holo Rapidash #90 CGC 10",
+      '2025 Pokemon Japanese Mega Start Deck 100 Battle Collection Reverse Holo Rapidash #90 CGC 10',
     price: 8.45,
     fmv: 8.9,
     points: 92,
-    grade: "10",
-    grader: "CGC",
-    set: "Battle Collection",
-    rarity: "Common",
+    grade: '10',
+    grader: 'CGC',
+    set: 'Battle Collection',
+    rarity: 'Common',
     year: 2025,
     image: cardImage(CARD_IMG.rapidash),
   },
   {
-    handle: "hooh",
+    handle: 'hooh',
     title:
-      "2022 Pokemon Japanese Sword & Shield Incandescent Arcana Ho-Oh V #55 CGC 10 GEM MINT",
+      '2022 Pokemon Japanese Sword & Shield Incandescent Arcana Ho-Oh V #55 CGC 10 GEM MINT',
     price: 21.3,
     fmv: 20.5,
     points: 98,
-    grade: "10 GEM MINT",
-    grader: "CGC",
-    set: "Incandescent Arcana",
-    rarity: "Rare",
+    grade: '10 GEM MINT',
+    grader: 'CGC',
+    set: 'Incandescent Arcana',
+    rarity: 'Rare',
     year: 2022,
     image: cardImage(CARD_IMG.hooh),
   },
   {
-    handle: "gengar",
+    handle: 'gengar',
     title:
-      "2023 Pokemon Japanese Scarlet & Violet 151 Holo Gengar #94 CGC 10 GEM MINT",
+      '2023 Pokemon Japanese Scarlet & Violet 151 Holo Gengar #94 CGC 10 GEM MINT',
     price: 29.99,
     fmv: 31.2,
     points: 100,
-    grade: "10 GEM MINT",
-    grader: "CGC",
-    set: "Scarlet & Violet 151",
-    rarity: "Epic",
+    grade: '10 GEM MINT',
+    grader: 'CGC',
+    set: 'Scarlet & Violet 151',
+    rarity: 'Epic',
     year: 2023,
     image: cardImage(CARD_IMG.gengar),
   },
   {
-    handle: "espathra",
+    handle: 'espathra',
     title:
-      "2023 Pokemon Scarlet & Violet Paradox Rift Reverse Holo Espathra #081 CGC 8.5 NM-MT+",
+      '2023 Pokemon Scarlet & Violet Paradox Rift Reverse Holo Espathra #081 CGC 8.5 NM-MT+',
     price: 9.59,
     fmv: 9.96,
     points: 90,
-    grade: "8.5 NM-MT+",
-    grader: "CGC",
-    set: "Paradox Rift",
-    rarity: "Common",
+    grade: '8.5 NM-MT+',
+    grader: 'CGC',
+    set: 'Paradox Rift',
+    rarity: 'Common',
     year: 2023,
     image: cardImage(CARD_IMG.gengar),
   },
   {
-    handle: "mimikyu",
+    handle: 'mimikyu',
     title:
-      "2021 Pokemon Japanese SWSH VMAX Climax Mimikyu VMAX #77 CGC 8.5 NM-MT+",
+      '2021 Pokemon Japanese SWSH VMAX Climax Mimikyu VMAX #77 CGC 8.5 NM-MT+',
     price: 9.33,
     fmv: 9.96,
     points: 92,
-    grade: "8.5 NM-MT+",
-    grader: "CGC",
-    set: "VMAX Climax",
-    rarity: "Common",
+    grade: '8.5 NM-MT+',
+    grader: 'CGC',
+    set: 'VMAX Climax',
+    rarity: 'Common',
     year: 2021,
     image: cardImage(CARD_IMG.celebi),
   },
   {
-    handle: "lycanroc",
+    handle: 'lycanroc',
     title:
-      "2016 Pokemon Japanese Sun & Moon Rockruff Full Power Deck Holo Lycanroc GX #9 CGC 5.5",
+      '2016 Pokemon Japanese Sun & Moon Rockruff Full Power Deck Holo Lycanroc GX #9 CGC 5.5',
     price: 7.8,
     fmv: 8.4,
     points: 92,
-    grade: "5.5",
-    grader: "CGC",
-    set: "Sun & Moon",
-    rarity: "Common",
+    grade: '5.5',
+    grader: 'CGC',
+    set: 'Sun & Moon',
+    rarity: 'Common',
     year: 2016,
     image: cardImage(CARD_IMG.rapidash),
   },
   {
-    handle: "garchomp",
+    handle: 'garchomp',
     title:
       "2025 Pokemon Japanese Mega Dream ex Holo Cynthia's Garchomp ex #90 CGC 8.5 NM-MT+",
     price: 9.1,
     fmv: 9.5,
     points: 92,
-    grade: "8.5 NM-MT+",
-    grader: "CGC",
-    set: "Mega Dream ex",
-    rarity: "Common",
+    grade: '8.5 NM-MT+',
+    grader: 'CGC',
+    set: 'Mega Dream ex',
+    rarity: 'Common',
     year: 2025,
     image: cardImage(CARD_IMG.mewtwo),
   },
   {
-    handle: "ribombee",
+    handle: 'ribombee',
     title:
       "2025 Pokemon Scarlet & Violet Journey Together Holo Lillie's Ribombee #67 CGC 9.5 MINT",
     price: 11.2,
     fmv: 10.8,
     points: 97,
-    grade: "9.5 MINT",
-    grader: "CGC",
-    set: "Journey Together",
-    rarity: "Uncommon",
+    grade: '9.5 MINT',
+    grader: 'CGC',
+    set: 'Journey Together',
+    rarity: 'Uncommon',
     year: 2025,
     image: cardImage(CARD_IMG.jolteon),
   },
   {
-    handle: "obstagoon",
+    handle: 'obstagoon',
     title:
-      "2023 Pokemon Sword & Shield Fusion Strike K.O. Collection Galarian Obstagoon #161 CGC 9",
+      '2023 Pokemon Sword & Shield Fusion Strike K.O. Collection Galarian Obstagoon #161 CGC 9',
     price: 12.0,
     fmv: 11.5,
     points: 100,
-    grade: "9",
-    grader: "CGC",
-    set: "Fusion Strike",
-    rarity: "Uncommon",
+    grade: '9',
+    grader: 'CGC',
+    set: 'Fusion Strike',
+    rarity: 'Uncommon',
     year: 2023,
     image: cardImage(CARD_IMG.hooh),
   },
   {
-    handle: "darkrai-tot",
+    handle: 'darkrai-tot',
     title:
-      "2024 Pokemon Scarlet & Violet Obsidian Flames Trick Or Trade Holo Darkrai #136 CGC 9.5",
+      '2024 Pokemon Scarlet & Violet Obsidian Flames Trick Or Trade Holo Darkrai #136 CGC 9.5',
     price: 13.4,
     fmv: 12.9,
     points: 100,
-    grade: "9.5",
-    grader: "CGC",
-    set: "Obsidian Flames",
-    rarity: "Uncommon",
+    grade: '9.5',
+    grader: 'CGC',
+    set: 'Obsidian Flames',
+    rarity: 'Uncommon',
     year: 2024,
     image: cardImage(CARD_IMG.darkrai),
   },
   {
-    handle: "dustox",
-    title: "2025 Pokemon Japanese Mega Dream ex AR Dustox #195 CGC 9 MINT",
+    handle: 'dustox',
+    title: '2025 Pokemon Japanese Mega Dream ex AR Dustox #195 CGC 9 MINT',
     price: 10.2,
     fmv: 9.25,
     points: 100,
-    grade: "9 MINT",
-    grader: "CGC",
-    set: "Mega Dream ex",
-    rarity: "Common",
+    grade: '9 MINT',
+    grader: 'CGC',
+    set: 'Mega Dream ex',
+    rarity: 'Common',
     year: 2025,
     image: cardImage(CARD_IMG.celebi),
   },
@@ -353,9 +354,9 @@ const CARD_HANDLES = CARD_PRODUCTS.map((c) => c.handle);
 // duplicate would silently drop a card (the existing-handle guard dedupes it).
 // Fail fast at load instead of seeding a short catalog.
 if (new Set(CARD_HANDLES).size !== CARD_HANDLES.length) {
-  throw new Error("CARD_PRODUCTS contains duplicate handles");
+  throw new Error('CARD_PRODUCTS contains duplicate handles');
 }
-const DEMO_APPAREL_HANDLES = ["t-shirt", "sweatshirt", "sweatpants", "shorts"];
+const DEMO_APPAREL_HANDLES = ['t-shirt', 'sweatshirt', 'sweatpants', 'shorts'];
 
 // ---------------------------------------------------------------------------
 // Gacha pack catalog (Phase 4) — mirrors the storefront's
@@ -395,62 +396,62 @@ const PACK_SEED_GROUPS: {
   }[];
 }[] = [
   {
-    category: "pokemon",
+    category: 'pokemon',
     packs: [
       {
-        slug: "pokemon-mythic",
-        title: "Mythic Pack",
+        slug: 'pokemon-mythic',
+        title: 'Mythic Pack',
         price: 1000,
-        image: clawIcon("mythic-pack"),
+        image: clawIcon('mythic-pack'),
         boost: true,
       },
       {
-        slug: "pokemon-legend",
-        title: "Legend Pack",
+        slug: 'pokemon-legend',
+        title: 'Legend Pack',
         price: 250,
-        image: clawIcon("legend-pack"),
+        image: clawIcon('legend-pack'),
         boost: true,
       },
       {
-        slug: "pokemon-elite",
-        title: "Elite Pack",
+        slug: 'pokemon-elite',
+        title: 'Elite Pack',
         price: 50,
-        image: clawIcon("elite-pack"),
+        image: clawIcon('elite-pack'),
       },
       {
-        slug: "pokemon-platinum",
-        title: "Platinum Pack",
+        slug: 'pokemon-platinum',
+        title: 'Platinum Pack',
         price: 500,
-        image: clawIcon("platinum-pack"),
+        image: clawIcon('platinum-pack'),
         boost: true,
       },
       {
-        slug: "pokemon-rookie",
-        title: "Rookie Pack",
+        slug: 'pokemon-rookie',
+        title: 'Rookie Pack',
         price: 25,
-        image: clawIcon("rookie-pack"),
+        image: clawIcon('rookie-pack'),
       },
       {
-        slug: "pokemon-black",
-        title: "Black Pack",
+        slug: 'pokemon-black',
+        title: 'Black Pack',
         price: 2500,
-        image: clawIcon("black-pack"),
+        image: clawIcon('black-pack'),
         boost: true,
         buyback: 92,
       },
       {
-        slug: "pokemon-diamond",
-        title: "Diamond Pack",
+        slug: 'pokemon-diamond',
+        title: 'Diamond Pack',
         price: 5000,
-        image: clawIcon("diamond-pack"),
+        image: clawIcon('diamond-pack'),
         boost: true,
         buyback: 92,
       },
       {
-        slug: "pokemon-trainer",
-        title: "Trainer Pack",
+        slug: 'pokemon-trainer',
+        title: 'Trainer Pack',
         price: 10,
-        image: clawIcon("trainer-pack"),
+        image: clawIcon('trainer-pack'),
         inStock: false,
       },
     ],
@@ -475,7 +476,7 @@ const PACK_SLUGS = PACK_SEED.map((p) => p.slug);
 // slug is the storefront route id AND this seed's idempotency key, so a
 // duplicate would silently drop a pack — fail fast instead.
 if (new Set(PACK_SLUGS).size !== PACK_SLUGS.length) {
-  throw new Error("PACK_SEED contains duplicate slugs");
+  throw new Error('PACK_SEED contains duplicate slugs');
 }
 
 export default async function seedDemoData({ container }: ExecArgs) {
@@ -486,12 +487,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ['gb', 'de', 'dk', 'se', 'fr', 'es', 'it'];
 
-  logger.info("Seeding store data...");
+  logger.info('Seeding store data...');
   const [store] = await storeModuleService.listStores();
   let defaultSalesChannel = await salesChannelModuleService.listSalesChannels({
-    name: "Default Sales Channel",
+    name: 'Default Sales Channel',
   });
 
   if (!defaultSalesChannel.length) {
@@ -502,7 +503,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       input: {
         salesChannelsData: [
           {
-            name: "Default Sales Channel",
+            name: 'Default Sales Channel',
           },
         ],
       },
@@ -515,11 +516,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
       store_id: store.id,
       supported_currencies: [
         {
-          currency_code: "eur",
+          currency_code: 'eur',
           is_default: true,
         },
         {
-          currency_code: "usd",
+          currency_code: 'usd',
         },
       ],
     },
@@ -533,14 +534,14 @@ export default async function seedDemoData({ container }: ExecArgs) {
       },
     },
   });
-  logger.info("Seeding region data...");
+  logger.info('Seeding region data...');
   const regionModuleService = container.resolve(Modules.REGION);
 
   // Check if any of the countries are already assigned to a region
   const existingRegions = await regionModuleService.listRegions(
     {},
     {
-      relations: ["countries"],
+      relations: ['countries'],
     },
   );
 
@@ -563,22 +564,22 @@ export default async function seedDemoData({ container }: ExecArgs) {
         r.countries?.some((c) => countries.includes(c.iso_2)),
       ) || existingRegions[0];
     logger.info(
-      "Countries already assigned to a region, skipping region creation.",
+      'Countries already assigned to a region, skipping region creation.',
     );
   } else if (unassignedCountries.length < countries.length) {
     // Some countries assigned, some not - only create with unassigned ones
     logger.info(
-      `Some countries already assigned, creating region with: ${unassignedCountries.join(", ")}`,
+      `Some countries already assigned, creating region with: ${unassignedCountries.join(', ')}`,
     );
     const { result: regionResult } = await createRegionsWorkflow(container).run(
       {
         input: {
           regions: [
             {
-              name: "Europe",
-              currency_code: "eur",
+              name: 'Europe',
+              currency_code: 'eur',
               countries: unassignedCountries,
-              payment_providers: ["pp_system_default"],
+              payment_providers: ['pp_system_default'],
             },
           ],
         },
@@ -592,10 +593,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
         input: {
           regions: [
             {
-              name: "Europe",
-              currency_code: "eur",
+              name: 'Europe',
+              currency_code: 'eur',
               countries,
-              payment_providers: ["pp_system_default"],
+              payment_providers: ['pp_system_default'],
             },
           ],
         },
@@ -608,21 +609,21 @@ export default async function seedDemoData({ container }: ExecArgs) {
   // `/store/products` with this region's id to resolve `calculated_price` in USD
   // (card variants carry USD prices). Guarded by currency so re-runs are no-ops.
   const allRegions = await regionModuleService.listRegions({});
-  let usdRegion = allRegions.find((r) => r.currency_code === "usd");
+  let usdRegion = allRegions.find((r) => r.currency_code === 'usd');
   if (!usdRegion) {
     // Only claim "us" if no existing region already has it (countries are unique
     // to one region); a USD region with no country still resolves USD prices.
-    const usdCountries = assignedCountries.has("us") ? [] : ["us"];
+    const usdCountries = assignedCountries.has('us') ? [] : ['us'];
     const { result: usdRegionResult } = await createRegionsWorkflow(
       container,
     ).run({
       input: {
         regions: [
           {
-            name: "United States",
-            currency_code: "usd",
+            name: 'United States',
+            currency_code: 'usd',
             countries: usdCountries,
-            payment_providers: ["pp_system_default"],
+            payment_providers: ['pp_system_default'],
           },
         ],
       },
@@ -630,11 +631,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
     usdRegion = usdRegionResult[0];
     logger.info(`Created USD region (${usdRegion.id}).`);
   } else {
-    logger.info("USD region already exists, skipping.");
+    logger.info('USD region already exists, skipping.');
   }
-  logger.info("Finished seeding regions.");
+  logger.info('Finished seeding regions.');
 
-  logger.info("Seeding tax regions...");
+  logger.info('Seeding tax regions...');
   const taxModuleService = container.resolve(Modules.TAX);
   const existingTaxRegions = await taxModuleService.listTaxRegions();
   const existingCountryCodes = new Set(
@@ -648,18 +649,18 @@ export default async function seedDemoData({ container }: ExecArgs) {
     await createTaxRegionsWorkflow(container).run({
       input: countriesToCreate.map((country_code) => ({
         country_code,
-        provider_id: "tp_system",
+        provider_id: 'tp_system',
       })),
     });
   } else {
-    logger.info("Tax regions already exist, skipping.");
+    logger.info('Tax regions already exist, skipping.');
   }
-  logger.info("Finished seeding tax regions.");
+  logger.info('Finished seeding tax regions.');
 
-  logger.info("Seeding stock location data...");
+  logger.info('Seeding stock location data...');
   const stockLocationModule = container.resolve(Modules.STOCK_LOCATION);
   const existingStockLocations = await stockLocationModule.listStockLocations({
-    name: "European Warehouse",
+    name: 'European Warehouse',
   });
 
   let stockLocation;
@@ -675,11 +676,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
       input: {
         locations: [
           {
-            name: "European Warehouse",
+            name: 'European Warehouse',
             address: {
-              city: "Copenhagen",
-              country_code: "DK",
-              address_1: "",
+              city: 'Copenhagen',
+              country_code: 'DK',
+              address_1: '',
             },
           },
         ],
@@ -704,22 +705,22 @@ export default async function seedDemoData({ container }: ExecArgs) {
         stock_location_id: stockLocation.id,
       },
       [Modules.FULFILLMENT]: {
-        fulfillment_provider_id: "manual_manual",
+        fulfillment_provider_id: 'manual_manual',
       },
     });
   } catch (error: unknown) {
     // Ignore if link already exists
-    if (!(error instanceof Error && error.message.includes("already exists"))) {
+    if (!(error instanceof Error && error.message.includes('already exists'))) {
       throw error;
     }
     logger.info(
-      "Stock location already linked to fulfillment provider, skipping.",
+      'Stock location already linked to fulfillment provider, skipping.',
     );
   }
 
-  logger.info("Seeding fulfillment data...");
+  logger.info('Seeding fulfillment data...');
   const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
-    type: "default",
+    type: 'default',
   });
   let shippingProfile = shippingProfiles.length ? shippingProfiles[0] : null;
 
@@ -729,8 +730,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
         input: {
           data: [
             {
-              name: "Default Shipping Profile",
-              type: "default",
+              name: 'Default Shipping Profile',
+              type: 'default',
             },
           ],
         },
@@ -740,7 +741,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   const existingFulfillmentSets =
     await fulfillmentModuleService.listFulfillmentSets({
-      name: "European Warehouse delivery",
+      name: 'European Warehouse delivery',
     });
 
   let fulfillmentSet;
@@ -751,39 +752,39 @@ export default async function seedDemoData({ container }: ExecArgs) {
     );
   } else {
     fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-      name: "European Warehouse delivery",
-      type: "shipping",
+      name: 'European Warehouse delivery',
+      type: 'shipping',
       service_zones: [
         {
-          name: "Europe",
+          name: 'Europe',
           geo_zones: [
             {
-              country_code: "gb",
-              type: "country",
+              country_code: 'gb',
+              type: 'country',
             },
             {
-              country_code: "de",
-              type: "country",
+              country_code: 'de',
+              type: 'country',
             },
             {
-              country_code: "dk",
-              type: "country",
+              country_code: 'dk',
+              type: 'country',
             },
             {
-              country_code: "se",
-              type: "country",
+              country_code: 'se',
+              type: 'country',
             },
             {
-              country_code: "fr",
-              type: "country",
+              country_code: 'fr',
+              type: 'country',
             },
             {
-              country_code: "es",
-              type: "country",
+              country_code: 'es',
+              type: 'country',
             },
             {
-              country_code: "it",
-              type: "country",
+              country_code: 'it',
+              type: 'country',
             },
           ],
         },
@@ -801,7 +802,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       });
     } catch (error: unknown) {
       if (
-        !(error instanceof Error && error.message.includes("already exists"))
+        !(error instanceof Error && error.message.includes('already exists'))
       ) {
         throw error;
       }
@@ -810,23 +811,23 @@ export default async function seedDemoData({ container }: ExecArgs) {
     await createShippingOptionsWorkflow(container).run({
       input: [
         {
-          name: "Standard Shipping",
-          price_type: "flat",
-          provider_id: "manual_manual",
+          name: 'Standard Shipping',
+          price_type: 'flat',
+          provider_id: 'manual_manual',
           service_zone_id: fulfillmentSet.service_zones[0].id,
           shipping_profile_id: shippingProfile.id,
           type: {
-            label: "Standard",
-            description: "Ship in 2-3 days.",
-            code: "standard",
+            label: 'Standard',
+            description: 'Ship in 2-3 days.',
+            code: 'standard',
           },
           prices: [
             {
-              currency_code: "usd",
+              currency_code: 'usd',
               amount: 10,
             },
             {
-              currency_code: "eur",
+              currency_code: 'eur',
               amount: 10,
             },
             {
@@ -836,35 +837,35 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
           rules: [
             {
-              attribute: "enabled_in_store",
-              value: "true",
-              operator: "eq",
+              attribute: 'enabled_in_store',
+              value: 'true',
+              operator: 'eq',
             },
             {
-              attribute: "is_return",
-              value: "false",
-              operator: "eq",
+              attribute: 'is_return',
+              value: 'false',
+              operator: 'eq',
             },
           ],
         },
         {
-          name: "Express Shipping",
-          price_type: "flat",
-          provider_id: "manual_manual",
+          name: 'Express Shipping',
+          price_type: 'flat',
+          provider_id: 'manual_manual',
           service_zone_id: fulfillmentSet.service_zones[0].id,
           shipping_profile_id: shippingProfile.id,
           type: {
-            label: "Express",
-            description: "Ship in 24 hours.",
-            code: "express",
+            label: 'Express',
+            description: 'Ship in 24 hours.',
+            code: 'express',
           },
           prices: [
             {
-              currency_code: "usd",
+              currency_code: 'usd',
               amount: 10,
             },
             {
-              currency_code: "eur",
+              currency_code: 'eur',
               amount: 10,
             },
             {
@@ -874,21 +875,21 @@ export default async function seedDemoData({ container }: ExecArgs) {
           ],
           rules: [
             {
-              attribute: "enabled_in_store",
-              value: "true",
-              operator: "eq",
+              attribute: 'enabled_in_store',
+              value: 'true',
+              operator: 'eq',
             },
             {
-              attribute: "is_return",
-              value: "false",
-              operator: "eq",
+              attribute: 'is_return',
+              value: 'false',
+              operator: 'eq',
             },
           ],
         },
       ],
     });
   }
-  logger.info("Finished seeding fulfillment data.");
+  logger.info('Finished seeding fulfillment data.');
 
   // Link sales channel to stock location (idempotent - workflow handles duplicates)
   try {
@@ -900,20 +901,20 @@ export default async function seedDemoData({ container }: ExecArgs) {
     });
   } catch (error: unknown) {
     // Ignore if link already exists
-    if (!(error instanceof Error && error.message.includes("already"))) {
+    if (!(error instanceof Error && error.message.includes('already'))) {
       throw error;
     }
-    logger.info("Sales channel already linked to stock location, skipping.");
+    logger.info('Sales channel already linked to stock location, skipping.');
   }
-  logger.info("Finished seeding stock location data.");
+  logger.info('Finished seeding stock location data.');
 
-  logger.info("Seeding publishable API key data...");
+  logger.info('Seeding publishable API key data...');
   let publishableApiKey;
   const { data } = await query.graph({
-    entity: "api_key",
-    fields: ["id"],
+    entity: 'api_key',
+    fields: ['id'],
     filters: {
-      type: "publishable",
+      type: 'publishable',
     },
   });
 
@@ -926,9 +927,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
       input: {
         api_keys: [
           {
-            title: "Webshop",
-            type: "publishable",
-            created_by: "",
+            title: 'Webshop',
+            type: 'publishable',
+            created_by: '',
           },
         ],
       },
@@ -947,21 +948,23 @@ export default async function seedDemoData({ container }: ExecArgs) {
     });
   } catch (error: unknown) {
     // Ignore if link already exists
-    if (!(error instanceof Error && error.message.includes("already"))) {
+    if (!(error instanceof Error && error.message.includes('already'))) {
       throw error;
     }
-    logger.info("Sales channel already linked to API key, skipping.");
+    logger.info('Sales channel already linked to API key, skipping.');
   }
-  logger.info("Finished seeding publishable API key data.");
+  logger.info('Finished seeding publishable API key data.');
 
-  logger.info("Seeding marketplace catalog...");
+  logger.info('Seeding marketplace catalog...');
 
   const productModule = container.resolve(Modules.PRODUCT);
 
   // House seller — Mercur's store/products filter only surfaces products linked
   // to a seller whose status is "open", so the catalog needs one owner. Guarded
   // by handle (name/email/handle are unique) so re-runs are idempotent.
-  const sellerService = container.resolve(MercurModules.SELLER);
+  const sellerService = container.resolve<HouseSellerService>(
+    MercurModules.SELLER,
+  );
   const existingSellers = await sellerService.listSellers({
     handle: HOUSE_SELLER.handle,
   });
@@ -971,7 +974,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     const [created] = await sellerService.createSellers([
       {
         ...HOUSE_SELLER,
-        currency_code: "usd",
+        currency_code: 'usd',
         status: SellerStatus.OPEN,
         metadata: { house: true },
       },
@@ -982,7 +985,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     houseSeller = created as (typeof existingSellers)[number];
     logger.info(`Created house seller (${houseSeller.id}).`);
   } else {
-    logger.info("House seller already exists, skipping.");
+    logger.info('House seller already exists, skipping.');
   }
 
   // Purge the 4 default Medusa demo apparel products for a clean card catalog
@@ -1017,7 +1020,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   );
 
   if (cardsToCreate.length === 0) {
-    logger.info("Card products already exist, skipping.");
+    logger.info('Card products already exist, skipping.');
   } else {
     await createProductsWorkflow(container).run({
       input: {
@@ -1051,13 +1054,13 @@ export default async function seedDemoData({ container }: ExecArgs) {
     logger.info(`Seeded ${cardsToCreate.length} card product(s).`);
   }
 
-  logger.info("Finished seeding marketplace catalog.");
+  logger.info('Finished seeding marketplace catalog.');
 
-  logger.info("Seeding inventory levels.");
+  logger.info('Seeding inventory levels.');
 
   const { data: inventoryItems } = await query.graph({
-    entity: "inventory_item",
-    fields: ["id"],
+    entity: 'inventory_item',
+    fields: ['id'],
   });
 
   const inventoryModule = container.resolve(Modules.INVENTORY);
@@ -1087,26 +1090,26 @@ export default async function seedDemoData({ container }: ExecArgs) {
       },
     });
   } else {
-    logger.info("Inventory levels already exist, skipping.");
+    logger.info('Inventory levels already exist, skipping.');
   }
 
-  logger.info("Finished seeding inventory levels data.");
+  logger.info('Finished seeding inventory levels data.');
 
   // Gacha packs (Phase 4) — guarded by slug so re-runs are no-ops. Independent
   // of products/inventory: the Pack model is catalog-only this phase (the
   // pack->product checkout link + odds land in Phase 5).
-  logger.info("Seeding gacha packs...");
+  logger.info('Seeding gacha packs...');
   const packsModuleService: PacksModuleService =
     container.resolve(PACKS_MODULE);
   const existingPacks = await packsModuleService.listPacks(
     { slug: PACK_SLUGS },
-    { select: ["slug"], take: PACK_SLUGS.length },
+    { select: ['slug'], take: PACK_SLUGS.length },
   );
   const existingPackSlugs = new Set(existingPacks.map((p) => p.slug));
   const packsToCreate = PACK_SEED.filter((p) => !existingPackSlugs.has(p.slug));
 
   if (packsToCreate.length === 0) {
-    logger.info("Gacha packs already exist, skipping.");
+    logger.info('Gacha packs already exist, skipping.');
   } else {
     // No `status` field on seed packs is intentional: Pack.status defaults to
     // "active" (the correct production state). The /store/packs[/:slug] routes
@@ -1114,20 +1117,20 @@ export default async function seedDemoData({ container }: ExecArgs) {
     await packsModuleService.createPacks(packsToCreate);
     logger.info(`Seeded ${packsToCreate.length} gacha pack(s).`);
   }
-  logger.info("Finished seeding gacha packs.");
+  logger.info('Finished seeding gacha packs.');
 
   // Gacha cards + odds (Phase 5a) — the prize pool + weighted table behind the
   // /claw/[slug] Top Hits and Pull Odds panels. Guarded by handle (cards) and
   // pack_id (odds) so re-runs are no-ops. The pool is the same localized graded
   // card art seeded as products in Phase 2; here it's the canonical gacha `Card`
   // record (the card->product link for inventory/checkout lands in Phase 5b).
-  logger.info("Seeding gacha cards + odds...");
+  logger.info('Seeding gacha cards + odds...');
 
   // CARD_HANDLES is declared at module scope (shared with the Phase 2 card
   // products check above); reuse it rather than redeclaring.
   const existingGachaCards = await packsModuleService.listCards(
     { handle: CARD_HANDLES },
-    { select: ["handle"], take: CARD_HANDLES.length },
+    { select: ['handle'], take: CARD_HANDLES.length },
   );
   const existingGachaCardHandles = new Set(
     existingGachaCards.map((c) => c.handle),
@@ -1146,7 +1149,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   }));
 
   if (gachaCardsToCreate.length === 0) {
-    logger.info("Gacha cards already exist, skipping.");
+    logger.info('Gacha cards already exist, skipping.');
   } else {
     await packsModuleService.createCards(gachaCardsToCreate);
     logger.info(`Seeded ${gachaCardsToCreate.length} gacha card(s).`);
@@ -1165,7 +1168,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     // +1 headroom over the full odds-table size: if a framework page cap ever
     // truncated this read, a pack would look odds-less and get re-inserted,
     // doubling its weights and skewing the aggregated pull %.
-    { select: ["pack_id"], take: PACK_SLUGS.length * CARD_HANDLES.length + 1 },
+    { select: ['pack_id'], take: PACK_SLUGS.length * CARD_HANDLES.length + 1 },
   );
   const packsWithOdds = new Set(existingOdds.map((o) => o.pack_id));
   const oddsToCreate = PACK_SEED.filter(
@@ -1174,7 +1177,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     // Per-category pool: a pack draws only cards whose category matches it
     // (the original 16 Pokemon cards carry no category → default "pokemon").
     const pool = CARD_PRODUCTS.filter(
-      (card) => (card.category ?? "pokemon") === pack.category,
+      (card) => (card.category ?? 'pokemon') === pack.category,
     );
     if (pool.length === 0) {
       // An empty pool makes roll-pack throw (Σweight<=0) and disables the
@@ -1194,30 +1197,30 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   if (oddsToCreate.length === 0) {
-    logger.info("Gacha pack odds already exist, skipping.");
+    logger.info('Gacha pack odds already exist, skipping.');
   } else {
     await packsModuleService.createPackOdds(oddsToCreate);
     logger.info(`Seeded ${oddsToCreate.length} pack-odds row(s).`);
   }
-  logger.info("Finished seeding gacha cards + odds.");
+  logger.info('Finished seeding gacha cards + odds.');
 
   // Demo gacha activity (Phase 7) — a roster of demo collectors + a deterministic,
   // rarity-realistic spread of Pull rows so the PUBLIC leaderboard, the live
   // "Recent Pulls" feed, and the admin pull-ledger render real, populated data on
   // a fresh clone. Idempotent: guarded by the demo emails AND by whether those
   // collectors already have pulls, so re-runs never pile up more rows.
-  logger.info("Seeding demo gacha activity...");
+  logger.info('Seeding demo gacha activity...');
   const customerModuleService = container.resolve(Modules.CUSTOMER);
 
   const DEMO_COLLECTORS = [
-    { first_name: "Kenji", email: "demo-collector-1@pokenic.local" },
-    { first_name: "Mira", email: "demo-collector-2@pokenic.local" },
-    { first_name: "Diego", email: "demo-collector-3@pokenic.local" },
-    { first_name: "Anaya", email: "demo-collector-4@pokenic.local" },
-    { first_name: "Leo", email: "demo-collector-5@pokenic.local" },
-    { first_name: "Sora", email: "demo-collector-6@pokenic.local" },
-    { first_name: "Bianca", email: "demo-collector-7@pokenic.local" },
-    { first_name: "Ravi", email: "demo-collector-8@pokenic.local" },
+    { first_name: 'Kenji', email: 'demo-collector-1@pokenic.local' },
+    { first_name: 'Mira', email: 'demo-collector-2@pokenic.local' },
+    { first_name: 'Diego', email: 'demo-collector-3@pokenic.local' },
+    { first_name: 'Anaya', email: 'demo-collector-4@pokenic.local' },
+    { first_name: 'Leo', email: 'demo-collector-5@pokenic.local' },
+    { first_name: 'Sora', email: 'demo-collector-6@pokenic.local' },
+    { first_name: 'Bianca', email: 'demo-collector-7@pokenic.local' },
+    { first_name: 'Ravi', email: 'demo-collector-8@pokenic.local' },
   ];
   const demoEmails = DEMO_COLLECTORS.map((c) => c.email);
   const existingDemoCustomers = await customerModuleService.listCustomers(
@@ -1250,7 +1253,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   for (const c of orderedDemo) {
     const metadata = (c.metadata ?? {}) as Record<string, unknown>;
     if (
-      typeof metadata.handle === "string" &&
+      typeof metadata.handle === 'string' &&
       HANDLE_RE.test(metadata.handle)
     ) {
       continue;
@@ -1264,12 +1267,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const existingDemoPulls = demoIds.length
     ? await packsModuleService.listPulls(
         { customer_id: demoIds },
-        { select: ["id"], take: 1 },
+        { select: ['id'], take: 1 },
       )
     : [];
 
   if (existingDemoPulls.length > 0) {
-    logger.info("Demo gacha pulls already exist, skipping.");
+    logger.info('Demo gacha pulls already exist, skipping.');
   } else if (orderedDemo.length > 0) {
     // Rarity-realistic deterministic bag (commons frequent, legendaries rare),
     // reusing the same RARITY_WEIGHT the odds table uses.
@@ -1278,7 +1281,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     // category (a pack can only yield cards of its own category — Phase 8).
     const cardBagByCategory: Record<string, string[]> = {};
     for (const c of CARD_PRODUCTS) {
-      const cat = c.category ?? "pokemon";
+      const cat = c.category ?? 'pokemon';
       const n = Math.max(
         1,
         Math.round((RARITY_WEIGHT[c.rarity] ?? 100) / BAG_SCALE),
@@ -1320,7 +1323,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       `Seeded ${pullsToCreate.length} demo pull(s) across ${orderedDemo.length} collector(s).`,
     );
   }
-  logger.info("Finished seeding demo gacha activity.");
+  logger.info('Finished seeding demo gacha activity.');
 
   // ---------------------------------------------------------------------------
   // Convenience test login — ONE loginable customer (emailpass) so every
@@ -1330,10 +1333,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
   // actually sign in on the storefront. Idempotent: skips if the customer email
   // already exists. Env-overridable; defaults to the shared dev login.
   // ---------------------------------------------------------------------------
-  logger.info("Seeding test customer login...");
-  const TEST_EMAIL = process.env.TEST_CUSTOMER_EMAIL || "test@pokenic.app";
-  const TEST_PASSWORD =
-    process.env.TEST_CUSTOMER_PASSWORD || "PokenicTest123!";
+  logger.info('Seeding test customer login...');
+  const TEST_EMAIL = process.env.TEST_CUSTOMER_EMAIL || 'test@pokenic.app';
+  const TEST_PASSWORD = process.env.TEST_CUSTOMER_PASSWORD || 'PokenicTest123!';
   const authModuleService = container.resolve(Modules.AUTH);
 
   const [existingTestCustomer] = await customerModuleService.listCustomers({
@@ -1343,18 +1345,18 @@ export default async function seedDemoData({ container }: ExecArgs) {
     logger.info(`Test customer ${TEST_EMAIL} already exists, skipping.`);
   } else {
     const { authIdentity, error } = await authModuleService.register(
-      "emailpass",
+      'emailpass',
       { body: { email: TEST_EMAIL, password: TEST_PASSWORD } },
     );
     if (error || !authIdentity) {
       logger.warn(`Test customer auth register failed: ${error}`);
     } else {
       const [testCustomer] = await customerModuleService.createCustomers([
-        { email: TEST_EMAIL, first_name: "tester" },
+        { email: TEST_EMAIL, first_name: 'tester' },
       ]);
       // Public profile handle (Task B) so /store/profiles/:handle resolves.
       await customerModuleService.updateCustomers(testCustomer.id, {
-        metadata: { handle: deriveHandle("tester", testCustomer.id) },
+        metadata: { handle: deriveHandle('tester', testCustomer.id) },
       });
       // Link the auth identity to the customer (actor_type customer) — mirrors
       // create-admin.ts's user_id linkage. Without this the login resolves no
@@ -1363,10 +1365,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
         id: authIdentity.id,
         app_metadata: { customer_id: testCustomer.id },
       });
-      logger.info(
-        `Seeded test customer ${TEST_EMAIL} (${testCustomer.id}).`,
-      );
+      logger.info(`Seeded test customer ${TEST_EMAIL} (${testCustomer.id}).`);
     }
   }
-  logger.info("Finished seeding test customer login.");
+  logger.info('Finished seeding test customer login.');
 }

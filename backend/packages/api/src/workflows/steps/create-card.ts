@@ -1,15 +1,16 @@
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
-import type { MedusaContainer } from "@medusajs/framework/types";
+import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
+import type { MedusaContainer } from '@medusajs/framework/types';
 import {
   ContainerRegistrationKeys,
   MedusaError,
   Modules,
-} from "@medusajs/framework/utils";
-import { MercurModules } from "@mercurjs/types";
-import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
-import { PACKS_MODULE } from "../../modules/packs";
-import type PacksModuleService from "../../modules/packs/service";
-import { insertOrMapDuplicate } from "./duplicate-race";
+} from '@medusajs/framework/utils';
+import { MercurModules } from '@mercurjs/types';
+import { updateProductsWorkflow } from '@medusajs/medusa/core-flows';
+import { PACKS_MODULE } from '../../modules/packs';
+import type PacksModuleService from '../../modules/packs/service';
+import type { HouseSellerService } from '../../modules/packs/card-product';
+import { insertOrMapDuplicate } from './duplicate-race';
 
 // Inventory-first registration: the PRODUCT is the item, created in the product
 // catalog beforehand. Registering it as a gacha Card only records the gacha
@@ -43,40 +44,40 @@ type CompensateData =
 // deterministically through the HTTP harness.
 export const registerCardInvoke = async (
   input: RegisterCardInput,
-  { container }: { container: MedusaContainer }
+  { container }: { container: MedusaContainer },
 ) => {
   const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
   const productModule = container.resolve(Modules.PRODUCT);
 
   const [product] = await productModule.listProducts(
     { id: input.product_id },
-    { take: 1, relations: ["images"] }
+    { take: 1, relations: ['images'] },
   );
   if (!product) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      `Product '${input.product_id}' not found — add the item to the inventory first.`
+      `Product '${input.product_id}' not found — add the item to the inventory first.`,
     );
   }
   if (!product.handle) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
-      `Product '${input.product_id}' has no handle.`
+      `Product '${input.product_id}' has no handle.`,
     );
   }
 
-  const image = product.thumbnail ?? product.images?.[0]?.url ?? "";
+  const image = product.thumbnail ?? product.images?.[0]?.url ?? '';
   if (!image) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
-      `Product '${product.title}' has no image — upload one on the product before registering it as a card.`
+      `Product '${product.title}' has no image — upload one on the product before registering it as a card.`,
     );
   }
 
   const alreadyRegistered = () =>
     new MedusaError(
       MedusaError.Types.DUPLICATE_ERROR,
-      `'${product.title}' is already registered as a gacha card.`
+      `'${product.title}' is already registered as a gacha card.`,
     );
 
   // Handle is the unique business key shared by Card + Product + PackOdds.
@@ -85,7 +86,7 @@ export const registerCardInvoke = async (
   // also maps the handle UNIQUE constraint's violation to the same error.
   const [existingCard] = await packs.listCards(
     { handle: product.handle },
-    { take: 1 }
+    { take: 1 },
   );
   if (existingCard) {
     throw alreadyRegistered();
@@ -105,19 +106,19 @@ export const registerCardInvoke = async (
           // NULL price = "use FMV"; the product's own variant price stays the
           // marketplace source of truth and is not touched by registration.
           price: null,
-          for_sale: product.status === "published",
+          for_sale: product.status === 'published',
         },
       ]),
     probeDuplicate: async () => {
       const [raced] = await packs.listCards(
         { handle: product.handle },
-        { take: 1 }
+        { take: 1 },
       );
       return raced !== undefined;
     },
     duplicateError: alreadyRegistered,
     logger: container.resolve(ContainerRegistrationKeys.LOGGER),
-    label: "create-card",
+    label: 'create-card',
   });
 
   // Mirror the gacha facts onto the product metadata (the marketplace card
@@ -133,19 +134,21 @@ export const registerCardInvoke = async (
   try {
     const query = container.resolve(ContainerRegistrationKeys.QUERY);
     const { data: withSeller } = await query.graph({
-      entity: "product",
-      fields: ["id", "seller.id"],
+      entity: 'product',
+      fields: ['id', 'seller.id'],
       filters: { id: product.id },
     });
     if (!withSeller[0]?.seller?.id) {
-      const sellerService = container.resolve(MercurModules.SELLER);
+      const sellerService = container.resolve<HouseSellerService>(
+        MercurModules.SELLER,
+      );
       const [houseSeller] = await sellerService.listSellers({
-        handle: "house",
+        handle: 'house',
       });
       if (!houseSeller) {
         throw new MedusaError(
           MedusaError.Types.NOT_FOUND,
-          "House seller not found — run the seed before managing the catalog."
+          'House seller not found — run the seed before managing the catalog.',
         );
       }
       const link = container.resolve(ContainerRegistrationKeys.LINK);
@@ -162,12 +165,15 @@ export const registerCardInvoke = async (
             metadata: {
               ...prevMetadata,
               fmv: input.market_value,
-              points: typeof prevMetadata.points === "number" ? prevMetadata.points : 0,
+              points:
+                typeof prevMetadata.points === 'number'
+                  ? prevMetadata.points
+                  : 0,
               grade: input.grade,
               grader: input.grader,
               set: input.set,
               year:
-                typeof prevMetadata.year === "number"
+                typeof prevMetadata.year === 'number'
                   ? prevMetadata.year
                   : new Date().getFullYear(),
             },
@@ -180,14 +186,15 @@ export const registerCardInvoke = async (
     throw error;
   }
 
-  return new StepResponse(
-    { handle: card.handle, productId: product.id },
-    { cardId: card.id, productId: product.id, prevMetadata } satisfies CompensateData
-  );
+  return new StepResponse({ handle: card.handle, productId: product.id }, {
+    cardId: card.id,
+    productId: product.id,
+    prevMetadata,
+  } satisfies CompensateData);
 };
 
 export const createCardStep = createStep(
-  "create-card",
+  'create-card',
   registerCardInvoke,
   async (data: CompensateData, { container }) => {
     if (!data) return;
@@ -198,7 +205,7 @@ export const createCardStep = createStep(
         products: [{ id: data.productId, metadata: data.prevMetadata }],
       },
     });
-  }
+  },
 );
 
 export default createCardStep;

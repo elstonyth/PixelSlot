@@ -1,9 +1,9 @@
-import { Modules, ProductStatus, MedusaError } from "@medusajs/framework/utils";
-import { MercurModules } from "@mercurjs/types";
+import { Modules, ProductStatus, MedusaError } from '@medusajs/framework/utils';
+import { MercurModules } from '@mercurjs/types';
 import type {
   CreateProductWorkflowInputDTO,
   MedusaContainer,
-} from "@medusajs/framework/types";
+} from '@medusajs/framework/types';
 
 // Shared builder for the "card -> marketplace Product" mirror.
 //
@@ -50,11 +50,20 @@ export type BuildOptions = {
   manageInventory: boolean;
 };
 
+// Minimal structural view of Mercur's SELLER module service. Mercur ships no
+// public type for it, so `container.resolve(MercurModules.SELLER)` is `unknown`;
+// this types the two methods the house-seller code paths actually call (here, in
+// create-card, and in the seed).
+export interface HouseSellerService {
+  listSellers: (filter: { handle: string }) => Promise<Array<{ id: string }>>;
+  createSellers: (data: unknown[]) => Promise<Array<{ id: string }>>;
+}
+
 // Build a single product entry for createProductsWorkflow — the seed and the
 // admin mirror both go through this so the catalog stays uniform.
 export function buildCardProductInput(
   card: CardProductSeed,
-  opts: BuildOptions
+  opts: BuildOptions,
 ): CreateProductWorkflowInputDTO {
   return {
     title: card.title,
@@ -63,14 +72,14 @@ export function buildCardProductInput(
     shipping_profile_id: opts.shippingProfileId,
     thumbnail: card.image,
     images: [{ url: card.image }],
-    options: [{ title: "Format", values: ["Slab"] }],
+    options: [{ title: 'Format', values: ['Slab'] }],
     variants: [
       {
-        title: "Slab",
+        title: 'Slab',
         sku: `CARD-${card.handle.toUpperCase()}`,
         manage_inventory: opts.manageInventory,
-        options: { Format: "Slab" },
-        prices: [{ currency_code: "usd", amount: card.price }],
+        options: { Format: 'Slab' },
+        prices: [{ currency_code: 'usd', amount: card.price }],
       },
     ],
     sales_channels: [{ id: opts.salesChannelId }],
@@ -90,24 +99,26 @@ export function buildCardProductInput(
 // "the default / first of each" is correct — it mirrors how the seed resolves
 // them. Throws if the store has not been seeded yet (no house seller etc.).
 export async function resolveCardProductContext(
-  container: MedusaContainer
+  container: MedusaContainer,
 ): Promise<CardProductContext> {
-  const sellerService = container.resolve(MercurModules.SELLER);
+  const sellerService = container.resolve<HouseSellerService>(
+    MercurModules.SELLER,
+  );
   const salesChannelService = container.resolve(Modules.SALES_CHANNEL);
   const fulfillmentService = container.resolve(Modules.FULFILLMENT);
   const stockLocationService = container.resolve(Modules.STOCK_LOCATION);
 
-  const [houseSeller] = await sellerService.listSellers({ handle: "house" });
+  const [houseSeller] = await sellerService.listSellers({ handle: 'house' });
   if (!houseSeller) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "House seller not found — run the seed before managing the catalog."
+      'House seller not found — run the seed before managing the catalog.',
     );
   }
 
   const namedChannels = await salesChannelService.listSalesChannels(
-    { name: "Default Sales Channel" },
-    { take: 1 }
+    { name: 'Default Sales Channel' },
+    { take: 1 },
   );
   const [salesChannel] = namedChannels.length
     ? namedChannels
@@ -115,29 +126,29 @@ export async function resolveCardProductContext(
   if (!salesChannel) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "No sales channel found — run the seed before managing the catalog."
+      'No sales channel found — run the seed before managing the catalog.',
     );
   }
 
   const [shippingProfile] = await fulfillmentService.listShippingProfiles(
     {},
-    { take: 1 }
+    { take: 1 },
   );
   if (!shippingProfile) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "No shipping profile found — run the seed before managing the catalog."
+      'No shipping profile found — run the seed before managing the catalog.',
     );
   }
 
   const [stockLocation] = await stockLocationService.listStockLocations(
     {},
-    { take: 1 }
+    { take: 1 },
   );
   if (!stockLocation) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "No stock location found — run the seed before managing the catalog."
+      'No stock location found — run the seed before managing the catalog.',
     );
   }
 
