@@ -6,7 +6,7 @@
 
 Each gacha **card** is represented by exactly **one pixel-art Pokémon** (a 1:1 avatar). An admin can assign which Pokémon a card shows and optionally upload a custom pixel sprite for it; the immersive slot reel then displays that Pokémon. Win-rate and the draw are unchanged (per-card).
 
-This **supersedes** the earlier "Pokémon grouping" (PR #16, closed) and "global catalog + per-slot assignment" ideas — neither is built. The model is now strictly 1:1: a Pokémon is the card's avatar, not a grouping of many cards.
+This **supersedes** the earlier "Pokémon grouping" (PR #16, left unmerged/superseded) and "global catalog + per-slot assignment" ideas — neither is built. The model is now strictly 1:1: a Pokémon is the card's avatar, not a grouping of many cards.
 
 ## 2. Locked decisions (from brainstorming)
 
