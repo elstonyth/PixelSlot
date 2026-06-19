@@ -22,7 +22,7 @@ import {
 import type { RecentPull } from '@/lib/data/packs';
 import { BASE_SPIN_MS } from '@/lib/reel';
 import { priceTier, TIER_COLOR, type Tier } from '@/lib/price-tier';
-import { pokemonFromCard } from '@/lib/pokemon-from-card';
+import { resolveCardPokemon } from '@/lib/resolve-card-pokemon';
 import { SlotReelStack, type ColumnWinner } from './SlotReelStack';
 import { SlotStatusBar } from './SlotStatusBar';
 import { SlotControls } from './SlotControls';
@@ -173,13 +173,19 @@ export default function SlotMachineClient({
     // (trainer/energy) lands on a neutral Poké Ball placeholder; the real prize
     // is the slab shown below the reel.
     const tier = priceTier(res.marketValue);
-    const mon = pokemonFromCard(res.card.name);
+    const r = resolveCardPokemon(res.card);
+    const custom =
+      res.card.sprite_image && res.card.sprite_image.trim() !== ''
+        ? res.card.sprite_image
+        : null;
     const winners: ColumnWinner[] = Array.from(
       { length: COLUMN_COUNT },
       () => ({
-        dex: mon?.dex ?? null,
-        image: mon ? undefined : POKEBALL_PLACEHOLDER,
-        name: mon?.name ?? res.card.name,
+        dex: r.dex,
+        // Custom sprite wins; an explicit/derived dex lets the column draw the
+        // gif (image undefined); otherwise the neutral Poké Ball (never card art).
+        image: custom ?? (r.dex === null ? POKEBALL_PLACEHOLDER : undefined),
+        name: r.name ?? res.card.name,
         tier,
       }),
     );

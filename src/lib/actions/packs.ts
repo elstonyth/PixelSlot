@@ -24,6 +24,8 @@ export type WonCard = {
   image: string;
   value: string;
   rarity: Rarity;
+  pokemon_dex: number | null;
+  sprite_image: string | null;
 };
 
 export type OpenPackResult =
@@ -65,6 +67,8 @@ interface BackendWonCard {
   image: string;
   market_value: number;
   rarity: string;
+  pokemon_dex?: number | null;
+  sprite_image?: string | null;
 }
 
 // Shape of the `buyback` offer returned by the open route.
@@ -136,6 +140,8 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
         image: card.image,
         value: formatValue(wonCard.market_value),
         rarity: wonCard.rarity as Rarity,
+        pokemon_dex: wonCard.pokemon_dex ?? null,
+        sprite_image: wonCard.sprite_image ?? null,
       },
       pullId: typeof pull?.id === 'string' ? pull.id : null,
       marketValue: wonCard.market_value,
