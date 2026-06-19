@@ -16,6 +16,9 @@ import { formatValue } from '@/lib/packs-format';
 import type { Rarity } from '@/app/claw/packs-data';
 import { friendlyError, type ErrorRule } from '@/lib/errors';
 import { parseOne, WonCardSchema, OpenBuybackSchema } from '@/lib/data/schemas';
+import { mapBatchRoll, clampCount } from './pack-batch-map';
+import type { RawBatchRollItem, BatchRoll } from './pack-batch-map';
+export type { BatchRoll, BuybackOffer } from './pack-batch-map';
 
 // The won card, shaped for the roulette reveal (same fields as a mock PackCard).
 export type WonCard = {
@@ -162,6 +165,97 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
     };
   } catch (error) {
     logger.error(`[packs] open-pack failed for '${slug}':`, error);
+    const text = error instanceof Error ? error.message : String(error);
+    const needsAuth = /unauthorized|401/i.test(text);
+    const needsTopUp = /not enough credits/i.test(text);
+    return {
+      ok: false,
+      error: friendlyError(error, PACKS_RULES, PACKS_FALLBACK),
+      needsAuth,
+      needsTopUp,
+    };
+  }
+}
+
+export type OpenBatchResult =
+  | {
+      ok: true;
+      rolls: BatchRoll[];
+      /** Pack price debited per roll (USD decimal). Null on response regression. */
+      price: number | null;
+      /** Total charged for the whole batch (`total_charged` from backend). */
+      total: number | null;
+      /** Credit balance AFTER the batch debit. Null on response regression. */
+      balance: number | null;
+    }
+  | { ok: false; error: string; needsAuth?: boolean; needsTopUp?: boolean };
+
+export async function openBatch(
+  slug: string,
+  count: number,
+): Promise<OpenBatchResult> {
+  // Boundary validation.
+  if (typeof slug !== 'string' || slug.trim() === '') {
+    return { ok: false, error: 'Invalid pack.' };
+  }
+
+  // Clamp count to int in [1, 3].
+  const clampedCount = clampCount(count);
+
+  const token = await getAuthToken();
+  if (!token) {
+    return {
+      ok: false,
+      error: 'Please log in to open a pack.',
+      needsAuth: true,
+    };
+  }
+
+  try {
+    const {
+      rolls: rawRolls,
+      balance,
+      price,
+      total_charged,
+    } = await sdk.client.fetch<{
+      rolls: RawBatchRollItem[];
+      balance?: unknown;
+      price?: unknown;
+      total_charged?: unknown;
+    }>(`/store/packs/${encodeURIComponent(slug)}/open-batch`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { count: clampedCount },
+    });
+
+    // Validate and map every roll — fail the WHOLE batch on any bad card parse.
+    const rolls: BatchRoll[] = [];
+    for (const rawRoll of rawRolls) {
+      const mapped = mapBatchRoll(rawRoll);
+      if (!mapped) {
+        return {
+          ok: false,
+          error: 'Got an unexpected response. Please try again.',
+        };
+      }
+      rolls.push(mapped);
+    }
+
+    return {
+      ok: true,
+      rolls,
+      balance:
+        typeof balance === 'number' && Number.isFinite(balance)
+          ? balance
+          : null,
+      price: typeof price === 'number' && Number.isFinite(price) ? price : null,
+      total:
+        typeof total_charged === 'number' && Number.isFinite(total_charged)
+          ? total_charged
+          : null,
+    };
+  } catch (error) {
+    logger.error(`[packs] open-batch failed for '${slug}':`, error);
     const text = error instanceof Error ? error.message : String(error);
     const needsAuth = /unauthorized|401/i.test(text);
     const needsTopUp = /not enough credits/i.test(text);

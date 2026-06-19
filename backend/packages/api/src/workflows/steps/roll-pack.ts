@@ -28,6 +28,66 @@ export type RolledCard = {
   sprite_image: string | null;
 };
 
+// Shared return shape from fetchPackData — carries the static pack/odds state
+// that is safe to fetch once and reuse across N independent draws.
+export type PackData = {
+  pack: Awaited<ReturnType<PacksModuleService["listPacks"]>>[number];
+  odds: Awaited<ReturnType<PacksModuleService["listPackOdds"]>>;
+  totalWeight: number;
+};
+
+// fetchPackData — fetches and validates the pack + odds ONCE.
+// Call this before a draw loop so listPacks + listPackOdds run only once per
+// batch regardless of count. The validations (active check, empty odds, zero
+// weight) all belong here — they are pack-level invariants, not per-draw logic.
+// NOTE: take: 1000 on listPackOdds is intentional and pre-existing; packs with
+// >1000 odds rows are not a realistic scenario (skipping Fix #2 per spec).
+export async function fetchPackData(
+  packs: PacksModuleService,
+  packId: string,
+): Promise<PackData> {
+  const [pack] = await packs.listPacks({ slug: packId, status: "active" }, { take: 1 });
+  if (!pack) throw new MedusaError(MedusaError.Types.NOT_FOUND, `Pack '${packId}' is not available.`);
+  const odds = await packs.listPackOdds({ pack_id: packId }, { take: 1000 });
+  if (odds.length === 0) throw new MedusaError(MedusaError.Types.NOT_FOUND, `Pack '${packId}' has no odds configured.`);
+  const totalWeight = odds.reduce((sum, o) => sum + o.weight, 0);
+  if (totalWeight <= 0) throw new MedusaError(MedusaError.Types.NOT_ALLOWED, `Pack '${packId}' has invalid odds.`);
+  return { pack, odds, totalWeight };
+}
+
+// drawFromData — performs ONE independent weighted draw from pre-fetched pack data.
+// This is the per-roll logic: a new Math.random() per call ensures draw independence.
+// listCards is intentionally kept HERE (not hoisted) because it fetches the
+// specific card that WAS won — it varies per roll and must stay per-draw.
+export async function drawFromData(
+  packs: PacksModuleService,
+  odds: PackData["odds"],
+  totalWeight: number,
+): Promise<RolledCard> {
+  let roll = Math.random() * totalWeight;
+  let won = odds[odds.length - 1];
+  for (const o of odds) { roll -= o.weight; if (roll < 0) { won = o; break; } }
+  const [card] = await packs.listCards({ handle: won.card_id }, { take: 1 });
+  if (!card) throw new MedusaError(MedusaError.Types.NOT_FOUND, `Card '${won.card_id}' not found.`);
+  return {
+    handle: card.handle, name: card.name, set: card.set, grader: card.grader,
+    grade: card.grade, rarity: won.rarity, market_value: Number(card.market_value),
+    image: card.image, pokemon_dex: card.pokemon_dex ?? null, sprite_image: card.sprite_image ?? null,
+  };
+}
+
+// rollOne — convenience wrapper: fetch pack data + draw once.
+// Single-open (rollPackStep) uses this so its behavior stays byte-identical to
+// before the refactor — same validations, same draw algorithm, same errors.
+// Batch callers should call fetchPackData once, then drawFromData N times.
+export async function rollOne(
+  packs: PacksModuleService,
+  packId: string,
+): Promise<RolledCard> {
+  const d = await fetchPackData(packs, packId);
+  return drawFromData(packs, d.odds, d.totalWeight);
+}
+
 // roll-pack — read-only step: validate the pack is active, then pick a winner
 // over its weighted PackOdds table. No mutation, so no compensation. The weighted
 // draw runs at execution time, so Math.random here is correct (the composition
@@ -36,71 +96,7 @@ export const rollPackStep = createStep(
   "roll-pack",
   async (input: RollPackInput, { container }) => {
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
-
-    const [pack] = await packs.listPacks(
-      { slug: input.pack_id, status: "active" },
-      { take: 1 }
-    );
-    if (!pack) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Pack '${input.pack_id}' is not available.`
-      );
-    }
-
-    const odds = await packs.listPackOdds(
-      { pack_id: input.pack_id },
-      { take: 1000 }
-    );
-    if (odds.length === 0) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Pack '${input.pack_id}' has no odds configured.`
-      );
-    }
-
-    const totalWeight = odds.reduce((sum, o) => sum + o.weight, 0);
-    if (totalWeight <= 0) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_ALLOWED,
-        `Pack '${input.pack_id}' has invalid odds.`
-      );
-    }
-
-    // Weighted pick: walk the cumulative weights. Seed the winner with the last
-    // row so a float-rounding edge (roll lands exactly on totalWeight) still
-    // resolves to a real card instead of falling through.
-    let roll = Math.random() * totalWeight;
-    let won = odds[odds.length - 1];
-    for (const o of odds) {
-      roll -= o.weight;
-      if (roll < 0) {
-        won = o;
-        break;
-      }
-    }
-
-    const [card] = await packs.listCards({ handle: won.card_id }, { take: 1 });
-    if (!card) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        `Card '${won.card_id}' not found.`
-      );
-    }
-
-    const rolled: RolledCard = {
-      handle: card.handle,
-      name: card.name,
-      set: card.set,
-      grader: card.grader,
-      grade: card.grade,
-      rarity: won.rarity,
-      market_value: Number(card.market_value),
-      image: card.image,
-      pokemon_dex: card.pokemon_dex ?? null,
-      sprite_image: card.sprite_image ?? null,
-    };
-    return new StepResponse(rolled);
+    return new StepResponse(await rollOne(packs, input.pack_id));
   }
 );
 
