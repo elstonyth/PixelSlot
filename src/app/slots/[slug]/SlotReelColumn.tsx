@@ -129,7 +129,11 @@ export function SlotReelColumn({
       ref={windowRef}
       className="relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-950"
       style={{
-        height: `${ITEM_H * VISIBLE_CELLS}px`,
+        // Shrink to fit short viewports so the whole reel stays visible without
+        // scrolling; cap at the 5-cell height. The ~300px reserve covers the top
+        // bar, controls, banner + padding. reelTargetY uses the MEASURED height,
+        // so the winner stays centred at any size.
+        height: `clamp(200px, calc(100dvh - 300px), ${ITEM_H * VISIBLE_CELLS}px)`,
         width: `${cellSize + 24}px`,
       }}
       aria-hidden
