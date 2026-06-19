@@ -71,13 +71,22 @@ export const decrementCardStockBatchStep = createStep<
   },
   async (data: CompensateData, { container }) => {
     if (!data?.length) return;
+    const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
     const inventoryModule = container.resolve(Modules.INVENTORY);
     for (const item of data) {
-      await inventoryModule.adjustInventory(
-        item.inventoryItemId,
-        item.locationId,
-        1,
-      );
+      try {
+        await inventoryModule.adjustInventory(
+          item.inventoryItemId,
+          item.locationId,
+          1,
+        );
+      } catch (error) {
+        logger.warn(
+          `decrement-card-stock-batch compensation: failed to restore stock for inventoryItemId='${item.inventoryItemId}' — continuing rollback. ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
     }
   },
 );

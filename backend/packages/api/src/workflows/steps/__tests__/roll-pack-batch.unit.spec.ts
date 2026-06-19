@@ -71,19 +71,27 @@ describe("rollOne", () => {
   });
 
   it("calling rollOne 3× yields 3 independent RolledCard results", async () => {
-    const packs = buildPacks();
-    const results = await Promise.all([
-      rollOne(packs, "test-pack"),
-      rollOne(packs, "test-pack"),
-      rollOne(packs, "test-pack"),
-    ]);
-    expect(results).toHaveLength(3);
-    results.forEach((r) => {
-      expect(r).toHaveProperty("handle");
-      expect(r).toHaveProperty("rarity");
-      expect(r).toHaveProperty("pokemon_dex");
-      expect(r).toHaveProperty("sprite_image");
-    });
+    // Spy on Math.random to verify each rollOne performs its own independent draw.
+    const spy = jest.spyOn(Math, "random");
+    try {
+      const packs = buildPacks();
+      const results = await Promise.all([
+        rollOne(packs, "test-pack"),
+        rollOne(packs, "test-pack"),
+        rollOne(packs, "test-pack"),
+      ]);
+      expect(results).toHaveLength(3);
+      results.forEach((r) => {
+        expect(r).toHaveProperty("handle");
+        expect(r).toHaveProperty("rarity");
+        expect(r).toHaveProperty("pokemon_dex");
+        expect(r).toHaveProperty("sprite_image");
+      });
+      // Each rollOne must call Math.random independently — 3 draws = at least 3 calls.
+      expect(spy).toHaveBeenCalledTimes(3);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("throws NOT_FOUND when the pack is inactive/missing", async () => {
