@@ -143,6 +143,8 @@ export const WonCardSchema = z.looseObject({
   name: z.string(),
   rarity,
   market_value: finite,
+  pokemon_dex: z.number().nullable().optional(),
+  sprite_image: z.string().nullable().optional(),
 });
 
 /** Open-route `buyback` offer — instant percent/amount (required) + the vault
