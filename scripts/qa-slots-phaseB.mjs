@@ -88,14 +88,14 @@ try {
     // Log in on the home page (header is NOT inert there), then enter the
     // immersive route already authenticated.
     await p.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
-    await p
-      .getByRole('button', { name: /^login$/i })
-      .first()
-      .click();
-    await p.fill('input[name="email"]', EMAIL);
-    await p.fill('input[name="password"]', PASSWORD);
-    await p.press('input[name="password"]', 'Enter');
-    await p.waitForTimeout(2500); // let auth settle
+    const loginBtn = p.getByRole('button', { name: /^login$/i }).first();
+    if (await loginBtn.isVisible().catch(() => false)) {
+      await loginBtn.click();
+      await p.fill('input[name="email"]', EMAIL);
+      await p.fill('input[name="password"]', PASSWORD);
+      await p.press('input[name="password"]', 'Enter');
+      await p.waitForTimeout(2500); // let auth settle
+    }
 
     await p.goto(`${BASE}/slots/${PACK}`, { waitUntil: 'networkidle' });
     const spin = p.getByRole('button', { name: /^spin$/i });
@@ -120,10 +120,21 @@ try {
       const before = await overlay2.boundingBox();
       await spin.first().click();
 
-      // Win-after-stop: no winner banner mid-scroll.
-      await p.waitForTimeout(1500);
-      if ((await p.getByText(/YOU WON/i).count()) === 0)
-        ok('no winner shown mid-spin (win-after-stop)');
+      // Win-after-stop: the winner must not appear WHILE the reel is still
+      // spinning. Tie the assertion to the visible spinning state instead of a
+      // fixed 1500ms, which can false-fail once the reel has legitimately
+      // settled and the winner is correctly shown.
+      await p.waitForTimeout(300);
+      const spinningVisible = await p
+        .getByText(/SPINNING/i)
+        .first()
+        .isVisible()
+        .catch(() => false);
+      const winnerEarly = await p.getByText(/YOU WON/i).count();
+      if (!spinningVisible)
+        skip('reel settled before the mid-spin check (timing) — not verified');
+      else if (winnerEarly === 0)
+        ok('no winner shown while spinning (win-after-stop)');
       else fail('winner shown mid-spin (win-after-stop violated)');
 
       // Winner appears only after the reel settles.
@@ -132,12 +143,22 @@ try {
 
       // No layout shift: the overlay box is unchanged.
       const after = await overlay2.boundingBox();
-      if (JSON.stringify(before) === JSON.stringify(after))
-        ok('overlay did not shift across the spin (no layout shift)');
-      else
-        fail(
-          `overlay box shifted: ${JSON.stringify(before)} -> ${JSON.stringify(after)}`,
-        );
+      if (!before || !after) {
+        fail('overlay bounding box unavailable before/after the spin');
+      } else {
+        const EPS = 1; // px tolerance for subpixel/layout rounding
+        const stable =
+          Math.abs(before.x - after.x) <= EPS &&
+          Math.abs(before.y - after.y) <= EPS &&
+          Math.abs(before.width - after.width) <= EPS &&
+          Math.abs(before.height - after.height) <= EPS;
+        if (stable)
+          ok('overlay did not shift across the spin (no layout shift)');
+        else
+          fail(
+            `overlay box shifted: ${JSON.stringify(before)} -> ${JSON.stringify(after)}`,
+          );
+      }
 
       await p.screenshot({ path: 'docs/research/pw-slots-phaseB-landed.png' });
     }
