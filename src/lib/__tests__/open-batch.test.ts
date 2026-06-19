@@ -14,7 +14,7 @@
  * clamp-spec that mirrors the implementation exactly (Math.min/max/trunc).
  */
 import { describe, it, expect } from 'vitest';
-import { mapBatchRoll } from '@/lib/actions/pack-batch-map';
+import { mapBatchRoll, clampCount } from '@/lib/actions/pack-batch-map';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -216,30 +216,26 @@ describe('mapBatchRoll — field mapping', () => {
 // Count-clamp spec (mirrors openBatch implementation: Math.min(3,max(1,trunc)))
 // ---------------------------------------------------------------------------
 
-describe('count clamp logic (mirrors openBatch implementation)', () => {
-  // Pure function reproducing the clamp — tests confirm the spec is correct so
-  // any regression in openBatch's inline clamp would be caught here.
-  const clamp = (n: number) => Math.min(3, Math.max(1, Math.trunc(n)));
-
+describe('clampCount — real exported function', () => {
   it('clamps values above 3 to 3', () => {
-    expect(clamp(5)).toBe(3);
-    expect(clamp(100)).toBe(3);
-    expect(clamp(3.9)).toBe(3); // trunc → 3
+    expect(clampCount(5)).toBe(3);
+    expect(clampCount(100)).toBe(3);
+    expect(clampCount(3.9)).toBe(3); // trunc → 3
   });
 
   it('clamps values below 1 to 1', () => {
-    expect(clamp(0)).toBe(1);
-    expect(clamp(-5)).toBe(1);
+    expect(clampCount(0)).toBe(1);
+    expect(clampCount(-5)).toBe(1);
   });
 
   it('passes values 1, 2, 3 through unchanged', () => {
-    expect(clamp(1)).toBe(1);
-    expect(clamp(2)).toBe(2);
-    expect(clamp(3)).toBe(3);
+    expect(clampCount(1)).toBe(1);
+    expect(clampCount(2)).toBe(2);
+    expect(clampCount(3)).toBe(3);
   });
 
-  it('truncates fractional values before clamping', () => {
-    expect(clamp(1.9)).toBe(1);
-    expect(clamp(2.5)).toBe(2);
+  it('truncates fractional values before clamping (Math.trunc)', () => {
+    expect(clampCount(1.9)).toBe(1);
+    expect(clampCount(2.5)).toBe(2);
   });
 });

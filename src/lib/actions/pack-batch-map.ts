@@ -46,6 +46,15 @@ export interface RawBatchRollItem {
 }
 
 /**
+ * Clamp `n` to an integer in [1, 3].
+ *
+ * Exported so `openBatch` (and tests) share one source of truth instead of
+ * duplicating the inline `Math.min/max/trunc` expression.
+ */
+export const clampCount = (n: number): number =>
+  Math.min(3, Math.max(1, Math.trunc(n)));
+
+/**
  * Map one raw roll item into a `BatchRoll`.
  *
  * Returns `null` if `WonCardSchema` validation fails — callers must treat a

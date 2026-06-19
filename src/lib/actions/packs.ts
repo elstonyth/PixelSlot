@@ -16,7 +16,8 @@ import { formatValue } from '@/lib/packs-format';
 import type { Rarity } from '@/app/claw/packs-data';
 import { friendlyError, type ErrorRule } from '@/lib/errors';
 import { parseOne, WonCardSchema, OpenBuybackSchema } from '@/lib/data/schemas';
-import { mapBatchRoll } from './pack-batch-map';
+import { mapBatchRoll, clampCount } from './pack-batch-map';
+import type { RawBatchRollItem, BatchRoll } from './pack-batch-map';
 export type { BatchRoll, BuybackOffer } from './pack-batch-map';
 
 // The won card, shaped for the roulette reveal (same fields as a mock PackCard).
@@ -179,7 +180,7 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
 export type OpenBatchResult =
   | {
       ok: true;
-      rolls: import('./pack-batch-map').BatchRoll[];
+      rolls: BatchRoll[];
       /** Pack price debited per roll (USD decimal). Null on response regression. */
       price: number | null;
       /** Total charged for the whole batch (`total_charged` from backend). */
@@ -199,7 +200,7 @@ export async function openBatch(
   }
 
   // Clamp count to int in [1, 3].
-  const clampedCount = Math.min(3, Math.max(1, Math.trunc(count)));
+  const clampedCount = clampCount(count);
 
   const token = await getAuthToken();
   if (!token) {
@@ -217,20 +218,7 @@ export async function openBatch(
       price,
       total_charged,
     } = await sdk.client.fetch<{
-      rolls: {
-        pull?: { id?: unknown };
-        card: {
-          handle: string;
-          name: string;
-          image: string;
-          market_value: number;
-          rarity: string;
-          pokemon_dex?: number | null;
-          sprite_image?: string | null;
-          [key: string]: unknown;
-        };
-        buyback?: unknown;
-      }[];
+      rolls: RawBatchRollItem[];
       balance?: unknown;
       price?: unknown;
       total_charged?: unknown;
@@ -241,7 +229,7 @@ export async function openBatch(
     });
 
     // Validate and map every roll — fail the WHOLE batch on any bad card parse.
-    const rolls: import('./pack-batch-map').BatchRoll[] = [];
+    const rolls: BatchRoll[] = [];
     for (const rawRoll of rawRolls) {
       const mapped = mapBatchRoll(rawRoll);
       if (!mapped) {
