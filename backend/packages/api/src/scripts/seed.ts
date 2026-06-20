@@ -32,6 +32,7 @@ import type { HouseSellerService } from '../modules/packs/card-product';
 import { buildCardProductInput } from '../modules/packs/card-product';
 import { HANDLE_RE, deriveHandle } from '../utils/profile-handle';
 import { RARITY_WEIGHT, type OddsRarity } from '@acme/odds-math';
+import { VIP_LEVELS } from './vip-levels.data';
 
 const updateStoreCurrencies = createWorkflow(
   'update-store-currencies',
@@ -1118,6 +1119,23 @@ export default async function seedDemoData({ container }: ExecArgs) {
     logger.info(`Seeded ${packsToCreate.length} gacha pack(s).`);
   }
   logger.info('Finished seeding gacha packs.');
+
+  // VIP levels — idempotent upsert-if-absent by `level` (mirrors the packs seed).
+  logger.info('Seeding VIP levels...');
+  const existingVipLevels = await packsModuleService.listVipLevels(
+    { level: VIP_LEVELS.map((r) => r.level) },
+    { select: ['level'], take: VIP_LEVELS.length },
+  );
+  const haveLevels = new Set(existingVipLevels.map((r) => r.level));
+  const vipLevelsToCreate = VIP_LEVELS.filter((r) => !haveLevels.has(r.level));
+  if (vipLevelsToCreate.length === 0) {
+    logger.info('VIP levels already exist, skipping.');
+  } else {
+    await packsModuleService.createVipLevels(
+      vipLevelsToCreate.map((r) => ({ ...r })),
+    );
+    logger.info(`Seeded ${vipLevelsToCreate.length} VIP levels.`);
+  }
 
   // Gacha cards + odds (Phase 5a) — the prize pool + weighted table behind the
   // /claw/[slug] Top Hits and Pull Odds panels. Guarded by handle (cards) and
