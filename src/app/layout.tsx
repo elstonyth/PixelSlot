@@ -6,6 +6,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import SkipLink from '@/components/SkipLink';
+import CookieConsent from '@/components/CookieConsent';
 import { SITE_URL } from '@/lib/site';
 
 const geistSans = Geist({
@@ -84,6 +85,7 @@ export default function RootLayout({
             {children}
           </main>
           <SiteFooter />
+          <CookieConsent />
         </AuthProvider>
       </body>
     </html>
