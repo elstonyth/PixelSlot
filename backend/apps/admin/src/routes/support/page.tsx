@@ -163,7 +163,14 @@ const SupportPage = () => {
           <Container className="p-0">
             <div className="flex items-center justify-between px-6 py-4">
               <div>
-                <Heading level="h2">{view.customer.email}</Heading>
+                <div className="flex items-center gap-2">
+                  <Heading level="h2">{view.customer.email}</Heading>
+                  {view.vip && (
+                    <Badge size="small" color="purple">
+                      VIP Lv {view.vip.level}
+                    </Badge>
+                  )}
+                </div>
                 <Text className="text-ui-fg-subtle mt-1" size="small">
                   {t("support.memberSince", {
                     date: new Date(view.customer.created_at).toLocaleDateString(
