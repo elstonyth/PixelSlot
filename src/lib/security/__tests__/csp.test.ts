@@ -1,10 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { buildCsp } from '../csp';
 
 describe('buildCsp', () => {
+  let prevBackend: string | undefined;
+  let prevMediaHost: string | undefined;
+
   beforeEach(() => {
+    prevBackend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+    prevMediaHost = process.env.NEXT_PUBLIC_MEDIA_HOST;
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = 'http://localhost:9000';
     delete process.env.NEXT_PUBLIC_MEDIA_HOST;
+  });
+
+  afterEach(() => {
+    if (prevBackend === undefined)
+      delete process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+    else process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = prevBackend;
+    if (prevMediaHost === undefined) delete process.env.NEXT_PUBLIC_MEDIA_HOST;
+    else process.env.NEXT_PUBLIC_MEDIA_HOST = prevMediaHost;
   });
 
   it('pins scripts to the nonce with strict-dynamic', () => {
