@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 // next/image refuses remote hosts unless allowlisted. Card/product art is
 // served by the Medusa backend (POST /admin/media stores it; see
@@ -104,4 +105,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Quiet build logs; upload source maps only when an auth token is present.
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  disableLogger: true,
+});
