@@ -274,7 +274,7 @@ export default function SlotMachineClient({
         className="min-h-0 flex-1 overflow-y-auto px-fluid"
         aria-busy={phase === 'spinning'}
       >
-        <div className="flex min-h-full flex-col items-center justify-center gap-6 py-6">
+        <div className="relative flex min-h-full flex-col items-center justify-center gap-6 py-6">
           <div className="min-h-8 text-center">
             {wonCards.length === 1 && firstRgb && firstTier && (
               <p
@@ -311,43 +311,61 @@ export default function SlotMachineClient({
             onAllSettled={handleSettled}
           />
 
+          {/* Reward: normal flow BELOW the reel on mobile; on desktop it floats as
+              an absolutely-positioned right rail so it NEVER shifts the centered
+              reel (stable for 1–3 reels). Scrolls internally if a tall multi-card
+              reveal exceeds the height. */}
           {wonCards.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-6">
-              {wonCards.map((won, i) => (
-                <div
-                  key={`${won.id}-${i}`}
-                  className="flex flex-col items-center gap-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src={won.image}
-                      alt={won.name}
-                      width={110}
-                      height={154}
-                      className="h-[154px] w-auto rounded-lg object-contain"
-                    />
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-white">
-                        {won.name}
-                      </p>
-                      <p className="text-[13px] text-white/60">
-                        Value{' '}
-                        <span className="font-bold text-white">
-                          {won.value}
-                        </span>
-                      </p>
+            <div className="flex w-full flex-col items-center gap-5 lg:absolute lg:right-0 lg:top-1/2 lg:max-h-full lg:w-[300px] lg:-translate-y-1/2 lg:items-stretch lg:overflow-y-auto">
+              {wonCards.map((won, i) => {
+                const species = resolveCardPokemon(won)?.name;
+                return (
+                  <div
+                    key={`${won.id}-${i}`}
+                    className="flex w-full max-w-sm flex-col gap-3 lg:max-w-none"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Image
+                        src={won.image}
+                        alt={won.name}
+                        width={88}
+                        height={123}
+                        className="h-[112px] w-auto shrink-0 rounded-lg object-contain"
+                      />
+                      <div className="min-w-0 flex-1 text-left">
+                        <p
+                          className="truncate text-base font-bold text-white"
+                          title={species ?? won.name}
+                        >
+                          {species ?? won.name}
+                        </p>
+                        {species && (
+                          <p
+                            className="truncate text-[12px] text-white/45"
+                            title={won.name}
+                          >
+                            {won.name}
+                          </p>
+                        )}
+                        <p className="mt-1 text-[13px] text-white/60">
+                          Value{' '}
+                          <span className="font-bold text-white">
+                            {won.value}
+                          </span>
+                        </p>
+                      </div>
                     </div>
+                    <SellBackPanel
+                      offer={offers[i] ?? null}
+                      active={phase === 'landed'}
+                      reduced={reduced}
+                      onSellBack={sellBackPull}
+                      onReveal={revealPull}
+                      onSold={refreshBalance}
+                    />
                   </div>
-                  <SellBackPanel
-                    offer={offers[i] ?? null}
-                    active={phase === 'landed'}
-                    reduced={reduced}
-                    onSellBack={sellBackPull}
-                    onReveal={revealPull}
-                    onSold={refreshBalance}
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
