@@ -18,7 +18,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="flex min-h-[50vh] w-full flex-col items-center justify-center gap-4 px-fluid text-center">
       <h2 className="text-xl font-semibold text-white">Something went wrong</h2>
       <p className="text-sm text-neutral-400">
         An unexpected error occurred. Please try again.

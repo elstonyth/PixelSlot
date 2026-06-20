@@ -17,7 +17,7 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="flex min-h-screen items-center justify-center bg-neutral-900 text-neutral-50">
-        <div className="flex flex-col items-center gap-4 px-6 text-center">
+        <div className="flex w-full flex-col items-center gap-4 px-fluid text-center">
           <h2 className="text-xl font-semibold">Something went wrong</h2>
           <button
             onClick={() => reset()}
