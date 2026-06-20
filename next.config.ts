@@ -111,5 +111,4 @@ export default withSentryConfig(nextConfig, {
   // Quiet build logs; upload source maps only when an auth token is present.
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  disableLogger: true,
 });
