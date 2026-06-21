@@ -427,14 +427,46 @@ class PacksModuleService extends MedusaService({
   }
 
   // Locked (unspendable) commission credit for a customer, in cents, read inside
-  // the caller's transaction. Part A: no commission rows exist, so this returns 0
-  // (the method + its query land here so settleOpen's floor path is final; Task 13
-  // gives it teeth once the commission table exists).
+  // the caller's transaction. Sums the POSITIVE commission credit rows whose
+  // paired commission lifecycle record is not yet spendable (status != available
+  // OR matures_at > now()). Maturity is a read-time predicate — no scheduler can
+  // make spend wrong by lagging.
   private async lockedCommissionCents(
-    _customerId: string,
-    _em: LedgerSqlManager,
+    customerId: string,
+    em: LedgerSqlManager,
   ): Promise<number> {
-    return 0;
+    const rows = await em.execute<{ locked_cents: string | null }[]>(
+      `SELECT COALESCE(SUM(ROUND(ct.amount * 100)), 0)::bigint AS locked_cents
+         FROM credit_transaction ct
+         JOIN commission c ON c.credit_transaction_id = ct.id
+        WHERE ct.customer_id = ?
+          AND ct.deleted_at IS NULL
+          AND c.deleted_at IS NULL
+          AND ct.amount > 0
+          AND (c.status <> 'available' OR c.matures_at > now())`,
+      [customerId],
+    );
+    return Number(rows[0]?.locked_cents ?? 0);
+  }
+
+  // Public available balance = raw balance − locked commission. The single gate
+  // every locked-aware debit uses (spec §8). (Phase 3a: a frozen account returns
+  // 0 here.) Read in its own short transaction.
+  @InjectManager()
+  async availableBalance(
+    customerId: string,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<number> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ balance_cents: string | null }[]>(
+      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents ' +
+        'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
+      [customerId],
+    );
+    const balanceCents = Number(rows[0]?.balance_cents ?? 0);
+    const lockedCents = await this.lockedCommissionCents(customerId, em);
+    return (balanceCents - lockedCents) / 100;
   }
 
   // Top-N leaderboard computed in the DB (GROUP BY + ORDER BY + LIMIT), so it's
