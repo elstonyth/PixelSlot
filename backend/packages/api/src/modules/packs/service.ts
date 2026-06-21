@@ -58,6 +58,28 @@ export type CreditMutationInput = {
   sourceTransactionId?: string | null;
 };
 
+export type SettleOpenInput = {
+  customerId: string;
+  /** Signed USD decimal — the open debit (always < 0). */
+  amount: number;
+  /** The open's stable id (open_id), stamped on the debit + commission rows. */
+  sourceTransactionId: string;
+  /** Debit against available (locked-aware) or raw balance. Default 'available'. */
+  floorMode?: 'available' | 'raw';
+};
+
+export type CommissionPaid = {
+  beneficiary: string;
+  amountSen: number;
+  matured: boolean;
+};
+
+export type SettleOpenResult = {
+  id: string;
+  balance: number;
+  commissions: CommissionPaid[];
+};
+
 /** The transactional MikroORM manager surface we use for the advisory lock +
  *  the Σ-ledger read. `?` placeholders are inlined by MikroORM's formatQuery. */
 type LedgerSqlManager = {
@@ -280,6 +302,97 @@ class PacksModuleService extends MedusaService({
       sharedContext,
     );
     return { id: reversal.id };
+  }
+
+  // The atomic open settlement — the ONLY place an open debit (and, Phase 2a,
+  // its commission) is written. Holds the per-customer advisory lock across the
+  // balance read, floor check, debit insert, AND (Task 14) the commission fan-out
+  // in ONE transaction, because the open is a compensation saga: the lock would
+  // release if these were separate committed steps. This is mutateCreditAtomic
+  // scaled up. Debit-only here; Task 14 extends it without changing this seam.
+  @InjectTransactionManager()
+  async settleOpen(
+    input: SettleOpenInput,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<SettleOpenResult> {
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    const deltaCents = Math.round(input.amount * 100);
+    if (deltaCents >= 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'settleOpen amount must be less than 0 (an open is a debit).',
+      );
+    }
+
+    // 1) Serialize all credit mutations for THIS customer on the locked txn.
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${input.customerId}`,
+    ]);
+
+    // 2) Locked balance + external read (one scan), exact + soft-delete aware.
+    const rows = await em.execute<
+      { balance_cents: string | null; ext_cents: string | null }[]
+    >(
+      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
+        'COALESCE(SUM(external_funded_cents), 0)::bigint AS ext_cents ' +
+        'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
+      [input.customerId],
+    );
+    const beforeCents = Number(rows[0]?.balance_cents ?? 0);
+    const externalBalanceSen = Number(rows[0]?.ext_cents ?? 0);
+    const externalFundedCents = -consumeExternalSen(-deltaCents, externalBalanceSen);
+
+    // 3) Floor check against the available balance (Task 13 supplies the locked
+    //    deduction; default 'available'). Debit-only Part A: available == raw,
+    //    so this matches mutateCreditAtomic's floor exactly.
+    const floorMode = input.floorMode ?? 'available';
+    const lockedCents =
+      floorMode === 'available'
+        ? await this.lockedCommissionCents(input.customerId, em)
+        : 0;
+    const availableCents = beforeCents - lockedCents;
+    if (availableCents + deltaCents < 0) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        'Not enough credits to open this pack.',
+      );
+    }
+
+    // 4) Insert the debit row in the locked txn.
+    const [txn] = await this.createCreditTransactions(
+      [
+        {
+          customer_id: input.customerId,
+          amount: deltaCents / 100,
+          reason: 'pack_open',
+          pull_id: null,
+          reference: null,
+          external_funded_cents: externalFundedCents,
+          source_transaction_id: input.sourceTransactionId,
+        },
+      ],
+      sharedContext,
+    );
+
+    // 5) Commission fan-out — Task 14 fills this in. Debit-only for now.
+    const commissions: CommissionPaid[] = [];
+
+    return {
+      id: txn.id,
+      balance: (beforeCents + deltaCents) / 100,
+      commissions,
+    };
+  }
+
+  // Locked (unspendable) commission credit for a customer, in cents, read inside
+  // the caller's transaction. Part A: no commission rows exist, so this returns 0
+  // (the method + its query land here so settleOpen's floor path is final; Task 13
+  // gives it teeth once the commission table exists).
+  private async lockedCommissionCents(
+    _customerId: string,
+    _em: LedgerSqlManager,
+  ): Promise<number> {
+    return 0;
   }
 
   // Top-N leaderboard computed in the DB (GROUP BY + ORDER BY + LIMIT), so it's

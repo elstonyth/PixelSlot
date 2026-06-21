@@ -61,13 +61,12 @@ export const chargePackOpenStep = createStep(
       );
     }
 
-    // Serialized debit: the affordability check + ledger write happen under a
-    // per-customer lock, so concurrent opens can't both overspend (#2).
-    const { id, balance } = await packs.mutateCreditAtomic({
+    // Serialized debit through settleOpen — the single locked transaction that
+    // (Phase 2a) also pays commission. Behaviorally identical to the old
+    // mutateCreditAtomic debit for a no-referral customer.
+    const { id, balance } = await packs.settleOpen({
       customerId: input.customer_id,
       amount: -price,
-      reason: 'pack_open',
-      floor: 0,
       sourceTransactionId: input.open_id,
     });
 

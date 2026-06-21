@@ -51,9 +51,8 @@ export const chargePackBatchStep = createStep<
         undefined as CompensateData,
       );
     }
-    const { id, balance } = await packs.mutateCreditAtomic({
-      customerId: input.customer_id, amount: -total, reason: 'pack_open', floor: 0,
-      sourceTransactionId: input.open_id,
+    const { id, balance } = await packs.settleOpen({
+      customerId: input.customer_id, amount: -total, sourceTransactionId: input.open_id,
     });
     return new StepResponse(
       { price, total, balance } satisfies ChargePackBatchResult,
