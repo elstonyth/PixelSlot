@@ -26,6 +26,7 @@ import {
   totalsToUsd,
   type LedgerTotals,
 } from './credit-summary';
+import { consumeExternalSen } from './external-funded';
 
 // Auto-generates CRUD for each model: list/retrieve/create/update/delete<Model>s
 // (e.g. listPacks, listCards, listPackOdds, createPulls,
@@ -90,14 +91,16 @@ class PacksModuleService extends MedusaService({
     return { percent, amount: buybackAmount(marketValue, percent), rate_type };
   }
 
-  // Lifetime ledger totals (balance + money-in/out), paged so the result is
-  // exact at any ledger size. Reuses the pure fold so the arithmetic is
-  // unit-tested. balance == Σ(amount); topupTotal == Σ top-ups; spendTotal == Σ
-  // |negatives|.
+  // Lifetime ledger totals (balance + money-in/out + external-funded spend),
+  // paged so the result is exact at any ledger size. Reuses the pure fold so the
+  // arithmetic is unit-tested. balance == Σ(amount); topupTotal == Σ top-ups;
+  // spendTotal == Σ|negatives|; externalFundedSpendTotal == Σ external consumed
+  // by opens (the VIP basis, refund-stable).
   async creditSummary(customerId: string): Promise<{
     balance: number;
     topupTotal: number;
     spendTotal: number;
+    externalFundedSpendTotal: number;
   }> {
     let totals: LedgerTotals = EMPTY_TOTALS;
     for (let skip = 0; ; skip += BALANCE_PAGE) {
@@ -109,6 +112,10 @@ class PacksModuleService extends MedusaService({
         totals = foldLedgerRow(totals, {
           amount: Number(t.amount),
           reason: t.reason,
+          externalFundedCents: Number(
+            (t as { external_funded_cents?: number | null })
+              .external_funded_cents ?? 0,
+          ),
         });
       }
       if (page.length < BALANCE_PAGE) break;
@@ -141,15 +148,51 @@ class PacksModuleService extends MedusaService({
       `credit:${input.customerId}`,
     ]);
 
-    // 2) Re-read the balance in cents inside the lock (exact; soft-delete aware).
-    const rows = await em.execute<{ balance_cents: string | null }[]>(
-      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents ' +
+    // 2) Re-read the balance AND the external-funded balance in cents inside the
+    //    lock, in ONE scan (exact; soft-delete aware). external_funded_cents is
+    //    only consumed by pack_open, but folding it into the existing balance
+    //    scan avoids a second O(n) pass over the customer's ledger per open.
+    const rows = await em.execute<
+      { balance_cents: string | null; ext_cents: string | null }[]
+    >(
+      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
+        'COALESCE(SUM(external_funded_cents), 0)::bigint AS ext_cents ' +
         'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
       [input.customerId],
     );
     const beforeCents = Number(rows[0]?.balance_cents ?? 0);
     const deltaCents = Math.round(input.amount * 100);
     const floorCents = Math.round((input.floor ?? 0) * 100);
+
+    // 2a) Sign invariants — fail LOUD on misuse rather than silently stamping
+    // external_funded_cents = 0 and corrupting the VIP basis. A top-up is always
+    // a credit (> 0); a pack_open is always a debit (< 0); free packs skip this
+    // method entirely upstream. (adjustment is intentionally sign-agnostic.)
+    if (input.reason === 'topup' && deltaCents <= 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'topup amount must be greater than 0.',
+      );
+    }
+    if (input.reason === 'pack_open' && deltaCents >= 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'pack_open amount must be less than 0.',
+      );
+    }
+
+    // 2b) External-funded snapshot (Phase 1b) — uses the external balance from
+    // the SAME locked read above, so the consume is race-safe against concurrent
+    // top-ups/opens. A top-up adds its full amount as external money in; a
+    // pack_open consumes min(price, external balance) and snapshots the NEGATIVE
+    // consumed sen; buyback / adjustment never touch the external counter (0).
+    let externalFundedCents = 0;
+    if (input.reason === 'topup' && deltaCents > 0) {
+      externalFundedCents = deltaCents;
+    } else if (input.reason === 'pack_open' && deltaCents < 0) {
+      const externalBalanceSen = Number(rows[0]?.ext_cents ?? 0);
+      externalFundedCents = -consumeExternalSen(-deltaCents, externalBalanceSen);
+    }
 
     // 3) Floor check — covers both "enough credit to open" and "no overdraft".
     if (deltaCents < 0 && beforeCents + deltaCents < floorCents) {
@@ -178,6 +221,7 @@ class PacksModuleService extends MedusaService({
           reason: input.reason,
           pull_id: input.pullId ?? null,
           reference: input.reference ?? null,
+          external_funded_cents: externalFundedCents,
         },
       ],
       sharedContext,
