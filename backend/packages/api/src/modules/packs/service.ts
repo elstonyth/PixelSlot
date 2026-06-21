@@ -41,7 +41,11 @@ export type CreditMutationReason =
   | 'buyback'
   | 'topup'
   | 'pack_open'
-  | 'adjustment';
+  | 'adjustment'
+  | 'direct_referral'
+  | 'team_override'
+  | 'commission_reversal'
+  | 'cashout';
 
 export type CreditMutationInput = {
   customerId: string;

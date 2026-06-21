@@ -11,7 +11,16 @@ export const CreditTransaction = model
     customer_id: model.text(),
     // USD decimal (never cents). Positive = credit, negative = spend.
     amount: model.bigNumber(),
-    reason: model.enum(["buyback", "topup", "pack_open", "adjustment"]),
+    reason: model.enum([
+      "buyback",
+      "topup",
+      "pack_open",
+      "adjustment",
+      "direct_referral",
+      "team_override",
+      "commission_reversal",
+      "cashout",
+    ]),
     // The pull this credit came from (buyback rows only; null for top-ups).
     // UNIQUE — the DB itself guarantees a pull can never be credited twice,
     // whatever races the API layer loses (Postgres ignores NULLs in unique
