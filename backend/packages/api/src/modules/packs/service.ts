@@ -30,6 +30,15 @@ import {
   type LedgerTotals,
 } from './credit-summary';
 import { consumeExternalSen } from './external-funded';
+import { directReferralPctForLevel, directCommissionSen } from './referral-commission';
+import { levelForSpend } from './vip-ladder';
+
+// Postgres unique-violation detector (SQLSTATE 23505), used to make a replayed
+// open's commission insert an idempotent no-op rather than an error.
+function isUniqueViolation(e: unknown): boolean {
+  const code = (e as { code?: string })?.code;
+  return code === '23505';
+}
 
 // Auto-generates CRUD for each model: list/retrieve/create/update/delete<Model>s
 // (e.g. listPacks, listCards, listPackOdds, createPulls,
@@ -416,8 +425,99 @@ class PacksModuleService extends MedusaService({
       sharedContext,
     );
 
-    // 5) Commission fan-out — Task 14 fills this in. Debit-only for now.
+    // 5) Commission fan-out (Phase 2a: direct only). All inside the SAME locked
+    //    txn so the debit + the sponsor credit + the lifecycle row commit or roll
+    //    back together (no saga step could share this lock — spec §3).
     const commissions: CommissionPaid[] = [];
+    // The commission basis is the EXTERNAL-FUNDED portion of this open (refund-
+    // stable; matches the VIP basis). −externalFundedCents is what was consumed.
+    const basisSen = -externalFundedCents;
+    if (basisSen > 0) {
+      const [rel] = await this.listReferralRelationships(
+        { customer_id: input.customerId },
+        { take: 1 },
+      );
+      if (rel?.sponsor_id) {
+        const sponsorId = rel.sponsor_id;
+        // Sponsor's effective level, derived live from THEIR external-funded
+        // spend against the current ladder (forward-only config).
+        const sponsorSummary = await this.creditSummary(sponsorId);
+        const ladderRows = await this.listVipLevels(
+          {},
+          { select: ['level', 'spend_threshold', 'direct_referral_pct'], take: 1000 },
+        );
+        const levelLadder = ladderRows.map((r) => ({
+          level: r.level,
+          spend_threshold: Number(r.spend_threshold),
+        }));
+        const pctLadder = ladderRows.map((r) => ({
+          level: r.level,
+          direct_referral_pct: Number(r.direct_referral_pct),
+        }));
+        const sponsorLevel = levelForSpend(
+          sponsorSummary.externalFundedSpendTotal,
+          levelLadder,
+        );
+        const pct = directReferralPctForLevel(sponsorLevel, pctLadder);
+        const commissionSen = directCommissionSen(basisSen, pct);
+
+        if (commissionSen > 0) {
+          const settings = await this.rewardsSettings();
+          // For cooldown=0 set matures_at to epoch so matures_at > now() is
+          // definitively false even if JS clock lags Postgres transaction now().
+          const maturesAt =
+            settings.commissionCooldownDays === 0
+              ? new Date(0)
+              : new Date(Date.now() + settings.commissionCooldownDays * 86_400_000);
+          // Insert the commission credit row. The partial-unique index
+          // (source_transaction_id, reason, customer_id, generation) makes a
+          // replayed open throw here — caught so a retry is a clean no-op.
+          try {
+            const [credit] = await this.createCreditTransactions(
+              [
+                {
+                  customer_id: sponsorId,
+                  amount: commissionSen / 100,
+                  reason: 'direct_referral',
+                  pull_id: null,
+                  reference: null,
+                  external_funded_cents: 0, // commission is internal, not external
+                  source_transaction_id: input.sourceTransactionId,
+                  generation: 1,
+                },
+              ],
+              sharedContext,
+            );
+            await this.createCommissions(
+              [
+                {
+                  credit_transaction_id: credit.id,
+                  beneficiary: sponsorId,
+                  source_transaction_id: input.sourceTransactionId,
+                  generation: 1,
+                  kind: 'direct',
+                  status:
+                    settings.commissionCooldownDays === 0 ? 'available' : 'pending',
+                  matures_at: maturesAt,
+                  effective_pct: pct,
+                  reversal_transaction_id: null,
+                },
+              ],
+              sharedContext,
+            );
+            commissions.push({
+              beneficiary: sponsorId,
+              amountSen: commissionSen,
+              matured: settings.commissionCooldownDays === 0,
+            });
+          } catch (e) {
+            // Unique-index violation ⇒ this open's commission was already paid
+            // (idempotent retry). Re-throw anything else.
+            if (!isUniqueViolation(e)) throw e;
+          }
+        }
+      }
+    }
 
     return {
       id: txn.id,
