@@ -1,22 +1,23 @@
-import { medusaIntegrationTestRunner } from "@medusajs/test-utils";
-import { PACKS_MODULE } from "../../src/modules/packs";
-import type PacksModuleService from "../../src/modules/packs/service";
+import { medusaIntegrationTestRunner } from '@medusajs/test-utils';
+import { PACKS_MODULE } from '../../src/modules/packs';
+import type PacksModuleService from '../../src/modules/packs/service';
+import { topUpCreditsWorkflow } from '../../src/workflows/topup-credits';
 
 jest.setTimeout(240 * 1000);
 
 medusaIntegrationTestRunner({
   inApp: true,
   testSuite: ({ getContainer }) => {
-    describe("credit_transaction.external_funded_cents column", () => {
-      it("persists and reads back the signed external-funded sen", async () => {
+    describe('credit_transaction.external_funded_cents column', () => {
+      it('persists and reads back the signed external-funded sen', async () => {
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
         const [row] = await packs.createCreditTransactions([
           {
-            customer_id: "cus_extfund_test",
+            customer_id: 'cus_extfund_test',
             amount: 100,
-            reason: "topup" as const,
+            reason: 'topup' as const,
             pull_id: null,
-            reference: "mock_ext",
+            reference: 'mock_ext',
             external_funded_cents: 10000,
           } as Record<string, unknown>,
         ]);
@@ -32,14 +33,14 @@ medusaIntegrationTestRunner({
         ).toBe(10000);
       });
 
-      it("defaults to null (treated as 0) when not supplied", async () => {
+      it('defaults to null (treated as 0) when not supplied', async () => {
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
         const [row] = await packs.createCreditTransactions([
           {
-            customer_id: "cus_extfund_null",
+            customer_id: 'cus_extfund_null',
             amount: 5,
-            reason: "buyback" as const,
-            pull_id: "pull_extfund_null",
+            reason: 'buyback' as const,
+            pull_id: 'pull_extfund_null',
             reference: null,
           },
         ]);
@@ -53,12 +54,9 @@ medusaIntegrationTestRunner({
       });
     });
 
-    describe("topUpCreditsStep external-funded wiring", () => {
-      it("a real top-up workflow run stamps external_funded_cents", async () => {
-        const { topUpCreditsWorkflow } = await import(
-          "../../src/workflows/topup-credits"
-        );
-        const cust = "cus_topup_wf";
+    describe('topUpCreditsStep external-funded wiring', () => {
+      it('a real top-up workflow run stamps external_funded_cents', async () => {
+        const cust = 'cus_topup_wf';
         const { result } = await topUpCreditsWorkflow(getContainer()).run({
           input: { customer_id: cust, amount: 80 },
         });
@@ -69,7 +67,7 @@ medusaIntegrationTestRunner({
         expect(summary.topupTotal).toBe(80);
         const [row] = await packs.listCreditTransactions(
           { customer_id: cust },
-          { take: 1, order: { created_at: "DESC" } },
+          { take: 1, order: { created_at: 'DESC' } },
         );
         expect(
           Number(
@@ -80,21 +78,21 @@ medusaIntegrationTestRunner({
       });
     });
 
-    describe("mutateCreditAtomic external-funded stamping", () => {
-      it("stamps a top-up with the full external sen", async () => {
+    describe('mutateCreditAtomic external-funded stamping', () => {
+      it('stamps a top-up with the full external sen', async () => {
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
-        const cust = "cus_mca_topup";
+        const cust = 'cus_mca_topup';
         await packs.mutateCreditAtomic({
           customerId: cust,
           amount: 100,
-          reason: "topup",
-          reference: "mock_a",
+          reason: 'topup',
+          reference: 'mock_a',
         });
         const summary = await packs.creditSummary(cust);
         expect(summary.externalFundedSpendTotal).toBe(0); // nothing consumed yet
         const [row] = await packs.listCreditTransactions(
           { customer_id: cust },
-          { take: 1, order: { created_at: "DESC" } },
+          { take: 1, order: { created_at: 'DESC' } },
         );
         expect(
           Number(
@@ -104,22 +102,22 @@ medusaIntegrationTestRunner({
         ).toBe(10000);
       });
 
-      it("a pack_open consumes min(price, external balance) and snapshots −consumed", async () => {
+      it('a pack_open consumes min(price, external balance) and snapshots −consumed', async () => {
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
-        const cust = "cus_mca_open";
+        const cust = 'cus_mca_open';
         await packs.mutateCreditAtomic({
           customerId: cust,
           amount: 100,
-          reason: "topup",
-          reference: "mock_b",
+          reason: 'topup',
+          reference: 'mock_b',
         });
         // Add internal (buyback) credit OUTSIDE the external counter.
         await packs.createCreditTransactions([
           {
             customer_id: cust,
             amount: 100,
-            reason: "buyback" as const,
-            pull_id: "pull_mca_open",
+            reason: 'buyback' as const,
+            pull_id: 'pull_mca_open',
             reference: null,
           },
         ]);
@@ -127,7 +125,7 @@ medusaIntegrationTestRunner({
         await packs.mutateCreditAtomic({
           customerId: cust,
           amount: -150,
-          reason: "pack_open",
+          reason: 'pack_open',
           floor: 0,
         });
         const summary = await packs.creditSummary(cust);
@@ -136,27 +134,27 @@ medusaIntegrationTestRunner({
         await packs.mutateCreditAtomic({
           customerId: cust,
           amount: -40,
-          reason: "pack_open",
+          reason: 'pack_open',
           floor: 0,
         });
         const after = await packs.creditSummary(cust);
         expect(after.externalFundedSpendTotal).toBe(100); // still capped at top-ups
       });
 
-      it("an adjustment stamps 0 external (internal grant never raises VIP basis)", async () => {
+      it('an adjustment stamps 0 external (internal grant never raises VIP basis)', async () => {
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
-        const cust = "cus_mca_adjust";
+        const cust = 'cus_mca_adjust';
         await packs.mutateCreditAtomic({
           customerId: cust,
           amount: 500,
-          reason: "adjustment",
-          reference: "comp",
+          reason: 'adjustment',
+          reference: 'comp',
         });
         const summary = await packs.creditSummary(cust);
         expect(summary.externalFundedSpendTotal).toBe(0);
         const [row] = await packs.listCreditTransactions(
           { customer_id: cust },
-          { take: 1, order: { created_at: "DESC" } },
+          { take: 1, order: { created_at: 'DESC' } },
         );
         const ext = (row as { external_funded_cents?: number | null })
           .external_funded_cents;
