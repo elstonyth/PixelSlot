@@ -16,6 +16,19 @@ medusaIntegrationTestRunner({
         expect(s.teamOverridePct).toBeCloseTo(0.2);
         expect(s.overrideGenerationCap).toBe(100);
       });
+
+      it("falls through to default on a malformed cooldown env (no NaN)", async () => {
+        const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+        const prev = process.env.COMMISSION_COOLDOWN_DAYS;
+        process.env.COMMISSION_COOLDOWN_DAYS = "abc";
+        try {
+          const s = await packs.rewardsSettings();
+          expect(Number.isNaN(s.commissionCooldownDays)).toBe(false);
+          expect(s.commissionCooldownDays).toBe(3); // no row → default
+        } finally {
+          process.env.COMMISSION_COOLDOWN_DAYS = prev;
+        }
+      });
     });
   },
 });

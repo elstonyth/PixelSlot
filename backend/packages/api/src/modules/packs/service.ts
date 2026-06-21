@@ -105,16 +105,25 @@ class PacksModuleService extends MedusaService({
   // Commission engine globals. Reads the singleton row; falls back to defaults
   // when absent. COMMISSION_COOLDOWN_DAYS env override forces the demo (0) and
   // lets integration tests pin maturity deterministically without a DB write.
-  async rewardsSettings(): Promise<{
+  // sharedContext lets Task 14 (settleOpen) call this inside its advisory-locked
+  // transaction so the list runs on the same connection.
+  @InjectManager()
+  async rewardsSettings(
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{
     commissionCooldownDays: number;
     teamOverridePct: number;
     overrideGenerationCap: number;
   }> {
-    const [row] = await this.listRewardsSettings({}, { take: 1 });
+    const [row] = await this.listRewardsSettings({}, { take: 1 }, sharedContext);
     const envCooldown = process.env.COMMISSION_COOLDOWN_DAYS;
+    // Parse first; fall through to row-or-default when the value is not a
+    // finite number (e.g. "abc" → NaN) so maturity arithmetic is never
+    // corrupted by an invalid env var (CodeRabbit review fix).
+    const parsedEnv = Math.trunc(Number(envCooldown));
     const commissionCooldownDays =
-      envCooldown !== undefined && envCooldown !== ''
-        ? Math.max(0, Math.trunc(Number(envCooldown)))
+      envCooldown !== undefined && envCooldown !== '' && Number.isFinite(parsedEnv)
+        ? Math.max(0, parsedEnv)
         : row
           ? Number(row.commission_cooldown_days)
           : 3;
