@@ -3,7 +3,12 @@ import { MedusaError } from '@medusajs/framework/utils';
 import { PACKS_MODULE } from '../../modules/packs';
 import type PacksModuleService from '../../modules/packs/service';
 
-export type ChargePackBatchInput = { pack_id: string; customer_id: string; count: number };
+export type ChargePackBatchInput = {
+  pack_id: string;
+  customer_id: string;
+  count: number;
+  open_id: string; // one per batch — the single charge row's open id
+};
 
 export type ChargePackBatchResult = {
   /** USD price per pack (decimal, never cents). */
@@ -48,6 +53,7 @@ export const chargePackBatchStep = createStep<
     }
     const { id, balance } = await packs.mutateCreditAtomic({
       customerId: input.customer_id, amount: -total, reason: 'pack_open', floor: 0,
+      sourceTransactionId: input.open_id,
     });
     return new StepResponse(
       { price, total, balance } satisfies ChargePackBatchResult,

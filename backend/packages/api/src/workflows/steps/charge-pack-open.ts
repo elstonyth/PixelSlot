@@ -6,6 +6,7 @@ import type PacksModuleService from '../../modules/packs/service';
 export type ChargePackOpenInput = {
   pack_id: string; // = Pack.slug
   customer_id: string; // from the authenticated token — NEVER the request body
+  open_id: string; // per-open uuid minted in the workflow body before charge
 };
 
 export type ChargePackOpenResult = {
@@ -67,6 +68,7 @@ export const chargePackOpenStep = createStep(
       amount: -price,
       reason: 'pack_open',
       floor: 0,
+      sourceTransactionId: input.open_id,
     });
 
     return new StepResponse(

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   createWorkflow,
   WorkflowResponse,
@@ -30,6 +31,15 @@ export const openPackWorkflow = createWorkflow(
     // 1. Validate the pack is active and roll a winner over its weighted odds.
     const card = rollPackStep(input);
 
+    // Mint a per-open id (uuid) BEFORE the charge so it can anchor the charge row
+    // and (Phase 2a) every commission paid for this open. transform() is the only
+    // impure seam in a workflow body — minting here keeps the composition pure.
+    const charged = transform({ input }, (d) => ({
+      pack_id: d.input.pack_id,
+      customer_id: d.input.customer_id,
+      open_id: randomUUID(),
+    }));
+
     // ── PAYMENT SEAM (filled, Task A2) ───────────────────────────────────────
     // Debit the pack price from the credit ledger BEFORE the pull is recorded:
     // insufficient credit aborts here (nothing recorded), and a failure later
@@ -37,7 +47,7 @@ export const openPackWorkflow = createWorkflow(
     // no paid non-Pull. The mock top-up (A1) is how customers fund this; the
     // real gateway later swaps the top-up seam, not this step.
     // ─────────────────────────────────────────────────────────────────────────
-    const charge = chargePackOpenStep(input);
+    const charge = chargePackOpenStep(charged);
 
     // 2. Record the pull (compensated by delete on failure).
     const recordInput = transform({ input, card }, (d) => ({
