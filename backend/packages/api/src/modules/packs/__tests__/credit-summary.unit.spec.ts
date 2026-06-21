@@ -2,41 +2,63 @@ import {
   EMPTY_TOTALS,
   foldLedgerRow,
   totalsToUsd,
+  type LedgerTotals,
 } from "../credit-summary";
 
-describe("credit-summary fold", () => {
-  it("sums balance in cents, accumulating top-ups and spends separately", () => {
+function foldAll(
+  rows: { amount: number; reason: string; externalFundedCents: number }[],
+): LedgerTotals {
+  return rows.reduce(foldLedgerRow, EMPTY_TOTALS);
+}
+
+describe("foldLedgerRow + totalsToUsd (external-funded)", () => {
+  it("accumulates balance, topup, spend, external balance and external spend", () => {
+    // topup RM100 (external +10000), open RM75 consuming 7500 external,
+    // buyback +RM45 (external 0), open RM50 consuming the remaining 2500 external.
     const rows = [
-      { amount: 50, reason: "topup" },
-      { amount: -10, reason: "pack_open" },
-      { amount: 9, reason: "buyback" }, // a credit, but NOT a top-up
-      { amount: -2.5, reason: "adjustment" }, // negative adjustment = a spend
+      { amount: 100, reason: "topup", externalFundedCents: 10000 },
+      { amount: -75, reason: "pack_open", externalFundedCents: -7500 },
+      { amount: 45, reason: "buyback", externalFundedCents: 0 },
+      { amount: -50, reason: "pack_open", externalFundedCents: -2500 },
     ];
-    const totals = rows.reduce(foldLedgerRow, EMPTY_TOTALS);
-    expect(totalsToUsd(totals)).toEqual({
-      balance: 46.5, // 50 - 10 + 9 - 2.5
-      topupTotal: 50, // only the topup row
-      spendTotal: 12.5, // |−10| + |−2.5|
+    const t = foldAll(rows);
+    expect(t.balanceCents).toBe(2000); // 10000 - 7500 + 4500 - 5000
+    expect(t.topupCents).toBe(10000);
+    expect(t.spendCents).toBe(12500); // |−75| + |−50|
+    expect(t.externalBalanceCents).toBe(0); // 10000 − 7500 − 2500
+    expect(t.externalFundedSpendCents).toBe(10000); // 7500 + 2500 consumed
+    expect(totalsToUsd(t)).toEqual({
+      balance: 20,
+      topupTotal: 100,
+      spendTotal: 125,
+      externalFundedSpendTotal: 100,
     });
   });
 
-  it("avoids float drift on half-cent amounts", () => {
-    const rows = [
-      { amount: 0.1, reason: "topup" },
-      { amount: 0.2, reason: "topup" },
-    ];
-    const totals = rows.reduce(foldLedgerRow, EMPTY_TOTALS);
-    expect(totalsToUsd(totals).balance).toBe(0.3);
-    expect(totalsToUsd(totals).topupTotal).toBe(0.3);
-    expect(totalsToUsd(totals).spendTotal).toBe(0);
+  it("treats a missing/NULL external column (old rows) as zero external", () => {
+    const t = foldLedgerRow(EMPTY_TOTALS, {
+      amount: -10,
+      reason: "pack_open",
+      externalFundedCents: 0,
+    });
+    expect(t.externalFundedSpendCents).toBe(0);
+    expect(t.spendCents).toBe(1000);
   });
 
-  it("treats a positive adjustment as a credit but not a top-up or spend", () => {
-    const totals = foldLedgerRow(EMPTY_TOTALS, { amount: 5, reason: "adjustment" });
-    expect(totalsToUsd(totals)).toEqual({
-      balance: 5,
-      topupTotal: 0,
-      spendTotal: 0,
-    });
+  it("only pack_open rows contribute to external spend, not adjustments", () => {
+    const t = foldAll([
+      { amount: -3, reason: "adjustment", externalFundedCents: 0 },
+      { amount: -10, reason: "pack_open", externalFundedCents: -1000 },
+    ]);
+    expect(t.externalFundedSpendCents).toBe(1000);
+  });
+
+  it("the invariant externalSpend + externalBalance == external-in holds", () => {
+    const rows = [
+      { amount: 60, reason: "topup", externalFundedCents: 6000 },
+      { amount: -25, reason: "pack_open", externalFundedCents: -2500 },
+    ];
+    const t = foldAll(rows);
+    expect(t.externalFundedSpendCents + t.externalBalanceCents).toBe(6000);
   });
 });

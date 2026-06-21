@@ -90,14 +90,16 @@ class PacksModuleService extends MedusaService({
     return { percent, amount: buybackAmount(marketValue, percent), rate_type };
   }
 
-  // Lifetime ledger totals (balance + money-in/out), paged so the result is
-  // exact at any ledger size. Reuses the pure fold so the arithmetic is
-  // unit-tested. balance == Σ(amount); topupTotal == Σ top-ups; spendTotal == Σ
-  // |negatives|.
+  // Lifetime ledger totals (balance + money-in/out + external-funded spend),
+  // paged so the result is exact at any ledger size. Reuses the pure fold so the
+  // arithmetic is unit-tested. balance == Σ(amount); topupTotal == Σ top-ups;
+  // spendTotal == Σ|negatives|; externalFundedSpendTotal == Σ external consumed
+  // by opens (the VIP basis, refund-stable).
   async creditSummary(customerId: string): Promise<{
     balance: number;
     topupTotal: number;
     spendTotal: number;
+    externalFundedSpendTotal: number;
   }> {
     let totals: LedgerTotals = EMPTY_TOTALS;
     for (let skip = 0; ; skip += BALANCE_PAGE) {
@@ -109,6 +111,10 @@ class PacksModuleService extends MedusaService({
         totals = foldLedgerRow(totals, {
           amount: Number(t.amount),
           reason: t.reason,
+          externalFundedCents: Number(
+            (t as { external_funded_cents?: number | null })
+              .external_funded_cents ?? 0,
+          ),
         });
       }
       if (page.length < BALANCE_PAGE) break;
