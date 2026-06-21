@@ -61,4 +61,26 @@ describe("foldLedgerRow + totalsToUsd (external-funded)", () => {
     const t = foldAll(rows);
     expect(t.externalFundedSpendCents + t.externalBalanceCents).toBe(6000);
   });
+
+  it("defensive coercion: undefined/null external_funded_cents coerces to 0 (matches service.ts read)", () => {
+    const coerce = (v: unknown) => Number((v as number | null | undefined) ?? 0);
+    expect(coerce(undefined)).toBe(0);
+    expect(coerce(null)).toBe(0);
+    const t = foldLedgerRow(EMPTY_TOTALS, {
+      amount: -10,
+      reason: "pack_open",
+      externalFundedCents: coerce(undefined),
+    });
+    expect(t.externalFundedSpendCents).toBe(0);
+    expect(t.spendCents).toBe(1000);
+  });
+
+  it("avoids float drift on sub-cent amounts", () => {
+    const t = foldAll([
+      { amount: 0.1, reason: "topup", externalFundedCents: 10 },
+      { amount: 0.2, reason: "topup", externalFundedCents: 20 },
+    ]);
+    expect(t.balanceCents).toBe(30);
+    expect(totalsToUsd(t).balance).toBe(0.3);
+  });
 });
