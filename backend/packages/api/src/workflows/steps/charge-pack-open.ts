@@ -76,10 +76,12 @@ export const chargePackOpenStep = createStep(
   },
   async (data: CompensateData, { container }) => {
     if (!data) return;
-    // The charge row is the only mutation — undo is a single delete (a failed
-    // recordPull/later step refunds the customer exactly).
+    // The charge row is append-only: undo it with a compensating reversal row,
+    // NOT a delete, so a failure after a commission was written (Phase 2b+) can
+    // never orphan or vanish money history. reverseCreditTransaction refunds the
+    // customer exactly and nets the VIP basis.
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
-    await packs.deleteCreditTransactions([data.creditTransactionId]);
+    await packs.reverseCreditTransaction(data.creditTransactionId);
   },
 );
 

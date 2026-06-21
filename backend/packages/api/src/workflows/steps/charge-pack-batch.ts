@@ -57,7 +57,7 @@ export const chargePackBatchStep = createStep<
   async (data: CompensateData, { container }) => {
     if (!data?.creditTransactionId) return;
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
-    await packs.deleteCreditTransactions([data.creditTransactionId]);
+    await packs.reverseCreditTransaction(data.creditTransactionId);
   },
 );
 

@@ -230,6 +230,55 @@ class PacksModuleService extends MedusaService({
     return { id: txn.id, balance: (beforeCents + deltaCents) / 100 };
   }
 
+  // Append-only reversal of a single ledger row (the open-saga compensation).
+  // Holds the SAME per-customer advisory lock as mutateCreditAtomic, then writes
+  // a mirror row: sign-flipped amount (refund) + sign-flipped external_funded_cents
+  // (restores external balance; Task-1 fold nets the VIP basis). The original is
+  // NEVER deleted — a reversed open keeps its history, which is mandatory once a
+  // commission can reference it (spec §3 invariant 1). Idempotency: the caller
+  // (Medusa saga compensation) runs this at most once per charge id.
+  @InjectTransactionManager()
+  async reverseCreditTransaction(
+    transactionId: string,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ id: string }> {
+    const [original] = await this.listCreditTransactions(
+      { id: transactionId },
+      { take: 1 },
+    );
+    if (!original) {
+      // Already gone / never written — nothing to reverse (compensation is a
+      // best-effort undo; a missing charge means the forward step never ran).
+      return { id: transactionId };
+    }
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${original.customer_id}`,
+    ]);
+
+    const originalExt = Number(
+      (original as { external_funded_cents?: number | null })
+        .external_funded_cents ?? 0,
+    );
+    const [reversal] = await this.createCreditTransactions(
+      [
+        {
+          customer_id: original.customer_id,
+          amount: -Number(original.amount), // refund (flips the charge sign)
+          reason: original.reason, // stays 'pack_open' so economy nets honestly
+          pull_id: null, // unique pull_id belongs to the original only
+          reference: `reversal:${transactionId}`,
+          external_funded_cents: -originalExt, // restores external balance + basis
+          source_transaction_id:
+            (original as { source_transaction_id?: string | null })
+              .source_transaction_id ?? null, // present after Task 4
+        },
+      ],
+      sharedContext,
+    );
+    return { id: reversal.id };
+  }
+
   // Top-N leaderboard computed in the DB (GROUP BY + ORDER BY + LIMIT), so it's
   // correct at any pull volume — replaces the old route that fetched an UNORDERED
   // 20k slice and ranked it in memory (wrong/jittery once pulls passed ~20k, #7).
