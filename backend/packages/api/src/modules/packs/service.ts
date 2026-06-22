@@ -30,7 +30,11 @@ import {
   type LedgerTotals,
 } from './credit-summary';
 import { consumeExternalSen } from './external-funded';
-import { directReferralPctForLevel, directCommissionSen } from './referral-commission';
+import {
+  directReferralPctForLevel,
+  directCommissionSen,
+  teamOverrideSchedule,
+} from './referral-commission';
 import { levelForSpend } from './vip-ladder';
 
 // Postgres unique-violation detector (SQLSTATE 23505) for the commission
@@ -443,9 +447,10 @@ class PacksModuleService extends MedusaService({
       sharedContext,
     );
 
-    // 5) Commission fan-out (Phase 2a: direct only). All inside the SAME locked
-    //    txn so the debit + the sponsor credit + the lifecycle row commit or roll
-    //    back together (no saga step could share this lock — spec §3).
+    // 5) Commission fan-out (Phase 2b: direct gen-1 + team-override gens 2..N).
+    //    All inside the SAME locked txn so the debit + every commission credit +
+    //    lifecycle row commit or roll back together (no saga step could share
+    //    this lock — spec §3).
     const commissions: CommissionPaid[] = [];
     // The commission basis is the EXTERNAL-FUNDED portion of this open (refund-
     // stable; matches the VIP basis). −externalFundedCents is what was consumed.
@@ -458,7 +463,10 @@ class PacksModuleService extends MedusaService({
       if (rel?.sponsor_id) {
         const sponsorId = rel.sponsor_id;
         // Sponsor's effective level, derived live from THEIR external-funded
-        // spend against the current ladder (forward-only config).
+        // spend against the current ladder (forward-only config). Note:
+        // creditSummary is @InjectManager (no context param) — the direct path's
+        // level read stays as-is; only flat-20% overrides are added below, which
+        // need no per-ancestor level read.
         const sponsorSummary = await this.creditSummary(sponsorId);
         const ladderRows = await this.listVipLevels(
           {},
@@ -480,28 +488,38 @@ class PacksModuleService extends MedusaService({
         const commissionSen = directCommissionSen(basisSen, pct);
 
         if (commissionSen > 0) {
-          const settings = await this.rewardsSettings();
+          // Thread sharedContext so the settings read runs on THIS locked txn.
+          const settings = await this.rewardsSettings(sharedContext);
+          const matured = settings.commissionCooldownDays === 0;
           // For cooldown=0 set matures_at to epoch so matures_at > now() is
           // definitively false even if JS clock lags Postgres transaction now().
-          const maturesAt =
-            settings.commissionCooldownDays === 0
-              ? new Date(0)
-              : new Date(Date.now() + settings.commissionCooldownDays * 86_400_000);
-          // Insert the commission credit row. The partial-unique index
-          // (source_transaction_id, reason, customer_id, generation) rejects a
-          // duplicate open_id here with a 23505 (see the catch for semantics).
-          try {
+          const maturesAt = matured
+            ? new Date(0)
+            : new Date(Date.now() + settings.commissionCooldownDays * 86_400_000);
+
+          // Pay one beneficiary: the credit row + its 1:1 lifecycle row, in the
+          // SAME locked txn. The partial-unique index (source_transaction_id,
+          // reason, customer_id, generation) rejects a replayed open_id with a
+          // 23505 (caught below). reason = 'direct_referral' for gen 1, else
+          // 'team_override'. effective_pct snapshots the whole-percent used.
+          const payCommission = async (
+            beneficiary: string,
+            amountSen: number,
+            generation: number,
+            kind: 'direct' | 'override',
+            effectivePct: number,
+          ): Promise<void> => {
             const [credit] = await this.createCreditTransactions(
               [
                 {
-                  customer_id: sponsorId,
-                  amount: commissionSen / 100,
-                  reason: 'direct_referral',
+                  customer_id: beneficiary,
+                  amount: amountSen / 100,
+                  reason: kind === 'direct' ? 'direct_referral' : 'team_override',
                   pull_id: null,
                   reference: null,
                   external_funded_cents: 0, // commission is internal, not external
                   source_transaction_id: input.sourceTransactionId,
-                  generation: 1,
+                  generation,
                 },
               ],
               sharedContext,
@@ -510,36 +528,85 @@ class PacksModuleService extends MedusaService({
               [
                 {
                   credit_transaction_id: credit.id,
-                  beneficiary: sponsorId,
+                  beneficiary,
                   source_transaction_id: input.sourceTransactionId,
-                  generation: 1,
-                  kind: 'direct',
-                  status:
-                    settings.commissionCooldownDays === 0 ? 'available' : 'pending',
+                  generation,
+                  kind,
+                  status: matured ? 'available' : 'pending',
                   matures_at: maturesAt,
-                  effective_pct: pct,
+                  effective_pct: effectivePct,
                   reversal_transaction_id: null,
                 },
               ],
               sharedContext,
             );
-            commissions.push({
-              beneficiary: sponsorId,
-              amountSen: commissionSen,
-              matured: settings.commissionCooldownDays === 0,
-            });
+            commissions.push({ beneficiary, amountSen, matured });
+          };
+
+          try {
+            // gen 1 — the direct sponsor.
+            await payCommission(sponsorId, commissionSen, 1, 'direct', pct);
+
+            // gens 2..N — the team-override DAG up the sponsor's upline. Flat
+            // whole-percent (team_override_pct * 100). The schedule self-
+            // terminates at <1 sen; generation = absolute tree depth.
+            const overridePct = Math.round(settings.teamOverridePct * 100);
+            const schedule = teamOverrideSchedule(
+              commissionSen,
+              overridePct,
+              settings.overrideGenerationCap,
+            );
+            if (schedule.length > 0) {
+              const byDepth = new Map(schedule.map((s) => [s.generation, s.amountSen]));
+              const maxDepth = schedule[schedule.length - 1].generation;
+              // Ordered ancestors ABOVE the direct sponsor, each with its absolute
+              // tree depth (direct sponsor = depth 1). A NEW recursive CTE — the
+              // linkSponsor query is a ≤1-row cycle PROBE, not an enumerator — that
+              // carries a depth column + ORDER BY depth, bounded by the deepest
+              // paid generation. customer_id is unique => simple path, terminates.
+              const ancestors = await em.execute<
+                { ancestor_id: string; depth: string }[]
+              >(
+                `WITH RECURSIVE up AS (
+                   SELECT sponsor_id AS ancestor_id, 2 AS depth
+                     FROM referral_relationship
+                     WHERE customer_id = ? AND deleted_at IS NULL
+                   UNION ALL
+                   SELECT r.sponsor_id, up.depth + 1
+                     FROM referral_relationship r
+                     JOIN up ON r.customer_id = up.ancestor_id
+                     WHERE r.deleted_at IS NULL AND up.depth < ?
+                 )
+                 SELECT ancestor_id, depth FROM up ORDER BY depth`,
+                [sponsorId, maxDepth],
+              );
+              for (const anc of ancestors) {
+                const amountSen = byDepth.get(Number(anc.depth));
+                if (!amountSen) continue; // beyond self-termination -> no override
+                await payCommission(anc.ancestor_id, amountSen, Number(anc.depth), 'override', overridePct);
+              }
+              // Defensive: a real schedule self-terminates long before the cap.
+              // Reaching it is an anomaly (escaped cycle / data corruption) — log,
+              // do NOT abort the recruit's open.
+              if (schedule[schedule.length - 1].generation === settings.overrideGenerationCap) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                  `[settleOpen] override schedule reached override_generation_cap=${settings.overrideGenerationCap}`,
+                  { source_transaction_id: input.sourceTransactionId, recruit_id: input.customerId },
+                );
+              }
+            }
           } catch (e) {
             // A 23505 means this open_id already settled (the commission
-            // idempotency index rejected the duplicate). The 23505 has already
-            // aborted THIS transaction (Postgres 25P02), so we re-raise it as a
-            // clear DUPLICATE_ERROR — @InjectTransactionManager then rolls the
-            // whole settleOpen back, DEBIT included. That is intentional and
-            // correct: the debit is not separately idempotency-keyed, so aborting
-            // the entire settleOpen is what stops a replayed open_id from
-            // double-debiting the recruit. Do NOT wrap the inserts in a SAVEPOINT
-            // to "keep the open" — that would let the duplicate debit commit
-            // (double-charge). Normal opens mint a fresh open_id (open-pack
-            // workflow), so this path is defense-in-depth. Re-throw non-23505 as-is.
+            // idempotency index rejected a duplicate at some generation). The
+            // 23505 has already aborted THIS transaction (Postgres 25P02), so we
+            // re-raise it as a clear DUPLICATE_ERROR — @InjectTransactionManager
+            // then rolls the whole settleOpen back, DEBIT included. That is
+            // intentional: the debit is not separately idempotency-keyed, so
+            // aborting the entire open is what stops a replayed open_id from
+            // double-debiting. Do NOT wrap inserts in a SAVEPOINT to "keep the
+            // open" — that would let the duplicate debit commit. Re-throw
+            // non-23505 as-is.
             if (isUniqueViolation(e)) {
               throw new MedusaError(
                 MedusaError.Types.DUPLICATE_ERROR,
