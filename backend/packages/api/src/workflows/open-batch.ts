@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   createWorkflow,
   WorkflowResponse,
@@ -40,13 +41,22 @@ export const openBatchWorkflow = createWorkflow(
     //    passing the full OpenBatchInput is safe (structural subtyping).
     const cards = rollPackBatchStep(input);
 
+    // One open_id for the whole batch — a count=N open is ONE charge row and pays
+    // ONE commission on price×N (spec §9). Mint it before the charge.
+    const charged = transform({ input }, (d) => ({
+      pack_id: d.input.pack_id,
+      customer_id: d.input.customer_id,
+      count: d.input.count,
+      open_id: randomUUID(),
+    }));
+
     // ── PAYMENT SEAM ──────────────────────────────────────────────────────────
     // Debit count×price atomically from the credit ledger BEFORE pulls are
     // recorded: insufficient credit aborts here (nothing recorded), and a
     // failure later in the chain deletes the charge row via compensation — no
     // unpaid Pull, no paid non-Pull.
     // ─────────────────────────────────────────────────────────────────────────
-    const charge = chargePackBatchStep(input);
+    const charge = chargePackBatchStep(charged);
 
     // 2. Build recordPullsBatchStep's input: customer_id + pack_id from the
     //    workflow input, card_ids derived from the rolled cards.

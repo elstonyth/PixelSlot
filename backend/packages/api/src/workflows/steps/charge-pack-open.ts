@@ -6,6 +6,7 @@ import type PacksModuleService from '../../modules/packs/service';
 export type ChargePackOpenInput = {
   pack_id: string; // = Pack.slug
   customer_id: string; // from the authenticated token — NEVER the request body
+  open_id: string; // per-open uuid minted in the workflow body before charge
 };
 
 export type ChargePackOpenResult = {
@@ -60,13 +61,13 @@ export const chargePackOpenStep = createStep(
       );
     }
 
-    // Serialized debit: the affordability check + ledger write happen under a
-    // per-customer lock, so concurrent opens can't both overspend (#2).
-    const { id, balance } = await packs.mutateCreditAtomic({
+    // Serialized debit through settleOpen — the single locked transaction that
+    // (Phase 2a) also pays commission. Behaviorally identical to the old
+    // mutateCreditAtomic debit for a no-referral customer.
+    const { id, balance } = await packs.settleOpen({
       customerId: input.customer_id,
       amount: -price,
-      reason: 'pack_open',
-      floor: 0,
+      sourceTransactionId: input.open_id,
     });
 
     return new StepResponse(
@@ -76,10 +77,12 @@ export const chargePackOpenStep = createStep(
   },
   async (data: CompensateData, { container }) => {
     if (!data) return;
-    // The charge row is the only mutation — undo is a single delete (a failed
-    // recordPull/later step refunds the customer exactly).
+    // The charge row is append-only: undo it with a compensating reversal row,
+    // NOT a delete, so a failure after a commission was written (Phase 2b+) can
+    // never orphan or vanish money history. reverseCreditTransaction refunds the
+    // customer exactly and nets the VIP basis.
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
-    await packs.deleteCreditTransactions([data.creditTransactionId]);
+    await packs.reverseCreditTransaction(data.creditTransactionId);
   },
 );
 

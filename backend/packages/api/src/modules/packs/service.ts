@@ -14,6 +14,9 @@ import CreditTransaction from './models/credit-transaction';
 import DeliveryOrder from './models/delivery-order';
 import DeliveryOrderItem from './models/delivery-order-item';
 import VipLevel from './models/vip-level';
+import RewardsSettings from './models/rewards-settings';
+import ReferralRelationship from './models/referral-relationship';
+import Commission from './models/commission';
 import {
   resolveBuybackRate,
   buybackAmount,
@@ -27,6 +30,16 @@ import {
   type LedgerTotals,
 } from './credit-summary';
 import { consumeExternalSen } from './external-funded';
+import { directReferralPctForLevel, directCommissionSen } from './referral-commission';
+import { levelForSpend } from './vip-ladder';
+
+// Postgres unique-violation detector (SQLSTATE 23505) for the commission
+// idempotency index. See settleOpen's commission catch for the exact semantics
+// — a 23505 there rejects the whole duplicate open; it does NOT silently no-op.
+function isUniqueViolation(e: unknown): boolean {
+  const code = (e as { code?: string })?.code;
+  return code === '23505';
+}
 
 // Auto-generates CRUD for each model: list/retrieve/create/update/delete<Model>s
 // (e.g. listPacks, listCards, listPackOdds, createPulls,
@@ -41,7 +54,11 @@ export type CreditMutationReason =
   | 'buyback'
   | 'topup'
   | 'pack_open'
-  | 'adjustment';
+  | 'adjustment'
+  | 'direct_referral'
+  | 'team_override'
+  | 'commission_reversal'
+  | 'cashout';
 
 export type CreditMutationInput = {
   customerId: string;
@@ -54,6 +71,28 @@ export type CreditMutationInput = {
   pullId?: string | null;
   /** Minimum allowed resulting balance in USD (default $0 — no overdraft). */
   floor?: number;
+  /** The open's stable id (open_id), stamped on pack_open charge rows. */
+  sourceTransactionId?: string | null;
+};
+
+export type SettleOpenInput = {
+  customerId: string;
+  /** Signed USD decimal — the open debit (always < 0). */
+  amount: number;
+  /** The open's stable id (open_id), stamped on the debit + commission rows. */
+  sourceTransactionId: string;
+};
+
+export type CommissionPaid = {
+  beneficiary: string;
+  amountSen: number;
+  matured: boolean;
+};
+
+export type SettleOpenResult = {
+  id: string;
+  balance: number;
+  commissions: CommissionPaid[];
 };
 
 /** The transactional MikroORM manager surface we use for the advisory lock +
@@ -71,7 +110,42 @@ class PacksModuleService extends MedusaService({
   DeliveryOrder,
   DeliveryOrderItem,
   VipLevel,
+  RewardsSettings,
+  ReferralRelationship,
+  Commission,
 }) {
+  // Commission engine globals. Reads the singleton row; falls back to defaults
+  // when absent. COMMISSION_COOLDOWN_DAYS env override forces the demo (0) and
+  // lets integration tests pin maturity deterministically without a DB write.
+  // sharedContext lets Task 14 (settleOpen) call this inside its advisory-locked
+  // transaction so the list runs on the same connection.
+  @InjectManager()
+  async rewardsSettings(
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{
+    commissionCooldownDays: number;
+    teamOverridePct: number;
+    overrideGenerationCap: number;
+  }> {
+    const [row] = await this.listRewardsSettings({}, { take: 1 }, sharedContext);
+    const envCooldown = process.env.COMMISSION_COOLDOWN_DAYS;
+    // Parse first; fall through to row-or-default when the value is not a
+    // finite number (e.g. "abc" → NaN) so maturity arithmetic is never
+    // corrupted by an invalid env var (CodeRabbit review fix).
+    const parsedEnv = Math.trunc(Number(envCooldown));
+    const commissionCooldownDays =
+      envCooldown !== undefined && envCooldown !== '' && Number.isFinite(parsedEnv)
+        ? Math.max(0, parsedEnv)
+        : row
+          ? Number(row.commission_cooldown_days)
+          : 3;
+    return {
+      commissionCooldownDays,
+      teamOverridePct: row ? Number(row.team_override_pct) : 0.2,
+      overrideGenerationCap: row ? Number(row.override_generation_cap) : 100,
+    };
+  }
+
   // The instant/flat sell-back offer for a pull, composed from the SAME pure
   // helpers the buyback workflow credits with — so the reveal quote, the vault
   // quote, and the credit can never disagree. Removes the listPacks +
@@ -222,12 +296,314 @@ class PacksModuleService extends MedusaService({
           pull_id: input.pullId ?? null,
           reference: input.reference ?? null,
           external_funded_cents: externalFundedCents,
+          source_transaction_id: input.sourceTransactionId ?? null,
         },
       ],
       sharedContext,
     );
 
     return { id: txn.id, balance: (beforeCents + deltaCents) / 100 };
+  }
+
+  // Append-only reversal of a single ledger row (the open-saga compensation).
+  // Holds the SAME per-customer advisory lock as mutateCreditAtomic, then writes
+  // a mirror row: sign-flipped amount (refund) + sign-flipped external_funded_cents
+  // (restores external balance; Task-1 fold nets the VIP basis). The original is
+  // NEVER deleted — a reversed open keeps its history, which is mandatory once a
+  // commission can reference it (spec §3 invariant 1). Idempotent under the
+  // lock (below): a repeated compensation of the same charge returns the
+  // existing reversal rather than appending a second full refund.
+  @InjectTransactionManager()
+  async reverseCreditTransaction(
+    transactionId: string,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ id: string }> {
+    const [original] = await this.listCreditTransactions(
+      { id: transactionId },
+      { take: 1 },
+    );
+    if (!original) {
+      // Already gone / never written — nothing to reverse (compensation is a
+      // best-effort undo; a missing charge means the forward step never ran).
+      return { id: transactionId };
+    }
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${original.customer_id}`,
+    ]);
+
+    // Idempotency (Codex review): a saga that double-compensates the same charge
+    // must NOT append a second refund. Under the lock, if a reversal row for this
+    // charge already exists, return it as a no-op. `reversal:${id}` is the
+    // per-charge reversal key.
+    const [existingReversal] = await this.listCreditTransactions(
+      { reference: `reversal:${transactionId}` },
+      { take: 1 },
+    );
+    if (existingReversal) {
+      return { id: existingReversal.id };
+    }
+
+    const originalExt = Number(
+      (original as { external_funded_cents?: number | null })
+        .external_funded_cents ?? 0,
+    );
+    const [reversal] = await this.createCreditTransactions(
+      [
+        {
+          customer_id: original.customer_id,
+          amount: -Number(original.amount), // refund (flips the charge sign)
+          reason: original.reason, // stays 'pack_open' so economy nets honestly
+          pull_id: null, // unique pull_id belongs to the original only
+          reference: `reversal:${transactionId}`,
+          external_funded_cents: -originalExt, // restores external balance + basis
+          source_transaction_id:
+            (original as { source_transaction_id?: string | null })
+              .source_transaction_id ?? null, // present after Task 4
+        },
+      ],
+      sharedContext,
+    );
+    return { id: reversal.id };
+  }
+
+  // The atomic open settlement — the ONLY place an open debit (and, Phase 2a,
+  // its commission) is written. Holds the per-customer advisory lock across the
+  // balance read, floor check, debit insert, AND (Task 14) the commission fan-out
+  // in ONE transaction, because the open is a compensation saga: the lock would
+  // release if these were separate committed steps. This is mutateCreditAtomic
+  // scaled up. Debit-only here; Task 14 extends it without changing this seam.
+  @InjectTransactionManager()
+  async settleOpen(
+    input: SettleOpenInput,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<SettleOpenResult> {
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    const deltaCents = Math.round(input.amount * 100);
+    if (deltaCents >= 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'settleOpen amount must be less than 0 (an open is a debit).',
+      );
+    }
+    // sourceTransactionId is the commission idempotency key (open_id). Reject an
+    // empty/missing one at the boundary so a bad caller can't write rows that
+    // escape the partial-unique index (Sourcery review).
+    if (!input.sourceTransactionId) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'settleOpen requires a non-empty sourceTransactionId (the open_id).',
+      );
+    }
+
+    // 1) Serialize all credit mutations for THIS customer on the locked txn.
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${input.customerId}`,
+    ]);
+
+    // 2) Locked balance + external read (one scan), exact + soft-delete aware.
+    const rows = await em.execute<
+      { balance_cents: string | null; ext_cents: string | null }[]
+    >(
+      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
+        'COALESCE(SUM(external_funded_cents), 0)::bigint AS ext_cents ' +
+        'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
+      [input.customerId],
+    );
+    const beforeCents = Number(rows[0]?.balance_cents ?? 0);
+    const externalBalanceSen = Number(rows[0]?.ext_cents ?? 0);
+    const externalFundedCents = -consumeExternalSen(-deltaCents, externalBalanceSen);
+
+    // 3) Floor check against the AVAILABLE balance (raw − locked commission).
+    //    Every open debit is locked-aware — there is no raw-balance opt-out, so a
+    //    debit can never spend credit backed by pending/locked commission (Codex
+    //    review removed the unused floorMode:'raw' bypass).
+    const lockedCents = await this.lockedCommissionCents(input.customerId, em);
+    const availableCents = beforeCents - lockedCents;
+    if (availableCents + deltaCents < 0) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        'Not enough credits to open this pack.',
+      );
+    }
+
+    // 4) Insert the debit row in the locked txn.
+    const [txn] = await this.createCreditTransactions(
+      [
+        {
+          customer_id: input.customerId,
+          amount: deltaCents / 100,
+          reason: 'pack_open',
+          pull_id: null,
+          reference: null,
+          external_funded_cents: externalFundedCents,
+          source_transaction_id: input.sourceTransactionId,
+        },
+      ],
+      sharedContext,
+    );
+
+    // 5) Commission fan-out (Phase 2a: direct only). All inside the SAME locked
+    //    txn so the debit + the sponsor credit + the lifecycle row commit or roll
+    //    back together (no saga step could share this lock — spec §3).
+    const commissions: CommissionPaid[] = [];
+    // The commission basis is the EXTERNAL-FUNDED portion of this open (refund-
+    // stable; matches the VIP basis). −externalFundedCents is what was consumed.
+    const basisSen = -externalFundedCents;
+    if (basisSen > 0) {
+      const [rel] = await this.listReferralRelationships(
+        { customer_id: input.customerId },
+        { take: 1 },
+      );
+      if (rel?.sponsor_id) {
+        const sponsorId = rel.sponsor_id;
+        // Sponsor's effective level, derived live from THEIR external-funded
+        // spend against the current ladder (forward-only config).
+        const sponsorSummary = await this.creditSummary(sponsorId);
+        const ladderRows = await this.listVipLevels(
+          {},
+          { select: ['level', 'spend_threshold', 'direct_referral_pct'], take: 1000 },
+        );
+        const levelLadder = ladderRows.map((r) => ({
+          level: r.level,
+          spend_threshold: Number(r.spend_threshold),
+        }));
+        const pctLadder = ladderRows.map((r) => ({
+          level: r.level,
+          direct_referral_pct: Number(r.direct_referral_pct),
+        }));
+        const sponsorLevel = levelForSpend(
+          sponsorSummary.externalFundedSpendTotal,
+          levelLadder,
+        );
+        const pct = directReferralPctForLevel(sponsorLevel, pctLadder);
+        const commissionSen = directCommissionSen(basisSen, pct);
+
+        if (commissionSen > 0) {
+          const settings = await this.rewardsSettings();
+          // For cooldown=0 set matures_at to epoch so matures_at > now() is
+          // definitively false even if JS clock lags Postgres transaction now().
+          const maturesAt =
+            settings.commissionCooldownDays === 0
+              ? new Date(0)
+              : new Date(Date.now() + settings.commissionCooldownDays * 86_400_000);
+          // Insert the commission credit row. The partial-unique index
+          // (source_transaction_id, reason, customer_id, generation) rejects a
+          // duplicate open_id here with a 23505 (see the catch for semantics).
+          try {
+            const [credit] = await this.createCreditTransactions(
+              [
+                {
+                  customer_id: sponsorId,
+                  amount: commissionSen / 100,
+                  reason: 'direct_referral',
+                  pull_id: null,
+                  reference: null,
+                  external_funded_cents: 0, // commission is internal, not external
+                  source_transaction_id: input.sourceTransactionId,
+                  generation: 1,
+                },
+              ],
+              sharedContext,
+            );
+            await this.createCommissions(
+              [
+                {
+                  credit_transaction_id: credit.id,
+                  beneficiary: sponsorId,
+                  source_transaction_id: input.sourceTransactionId,
+                  generation: 1,
+                  kind: 'direct',
+                  status:
+                    settings.commissionCooldownDays === 0 ? 'available' : 'pending',
+                  matures_at: maturesAt,
+                  effective_pct: pct,
+                  reversal_transaction_id: null,
+                },
+              ],
+              sharedContext,
+            );
+            commissions.push({
+              beneficiary: sponsorId,
+              amountSen: commissionSen,
+              matured: settings.commissionCooldownDays === 0,
+            });
+          } catch (e) {
+            // A 23505 means this open_id already settled (the commission
+            // idempotency index rejected the duplicate). The 23505 has already
+            // aborted THIS transaction (Postgres 25P02), so we re-raise it as a
+            // clear DUPLICATE_ERROR — @InjectTransactionManager then rolls the
+            // whole settleOpen back, DEBIT included. That is intentional and
+            // correct: the debit is not separately idempotency-keyed, so aborting
+            // the entire settleOpen is what stops a replayed open_id from
+            // double-debiting the recruit. Do NOT wrap the inserts in a SAVEPOINT
+            // to "keep the open" — that would let the duplicate debit commit
+            // (double-charge). Normal opens mint a fresh open_id (open-pack
+            // workflow), so this path is defense-in-depth. Re-throw non-23505 as-is.
+            if (isUniqueViolation(e)) {
+              throw new MedusaError(
+                MedusaError.Types.DUPLICATE_ERROR,
+                `Open '${input.sourceTransactionId}' has already been settled.`,
+              );
+            }
+            throw e;
+          }
+        }
+      }
+    }
+
+    return {
+      id: txn.id,
+      balance: (beforeCents + deltaCents) / 100,
+      commissions,
+    };
+  }
+
+  // Locked (unspendable) commission credit for a customer, in cents, read inside
+  // the caller's transaction. Sums the POSITIVE commission credit rows whose
+  // paired lifecycle record is not yet spendable: 'pending' AND not matured
+  // (matures_at > now()), OR 'suspended'. 'available' and 'reversed' are NOT
+  // locked — 'available' is the post-maturity spendable state, and a 'reversed'
+  // commission's positive credit is already netted by its negative reversal row
+  // in the raw balance (locking it too would double-subtract). Maturity is a
+  // read-time predicate on 'pending' — no scheduler can make spend wrong by
+  // lagging (a matured-but-not-yet-flipped 'pending' row reads as available).
+  private async lockedCommissionCents(
+    customerId: string,
+    em: LedgerSqlManager,
+  ): Promise<number> {
+    const rows = await em.execute<{ locked_cents: string | null }[]>(
+      `SELECT COALESCE(SUM(ROUND(ct.amount * 100)), 0)::bigint AS locked_cents
+         FROM credit_transaction ct
+         JOIN commission c ON c.credit_transaction_id = ct.id
+        WHERE ct.customer_id = ?
+          AND ct.deleted_at IS NULL
+          AND c.deleted_at IS NULL
+          AND ct.amount > 0
+          AND ((c.status = 'pending' AND c.matures_at > now()) OR c.status = 'suspended')`,
+      [customerId],
+    );
+    return Number(rows[0]?.locked_cents ?? 0);
+  }
+
+  // Public available balance = raw balance − locked commission. The single gate
+  // every locked-aware debit uses (spec §8). (Phase 3a: a frozen account returns
+  // 0 here.) Read in its own short transaction.
+  @InjectManager()
+  async availableBalance(
+    customerId: string,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<number> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ balance_cents: string | null }[]>(
+      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents ' +
+        'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
+      [customerId],
+    );
+    const balanceCents = Number(rows[0]?.balance_cents ?? 0);
+    const lockedCents = await this.lockedCommissionCents(customerId, em);
+    return (balanceCents - lockedCents) / 100;
   }
 
   // Top-N leaderboard computed in the DB (GROUP BY + ORDER BY + LIMIT), so it's
@@ -279,6 +655,113 @@ class PacksModuleService extends MedusaService({
       points: Number(r.points),
       volume: Number(r.volume_cents) / 100,
     }));
+  }
+
+  // Insert a recruit→sponsor edge with the fraud guards (spec §7). Under ONE
+  // transaction holding advisory locks on BOTH customer ids (sorted, so two
+  // concurrent inserts can't deadlock), it: rejects self-referral; rejects a
+  // cycle via a WITH RECURSIVE ancestor walk from the proposed sponsor; relies on
+  // the unique customer_id index for immutability (a second link throws). The
+  // route layer binds recruitId to the authenticated actor (Task 11) so a sponsor
+  // can't insert recruits under themselves.
+  @InjectTransactionManager()
+  async linkSponsor(
+    input: { recruitId: string; sponsorId: string },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ id: string }> {
+    if (input.recruitId === input.sponsorId) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'A customer cannot refer themselves.',
+      );
+    }
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    // Lock both ids in a stable (sorted) order to avoid deadlocks with a
+    // concurrent reciprocal insert.
+    const [lo, hi] = [input.recruitId, input.sponsorId].sort();
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [`referral:${lo}`]);
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [`referral:${hi}`]);
+
+    // Cycle check: walk the proposed sponsor's upline; if the recruit appears,
+    // linking would close a loop. customer_id is unique so the upline is a simple
+    // path (no diamonds) — the recursion terminates.
+    const ancestors = await em.execute<{ sponsor_id: string }[]>(
+      `WITH RECURSIVE up AS (
+         SELECT sponsor_id FROM referral_relationship
+           WHERE customer_id = ? AND deleted_at IS NULL
+         UNION ALL
+         SELECT r.sponsor_id FROM referral_relationship r
+           JOIN up ON r.customer_id = up.sponsor_id
+           WHERE r.deleted_at IS NULL
+       )
+       SELECT sponsor_id FROM up WHERE sponsor_id = ? LIMIT 1`,
+      [input.sponsorId, input.recruitId],
+    );
+    if (ancestors.length > 0) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'This referral would create a cycle in the sponsor tree.',
+      );
+    }
+
+    // Immutability: the unique customer_id index rejects a second link. Surface a
+    // clean error rather than a raw constraint violation.
+    const existing = await this.listReferralRelationships(
+      { customer_id: input.recruitId },
+      { take: 1 },
+    );
+    if (existing.length > 0) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        'This customer already has a sponsor.',
+      );
+    }
+
+    const [rel] = await this.createReferralRelationships(
+      [{ customer_id: input.recruitId, sponsor_id: input.sponsorId }],
+      sharedContext,
+    );
+    return { id: rel.id };
+  }
+
+  // Delete-guard (spec §3 invariant 1): money rows backing a commission are
+  // append-only — never hard-deleted. Compensation MUST use
+  // reverseCreditTransaction. This refuses an accidental delete of any row a
+  // commission lifecycle record points at.
+  //
+  // Named `deleteCreditTransactionsGuarded` rather than overriding
+  // `deleteCreditTransactions` because MedusaService defines the base as an
+  // **instance member property** (arrow-function assigned in the constructor), not
+  // a class method. TypeScript TS2425 prevents overriding a property with a method.
+  // Casting `this` to call its own `deleteCreditTransactions` would be infinite
+  // recursion, so a distinct name is the correct pattern (brief §fallback).
+  //
+  // NOTE: selector-form (Record) deletes fall through without the guard — realistic
+  // accidental deletes are by id. If selector-form bypasses matter, the caller must
+  // use list → id-form to make the guard run.
+  async deleteCreditTransactionsGuarded(
+    idOrSelector: string | string[] | Record<string, unknown>,
+  ): Promise<void> {
+    const ids =
+      typeof idOrSelector === 'string'
+        ? [idOrSelector]
+        : Array.isArray(idOrSelector)
+          ? idOrSelector
+          : null;
+    if (ids && ids.length > 0) {
+      const deps = await this.listCommissions(
+        { credit_transaction_id: ids },
+        { take: 1 },
+      );
+      if (deps.length > 0) {
+        throw new MedusaError(
+          MedusaError.Types.NOT_ALLOWED,
+          'Cannot delete a credit transaction that backs a commission — reverse it instead.',
+        );
+      }
+    }
+    // Delegate to the MedusaService-generated base (property, not overridable).
+    await this.deleteCreditTransactions(idOrSelector as never);
   }
 
   // Stamp the first-seen time for a pull so the 30s instant window counts from
