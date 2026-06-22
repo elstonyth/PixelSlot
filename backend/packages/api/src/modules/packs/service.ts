@@ -128,21 +128,25 @@ class PacksModuleService extends MedusaService({
   // sharedContext lets Task 14 (settleOpen) call this inside its advisory-locked
   // transaction so the list runs on the same connection.
   @InjectManager()
-  async rewardsSettings(
-    @MedusaContext() sharedContext: Context = {},
-  ): Promise<{
+  async rewardsSettings(@MedusaContext() sharedContext: Context = {}): Promise<{
     commissionCooldownDays: number;
     teamOverridePct: number;
     overrideGenerationCap: number;
   }> {
-    const [row] = await this.listRewardsSettings({}, { take: 1 }, sharedContext);
+    const [row] = await this.listRewardsSettings(
+      {},
+      { take: 1 },
+      sharedContext,
+    );
     const envCooldown = process.env.COMMISSION_COOLDOWN_DAYS;
     // Parse first; fall through to row-or-default when the value is not a
     // finite number (e.g. "abc" → NaN) so maturity arithmetic is never
     // corrupted by an invalid env var (CodeRabbit review fix).
     const parsedEnv = Math.trunc(Number(envCooldown));
     const commissionCooldownDays =
-      envCooldown !== undefined && envCooldown !== '' && Number.isFinite(parsedEnv)
+      envCooldown !== undefined &&
+      envCooldown !== '' &&
+      Number.isFinite(parsedEnv)
         ? Math.max(0, parsedEnv)
         : row
           ? Number(row.commission_cooldown_days)
@@ -273,7 +277,10 @@ class PacksModuleService extends MedusaService({
       externalFundedCents = deltaCents;
     } else if (input.reason === 'pack_open' && deltaCents < 0) {
       const externalBalanceSen = Number(rows[0]?.ext_cents ?? 0);
-      externalFundedCents = -consumeExternalSen(-deltaCents, externalBalanceSen);
+      externalFundedCents = -consumeExternalSen(
+        -deltaCents,
+        externalBalanceSen,
+      );
     }
 
     // 3) Floor check — covers both "enough credit to open" and "no overdraft".
@@ -426,7 +433,9 @@ class PacksModuleService extends MedusaService({
     // 2) Lock every touched customer in a stable (sorted) order on the credit:
     //    keyspace — deadlock-safe with concurrent opens/reversals. (linkSponsor's
     //    sorted-lock technique, on the credit: keyspace used by the ledger path.)
-    const customerIds = [...new Set(originals.map((r) => r.customer_id))].sort();
+    const customerIds = [
+      ...new Set(originals.map((r) => r.customer_id)),
+    ].sort();
     for (const cid of customerIds) {
       await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
         `credit:${cid}`,
@@ -442,7 +451,8 @@ class PacksModuleService extends MedusaService({
       );
       if (existing) continue; // already reversed — no-op
       const isCommission =
-        original.reason === 'direct_referral' || original.reason === 'team_override';
+        original.reason === 'direct_referral' ||
+        original.reason === 'team_override';
       const originalExt = Number(
         (original as { external_funded_cents?: number | null })
           .external_funded_cents ?? 0,
@@ -510,6 +520,12 @@ class PacksModuleService extends MedusaService({
       `credit:${input.customerId}`,
     ]);
 
+    // 1a) Freeze gate — must run inside the lock so a concurrent unfreeze can't
+    //     race past this check before the debit lands.
+    if (await this.isFrozen(input.customerId, sharedContext)) {
+      throw new MedusaError(MedusaError.Types.NOT_ALLOWED, 'This account is frozen.');
+    }
+
     // 2) Locked balance + external read (one scan), exact + soft-delete aware.
     const rows = await em.execute<
       { balance_cents: string | null; ext_cents: string | null }[]
@@ -521,7 +537,10 @@ class PacksModuleService extends MedusaService({
     );
     const beforeCents = Number(rows[0]?.balance_cents ?? 0);
     const externalBalanceSen = Number(rows[0]?.ext_cents ?? 0);
-    const externalFundedCents = -consumeExternalSen(-deltaCents, externalBalanceSen);
+    const externalFundedCents = -consumeExternalSen(
+      -deltaCents,
+      externalBalanceSen,
+    );
 
     // 3) Floor check against the AVAILABLE balance (raw − locked commission).
     //    Every open debit is locked-aware — there is no raw-balance opt-out, so a
@@ -575,7 +594,10 @@ class PacksModuleService extends MedusaService({
         const sponsorSummary = await this.creditSummary(sponsorId);
         const ladderRows = await this.listVipLevels(
           {},
-          { select: ['level', 'spend_threshold', 'direct_referral_pct'], take: 1000 },
+          {
+            select: ['level', 'spend_threshold', 'direct_referral_pct'],
+            take: 1000,
+          },
         );
         const levelLadder = ladderRows.map((r) => ({
           level: r.level,
@@ -600,7 +622,9 @@ class PacksModuleService extends MedusaService({
           // definitively false even if JS clock lags Postgres transaction now().
           const maturesAt = matured
             ? new Date(0)
-            : new Date(Date.now() + settings.commissionCooldownDays * 86_400_000);
+            : new Date(
+                Date.now() + settings.commissionCooldownDays * 86_400_000,
+              );
 
           // Pay one beneficiary: the credit row + its 1:1 lifecycle row, in the
           // SAME locked txn. The partial-unique index (source_transaction_id,
@@ -619,7 +643,8 @@ class PacksModuleService extends MedusaService({
                 {
                   customer_id: beneficiary,
                   amount: amountSen / 100,
-                  reason: kind === 'direct' ? 'direct_referral' : 'team_override',
+                  reason:
+                    kind === 'direct' ? 'direct_referral' : 'team_override',
                   pull_id: null,
                   reference: null,
                   external_funded_cents: 0, // commission is internal, not external
@@ -662,7 +687,9 @@ class PacksModuleService extends MedusaService({
               settings.overrideGenerationCap,
             );
             if (schedule.length > 0) {
-              const byDepth = new Map(schedule.map((s) => [s.generation, s.amountSen]));
+              const byDepth = new Map(
+                schedule.map((s) => [s.generation, s.amountSen]),
+              );
               const maxDepth = schedule[schedule.length - 1].generation;
               // Ordered ancestors ABOVE the direct sponsor, each with its absolute
               // tree depth (direct sponsor = depth 1). A NEW recursive CTE — the
@@ -688,16 +715,28 @@ class PacksModuleService extends MedusaService({
               for (const anc of ancestors) {
                 const amountSen = byDepth.get(Number(anc.depth));
                 if (!amountSen) continue; // beyond self-termination -> no override
-                await payCommission(anc.ancestor_id, amountSen, Number(anc.depth), 'override', overridePct);
+                await payCommission(
+                  anc.ancestor_id,
+                  amountSen,
+                  Number(anc.depth),
+                  'override',
+                  overridePct,
+                );
               }
               // Defensive: a real schedule self-terminates long before the cap.
               // Reaching it is an anomaly (escaped cycle / data corruption) — log,
               // do NOT abort the recruit's open.
-              if (schedule[schedule.length - 1].generation === settings.overrideGenerationCap) {
+              if (
+                schedule[schedule.length - 1].generation ===
+                settings.overrideGenerationCap
+              ) {
                 // eslint-disable-next-line no-console
                 console.warn(
                   `[settleOpen] override schedule reached override_generation_cap=${settings.overrideGenerationCap}`,
-                  { source_transaction_id: input.sourceTransactionId, recruit_id: input.customerId },
+                  {
+                    source_transaction_id: input.sourceTransactionId,
+                    recruit_id: input.customerId,
+                  },
                 );
               }
             }
@@ -740,6 +779,20 @@ class PacksModuleService extends MedusaService({
   // in the raw balance (locking it too would double-subtract). Maturity is a
   // read-time predicate on 'pending' — no scheduler can make spend wrong by
   // lagging (a matured-but-not-yet-flipped 'pending' row reads as available).
+  // True if the customer is currently frozen. Read on the caller's connection so
+  // it participates in the same advisory-locked transaction as the debit gate.
+  private async isFrozen(
+    customerId: string,
+    sharedContext: Context,
+  ): Promise<boolean> {
+    const [row] = await this.listCustomerAccountStates(
+      { customer_id: customerId, frozen: true },
+      { take: 1 },
+      sharedContext,
+    );
+    return !!row;
+  }
+
   private async lockedCommissionCents(
     customerId: string,
     em: LedgerSqlManager,
@@ -773,6 +826,7 @@ class PacksModuleService extends MedusaService({
         'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
       [customerId],
     );
+    if (await this.isFrozen(customerId, sharedContext)) return 0; // Phase 3a freeze
     const balanceCents = Number(rows[0]?.balance_cents ?? 0);
     const lockedCents = await this.lockedCommissionCents(customerId, em);
     return (balanceCents - lockedCents) / 100;
@@ -851,8 +905,12 @@ class PacksModuleService extends MedusaService({
     // Lock both ids in a stable (sorted) order to avoid deadlocks with a
     // concurrent reciprocal insert.
     const [lo, hi] = [input.recruitId, input.sponsorId].sort();
-    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [`referral:${lo}`]);
-    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [`referral:${hi}`]);
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `referral:${lo}`,
+    ]);
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `referral:${hi}`,
+    ]);
 
     // Cycle check: walk the proposed sponsor's upline; if the recruit appears,
     // linking would close a loop. customer_id is unique so the upline is a simple
