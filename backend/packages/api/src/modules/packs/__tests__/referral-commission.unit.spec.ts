@@ -1,6 +1,7 @@
 import {
   directReferralPctForLevel,
   directCommissionSen,
+  teamOverrideSchedule,
 } from "../referral-commission";
 
 const LADDER = [
@@ -36,5 +37,50 @@ describe("directCommissionSen", () => {
   it("is 0 for non-positive spend (free open / guard)", () => {
     expect(directCommissionSen(0, 5)).toBe(0);
     expect(directCommissionSen(-100, 5)).toBe(0);
+  });
+});
+
+describe("teamOverrideSchedule", () => {
+  it("matches the golden vector (direct 10000 -> 2000,400,80,16,3, stop)", () => {
+    expect(teamOverrideSchedule(10000, 20, 100)).toEqual([
+      { generation: 2, amountSen: 2000 },
+      { generation: 3, amountSen: 400 },
+      { generation: 4, amountSen: 80 },
+      { generation: 5, amountSen: 16 },
+      { generation: 6, amountSen: 3 },
+    ]);
+  });
+
+  it("terminates on the RAW pre-round product, not the rounded value", () => {
+    // prev=3 -> 3*0.2=0.6 raw < 1 -> NOTHING paid (the rounded-up 1 is suppressed).
+    expect(teamOverrideSchedule(3, 20, 100)).toEqual([]);
+    // prev=5 -> 5*0.2=1.0 raw (not < 1) -> pays exactly 1 sen, then 1*0.2=0.2 < 1 stops.
+    expect(teamOverrideSchedule(5, 20, 100)).toEqual([
+      { generation: 2, amountSen: 1 },
+    ]);
+  });
+
+  it("respects the rounding-aware bound (exceeds bare 0.25x at small bases)", () => {
+    const s = teamOverrideSchedule(38, 20, 100); // 38 -> [8, 2]
+    const total = s.reduce((a, r) => a + r.amountSen, 0);
+    expect(s).toEqual([
+      { generation: 2, amountSen: 8 },
+      { generation: 3, amountSen: 2 },
+    ]);
+    expect(total).toBe(10);
+    expect(total).toBeGreaterThan(0.25 * 38); // 10 > 9.5 — bare 0.25x is FALSE
+    expect(total).toBeLessThanOrEqual(0.25 * 38 + s.length); // rounding-aware bound holds
+  });
+
+  it("caps the schedule depth at overrideGenerationCap (defensive)", () => {
+    // A base so large it cannot self-terminate by depth 3 -> the cap truncates it.
+    expect(
+      teamOverrideSchedule(10_000_000_000, 20, 3).map((r) => r.generation),
+    ).toEqual([2, 3]);
+  });
+
+  it("returns no overrides for a non-positive direct commission", () => {
+    expect(teamOverrideSchedule(0, 20, 100)).toEqual([]);
+    expect(teamOverrideSchedule(-100, 20, 100)).toEqual([]);
   });
 });
