@@ -38,6 +38,10 @@ import {
   teamOverrideSchedule,
 } from './referral-commission';
 import { levelForSpend } from './vip-ladder';
+import type {
+  RewardsSettingsPatch,
+  RewardsSettingsView,
+} from './rewards-settings-validate';
 
 // Postgres unique-violation detector (SQLSTATE 23505) for the commission
 // idempotency index. See settleOpen's commission catch for the exact semantics
@@ -1526,6 +1530,57 @@ class PacksModuleService extends MedusaService({
     return {
       instant_deadline_ms: instantDeadlineMs(pull.rolled_at, pull.revealed_at),
     };
+  }
+  // Admin edit of the rewards-settings singleton — clamped, audited, upserted.
+  // Public method is named `editRewardsSettings` to avoid shadowing the
+  // MedusaService-generated `updateRewardsSettings` CRUD method, which is called
+  // internally for the upsert.
+  @InjectTransactionManager()
+  async editRewardsSettings(
+    input: { patch: RewardsSettingsPatch; adminId: string; reason: string },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<RewardsSettingsView> {
+    const [row] = await this.listRewardsSettings({}, { take: 1 }, sharedContext);
+    const before: RewardsSettingsView = {
+      commissionCooldownDays: row ? Number(row.commission_cooldown_days) : 3,
+      teamOverridePct: row ? Number(row.team_override_pct) : 0.2,
+      overrideGenerationCap: row ? Number(row.override_generation_cap) : 100,
+    };
+    const data = {
+      commission_cooldown_days:
+        input.patch.commissionCooldownDays ?? before.commissionCooldownDays,
+      team_override_pct: input.patch.teamOverridePct ?? before.teamOverridePct,
+      override_generation_cap:
+        input.patch.overrideGenerationCap ?? before.overrideGenerationCap,
+    };
+    if (row) {
+      await this.updateRewardsSettings(
+        { selector: { id: row.id }, data },
+        sharedContext,
+      );
+    } else {
+      await this.createRewardsSettings([data], sharedContext);
+    }
+    const after: RewardsSettingsView = {
+      commissionCooldownDays: data.commission_cooldown_days,
+      teamOverridePct: data.team_override_pct,
+      overrideGenerationCap: data.override_generation_cap,
+    };
+    await this.createAdminActionAudits(
+      [
+        {
+          admin_id: input.adminId,
+          entity_type: 'rewards_settings',
+          entity_id: row?.id ?? 'singleton',
+          action: 'edit_rewards_settings',
+          before,
+          after,
+          reason: input.reason,
+        },
+      ],
+      sharedContext,
+    );
+    return after;
   }
 }
 
