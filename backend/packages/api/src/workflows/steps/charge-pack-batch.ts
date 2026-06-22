@@ -19,7 +19,9 @@ export type ChargePackBatchResult = {
   balance: number;
 };
 
-type CompensateData = { creditTransactionId: string } | undefined;
+// open_id is the authoritative key for compensation: reverseOpen(open_id) cascades
+// the debit + every commission. (The debit row id is not needed here.)
+type CompensateData = { open_id: string } | undefined;
 
 export const chargePackBatchStep = createStep<
   ChargePackBatchInput,
@@ -51,18 +53,23 @@ export const chargePackBatchStep = createStep<
         undefined as CompensateData,
       );
     }
-    const { id, balance } = await packs.settleOpen({
+    const { balance } = await packs.settleOpen({
       customerId: input.customer_id, amount: -total, sourceTransactionId: input.open_id,
     });
     return new StepResponse(
       { price, total, balance } satisfies ChargePackBatchResult,
-      { creditTransactionId: id } satisfies CompensateData,
+      { open_id: input.open_id } satisfies CompensateData,
     );
   },
   async (data: CompensateData, { container }) => {
-    if (!data?.creditTransactionId) return;
+    if (!data) return; // free-batch wrote no debit -> nothing to reverse
+    // The batch open is append-only: undo it with cascading compensating rows,
+    // NOT a delete. reverseOpen reverses the recruit's debit AND claws back
+    // every commission (direct + override) paid for this open_id, so a failure
+    // after settleOpen committed can never leave the recruit refunded but
+    // sponsors overpaid (Phase 2b go-live blocker).
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
-    await packs.reverseCreditTransaction(data.creditTransactionId);
+    await packs.reverseOpen(data.open_id);
   },
 );
 

@@ -14,7 +14,9 @@ export function directReferralPctForLevel(
 ): number {
   const row = ladder.find((r) => r.level === level);
   if (!row) {
-    throw new Error(`directReferralPctForLevel: no ladder row for level ${level}`);
+    throw new Error(
+      `directReferralPctForLevel: no ladder row for level ${level}`,
+    );
   }
   return row.direct_referral_pct;
 }
@@ -28,4 +30,39 @@ export function directCommissionSen(
 ): number {
   if (recruitSpendSen <= 0 || pct <= 0) return 0;
   return pctOfSen(recruitSpendSen, pct);
+}
+
+export type OverrideStep = { generation: number; amountSen: number };
+
+// Team override (Phase 2b) — the second referral layer. For each ancestor ABOVE
+// the direct sponsor, a flat `overridePercent` of the PRIOR generation's
+// commission, decaying up the tree. override[1] = the direct commission (not
+// returned here); this returns depths 2..N. Decay compounds on the ROUNDED parent
+// (pctOfSen matches the ledger ROUND). Terminate BEFORE a generation when the RAW
+// pre-round product < 1 sen — never pay a sen "born" from rounding a sub-sen value
+// up (master §7 / spec D1). `generation` IS absolute tree depth.
+// `overrideGenerationCap` is a defensive backstop: self-termination at <1 sen
+// trips first for any realistic base, so a schedule that reaches the cap is an
+// anomaly the caller logs.
+export function teamOverrideSchedule(
+  directCommissionSen: number,
+  overridePercent: number,
+  overrideGenerationCap: number,
+): OverrideStep[] {
+  const out: OverrideStep[] = [];
+  let prev = directCommissionSen; // override[1] (depth 1 = direct sponsor)
+  for (let depth = 2; depth <= overrideGenerationCap; depth++) {
+    if ((prev * overridePercent) / 100 < 1) break; // raw pre-round < 1 sen -> stop
+    const amountSen = pctOfSen(prev, overridePercent);
+    // Strict-decay guard: the <1-sen termination above assumes geometric decay, but
+    // half-up rounding has a FIXED POINT at overridePercent>=75 (pctOfSen(2,75)=2)
+    // and the amount GROWS at >=100. A non-decaying rate would otherwise pay
+    // overrideGenerationCap-many ancestors (or explode) on every open. Enforce the
+    // documented decay: stop as soon as a generation would not pay strictly less
+    // than its parent. No-op for sane decaying rates (amountSen < prev always there).
+    if (amountSen >= prev) break;
+    out.push({ generation: depth, amountSen });
+    prev = amountSen;
+  }
+  return out;
 }
