@@ -14,7 +14,9 @@ export function directReferralPctForLevel(
 ): number {
   const row = ladder.find((r) => r.level === level);
   if (!row) {
-    throw new Error(`directReferralPctForLevel: no ladder row for level ${level}`);
+    throw new Error(
+      `directReferralPctForLevel: no ladder row for level ${level}`,
+    );
   }
   return row.direct_referral_pct;
 }
@@ -52,6 +54,13 @@ export function teamOverrideSchedule(
   for (let depth = 2; depth <= overrideGenerationCap; depth++) {
     if ((prev * overridePercent) / 100 < 1) break; // raw pre-round < 1 sen -> stop
     const amountSen = pctOfSen(prev, overridePercent);
+    // Strict-decay guard: the <1-sen termination above assumes geometric decay, but
+    // half-up rounding has a FIXED POINT at overridePercent>=75 (pctOfSen(2,75)=2)
+    // and the amount GROWS at >=100. A non-decaying rate would otherwise pay
+    // overrideGenerationCap-many ancestors (or explode) on every open. Enforce the
+    // documented decay: stop as soon as a generation would not pay strictly less
+    // than its parent. No-op for sane decaying rates (amountSen < prev always there).
+    if (amountSen >= prev) break;
     out.push({ generation: depth, amountSen });
     prev = amountSen;
   }
