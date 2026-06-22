@@ -16,6 +16,17 @@
 import { z } from 'zod';
 import { isRarity } from '@/lib/packs-format';
 
+// Disable Zod 4's JIT parser. Its fast path compiles schemas with `new
+// Function(...)`, which our Content-Security-Policy forbids (script-src has no
+// 'unsafe-eval' — see src/lib/security/csp.ts). Zod probes eval availability with
+// a `Function("")` call in a try/catch; under an enforcing CSP that probe is
+// harmless (Zod falls back to the interpreted parser) but it still fires a CSP
+// violation report on every load. Setting `jitless` short-circuits the probe
+// entirely, so the policy stays clean with no 'unsafe-eval'. This module is the
+// app's sole `zod` importer, so configuring here covers every schema. The
+// interpreted parser is plenty fast for the storefront's light validation.
+z.config({ jitless: true });
+
 /** Matches the getters' `Number.isFinite(x)` checks exactly (rejects NaN/±∞). */
 const finite = z.number().refine((n) => Number.isFinite(n));
 /** A string that is one of the known gacha rarities (the old `isRarity` guard). */
