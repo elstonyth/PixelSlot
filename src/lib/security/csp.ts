@@ -24,7 +24,11 @@ function originOf(url: string | undefined): string | null {
 }
 
 export function buildCsp(): string {
-  const backend = originOf(process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL);
+  // Default matches lib/medusa.ts (SDK) and next.config.ts (image optimizer): an
+  // unset env var means local dev on :9000, so the policy must allow it too.
+  const backend = originOf(
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://localhost:9000',
+  );
   const mediaHost = process.env.NEXT_PUBLIC_MEDIA_HOST;
   const media = mediaHost ? `https://${mediaHost}` : null;
   // Sentry ingest (browser → SDK transport). Covers *.ingest.sentry.io / *.sentry.io.

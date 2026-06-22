@@ -39,6 +39,17 @@ describe('buildCsp', () => {
     expect(csp).toMatch(/img-src[^;]*http:\/\/localhost:9000/);
   });
 
+  // The SDK (lib/medusa.ts) and the image optimizer (next.config.ts) both
+  // default the backend to http://localhost:9000 when the env var is unset, so
+  // the CSP must allow it too — otherwise an enforced policy blocks every backend
+  // fetch/image in that default configuration.
+  it('defaults the backend origin to localhost:9000 when the env var is unset', () => {
+    delete process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+    const csp = buildCsp();
+    expect(csp).toMatch(/connect-src[^;]*http:\/\/localhost:9000/);
+    expect(csp).toMatch(/img-src[^;]*http:\/\/localhost:9000/);
+  });
+
   it('includes the media CDN host when set', () => {
     process.env.NEXT_PUBLIC_MEDIA_HOST = 'cdn.example.com';
     const csp = buildCsp();
