@@ -850,6 +850,123 @@ class PacksModuleService extends MedusaService({
     return { status: next };
   }
 
+  // Admin-initiated MANUAL account freeze. A manual freeze is STICKY: it
+  // overrides any existing AUTO freeze (sets cause='manual', frozen_by=adminId)
+  // and will NOT be lifted by maybeAutoUnfreeze (which only touches cause='auto').
+  // Takes the per-customer credit: advisory lock to serialise with the auto-freeze
+  // / auto-unfreeze paths, then list-then-create-or-update the state row, and
+  // writes an admin_action_audit row in the same transaction.
+  @InjectTransactionManager()
+  async setManualFreeze(
+    input: { customerId: string; adminId: string; reason: string },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ frozen: true }> {
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${input.customerId}`,
+    ]);
+    const [existing] = await this.listCustomerAccountStates(
+      { customer_id: input.customerId },
+      { take: 1 },
+      sharedContext,
+    );
+    const before = existing ? { frozen: existing.frozen, cause: existing.cause } : null;
+    if (existing) {
+      await this.updateCustomerAccountStates(
+        {
+          selector: { id: existing.id },
+          data: {
+            frozen: true,
+            cause: 'manual',
+            frozen_reason: input.reason,
+            frozen_by: input.adminId,
+            frozen_at: new Date(),
+            unfrozen_at: null,
+            unfreeze_cause: null,
+          },
+        },
+        sharedContext,
+      );
+    } else {
+      await this.createCustomerAccountStates(
+        [
+          {
+            customer_id: input.customerId,
+            frozen: true,
+            cause: 'manual',
+            frozen_reason: input.reason,
+            frozen_by: input.adminId,
+            frozen_at: new Date(),
+          },
+        ],
+        sharedContext,
+      );
+    }
+    await this.createAdminActionAudits(
+      [
+        {
+          admin_id: input.adminId,
+          entity_type: 'customer',
+          entity_id: input.customerId,
+          action: 'freeze',
+          before,
+          after: { frozen: true, cause: 'manual' },
+          reason: input.reason,
+        },
+      ],
+      sharedContext,
+    );
+    return { frozen: true };
+  }
+
+  // Admin-initiated MANUAL account unfreeze. Clears the freeze regardless of
+  // whether it was AUTO or MANUAL — an admin explicitly deciding to lift the
+  // freeze overrides both. Takes the same credit: advisory lock, updates the
+  // state row (frozen=false, unfreeze_cause='admin'), and writes an audit row.
+  @InjectTransactionManager()
+  async clearManualFreeze(
+    input: { customerId: string; adminId: string; reason: string },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ frozen: false }> {
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${input.customerId}`,
+    ]);
+    const [existing] = await this.listCustomerAccountStates(
+      { customer_id: input.customerId },
+      { take: 1 },
+      sharedContext,
+    );
+    if (existing) {
+      await this.updateCustomerAccountStates(
+        {
+          selector: { id: existing.id },
+          data: {
+            frozen: false,
+            unfrozen_at: new Date(),
+            unfreeze_cause: 'admin',
+          },
+        },
+        sharedContext,
+      );
+    }
+    await this.createAdminActionAudits(
+      [
+        {
+          admin_id: input.adminId,
+          entity_type: 'customer',
+          entity_id: input.customerId,
+          action: 'unfreeze',
+          before: existing ? { frozen: existing.frozen } : null,
+          after: { frozen: false },
+          reason: input.reason,
+        },
+      ],
+      sharedContext,
+    );
+    return { frozen: false };
+  }
+
   // The atomic open settlement — the ONLY place an open debit (and, Phase 2a,
   // its commission) is written. Holds the per-customer advisory lock across the
   // balance read, floor check, debit insert, AND (Task 14) the commission fan-out
