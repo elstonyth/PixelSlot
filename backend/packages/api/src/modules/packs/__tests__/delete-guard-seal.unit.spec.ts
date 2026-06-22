@@ -11,7 +11,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const SRC_ROOT = path.resolve(__dirname, '../../../../');
+// Re-anchored to src/ (not the api package root) so the scan walks only ~100
+// source files instead of ~22k node_modules + integration-tests files.
+const SRC_ROOT = path.resolve(__dirname, '../../../');
 
 /** Recursively collect all .ts files under dir, skipping __tests__ dirs. */
 function collectTsFiles(dir: string): string[] {
@@ -57,5 +59,6 @@ test('the only raw .deleteCreditTransactions( call in src/ is the single delegat
 
   const [only] = occurrences;
   const rel = path.relative(SRC_ROOT, only.file).replace(/\\/g, '/');
-  expect(rel).toBe('src/modules/packs/service.ts');
+  // Path is relative to SRC_ROOT (src/), so no leading "src/" prefix.
+  expect(rel).toBe('modules/packs/service.ts');
 });
