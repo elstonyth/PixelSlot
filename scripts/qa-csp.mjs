@@ -12,7 +12,7 @@ const page = await browser.newPage();
 
 /** Print the lines, close the browser, and exit non-zero. */
 const fail = async (...lines) => {
-  lines.forEach((l) => console.error(l));
+  console.error(lines.join('\n'));
   await browser.close();
   process.exit(1);
 };
