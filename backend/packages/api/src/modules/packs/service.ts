@@ -1041,131 +1041,154 @@ class PacksModuleService extends MedusaService({
       );
     }
 
-    // 4) Insert the debit row in the locked txn.
-    const [txn] = await this.createCreditTransactions(
-      [
-        {
-          customer_id: input.customerId,
-          amount: deltaCents / 100,
-          reason: 'pack_open',
-          pull_id: null,
-          reference: null,
-          external_funded_cents: externalFundedCents,
-          source_transaction_id: input.sourceTransactionId,
-        },
-      ],
-      sharedContext,
+    // 4) Idempotency pre-check + debit insert (Phase 3b).
+    // MikroORM's Unit of Work buffers ORM inserts until flush (transaction end), so
+    // a 23505 from the debit row's partial-unique index fires at commit time — AFTER
+    // settleOpen returns — where dbErrorMapper would intercept it before our catch.
+    // Instead we do an explicit pre-check (raw SQL, fires immediately inside the
+    // advisory lock) so a replayed no-sponsor open_id is caught here with a clear
+    // DUPLICATE_ERROR. The lock held since step 1 makes this read-then-write safe.
+    const [existing] = await em.execute<{ id: string }[]>(
+      `SELECT id FROM credit_transaction
+         WHERE source_transaction_id = ? AND reason = 'pack_open' AND amount < 0
+           AND deleted_at IS NULL
+         LIMIT 1`,
+      [input.sourceTransactionId],
     );
-
-    // 5) Commission fan-out (Phase 2b: direct gen-1 + team-override gens 2..N).
-    //    All inside the SAME locked txn so the debit + every commission credit +
-    //    lifecycle row commit or roll back together (no saga step could share
-    //    this lock — spec §3).
-    const commissions: CommissionPaid[] = [];
-    // The commission basis is the EXTERNAL-FUNDED portion of this open (refund-
-    // stable; matches the VIP basis). −externalFundedCents is what was consumed.
-    const basisSen = -externalFundedCents;
-    if (basisSen > 0) {
-      const [rel] = await this.listReferralRelationships(
-        { customer_id: input.customerId },
-        { take: 1 },
+    if (existing) {
+      throw new MedusaError(
+        MedusaError.Types.DUPLICATE_ERROR,
+        `Open '${input.sourceTransactionId}' has already been settled.`,
       );
-      if (rel?.sponsor_id) {
-        const sponsorId = rel.sponsor_id;
-        // Sponsor's effective level, derived live from THEIR external-funded
-        // spend against the current ladder (forward-only config). Note:
-        // creditSummary is @InjectManager (no context param) — the direct path's
-        // level read stays as-is; only flat-20% overrides are added below, which
-        // need no per-ancestor level read.
-        const sponsorSummary = await this.creditSummary(sponsorId);
-        const ladderRows = await this.listVipLevels(
-          {},
+    }
+
+    let txn: Awaited<ReturnType<typeof this.createCreditTransactions>>[0];
+    const commissions: CommissionPaid[] = [];
+    try {
+      [txn] = await this.createCreditTransactions(
+        [
           {
-            select: ['level', 'spend_threshold', 'direct_referral_pct'],
-            take: 1000,
+            customer_id: input.customerId,
+            amount: deltaCents / 100,
+            reason: 'pack_open',
+            pull_id: null,
+            reference: null,
+            external_funded_cents: externalFundedCents,
+            source_transaction_id: input.sourceTransactionId,
           },
-        );
-        const levelLadder = ladderRows.map((r) => ({
-          level: r.level,
-          spend_threshold: Number(r.spend_threshold),
-        }));
-        const pctLadder = ladderRows.map((r) => ({
-          level: r.level,
-          direct_referral_pct: Number(r.direct_referral_pct),
-        }));
-        const sponsorLevel = levelForSpend(
-          sponsorSummary.externalFundedSpendTotal,
-          levelLadder,
-        );
-        const pct = directReferralPctForLevel(sponsorLevel, pctLadder);
-        const commissionSen = directCommissionSen(basisSen, pct);
+        ],
+        sharedContext,
+      );
 
-        if (commissionSen > 0) {
-          // Thread sharedContext so the settings read runs on THIS locked txn.
-          const settings = await this.rewardsSettings(sharedContext);
-          const matured = settings.commissionCooldownDays === 0;
-          // For cooldown=0 set matures_at to epoch so matures_at > now() is
-          // definitively false even if JS clock lags Postgres transaction now().
-          const maturesAt = matured
-            ? new Date(0)
-            : new Date(
-                Date.now() + settings.commissionCooldownDays * 86_400_000,
+      // 5) Commission fan-out (Phase 2b: direct gen-1 + team-override gens 2..N).
+      //    All inside the SAME locked txn so the debit + every commission credit +
+      //    lifecycle row commit or roll back together (no saga step could share
+      //    this lock — spec §3).
+      // The commission basis is the EXTERNAL-FUNDED portion of this open.
+      // Net basis reaches zero on clawback (reverseOpen negates externalFundedCents),
+      // so the basis is NOT refund-stable at the ledger level. The monotonic
+      // lifetime counter (built in a later task) is the rank basis; spec §3.
+      const basisSen = -externalFundedCents;
+      if (basisSen > 0) {
+        const [rel] = await this.listReferralRelationships(
+          { customer_id: input.customerId },
+          { take: 1 },
+        );
+        if (rel?.sponsor_id) {
+          const sponsorId = rel.sponsor_id;
+          // Sponsor's effective level, derived live from THEIR external-funded
+          // spend against the current ladder (forward-only config). Note:
+          // creditSummary is @InjectManager (no context param) — the direct path's
+          // level read stays as-is; only flat-20% overrides are added below, which
+          // need no per-ancestor level read.
+          const sponsorSummary = await this.creditSummary(sponsorId);
+          const ladderRows = await this.listVipLevels(
+            {},
+            {
+              select: ['level', 'spend_threshold', 'direct_referral_pct'],
+              take: 1000,
+            },
+          );
+          const levelLadder = ladderRows.map((r) => ({
+            level: r.level,
+            spend_threshold: Number(r.spend_threshold),
+          }));
+          const pctLadder = ladderRows.map((r) => ({
+            level: r.level,
+            direct_referral_pct: Number(r.direct_referral_pct),
+          }));
+          const sponsorLevel = levelForSpend(
+            sponsorSummary.externalFundedSpendTotal,
+            levelLadder,
+          );
+          const pct = directReferralPctForLevel(sponsorLevel, pctLadder);
+          const commissionSen = directCommissionSen(basisSen, pct);
+
+          if (commissionSen > 0) {
+            // Thread sharedContext so the settings read runs on THIS locked txn.
+            const settings = await this.rewardsSettings(sharedContext);
+            const matured = settings.commissionCooldownDays === 0;
+            // For cooldown=0 set matures_at to epoch so matures_at > now() is
+            // definitively false even if JS clock lags Postgres transaction now().
+            const maturesAt = matured
+              ? new Date(0)
+              : new Date(
+                  Date.now() + settings.commissionCooldownDays * 86_400_000,
+                );
+
+            // Pay one beneficiary: the credit row + its 1:1 lifecycle row, in the
+            // SAME locked txn. The partial-unique index (source_transaction_id,
+            // reason, customer_id, generation) rejects a replayed open_id with a
+            // 23505 (caught below). reason = 'direct_referral' for gen 1, else
+            // 'team_override'. effective_pct snapshots the whole-percent used.
+            const payCommission = async (
+              beneficiary: string,
+              amountSen: number,
+              generation: number,
+              kind: 'direct' | 'override',
+              effectivePct: number,
+            ): Promise<void> => {
+              const [credit] = await this.createCreditTransactions(
+                [
+                  {
+                    customer_id: beneficiary,
+                    amount: amountSen / 100,
+                    reason:
+                      kind === 'direct' ? 'direct_referral' : 'team_override',
+                    pull_id: null,
+                    reference: null,
+                    external_funded_cents: 0, // commission is internal, not external
+                    source_transaction_id: input.sourceTransactionId,
+                    generation,
+                  },
+                ],
+                sharedContext,
               );
+              await this.createCommissions(
+                [
+                  {
+                    credit_transaction_id: credit.id,
+                    beneficiary,
+                    source_transaction_id: input.sourceTransactionId,
+                    generation,
+                    kind,
+                    status: matured ? 'available' : 'pending',
+                    matures_at: maturesAt,
+                    effective_pct: effectivePct,
+                    reversal_transaction_id: null,
+                  },
+                ],
+                sharedContext,
+              );
+              commissions.push({ beneficiary, amountSen, matured });
+              // NOTE: a frozen sponsor repaid only by a downline commission lifts
+              // on their next direct inflow (mutateCreditAtomic holds their lock)
+              // — we do NOT auto-unfreeze here: settleOpen holds only the
+              // recruit's lock, so unfreezing a beneficiary would be a TOCTOU
+              // race (and taking the beneficiary lock here risks deadlock vs the
+              // sorted-lock reversal paths).
+            };
 
-          // Pay one beneficiary: the credit row + its 1:1 lifecycle row, in the
-          // SAME locked txn. The partial-unique index (source_transaction_id,
-          // reason, customer_id, generation) rejects a replayed open_id with a
-          // 23505 (caught below). reason = 'direct_referral' for gen 1, else
-          // 'team_override'. effective_pct snapshots the whole-percent used.
-          const payCommission = async (
-            beneficiary: string,
-            amountSen: number,
-            generation: number,
-            kind: 'direct' | 'override',
-            effectivePct: number,
-          ): Promise<void> => {
-            const [credit] = await this.createCreditTransactions(
-              [
-                {
-                  customer_id: beneficiary,
-                  amount: amountSen / 100,
-                  reason:
-                    kind === 'direct' ? 'direct_referral' : 'team_override',
-                  pull_id: null,
-                  reference: null,
-                  external_funded_cents: 0, // commission is internal, not external
-                  source_transaction_id: input.sourceTransactionId,
-                  generation,
-                },
-              ],
-              sharedContext,
-            );
-            await this.createCommissions(
-              [
-                {
-                  credit_transaction_id: credit.id,
-                  beneficiary,
-                  source_transaction_id: input.sourceTransactionId,
-                  generation,
-                  kind,
-                  status: matured ? 'available' : 'pending',
-                  matures_at: maturesAt,
-                  effective_pct: effectivePct,
-                  reversal_transaction_id: null,
-                },
-              ],
-              sharedContext,
-            );
-            commissions.push({ beneficiary, amountSen, matured });
-            // NOTE: a frozen sponsor repaid only by a downline commission lifts
-            // on their next direct inflow (mutateCreditAtomic holds their lock)
-            // — we do NOT auto-unfreeze here: settleOpen holds only the
-            // recruit's lock, so unfreezing a beneficiary would be a TOCTOU
-            // race (and taking the beneficiary lock here risks deadlock vs the
-            // sorted-lock reversal paths).
-          };
-
-          try {
             // gen 1 — the direct sponsor.
             await payCommission(sponsorId, commissionSen, 1, 'direct', pct);
 
@@ -1232,27 +1255,22 @@ class PacksModuleService extends MedusaService({
                 );
               }
             }
-          } catch (e) {
-            // A 23505 means this open_id already settled (the commission
-            // idempotency index rejected a duplicate at some generation). The
-            // 23505 has already aborted THIS transaction (Postgres 25P02), so we
-            // re-raise it as a clear DUPLICATE_ERROR — @InjectTransactionManager
-            // then rolls the whole settleOpen back, DEBIT included. That is
-            // intentional: the debit is not separately idempotency-keyed, so
-            // aborting the entire open is what stops a replayed open_id from
-            // double-debiting. Do NOT wrap inserts in a SAVEPOINT to "keep the
-            // open" — that would let the duplicate debit commit. Re-throw
-            // non-23505 as-is.
-            if (isUniqueViolation(e)) {
-              throw new MedusaError(
-                MedusaError.Types.DUPLICATE_ERROR,
-                `Open '${input.sourceTransactionId}' has already been settled.`,
-              );
-            }
-            throw e;
           }
         }
       }
+    } catch (e) {
+      // A 23505 means this open_id already settled — from EITHER the debit index
+      // (no-sponsor path, Phase 3b) or the commission index (with-sponsor path).
+      // The 23505 already aborted THIS txn (25P02); re-raise as DUPLICATE_ERROR so
+      // @InjectTransactionManager rolls the whole settleOpen back, DEBIT included.
+      // No SAVEPOINT — that would let the duplicate debit commit.
+      if (isUniqueViolation(e)) {
+        throw new MedusaError(
+          MedusaError.Types.DUPLICATE_ERROR,
+          `Open '${input.sourceTransactionId}' has already been settled.`,
+        );
+      }
+      throw e;
     }
 
     return {
