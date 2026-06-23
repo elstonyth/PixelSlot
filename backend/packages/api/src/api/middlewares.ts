@@ -12,6 +12,7 @@ import {
   createAuthRateLimit,
   createCreditTopupRateLimit,
   createDeliveryWriteRateLimit,
+  createNotificationReadRateLimit,
   createPackOpenBatchRateLimit,
   createPackOpenRateLimit,
   createProfileReadRateLimit,
@@ -250,6 +251,18 @@ export default defineMiddlewares({
       matcher: '/store/notifications',
       method: 'GET',
       middlewares: [authenticate('customer', ['bearer']), storeReadRateLimit],
+    },
+    {
+      // Mark a feed notification as read (POST /store/notifications/:id/read).
+      // IDOR guard runs in the route handler (owner-scoped listNotifications before
+      // any write). Glob uses * (not :id) as Medusa middleware matchers are path
+      // globs, not express params.
+      matcher: '/store/notifications/*/read',
+      method: 'POST',
+      middlewares: [
+        authenticate('customer', ['bearer']),
+        createNotificationReadRateLimit(),
+      ],
     },
     {
       // The customer's own profile handle (GET /store/profiles/me) — lazily
