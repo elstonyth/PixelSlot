@@ -1747,14 +1747,17 @@ class PacksModuleService extends MedusaService({
     );
   }
 
-  // Rebuild the vip_member_state projection for a single customer from the
-  // authoritative ledger. Safe to call repeatedly — the upsert is idempotent.
-  // lifetime uses the monotonic counter (fromSen for levelForSpend unit conversion);
-  // current_level uses the net-basis summary (may drop on refund).
-  async rebuildVipMemberState(
+  // Shared VIP-state inputs read from the authoritative ledger: the monotonic
+  // lifetime counter (SEN), the net-basis external spend (MYR, the display axis),
+  // and the full ladder (threshold + reward columns). Both rebuildVipMemberState
+  // and grantLevelUpRewards need exactly these, so they live in one place and can
+  // never drift in what they read. Reads stay SEQUENTIAL: lifetimeExternalSenFor
+  // and listVipLevels run on the same injected EntityManager, which is not safe to
+  // query concurrently — so this is a DRY extraction, not a parallelization.
+  private async loadVipStateInputs(
     customerId: string,
     sharedContext: Context = {},
-  ): Promise<void> {
+  ) {
     const lifetimeSen = await this.lifetimeExternalSenFor(
       customerId,
       sharedContext,
@@ -1763,18 +1766,40 @@ class PacksModuleService extends MedusaService({
       .externalFundedSpendTotal;
     const ladderRows = await this.listVipLevels(
       {},
-      { select: ['level', 'spend_threshold'], take: 1000 },
+      {
+        select: [
+          'level',
+          'spend_threshold',
+          'voucher_amount',
+          'box_tier',
+          'frame_unlock',
+        ],
+        take: 1000,
+      },
     );
-    const ladder = ladderRows.map((r) => ({
+    const thresholdRows = ladderRows.map((r) => ({
       level: r.level,
       spend_threshold: Number(r.spend_threshold),
     }));
+    return { lifetimeSen, netBasisMyr, ladderRows, thresholdRows };
+  }
+
+  // Rebuild the vip_member_state projection for a single customer from the
+  // authoritative ledger. Safe to call repeatedly — the upsert is idempotent.
+  // lifetime uses the monotonic counter (fromSen for levelForSpend unit conversion);
+  // current_level uses the net-basis summary (may drop on refund).
+  async rebuildVipMemberState(
+    customerId: string,
+    sharedContext: Context = {},
+  ): Promise<void> {
+    const { lifetimeSen, netBasisMyr, thresholdRows } =
+      await this.loadVipStateInputs(customerId, sharedContext);
     await this.upsertVipMemberState(
       {
         customerId,
         lifetimeSen,
-        highestLevelEver: levelForSpend(fromSen(lifetimeSen), ladder), // fromSen: SEN→MYR unit conversion (UNIT TRAP)
-        currentLevel: levelForSpend(netBasisMyr, ladder),
+        highestLevelEver: levelForSpend(fromSen(lifetimeSen), thresholdRows), // fromSen: SEN→MYR unit conversion (UNIT TRAP)
+        currentLevel: levelForSpend(netBasisMyr, thresholdRows),
       },
       sharedContext,
     );
@@ -1824,36 +1849,14 @@ class PacksModuleService extends MedusaService({
     const em = (sharedContext.transactionManager ??
       sharedContext.manager) as unknown as LedgerSqlManager;
 
-    // 1) Recompute from ledger so redelivery is always idempotent.
-    const lifetimeSen = await this.lifetimeExternalSenFor(
-      customerId,
-      sharedContext,
-    );
+    // 1-3) Recompute the shared VIP-state inputs from the ledger (monotonic
+    //       lifetime, net basis, full ladder) — the same source
+    //       rebuildVipMemberState uses, so redelivery stays idempotent and the
+    //       two paths cannot drift in what they read.
+    const { lifetimeSen, netBasisMyr, ladderRows, thresholdRows } =
+      await this.loadVipStateInputs(customerId, sharedContext);
     // UNIT TRAP: lifetimeSen is integer sen, levelForSpend expects MYR. Convert.
     const lifetimeMyr = fromSen(lifetimeSen);
-
-    // 2) Net basis for display-level (separate axis from grant trigger).
-    const netBasisMyr = (await this.creditSummary(customerId))
-      .externalFundedSpendTotal;
-
-    // 3) Load the full ladder for both level derivation and reward lookup.
-    const ladderRows = await this.listVipLevels(
-      {},
-      {
-        select: [
-          'level',
-          'spend_threshold',
-          'voucher_amount',
-          'box_tier',
-          'frame_unlock',
-        ],
-        take: 1000,
-      },
-    );
-    const thresholdRows = ladderRows.map((r) => ({
-      level: r.level,
-      spend_threshold: Number(r.spend_threshold),
-    }));
     const byLevel = new Map(ladderRows.map((r) => [r.level, r]));
 
     // 4) High-water mark from existing state row (default L1 if no row yet).
@@ -1970,10 +1973,9 @@ class PacksModuleService extends MedusaService({
       // 2) Acquire per-beneficiary advisory lock (same credit: keyspace used by
       //    mutateCreditAtomic, settleOpen, reverseCommission, reverseOpen).
       //    Transaction-scoped — auto-releases on commit/rollback.
-      await em.execute(
-        'SELECT pg_advisory_xact_lock(hashtextextended(?, 0))',
-        [`credit:${beneficiary}`],
-      );
+      await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+        `credit:${beneficiary}`,
+      ]);
 
       // 3) Check freeze state inside the lock so the flag is consistent with
       //    the advisory-locked read (isFrozen reads on sharedContext's connection).
