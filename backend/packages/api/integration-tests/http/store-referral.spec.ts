@@ -1,6 +1,8 @@
 import { medusaIntegrationTestRunner } from '@medusajs/test-utils';
 import { Modules } from '@medusajs/framework/utils';
 import { unwrapResponse } from './utils';
+import { PACKS_MODULE } from '../../src/modules/packs';
+import type PacksModuleService from '../../src/modules/packs/service';
 
 jest.setTimeout(180 * 1000);
 
@@ -93,6 +95,7 @@ medusaIntegrationTestRunner({
     describe('POST /store/referral — sponsor_handle resolution', () => {
       let storeHeaders: Record<string, string>;
       let sponsorId: string;
+      let recruitId: string;
       let recruitToken: string;
 
       const SPONSOR_HANDLE = 'store-ref-t7-sponsor';
@@ -123,7 +126,7 @@ medusaIntegrationTestRunner({
           email: 'store-ref-t7-recruit@test.dev',
           password: PASSWORD,
         });
-        await api.post(
+        const created = await api.post(
           '/store/customers',
           { email: 'store-ref-t7-recruit@test.dev' },
           {
@@ -133,6 +136,7 @@ medusaIntegrationTestRunner({
             },
           },
         );
+        recruitId = created.data.customer.id as string;
         const login = await api.post('/auth/customer/emailpass', {
           email: 'store-ref-t7-recruit@test.dev',
           password: PASSWORD,
@@ -156,17 +160,13 @@ medusaIntegrationTestRunner({
         expect(res.status).toBe(201);
         expect(res.data).toMatchObject({ id: expect.any(String) });
 
-        // Verify the link points at the sponsor's actual customer id.
-        const summary = await unwrapResponse(
-          api.get('/store/referral', { headers: authed(recruitToken) }),
+        // Verify the stored relationship points at the sponsor's actual customer id.
+        const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+        const rel = await packs.listReferralRelationships(
+          { customer_id: recruitId },
+          { take: 1 },
         );
-        // The recruit's own summary won't list themselves, but we can verify
-        // by checking that the GET returns 200 (the link exists and the recruit
-        // is now a valid recruit with a sponsor). A deeper assertion would
-        // require admin access or the packs module directly — the 201 + id is
-        // the primary contract. Confirm sponsorId is not null.
-        expect(sponsorId).toBeTruthy();
-        expect(summary.status).toBe(200);
+        expect(rel[0].sponsor_id).toBe(sponsorId);
       });
 
       it('unknown sponsor_handle → 4xx', async () => {
@@ -177,7 +177,7 @@ medusaIntegrationTestRunner({
             { headers: authed(recruitToken) },
           ),
         );
-        expect(res.status).toBeGreaterThanOrEqual(400);
+        expect(res.status).toBe(400);
       });
     });
   },
