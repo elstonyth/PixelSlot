@@ -266,15 +266,17 @@ class PacksModuleService extends MedusaService({
     // requests can't both insert (same guarantee as reverseCreditTransaction's
     // `reversal:` dedupe — no DB unique required).
     if (input.idempotencyReference) {
-      // Scope the dedupe to THIS customer: the advisory lock above is per
-      // customer, so the check-then-insert is only atomic within one customer.
-      // customer_id also makes the lookup index-assisted (IDX_credit_transaction
-      // _customer_id_created_at) instead of a full ledger scan, and removes the
-      // reliance on `reference` being globally unique across customers.
+      // The idempotency anchor is stored in source_transaction_id (NOT reference)
+      // so the public `reference` column stays free to hold the gateway/charge
+      // reference for reconciliation + refunds (CodeRabbit). Scope the dedupe to
+      // THIS customer: the advisory lock above is per customer, so the check-then-
+      // insert is only atomic within one customer; customer_id also makes the
+      // lookup index-assisted (IDX_credit_transaction_customer_id_created_at)
+      // instead of a full ledger scan.
       const [existing] = await this.listCreditTransactions(
         {
           customer_id: input.customerId,
-          reference: input.idempotencyReference,
+          source_transaction_id: input.idempotencyReference,
         },
         { take: 1 },
       );
@@ -368,11 +370,13 @@ class PacksModuleService extends MedusaService({
           amount: deltaCents / 100,
           reason: input.reason,
           pull_id: input.pullId ?? null,
-          // The idempotency reference (when present) is the stored anchor a
-          // replay dedupes on; otherwise the plain reference (gateway ref/note).
-          reference: input.idempotencyReference ?? input.reference ?? null,
+          // `reference` keeps the gateway/charge ref (or plain note) for
+          // reconciliation; the idempotency anchor lives in source_transaction_id
+          // (the dedupe target above) so the two never clobber each other.
+          reference: input.reference ?? null,
           external_funded_cents: externalFundedCents,
-          source_transaction_id: input.sourceTransactionId ?? null,
+          source_transaction_id:
+            input.idempotencyReference ?? input.sourceTransactionId ?? null,
         },
       ],
       sharedContext,

@@ -197,6 +197,16 @@ medusaIntegrationTestRunner({
         expect(noKey.data.balance).toBe(150);
         expect(await ledgerRows()).toHaveLength(3);
       });
+
+      it('rejects an Idempotency-Key longer than 200 chars (no truncation collision)', async () => {
+        const token = await registerCustomer('topup-idem-d@test.dev');
+
+        // Two distinct keys sharing a 200-char prefix would collide under
+        // truncation; the route must reject overlong keys instead (400, no write).
+        const res = await topUpIdem(50, authed(token), 'k'.repeat(201));
+        expect(res.status).toBe(400);
+        expect(await ledgerRows()).toHaveLength(0);
+      });
     });
   },
 });

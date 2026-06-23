@@ -94,7 +94,9 @@ export const topUpCreditsStep = createStep(
       // On a replay this is the ORIGINAL credited amount, not the (ignored)
       // amount on the replayed request body.
       amount: creditedAmount,
-      reference: idempotencyReference ?? charge.reference,
+      // The gateway/charge reference is the public reconciliation handle; the
+      // idempotency anchor is internal (stored in source_transaction_id).
+      reference: charge.reference,
       balance,
     };
     return new StepResponse(result, { creditTransactionId: id, replayed });

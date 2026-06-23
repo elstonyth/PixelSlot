@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 // Credit top-up rules + the mock payment gateway (Task A1). Both are pure so
 // the workflow step stays a thin orchestrator and the rules are unit-testable
 // without a container.
@@ -29,27 +31,35 @@ export function topUpAmountError(value: unknown): string | null {
 }
 
 // Security audit 2026-06-23: the mock gateway always approves, so it MINTS free
-// spendable credit. It must be inert in production unless an operator explicitly
-// opts in — otherwise any authenticated customer can mint money. Pure (env is
-// injected) so the policy is unit-testable without a running server.
+// spendable credit. FAIL CLOSED — only explicit local/test environments allow
+// the mock by default; EVERY other environment (production, staging, unset, or
+// any custom NODE_ENV) requires an explicit operator opt-in (ALLOW_MOCK_TOPUP=
+// true). A misconfigured public deploy with NODE_ENV unset/staging must never
+// mint credits. Pure (env injected) so the policy is unit-testable.
 export function mockTopupAllowed(
   env: { NODE_ENV?: string; ALLOW_MOCK_TOPUP?: string } = process.env,
 ): boolean {
-  if (env.NODE_ENV !== 'production') return true;
-  return env.ALLOW_MOCK_TOPUP === 'true';
+  if (env.ALLOW_MOCK_TOPUP === 'true') return true;
+  return env.NODE_ENV === 'development' || env.NODE_ENV === 'test';
 }
 
 // Customer-scoped idempotency anchor for a top-up. A replayed request carrying
-// the same Idempotency-Key resolves to this same ledger `reference`, so the
-// per-customer locked dedupe in mutateCreditAtomic returns the existing row
-// instead of appending a second credit (the audit's no-idempotency finding).
-// Namespaced by customer so two customers' identical keys never collide, and
-// prefixed so it never collides with the mock gateway's `mock_…` references.
+// the same Idempotency-Key resolves to this same anchor, so the per-customer
+// locked dedupe in mutateCreditAtomic returns the existing row instead of
+// appending a second credit (the audit's no-idempotency finding). The anchor is
+// an OPAQUE sha256 digest of (customerId, key) — the raw client header content
+// is never persisted verbatim in the ledger. The customer id is folded into the
+// digest (JSON-framed, so "a"+"bc" ≠ "ab"+"c") so two customers' identical
+// keys never collide, and the `topup-idem:` prefix keeps it disjoint from the
+// mock gateway's `mock_…` references.
 export function topupIdempotencyReference(
   customerId: string,
   key: string,
 ): string {
-  return `topup-idem:${customerId}:${key}`;
+  const digest = createHash('sha256')
+    .update(JSON.stringify({ customerId, key }))
+    .digest('hex');
+  return `topup-idem:${digest}`;
 }
 
 export type MockChargeInput = {

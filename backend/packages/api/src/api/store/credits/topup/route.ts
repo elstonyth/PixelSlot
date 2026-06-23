@@ -2,6 +2,7 @@ import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from '@medusajs/framework/http';
+import { MedusaError } from '@medusajs/framework/utils';
 import { topUpCreditsWorkflow } from '../../../../workflows/topup-credits';
 
 // POST /store/credits/topup — buy site credit through the payment gateway
@@ -21,13 +22,20 @@ export async function POST(
 
   // Optional client idempotency key — a replayed top-up carrying the same key
   // returns the original result instead of double-crediting (audit 2026-06-23).
-  // Header may be string | string[]; normalize, trim, and cap the length.
+  // Header may be string | string[]; normalize + trim. REJECT keys over 200 chars
+  // rather than truncating: silently slicing would map two distinct keys that
+  // share a 200-char prefix to the same anchor, wrongly treating an independent
+  // top-up as a replay (CodeRabbit).
   const rawKey = req.headers['idempotency-key'];
   const headerKey = Array.isArray(rawKey) ? rawKey[0] : rawKey;
-  const idempotency_key =
-    typeof headerKey === 'string' && headerKey.trim() !== ''
-      ? headerKey.trim().slice(0, 200)
-      : undefined;
+  const trimmedKey = typeof headerKey === 'string' ? headerKey.trim() : '';
+  if (trimmedKey.length > 200) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      'Idempotency-Key must be at most 200 characters.',
+    );
+  }
+  const idempotency_key = trimmedKey !== '' ? trimmedKey : undefined;
 
   const { result } = await topUpCreditsWorkflow(req.scope).run({
     input: { customer_id: customerId, amount, idempotency_key },

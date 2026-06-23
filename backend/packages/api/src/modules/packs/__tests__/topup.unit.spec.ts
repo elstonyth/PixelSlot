@@ -87,29 +87,39 @@ describe("mockCharge", () => {
 });
 
 // Security audit 2026-06-23: the mock gateway mints free, spendable credit, so
-// it must be inert in production unless an operator explicitly opts in. Pure so
-// the env policy is unit-testable without a running server.
+// it FAILS CLOSED — only explicit local/test envs allow it by default; every
+// other env (production, staging, custom, unset) needs an explicit opt-in. Pure
+// so the env policy is unit-testable without a running server.
 describe("mockTopupAllowed", () => {
-  it("allows the mock outside production regardless of the flag", () => {
+  it("allows the mock in explicit local/test envs without the flag", () => {
     expect(mockTopupAllowed({ NODE_ENV: "development" })).toBe(true);
     expect(mockTopupAllowed({ NODE_ENV: "test" })).toBe(true);
-    expect(mockTopupAllowed({})).toBe(true); // NODE_ENV unset
   });
 
-  it("blocks the mock in production by default (flag unset or not 'true')", () => {
+  it("fails closed for production, staging, custom, or unset NODE_ENV without opt-in", () => {
     expect(mockTopupAllowed({ NODE_ENV: "production" })).toBe(false);
+    expect(mockTopupAllowed({ NODE_ENV: "staging" })).toBe(false);
+    expect(mockTopupAllowed({ NODE_ENV: "qa-7" })).toBe(false);
+    expect(mockTopupAllowed({})).toBe(false); // NODE_ENV unset
+  });
+
+  it("allows the mock anywhere ONLY when explicitly opted in (ALLOW_MOCK_TOPUP=true)", () => {
+    expect(
+      mockTopupAllowed({ NODE_ENV: "production", ALLOW_MOCK_TOPUP: "true" }),
+    ).toBe(true);
+    expect(
+      mockTopupAllowed({ NODE_ENV: "staging", ALLOW_MOCK_TOPUP: "true" }),
+    ).toBe(true);
+    expect(mockTopupAllowed({ ALLOW_MOCK_TOPUP: "true" })).toBe(true);
+  });
+
+  it("treats non-'true' flag values as not opted in", () => {
     expect(
       mockTopupAllowed({ NODE_ENV: "production", ALLOW_MOCK_TOPUP: "false" }),
     ).toBe(false);
     expect(
       mockTopupAllowed({ NODE_ENV: "production", ALLOW_MOCK_TOPUP: "1" }),
     ).toBe(false);
-  });
-
-  it("allows the mock in production only when explicitly opted in", () => {
-    expect(
-      mockTopupAllowed({ NODE_ENV: "production", ALLOW_MOCK_TOPUP: "true" }),
-    ).toBe(true);
   });
 });
 
