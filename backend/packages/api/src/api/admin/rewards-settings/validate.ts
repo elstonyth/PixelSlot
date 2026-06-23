@@ -7,15 +7,12 @@ import { MedusaError } from '@medusajs/framework/utils';
  */
 export function reqReason(body: unknown): string {
   const reason = (body as Record<string, unknown> | null)?.reason;
-  if (
-    typeof reason !== 'string' ||
-    reason.trim().length === 0 ||
-    reason.length > 500
-  ) {
+  const trimmed = typeof reason === 'string' ? reason.trim() : '';
+  if (!trimmed || trimmed.length > 500) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
       'A reason (1–500 chars) is required.',
     );
   }
-  return reason.trim();
+  return trimmed;
 }

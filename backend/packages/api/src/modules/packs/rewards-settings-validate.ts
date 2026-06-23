@@ -26,7 +26,9 @@ export function validateRewardsPatch(raw: unknown): RewardsSettingsPatch {
   const out: RewardsSettingsPatch = {};
 
   if (b.teamOverridePct !== undefined) {
-    const v = Number(b.teamOverridePct);
+    if (typeof b.teamOverridePct !== 'number')
+      bad('teamOverridePct must be between 0 and 1 (exclusive).');
+    const v = b.teamOverridePct as number;
     if (!Number.isFinite(v) || v <= 0 || v >= 1)
       bad('teamOverridePct must be between 0 and 1 (exclusive).');
     if (Math.abs(v * 100 - Math.round(v * 100)) > 1e-9)
@@ -34,14 +36,18 @@ export function validateRewardsPatch(raw: unknown): RewardsSettingsPatch {
     out.teamOverridePct = v;
   }
   if (b.commissionCooldownDays !== undefined) {
-    const v = Number(b.commissionCooldownDays);
-    if (!Number.isInteger(v) || v < 0)
+    if (typeof b.commissionCooldownDays !== 'number')
+      bad('commissionCooldownDays must be an integer >= 0.');
+    const v = b.commissionCooldownDays as number;
+    if (!Number.isSafeInteger(v) || v < 0)
       bad('commissionCooldownDays must be an integer >= 0.');
     out.commissionCooldownDays = v;
   }
   if (b.overrideGenerationCap !== undefined) {
-    const v = Number(b.overrideGenerationCap);
-    if (!Number.isInteger(v) || v < 1)
+    if (typeof b.overrideGenerationCap !== 'number')
+      bad('overrideGenerationCap must be an integer >= 1.');
+    const v = b.overrideGenerationCap as number;
+    if (!Number.isSafeInteger(v) || v < 1)
       bad('overrideGenerationCap must be an integer >= 1.');
     out.overrideGenerationCap = v;
   }

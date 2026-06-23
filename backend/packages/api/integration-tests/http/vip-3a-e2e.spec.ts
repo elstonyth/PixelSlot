@@ -132,6 +132,8 @@ medusaIntegrationTestRunner({
           { source_transaction_id: 'open_3a_recon_1', beneficiary: sponsor },
           { take: 1 },
         );
+        expect(comm).toBeDefined();
+        if (!comm) throw new Error('Expected a commission for the seeded open.');
         const r = await packs.reverseCommission({
           commissionId: comm.id,
           adminId: 'admin_3a_recon',

@@ -167,11 +167,15 @@ medusaIntegrationTestRunner({
         },
       );
 
-      // Scenario C: AUTO-frozen SPONSOR whose balance went negative via a clawback;
-      // a downline's pack open triggers a commission credit via settleOpen, which
-      // should auto-clear the sponsor's freeze when the commission repays the debt.
+      // Scenario C: AUTO-frozen SPONSOR whose balance went negative via a clawback.
+      // A downline pack open pays the sponsor a commission via settleOpen. Because
+      // settleOpen only holds the recruit's advisory lock (not the sponsor's), it
+      // does NOT auto-unfreeze the sponsor — doing so would be a TOCTOU race and
+      // risks deadlock with the sorted-lock reversal paths. The sponsor STAYS frozen
+      // after the commission. A subsequent direct mutateCreditAtomic inflow (which
+      // DOES hold the sponsor's lock) triggers the auto-unfreeze when balance >= 0.
       it(
-        '(C) AUTO-frozen sponsor is unfrozen when settleOpen pays a commission that repays the debt',
+        '(C) AUTO-frozen sponsor stays frozen after settleOpen commission; unfreezes on direct mutateCreditAtomic inflow',
         async () => {
           const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
           await seedLadder(packs);
@@ -180,8 +184,8 @@ medusaIntegrationTestRunner({
           const recruit = 'cust_au_recruit_c';
 
           // Seed the sponsor with a small negative balance (simulating a prior clawback).
-          // Keep the debt small ($0.10) so even a 1% commission on a $50 open
-          // ($0.50) is sufficient to project the balance back to >= 0.
+          // Keep the debt small ($0.10) so a 1% commission on a $50 open ($0.50)
+          // would be enough to repay it — but we assert the freeze does NOT lift here.
           await packs.createCreditTransactions([
             {
               customer_id: sponsor,
@@ -214,7 +218,7 @@ medusaIntegrationTestRunner({
             reason: 'topup',
           });
 
-          // Act: recruit opens a pack; the commission credit (> $1) is paid to sponsor.
+          // Act: recruit opens a pack; the commission credit is paid to sponsor.
           const settled = await packs.settleOpen({
             customerId: recruit,
             amount: -50,
@@ -224,13 +228,32 @@ medusaIntegrationTestRunner({
           // There must have been at least one commission (sponsor had level-1 pct > 0).
           expect(settled.commissions.length).toBeGreaterThan(0);
 
-          // Assert: sponsor's freeze is lifted (commission credit ≥ $1 repaid the $1 debt).
-          const [sponsorState] = await packs.listCustomerAccountStates(
+          // Assert: sponsor is STILL frozen after settleOpen — the commission repaid
+          // the debt in the ledger but settleOpen does NOT auto-unfreeze (TOCTOU risk).
+          const [midState] = await packs.listCustomerAccountStates(
             { customer_id: sponsor },
             { take: 1 },
           );
-          expect(sponsorState.frozen).toBe(false);
-          expect(sponsorState.unfreeze_cause).toBe('repaid');
+          expect(midState.frozen).toBe(true);
+          expect(midState.unfreeze_cause).toBeNull();
+
+          // Now a direct mutateCreditAtomic inflow (which holds the sponsor's lock)
+          // triggers the auto-unfreeze because the sponsor's balance is now >= 0
+          // (commission already repaid the debt; the +1 is a tiny surplus to ensure
+          // the projected balance is non-negative even if balance is exactly 0).
+          await packs.mutateCreditAtomic({
+            customerId: sponsor,
+            amount: 0.01,
+            reason: 'topup',
+          });
+
+          // Assert: freeze now lifted via mutateCreditAtomic.
+          const [afterState] = await packs.listCustomerAccountStates(
+            { customer_id: sponsor },
+            { take: 1 },
+          );
+          expect(afterState.frozen).toBe(false);
+          expect(afterState.unfreeze_cause).toBe('repaid');
         },
       );
     });

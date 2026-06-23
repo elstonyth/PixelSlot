@@ -66,11 +66,15 @@ medusaIntegrationTestRunner({
           'adjust-audit-customer-a@test.dev',
         );
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+        // Unique note scopes this assertion to its own audit row (entity_id stores
+        // the credit-transaction id, not the customer id, so filtering by entity_id
+        // would match nothing — filter by reason/note instead).
+        const note = 'goodwill-adjust-audit-a';
 
         const res = await unwrapResponse(
           api.post(
             `/admin/customers/${cid}/credits`,
-            { amount: 5, note: 'goodwill' },
+            { amount: 5, note },
             { headers: adminHeaders() },
           ),
         );
@@ -78,12 +82,12 @@ medusaIntegrationTestRunner({
         expect(res.data).toMatchObject({ amount: 5, balance: 5 });
 
         const [aud] = await packs.listAdminActionAudits(
-          { entity_type: 'credit', action: 'adjust_credit' },
+          { entity_type: 'credit', action: 'adjust_credit', reason: note },
           { take: 1, order: { created_at: 'DESC' } },
         );
         expect(aud).toBeDefined();
         expect(aud.admin_id).toBeTruthy(); // from the session, not the body
-        expect(aud.reason).toBe('goodwill');
+        expect(aud.reason).toBe(note);
         expect(aud.entity_type).toBe('credit');
         expect(aud.action).toBe('adjust_credit');
       });
@@ -93,19 +97,21 @@ medusaIntegrationTestRunner({
           'adjust-audit-customer-b@test.dev',
         );
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+        // Unique note scopes this assertion to its own audit row.
+        const note = 'injection-attempt-adjust-audit-b';
 
         const res = await unwrapResponse(
           api.post(
             `/admin/customers/${cid}/credits`,
             // Attempt to inject a fake admin_id via the body — must be ignored
-            { amount: 3, note: 'injection attempt', admin_id: 'evil_fake_id' },
+            { amount: 3, note, admin_id: 'evil_fake_id' },
             { headers: adminHeaders() },
           ),
         );
         expect(res.status).toBe(200);
 
         const [aud] = await packs.listAdminActionAudits(
-          { entity_type: 'credit', action: 'adjust_credit' },
+          { entity_type: 'credit', action: 'adjust_credit', reason: note },
           { take: 1, order: { created_at: 'DESC' } },
         );
         expect(aud.admin_id).not.toBe('evil_fake_id');

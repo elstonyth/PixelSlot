@@ -38,9 +38,10 @@ import {
   teamOverrideSchedule,
 } from './referral-commission';
 import { levelForSpend } from './vip-ladder';
-import type {
-  RewardsSettingsPatch,
-  RewardsSettingsView,
+import {
+  validateRewardsPatch,
+  type RewardsSettingsPatch,
+  type RewardsSettingsView,
 } from './rewards-settings-validate';
 
 // Postgres unique-violation detector (SQLSTATE 23505) for the commission
@@ -1156,21 +1157,12 @@ class PacksModuleService extends MedusaService({
               sharedContext,
             );
             commissions.push({ beneficiary, amountSen, matured });
-            // Auto-clear an AUTO freeze for this beneficiary if the commission
-            // credit repays any outstanding debt. Read the committed balance now
-            // (before the ORM flush) and project forward by amountSen.
-            const [balRow] = await (
-              sharedContext.transactionManager as unknown as LedgerSqlManager
-            ).execute<{ b: string | null }[]>(
-              'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS b FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
-              [beneficiary],
-            );
-            const committedCents = Number(balRow?.b ?? 0);
-            await this.maybeAutoUnfreeze(
-              beneficiary,
-              committedCents + amountSen,
-              sharedContext,
-            );
+            // NOTE: a frozen sponsor repaid only by a downline commission lifts
+            // on their next direct inflow (mutateCreditAtomic holds their lock)
+            // — we do NOT auto-unfreeze here: settleOpen holds only the
+            // recruit's lock, so unfreezing a beneficiary would be a TOCTOU
+            // race (and taking the beneficiary lock here risks deadlock vs the
+            // sorted-lock reversal paths).
           };
 
           try {
@@ -1577,15 +1569,17 @@ class PacksModuleService extends MedusaService({
     return { id, amount: input.amount, balance };
   }
 
-  // Admin edit of the rewards-settings singleton — clamped, audited, upserted.
-  // Public method is named `editRewardsSettings` to avoid shadowing the
-  // MedusaService-generated `updateRewardsSettings` CRUD method, which is called
-  // internally for the upsert.
+  // Admin edit of the rewards-settings singleton — validates+clamps the patch,
+  // upserts the singleton, and writes an audit row. Public method is named
+  // `editRewardsSettings` to avoid shadowing the MedusaService-generated
+  // `updateRewardsSettings` CRUD method, which is called internally for the
+  // upsert.
   @InjectTransactionManager()
   async editRewardsSettings(
     input: { patch: RewardsSettingsPatch; adminId: string; reason: string },
     @MedusaContext() sharedContext: Context = {},
   ): Promise<RewardsSettingsView> {
+    const patch = validateRewardsPatch(input.patch);
     const [row] = await this.listRewardsSettings({}, { take: 1 }, sharedContext);
     const before: RewardsSettingsView = {
       commissionCooldownDays: row ? Number(row.commission_cooldown_days) : 3,
@@ -1594,10 +1588,10 @@ class PacksModuleService extends MedusaService({
     };
     const data = {
       commission_cooldown_days:
-        input.patch.commissionCooldownDays ?? before.commissionCooldownDays,
-      team_override_pct: input.patch.teamOverridePct ?? before.teamOverridePct,
+        patch.commissionCooldownDays ?? before.commissionCooldownDays,
+      team_override_pct: patch.teamOverridePct ?? before.teamOverridePct,
       override_generation_cap:
-        input.patch.overrideGenerationCap ?? before.overrideGenerationCap,
+        patch.overrideGenerationCap ?? before.overrideGenerationCap,
     };
     if (row) {
       await this.updateRewardsSettings(

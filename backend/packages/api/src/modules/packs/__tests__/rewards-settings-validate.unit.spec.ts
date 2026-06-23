@@ -35,4 +35,17 @@ describe('validateRewardsPatch — clamp rules', () => {
     expect(() => validateRewardsPatch(null)).toThrow();
     expect(() => validateRewardsPatch('string')).toThrow();
   });
+
+  // Fix 5 — strict typeof reject BEFORE Number() coercion
+  test('rejects null commissionCooldownDays (typeof guard)', () => {
+    expect(() => validateRewardsPatch({ commissionCooldownDays: null })).toThrow(/integer >= 0/);
+  });
+
+  test('rejects string teamOverridePct (typeof guard)', () => {
+    expect(() => validateRewardsPatch({ teamOverridePct: '0.2' })).toThrow(/between 0 and 1/);
+  });
+
+  test('rejects string overrideGenerationCap (typeof guard)', () => {
+    expect(() => validateRewardsPatch({ overrideGenerationCap: '5' })).toThrow(/integer >= 1/);
+  });
 });
