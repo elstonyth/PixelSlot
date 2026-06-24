@@ -5,7 +5,11 @@ import { rm } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'VIP | Pokenic' };
 
-function rewardLabel(r: { voucherAmount: number; boxTier: string; frameUnlock: boolean }): string {
+function rewardLabel(r: {
+  voucherAmount: number;
+  boxTier: string;
+  frameUnlock: boolean;
+}): string {
   const parts: string[] = [];
   if (r.voucherAmount > 0) parts.push(`${rm(r.voucherAmount)} voucher`);
   if (r.boxTier) parts.push(`Tier ${r.boxTier.toUpperCase()} box`);
@@ -49,7 +53,10 @@ export default async function VipPage() {
             <span className="text-white/50">{rm(v.next.remaining)} to go</span>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-emerald-400" style={{ width: `${pct}%` }} />
+            <div
+              className="h-full rounded-full bg-emerald-400"
+              style={{ width: `${pct}%` }}
+            />
           </div>
           <p className="mt-3 text-[13px] text-white/60">
             Level {v.next.level} unlocks {rewardLabel(v.next.reward)}.
@@ -57,7 +64,9 @@ export default async function VipPage() {
         </Panel>
       ) : (
         <Panel className="mt-5">
-          <p className="text-sm text-white/60">You&apos;ve reached the top VIP level. 🏆</p>
+          <p className="text-sm text-white/60">
+            You&apos;ve reached the top VIP level. 🏆
+          </p>
         </Panel>
       )}
     </>

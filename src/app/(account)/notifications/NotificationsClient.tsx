@@ -20,12 +20,16 @@ export default function NotificationsClient({
   async function onRead(id: string) {
     // Optimistic update — mark read locally immediately
     setItems((xs) =>
-      xs.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
+      xs.map((n) =>
+        n.id === id ? { ...n, readAt: new Date().toISOString() } : n,
+      ),
     );
     const r = await markRead(id);
     if (!r.ok) {
       // Revert on server failure
-      setItems((xs) => xs.map((n) => (n.id === id ? { ...n, readAt: null } : n)));
+      setItems((xs) =>
+        xs.map((n) => (n.id === id ? { ...n, readAt: null } : n)),
+      );
     }
   }
 
@@ -51,9 +55,7 @@ export default function NotificationsClient({
         return (
           <li key={n.id}>
             {n.readAt ? (
-              <div
-                className="flex w-full items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 opacity-70"
-              >
+              <div className="flex w-full items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 opacity-70">
                 {inner}
               </div>
             ) : (

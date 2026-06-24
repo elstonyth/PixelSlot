@@ -9,7 +9,10 @@ export default async function NotificationsPage() {
   const res = await getNotifications();
   return (
     <>
-      <AccountHeader title="Notifications" sub="Your VIP and commission updates." />
+      <AccountHeader
+        title="Notifications"
+        sub="Your VIP and commission updates."
+      />
       {res.ok ? (
         <NotificationsClient initial={res.notifications} />
       ) : (
