@@ -4,12 +4,14 @@ export type RewardsSettingsPatch = {
   commissionCooldownDays?: number;
   teamOverridePct?: number;
   overrideGenerationCap?: number;
+  withdrawals_per_day?: number;
 };
 
 export type RewardsSettingsView = {
   commissionCooldownDays: number;
   teamOverridePct: number;
   overrideGenerationCap: number;
+  withdrawals_per_day: number;
 };
 
 const bad = (m: string): never => {
@@ -50,6 +52,14 @@ export function validateRewardsPatch(raw: unknown): RewardsSettingsPatch {
     if (!Number.isSafeInteger(v) || v < 1)
       bad('overrideGenerationCap must be an integer >= 1.');
     out.overrideGenerationCap = v;
+  }
+  if (b.withdrawals_per_day !== undefined) {
+    if (typeof b.withdrawals_per_day !== 'number')
+      bad('withdrawals_per_day must be an integer >= 1.');
+    const v = b.withdrawals_per_day as number;
+    if (!Number.isSafeInteger(v) || v < 1)
+      bad('withdrawals_per_day must be an integer >= 1.');
+    out.withdrawals_per_day = v;
   }
   if (Object.keys(out).length === 0) bad('No valid settings to update.');
   return out;

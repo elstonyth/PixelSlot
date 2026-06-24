@@ -203,6 +203,7 @@ class PacksModuleService extends MedusaService({
     commissionCooldownDays: number;
     teamOverridePct: number;
     overrideGenerationCap: number;
+    withdrawals_per_day: number;
   }> {
     const [row] = await this.listRewardsSettings(
       {},
@@ -226,6 +227,7 @@ class PacksModuleService extends MedusaService({
       commissionCooldownDays,
       teamOverridePct: row ? Number(row.team_override_pct) : 0.2,
       overrideGenerationCap: row ? Number(row.override_generation_cap) : 100,
+      withdrawals_per_day: row ? Number(row.withdrawals_per_day) : 1,
     };
   }
 
@@ -2119,6 +2121,7 @@ class PacksModuleService extends MedusaService({
       commissionCooldownDays: row ? Number(row.commission_cooldown_days) : 3,
       teamOverridePct: row ? Number(row.team_override_pct) : 0.2,
       overrideGenerationCap: row ? Number(row.override_generation_cap) : 100,
+      withdrawals_per_day: row ? Number(row.withdrawals_per_day) : 1,
     };
     const data = {
       commission_cooldown_days:
@@ -2126,6 +2129,8 @@ class PacksModuleService extends MedusaService({
       team_override_pct: patch.teamOverridePct ?? before.teamOverridePct,
       override_generation_cap:
         patch.overrideGenerationCap ?? before.overrideGenerationCap,
+      withdrawals_per_day:
+        patch.withdrawals_per_day ?? before.withdrawals_per_day,
     };
     if (row) {
       await this.updateRewardsSettings(
@@ -2139,6 +2144,7 @@ class PacksModuleService extends MedusaService({
       commissionCooldownDays: data.commission_cooldown_days,
       teamOverridePct: data.team_override_pct,
       overrideGenerationCap: data.override_generation_cap,
+      withdrawals_per_day: data.withdrawals_per_day,
     };
     await this.createAdminActionAudits(
       [

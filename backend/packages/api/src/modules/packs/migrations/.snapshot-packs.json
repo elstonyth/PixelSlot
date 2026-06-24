@@ -2316,6 +2316,16 @@
           "default": "100",
           "mappedType": "integer"
         },
+        "withdrawals_per_day": {
+          "name": "withdrawals_per_day",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        },
         "raw_team_override_pct": {
           "name": "raw_team_override_pct",
           "type": "jsonb",

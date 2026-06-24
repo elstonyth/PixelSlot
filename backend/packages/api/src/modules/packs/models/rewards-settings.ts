@@ -13,6 +13,8 @@ export const RewardsSettings = model.define('rewards_settings', {
   team_override_pct: model.bigNumber().default(0.2),
   // Defensive anti-runaway cap on override generations (Phase 2b).
   override_generation_cap: model.number().default(100),
+  // Max reward prize withdrawals (shipping requests) per customer per day.
+  withdrawals_per_day: model.number().default(1),
 });
 
 export default RewardsSettings;
