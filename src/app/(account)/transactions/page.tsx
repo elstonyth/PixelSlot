@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { AccountHeader, StatCards } from '@/components/account/ui';
-import { usd } from '@/lib/format';
+import { rm } from '@/lib/format';
 import { getTransactions } from '@/lib/actions/vault';
 import { reasonLabel, signedUsd } from '@/lib/transactions';
 
@@ -33,9 +33,9 @@ export default async function TransactionsPage() {
       />
       <StatCards
         items={[
-          { label: 'Current balance', value: usd(res.balance) },
-          { label: 'Total topped up', value: usd(res.topupTotal) },
-          { label: 'Total spent', value: usd(res.spendTotal) },
+          { label: 'Current balance', value: rm(res.balance) },
+          { label: 'Total topped up', value: rm(res.topupTotal) },
+          { label: 'Total spent', value: rm(res.spendTotal) },
         ]}
       />
       <div className="mt-5 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.03]">

@@ -145,7 +145,7 @@ export function SellBackPanel({
     <div className="flex w-full max-w-[340px] flex-col items-center gap-2">
       {sell.phase === 'sold' ? (
         <p className="flex h-12 w-full items-center justify-center rounded-xl border border-emerald-400/50 bg-emerald-400/10 text-sm font-bold text-emerald-300">
-          +${money(sell.amount)} credited · balance ${money(sell.balance)}
+          +RM {money(sell.amount)} credited · balance RM {money(sell.balance)}
         </p>
       ) : (
         <>
@@ -158,8 +158,8 @@ export function SellBackPanel({
             {sell.phase === 'selling'
               ? 'Selling…'
               : sellExpired
-                ? `Sell for $${money(offer.vaultAmount)} (${offer.vaultPercent}%)`
-                : `Sell back for $${money(offer.amount)} (${offer.percent}%) · ${secondsLeft}s`}
+                ? `Sell for RM ${money(offer.vaultAmount)} (${offer.vaultPercent}%)`
+                : `Sell back for RM ${money(offer.amount)} (${offer.percent}%) · ${secondsLeft}s`}
           </button>
           {/* Draining bar — decorative; the countdown text is the SR source. */}
           {!sellExpired && (

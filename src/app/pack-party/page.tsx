@@ -223,7 +223,7 @@ const HEADER_SLABS = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-const fmt = (n: number) => `$${n}`;
+const fmt = (n: number) => `RM ${n}`;
 
 // Rarity ring colors extracted from the live pack-party cards — Tailwind *-500.
 // Each card gets a gradient ring border (purple cards also glow), cycled by index

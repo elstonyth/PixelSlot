@@ -6,7 +6,7 @@ import {
   DemoNote,
 } from '@/components/account/ui';
 import { MOCK_USERS } from '@/lib/mock/users';
-import { usd } from '@/lib/format';
+import { rm } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Referrals | Pokenic' };
 
@@ -21,7 +21,7 @@ export default function ReferralsPage() {
         items={[
           { label: 'Invited', value: '14' },
           { label: 'Active', value: '9' },
-          { label: 'Earned', value: usd(642.5) },
+          { label: 'Earned', value: rm(642.5) },
           { label: 'Rate', value: '5%' },
         ]}
       />
