@@ -28,7 +28,8 @@ export async function GET(
     { slug, status: 'active' },
     { take: 1 },
   );
-  if (!pack) {
+  // reward_box packs are internal draw pools — excluded from the public catalog (B2).
+  if (!pack || pack.category === 'reward_box') {
     res.status(404).json({ message: `Pack '${slug}' not found` });
     return;
   }

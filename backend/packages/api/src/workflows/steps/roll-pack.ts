@@ -48,6 +48,8 @@ export async function fetchPackData(
 ): Promise<PackData> {
   const [pack] = await packs.listPacks({ slug: packId, status: "active" }, { take: 1 });
   if (!pack) throw new MedusaError(MedusaError.Types.NOT_FOUND, `Pack '${packId}' is not available.`);
+  // reward_box packs are internal draw pools — never openable via the normal pack path (B2).
+  if (pack.category === "reward_box") throw new MedusaError(MedusaError.Types.NOT_FOUND, `Pack '${packId}' is not available.`);
   const odds = await packs.listPackOdds({ pack_id: packId }, { take: 1000 });
   if (odds.length === 0) throw new MedusaError(MedusaError.Types.NOT_FOUND, `Pack '${packId}' has no odds configured.`);
   const totalWeight = odds.reduce((sum, o) => sum + o.weight, 0);

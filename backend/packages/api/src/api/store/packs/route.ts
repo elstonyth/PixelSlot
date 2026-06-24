@@ -15,7 +15,8 @@ export async function GET(
   const packsModuleService: PacksModuleService = req.scope.resolve(PACKS_MODULE);
 
   const packs = await packsModuleService.listPacks(
-    { status: "active" },
+    // reward_box packs are internal draw pools — excluded from the public catalog (B2).
+    { status: "active", category: { $ne: "reward_box" } } as Parameters<typeof packsModuleService.listPacks>[0],
     // Explicit take so a framework default can't silently cap the catalog.
     { order: { category: "ASC", rank: "ASC" }, take: 500 }
   );
