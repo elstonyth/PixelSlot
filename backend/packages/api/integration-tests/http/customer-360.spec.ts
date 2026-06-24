@@ -62,7 +62,29 @@ medusaIntegrationTestRunner({
       });
     });
 
-    // Task 4 appends `describe('GET /admin/customers/:id/commissions', ...)` here.
     // Task 9 appends `describe('GET /admin/customers/:id/audit', ...)` here.
+
+    describe('GET /admin/customers/:id/commissions', () => {
+      it('shows the direct commission (opener = recruit), then status reversed after reverseOpen', async () => {
+        const sponsorId = await registerCustomer('c360-sponsor@test.dev');
+        const recruitId = await registerCustomer('c360-recruit@test.dev');
+        const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+        await seedLadder(packs);                  // REQUIRED before settleOpen
+        await packs.linkSponsor({ recruitId, sponsorId });
+        await packs.mutateCreditAtomic({ customerId: recruitId, amount: 30, reason: 'topup' });
+        await packs.settleOpen({ customerId: recruitId, amount: -20, sourceTransactionId: 'c360_open_1' });
+
+        const res = await unwrapResponse(api.get(`/admin/customers/${sponsorId}/commissions`, { headers: adminHeaders() }));
+        expect(res.status).toBe(200);
+        expect(res.data.commissions).toHaveLength(1);
+        expect(res.data.commissions[0].opener.customer_id).toBe(recruitId);  // gen-1 opener = recruit
+        expect(res.data.commissions[0].status).not.toBe('reversed');
+
+        await packs.reverseOpen('c360_open_1');
+        const after = await unwrapResponse(api.get(`/admin/customers/${sponsorId}/commissions`, { headers: adminHeaders() }));
+        expect(after.data.commissions).toHaveLength(1);   // amount<0 guard → no 2-row fan-out
+        expect(after.data.commissions[0].status).toBe('reversed');
+      });
+    });
   },
 });
