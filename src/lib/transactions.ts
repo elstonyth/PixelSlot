@@ -18,7 +18,7 @@ export const reasonLabel = (reason: CreditTxn['reason']): string =>
   REASON_LABEL[reason];
 
 /** "+RM 48.00" for credits, "-RM 25.00" for spends (amount carries the sign). */
-export function signedUsd(amount: number): string {
+export function signedRm(amount: number): string {
   const sign = amount > 0 ? '+' : amount < 0 ? '-' : '';
   return `${sign}${rm(Math.abs(amount))}`;
 }

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AccountHeader, StatCards } from '@/components/account/ui';
 import { rm } from '@/lib/format';
 import { getTransactions } from '@/lib/actions/vault';
-import { reasonLabel, signedUsd } from '@/lib/transactions';
+import { reasonLabel, signedRm } from '@/lib/transactions';
 
 export const metadata: Metadata = { title: 'Transactions | Pokenic' };
 
@@ -73,7 +73,7 @@ export default async function TransactionsPage() {
                       t.amount > 0 ? 'text-emerald-300' : 'text-white/80'
                     }`}
                   >
-                    {signedUsd(t.amount)}
+                    {signedRm(t.amount)}
                   </td>
                 </tr>
               ))}

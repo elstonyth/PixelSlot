@@ -13,6 +13,7 @@ const PAGES = [
 const b = await chromium.launch();
 const p = await b.newPage();
 const offenders = [];
+const navErrors = [];
 for (const path of PAGES) {
   try {
     await p.goto(`http://localhost:4000${path}`, {
@@ -29,9 +30,15 @@ for (const path of PAGES) {
     );
     if (dollars.length) offenders.push({ path, dollars });
   } catch {
-    // page may not exist or navigated away — skip gracefully
+    navErrors.push(path);
   }
 }
 await b.close();
 console.log(JSON.stringify(offenders, null, 2));
+if (navErrors.length) {
+  console.error(
+    `Navigation failed for ${navErrors.length} page(s): ${navErrors.join(', ')}`,
+  );
+  process.exit(1);
+}
 if (offenders.length) process.exit(1);

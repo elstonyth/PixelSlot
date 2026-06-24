@@ -21,7 +21,10 @@ export default function ReferralsClient({ inviteUrl }: { inviteUrl: string }) {
           type="button"
           onClick={async () => {
             try {
-              await navigator.clipboard.writeText(`https://${inviteUrl}`);
+              const absoluteInviteUrl = /^https?:\/\//i.test(inviteUrl)
+                ? inviteUrl
+                : `https://${inviteUrl}`;
+              await navigator.clipboard.writeText(absoluteInviteUrl);
               setCopied(true);
               setTimeout(() => setCopied(false), 1500);
             } catch {

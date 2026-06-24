@@ -2,21 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Bell } from 'lucide-react';
 import { getUnreadCount } from '@/lib/actions/notifications';
 
 export default function NotificationBell() {
   const [count, setCount] = useState(0);
+  const pathname = usePathname();
 
   useEffect(() => {
     let live = true;
-    getUnreadCount().then((n) => {
-      if (live) setCount(n);
-    });
+    const refresh = () =>
+      getUnreadCount()
+        .then((n) => {
+          if (live) setCount(n);
+        })
+        .catch(() => {
+          if (live) setCount(0);
+        });
+    void refresh();
+    window.addEventListener('focus', refresh);
     return () => {
       live = false;
+      window.removeEventListener('focus', refresh);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <Link

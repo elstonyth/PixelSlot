@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { rm } from '@/lib/format';
+import { rm, rm0 } from '@/lib/format';
 import { topUpCredits } from '@/lib/actions/vault';
 
 const PRESETS = [10, 25, 50, 100];
@@ -87,7 +87,7 @@ export function AddCreditsPanel({
                 : 'border-white/15 bg-white/[0.02] text-white/70 hover:bg-white/[0.06]'
             }`}
           >
-            RM {preset}
+            {rm0(preset)}
           </button>
         ))}
         <label className="flex items-center gap-1.5 text-[13px] text-white/70">

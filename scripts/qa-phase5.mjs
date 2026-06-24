@@ -12,8 +12,8 @@ import path from 'path';
 
 const BASE = process.env.QA_BASE ?? 'http://localhost:4000';
 const BACKEND = process.env.QA_BACKEND ?? 'http://localhost:9000';
-const EMAIL = 'test@pokenic.app';
-const PASSWORD = 'PokenicTest123!';
+const EMAIL = process.env.QA_EMAIL ?? null;
+const PASSWORD = process.env.QA_PASSWORD ?? null;
 const AUTH_COOKIE = '_pokenic_jwt';
 
 const TOKEN_PAGES = ['/wallet', '/vip', '/referrals', '/notifications'];
@@ -26,6 +26,12 @@ const slug = (p) => p.replace(/\//g, '_');
 
 /** Try to obtain a JWT from the backend. Returns null if backend is unreachable. */
 async function tryGetJwt() {
+  if (!EMAIL || !PASSWORD) {
+    console.warn(
+      '[auth] QA_EMAIL/QA_PASSWORD not set — capturing logged-out state',
+    );
+    return null;
+  }
   try {
     const res = await fetch(`${BACKEND}/auth/customer/emailpass`, {
       method: 'POST',

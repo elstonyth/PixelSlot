@@ -13,7 +13,7 @@
 import { sdk } from '@/lib/medusa';
 import { logger } from '@/lib/logger';
 import { avatarForSeed } from '@/lib/profile-view';
-import { money } from '@/lib/format';
+import { rm } from '@/lib/format';
 import { parseList, LeaderboardEntrySchema } from '@/lib/data/schemas';
 
 export type LeaderboardPeriod = 'weekly' | 'alltime';
@@ -47,8 +47,6 @@ interface BackendEntry {
 
 // Avatar mapping is shared with the profile page (lib/profile-view.ts) so the
 // same PII-safe seed renders the same avatar on both surfaces.
-
-const fmtRm = (n: number): string => money(n, { prefix: 'RM ' });
 
 // Static fallback — real data + avatars extracted verbatim from phygitals.com's
 // homepage "Weekly Leaderboard". Keeps the page populated and on-brand when the
@@ -157,7 +155,7 @@ export async function getLeaderboard(
       rank: i + 1,
       name: e.name,
       handle: typeof e.handle === 'string' ? e.handle : null,
-      volume: fmtRm(e.volume),
+      volume: rm(e.volume),
       pulls: String(e.pulls),
       points: Math.round(e.points).toLocaleString('en-US'),
       avatar: avatarForSeed(e.seed),
