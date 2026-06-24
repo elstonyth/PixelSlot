@@ -186,7 +186,7 @@ export function clawMachine(pack: Pack): { webp: string; anim?: string } {
 
 /** Numeric price, e.g. "RM 1,000" -> 1000. */
 export function priceNumber(price: string): number {
-  return parseFloat(price.replace(/[RM ,]/g, '')) || 0;
+  return parseFloat(price.replace(/^RM\s*/, '').replace(/,/g, '')) || 0;
 }
 
 // ---------------------------------------------------------------------------
