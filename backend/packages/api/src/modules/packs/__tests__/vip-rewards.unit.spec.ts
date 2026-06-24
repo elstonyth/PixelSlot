@@ -17,20 +17,17 @@ describe('levelsToGrant', () => {
 });
 
 describe('rewardsForLevel', () => {
-  it('voucher>0 + box always; no frame off a ×10', () => {
-    expect(
-      rewardsForLevel({
-        level: 2,
-        voucher_amount: 10,
-        box_tier: 'a',
-        frame_unlock: false,
-      }),
-    ).toEqual([
-      { kind: 'voucher', payload: { amount_myr: 10 } },
-      { kind: 'box', payload: { tier: 'a' } },
-    ]);
+  it('voucher>0 emits voucher only; no box (tier derives live)', () => {
+    const rewards = rewardsForLevel({
+      level: 2,
+      voucher_amount: 10,
+      box_tier: 'a',
+      frame_unlock: false,
+    });
+    expect(rewards).toEqual([{ kind: 'voucher', payload: { amount_myr: 10 } }]);
+    expect(rewards.find((r) => (r.kind as string) === 'box')).toBeUndefined();
   });
-  it('frame on a ×10 level', () => {
+  it('frame on a ×10 level; still no box', () => {
     const r = rewardsForLevel({
       level: 10,
       voucher_amount: 50,
@@ -38,15 +35,16 @@ describe('rewardsForLevel', () => {
       frame_unlock: true,
     });
     expect(r).toContainEqual({ kind: 'frame', payload: { level: 10 } });
+    expect(r.find((rr) => (rr.kind as string) === 'box')).toBeUndefined();
   });
-  it('voucher_amount 0 omits the voucher', () => {
-    expect(
-      rewardsForLevel({
-        level: 3,
-        voucher_amount: 0,
-        box_tier: 'a',
-        frame_unlock: false,
-      }),
-    ).toEqual([{ kind: 'box', payload: { tier: 'a' } }]);
+  it('voucher_amount 0 omits the voucher; no box either', () => {
+    const rewards = rewardsForLevel({
+      level: 3,
+      voucher_amount: 0,
+      box_tier: 'a',
+      frame_unlock: false,
+    });
+    expect(rewards).toEqual([]);
+    expect(rewards.find((r) => (r.kind as string) === 'box')).toBeUndefined();
   });
 });

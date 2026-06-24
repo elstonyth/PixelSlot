@@ -126,11 +126,12 @@ moduleIntegrationTestRunner<PacksModuleService>({
         // No L1 row at all
         expect(grants.some((g) => g.level === 1)).toBe(false);
 
-        // Each of L2..L5 has both voucher and box (voucher_amount=2 > 0, frame_unlock=false)
+        // Each of L2..L5 has voucher only (voucher_amount=2 > 0, frame_unlock=false).
+        // Box is no longer granted per-rung; tier derives live at draw time (B3/B6).
         for (const lvl of [2, 3, 4, 5]) {
           const lvlGrants = grants.filter((g) => g.level === lvl);
           const kinds = lvlGrants.map((g) => g.kind).sort();
-          expect(kinds).toContain('box');
+          expect(kinds).not.toContain('box');
           expect(kinds).toContain('voucher');
           expect(kinds).not.toContain('frame');
           expect(kinds).not.toContain('prize');
