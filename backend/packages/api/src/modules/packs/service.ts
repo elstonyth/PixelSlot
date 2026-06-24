@@ -22,6 +22,7 @@ import AdminActionAudit from './models/admin-action-audit';
 import VipMemberState from './models/vip-member-state';
 import VipRewardGrant from './models/vip-reward-grant';
 import NotificationRead from './models/notification-read';
+import RewardDraw from './models/reward-draw';
 import {
   resolveBuybackRate,
   buybackAmount,
@@ -188,6 +189,7 @@ class PacksModuleService extends MedusaService({
   VipMemberState,
   VipRewardGrant,
   NotificationRead,
+  RewardDraw,
 }) {
   // Commission engine globals. Reads the singleton row; falls back to defaults
   // when absent. COMMISSION_COOLDOWN_DAYS env override forces the demo (0) and
