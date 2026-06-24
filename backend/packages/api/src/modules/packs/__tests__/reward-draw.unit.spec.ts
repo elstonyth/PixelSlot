@@ -8,16 +8,17 @@
  *    (status defaults to 'drawn', nullable fields come back null).
  * 2. Two rows with the SAME (customer_id, draw_day) but DIFFERENT
  *    draw_ordinals both save — confirms the composite index does NOT
- *    block distinct ordinals (the partial-unique UQ_reward_draw_customer_day_ordinal
- *    is the DB-level backstop; its uniqueness contract is verified by the
- *    migration guard test in migrations/__tests__/).
+ *    block distinct ordinals.
  *
- * Note on the partial-unique index: the test runner uses refreshDatabase()
- * (model-sync) in beforeEach, which rebuilds the schema from MikroORM model
- * definitions only — hand-written partial-expression indexes are absent in this
- * environment. The uniqueness backstop is therefore tested separately via the
- * migration guard (G1). Here we confirm: model columns, defaults, nullable
- * fields, and multi-ordinal inserts for the same customer+day.
+ * Note on the partial-unique index UQ_reward_draw_customer_day_ordinal:
+ * the test runner uses refreshDatabase() (model-sync) in beforeEach, which
+ * rebuilds the schema from MikroORM model definitions only — hand-written
+ * partial-expression indexes are absent in this environment. The uniqueness
+ * SQL contract is verified in migrations/__tests__/reward-draw-unique.unit.spec.ts
+ * (SQL-string assertion on Migration20260625000100). The combined DB-level
+ * enforcement under concurrent load is exercised by Task B6's concurrency
+ * test, which asserts exactly draws_per_day 'drawn' + 1 'capped' with no
+ * raw 23505 leaking to callers.
  */
 
 import path from 'path';
