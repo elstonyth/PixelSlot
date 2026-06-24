@@ -20,9 +20,13 @@ export default function ReferralsClient({ inviteUrl }: { inviteUrl: string }) {
         <button
           type="button"
           onClick={async () => {
-            await navigator.clipboard.writeText(`https://${inviteUrl}`);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
+            try {
+              await navigator.clipboard.writeText(`https://${inviteUrl}`);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            } catch {
+              /* clipboard denied (insecure context / permission) — no-op */
+            }
           }}
           className="rounded-xl bg-neutral-200 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-white"
         >

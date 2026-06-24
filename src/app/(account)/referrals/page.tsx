@@ -54,7 +54,7 @@ export default async function ReferralsPage() {
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {res.directRecruits.map((r, i) => (
             <li
-              key={r.handle ?? i}
+              key={r.handle ?? `recruit-${i}`}
               className="flex items-center justify-between gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-3"
             >
               <span className="truncate text-[13px] text-white/80">
