@@ -120,6 +120,18 @@ export type SettleOpenResult = {
   commissions: CommissionPaid[];
 };
 
+/** Phase 4 P4.1 — Admin referral tree node (read-only, zero migrations). */
+export type PacksTreeNode = {
+  customer_id: string;
+  depth: number;                        // root = 0; direct recruits = 1
+  sponsor_id: string | null;
+  vip_level: number | null;
+  lifetime_external_spend_sen: string;
+  frozen: boolean;
+  direct_recruit_count: number;
+  has_more_depth: boolean;              // depth === maxDepth && direct_recruit_count > 0
+};
+
 /** The transactional MikroORM manager surface we use for the advisory lock +
  *  the Σ-ledger read. `?` placeholders are inlined by MikroORM's formatQuery. */
 type LedgerSqlManager = {
@@ -1745,6 +1757,98 @@ class PacksModuleService extends MedusaService({
       downstreamCount,
       totalEarned,
     };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Phase 4 P4.1 — Admin Observability: referral tree
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // Downward recursive CTE: walks DESCENDANTS (children) of customerId, never
+  // ancestors. Join direction: r.sponsor_id = t.node_id (DOWN, opposite of the
+  // two existing upward CTEs in this file at ~1298 and ~1510).
+  @InjectManager()
+  async referralTreeFor(
+    customerId: string,
+    maxDepth: number,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ root: PacksTreeNode; nodes: PacksTreeNode[]; maxDepth: number; truncated: boolean }> {
+    const depth = Math.max(1, Math.min(10, Math.floor(Number(maxDepth)) || 6));
+    const em = (sharedContext.transactionManager ?? sharedContext.manager) as unknown as LedgerSqlManager;
+
+    // ponytail: LIMIT 1001 → detect >1000 without fetching more rows
+    const rows = await em.execute<{ node_id: string; sponsor_id: string; depth: number }[]>(
+      `WITH RECURSIVE tree AS (
+         SELECT customer_id AS node_id, sponsor_id, 1 AS depth
+           FROM referral_relationship
+           WHERE sponsor_id = ? AND deleted_at IS NULL
+         UNION ALL
+         SELECT r.customer_id, r.sponsor_id, t.depth + 1
+           FROM referral_relationship r
+           JOIN tree t ON r.sponsor_id = t.node_id
+           WHERE r.deleted_at IS NULL AND t.depth < ?
+       )
+       SELECT node_id, sponsor_id, depth FROM tree ORDER BY depth, node_id LIMIT 1001`,
+      [customerId, depth],
+    );
+    const truncated = rows.length > 1000;
+    const trimmed = truncated ? rows.slice(0, 1000) : rows;
+
+    const allIds = [customerId, ...trimmed.map((r) => r.node_id)];
+    const enrich = await this.enrichReferralNodes(allIds, em);
+
+    const root: PacksTreeNode = {
+      customer_id: customerId,
+      depth: 0,
+      sponsor_id: enrich.sponsorOf.get(customerId) ?? null,
+      vip_level: enrich.vipLevel.get(customerId) ?? null,
+      lifetime_external_spend_sen: enrich.lifetimeSen.get(customerId) ?? '0',
+      frozen: enrich.frozen.get(customerId) ?? false,
+      direct_recruit_count: enrich.recruitCount.get(customerId) ?? 0,
+      has_more_depth: false,
+    };
+    const nodes: PacksTreeNode[] = trimmed.map((r) => ({
+      customer_id: r.node_id,
+      depth: r.depth,
+      sponsor_id: r.sponsor_id ?? null,
+      vip_level: enrich.vipLevel.get(r.node_id) ?? null,
+      lifetime_external_spend_sen: enrich.lifetimeSen.get(r.node_id) ?? '0',
+      frozen: enrich.frozen.get(r.node_id) ?? false,
+      direct_recruit_count: enrich.recruitCount.get(r.node_id) ?? 0,
+      has_more_depth: r.depth === depth && (enrich.recruitCount.get(r.node_id) ?? 0) > 0,
+    }));
+
+    return { root, nodes, maxDepth: depth, truncated };
+  }
+
+  // Batched enrichment for referral tree nodes — packs-owned tables only
+  // (no cross-module calls at the service level; customer identity resolved at route).
+  private async enrichReferralNodes(ids: string[], em: LedgerSqlManager) {
+    const sponsorOf = new Map<string, string>();
+    const vipLevel = new Map<string, number>();
+    const lifetimeSen = new Map<string, string>();
+    const frozen = new Map<string, boolean>();
+    const recruitCount = new Map<string, number>();
+    if (ids.length === 0) return { sponsorOf, vipLevel, lifetimeSen, frozen, recruitCount };
+
+    const ph = ids.map(() => '?').join(',');
+    const [rels, vms, cas, counts] = await Promise.all([
+      em.execute<{ customer_id: string; sponsor_id: string }[]>(
+        `SELECT customer_id, sponsor_id FROM referral_relationship WHERE customer_id IN (${ph}) AND deleted_at IS NULL`, ids),
+      em.execute<{ customer_id: string; current_level: number; lifetime_external_spend_sen: string }[]>(
+        `SELECT customer_id, current_level, lifetime_external_spend_sen FROM vip_member_state WHERE customer_id IN (${ph}) AND deleted_at IS NULL`, ids),
+      em.execute<{ customer_id: string; frozen: boolean }[]>(
+        `SELECT customer_id, frozen FROM customer_account_state WHERE customer_id IN (${ph}) AND deleted_at IS NULL`, ids),
+      em.execute<{ sponsor_id: string; n: string }[]>(
+        `SELECT sponsor_id, COUNT(*) AS n FROM referral_relationship WHERE sponsor_id IN (${ph}) AND deleted_at IS NULL GROUP BY sponsor_id`, ids),
+    ]);
+    for (const r of rels) sponsorOf.set(r.customer_id, r.sponsor_id);
+    for (const r of vms) {
+      vipLevel.set(r.customer_id, Number(r.current_level));
+      lifetimeSen.set(r.customer_id, String(r.lifetime_external_spend_sen));
+    }
+    for (const r of cas) frozen.set(r.customer_id, Boolean(r.frozen));
+    for (const r of counts) recruitCount.set(r.sponsor_id, Number(r.n));
+    return { sponsorOf, vipLevel, lifetimeSen, frozen, recruitCount };
   }
 
   // Delete-guard (spec §3 invariant 1): money rows backing a commission are
