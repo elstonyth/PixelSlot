@@ -59,7 +59,7 @@ export async function drawPrize(
     const handle = r.product_handle;
     if (!handle) return false;
     // Not in the map = product doesn't exist in catalog; drop it.
-    if (!stockByHandle.has(handle)) return productHandles.length === 0 || true;
+    if (!stockByHandle.has(handle)) return false;
     const qty = stockByHandle.get(handle);
     // null = untracked = pass through; >0 = in stock = pass through; 0 = gated out.
     return qty === null || (qty !== undefined && qty > 0);
