@@ -147,6 +147,19 @@ export type CommissionRow = {
   created_at: string;
 };
 
+/** Phase 4 P4.2 — admin audit timeline row (read-only, zero migrations). */
+export type AuditRow = {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  action: string;
+  before: any;
+  after: any;
+  reason: string | null;
+  created_at: string;
+  admin_id: string;
+};
+
 /** The transactional MikroORM manager surface we use for the advisory lock +
  *  the Σ-ledger read. `?` placeholders are inlined by MikroORM's formatQuery. */
 type LedgerSqlManager = {
@@ -1884,6 +1897,44 @@ class PacksModuleService extends MedusaService({
       opener_customer_id: openerOf.get(r.source_transaction_id) ?? null,
       created_at: r.created_at,
     }));
+  }
+
+  /** Phase 4 P4.2 — 3-way audit union for a customer.
+   *
+   *  Covers all three entity_type keys used by admin_action_audit:
+   *    (a) entity_type='customer'   keyed by customerId          (freeze/unfreeze)
+   *    (b) entity_type='commission' keyed by commission.id       (reverse/suspend/unsuspend)
+   *    (c) entity_type='credit'     keyed by credit_transaction.id (adjust_credit)
+   *
+   *  A single entity_id=customerId filter silently drops (b) and (c).
+   *  "before"/"after" are double-quoted — reserved words in SQL.
+   */
+  @InjectManager()
+  async auditForCustomer(
+    customerId: string,
+    opts: { limit: number; offset: number },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ account_state: any | null; actions: AuditRow[] }> {
+    const em = (sharedContext.transactionManager ?? sharedContext.manager) as unknown as LedgerSqlManager;
+    const limit = Math.max(1, Math.min(200, Math.floor(opts.limit) || 50));
+    const offset = Math.max(0, Math.floor(opts.offset) || 0);
+
+    const actions = await em.execute<AuditRow[]>(
+      `SELECT id, entity_type, entity_id, action, "before", "after", reason, created_at, admin_id
+         FROM admin_action_audit
+         WHERE deleted_at IS NULL AND (
+           (entity_type = 'customer' AND entity_id = ?)
+           OR (entity_type = 'commission' AND entity_id IN
+                (SELECT id FROM commission WHERE beneficiary = ? AND deleted_at IS NULL))
+           OR (entity_type = 'credit' AND entity_id IN
+                (SELECT id FROM credit_transaction WHERE customer_id = ? AND reason = 'adjustment' AND deleted_at IS NULL))
+         )
+         ORDER BY created_at DESC
+         LIMIT ? OFFSET ?`,
+      [customerId, customerId, customerId, limit, offset],
+    );
+    const [state] = await this.listCustomerAccountStates({ customer_id: customerId }, { take: 1 });
+    return { account_state: state ?? null, actions };
   }
 
   // Batched enrichment for referral tree nodes — packs-owned tables only
