@@ -1,0 +1,70 @@
+'use client';
+
+import { useState } from 'react';
+import { relativeTime } from '@/lib/format';
+import { markRead } from '@/lib/actions/notifications';
+import type { Notification } from '@/lib/actions/notifications';
+
+const TITLES: Record<string, string> = {
+  vip_level_up: 'You leveled up!',
+  commission_matured: 'Commission unlocked',
+};
+
+export default function NotificationsClient({
+  initial,
+}: {
+  initial: Notification[];
+}) {
+  const [items, setItems] = useState<Notification[]>(initial);
+
+  async function onRead(id: string) {
+    // Optimistic update — mark read locally immediately
+    setItems((xs) =>
+      xs.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
+    );
+    const r = await markRead(id);
+    if (!r.ok) {
+      // Revert on server failure
+      setItems((xs) => xs.map((n) => (n.id === id ? { ...n, readAt: null } : n)));
+    }
+  }
+
+  if (items.length === 0) {
+    return <p className="mt-4 text-sm text-white/50">No notifications yet.</p>;
+  }
+
+  return (
+    <ul className="mt-4 space-y-2">
+      {items.map((n) => (
+        <li key={n.id}>
+          <button
+            type="button"
+            onClick={() => {
+              if (!n.readAt) void onRead(n.id);
+            }}
+            className={[
+              'flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition-colors',
+              n.readAt
+                ? 'cursor-default border-white/10 bg-white/[0.02] opacity-70'
+                : 'border-emerald-400/30 bg-emerald-400/[0.06] hover:bg-emerald-400/10',
+            ].join(' ')}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-white/90">
+                {TITLES[n.template] ?? n.template}
+              </p>
+              {n.data != null && (
+                <p className="mt-0.5 truncate text-xs text-white/50">
+                  {JSON.stringify(n.data)}
+                </p>
+              )}
+            </div>
+            <span className="shrink-0 whitespace-nowrap text-[11px] text-white/40">
+              {relativeTime(n.createdAt)}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
