@@ -1842,7 +1842,7 @@ class PacksModuleService extends MedusaService({
     @MedusaContext() sharedContext: Context = {},
   ): Promise<CommissionRow[]> {
     const em = (sharedContext.transactionManager ?? sharedContext.manager) as unknown as LedgerSqlManager;
-    const limit = Math.max(1, Math.min(200, Math.floor(opts.limit) || 50));
+    const limit = Math.max(1, Math.min(200, Math.floor(opts.limit ?? 50)));
     const offset = Math.max(0, Math.floor(opts.offset) || 0);
 
     const rows = await em.execute<any[]>(

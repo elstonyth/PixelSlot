@@ -78,6 +78,7 @@ moduleIntegrationTestRunner<PacksModuleService>({
         await service.settleOpen({ customerId: 'ov_R', amount: -20, sourceTransactionId: 'ov_open_1' });
 
         const rows = await service.commissionsForBeneficiary('ov_G', { limit: 50, offset: 0 });
+        expect(rows.filter((r) => r.kind === 'override')).toHaveLength(1);
         const override = rows.find((r) => r.kind === 'override');
         expect(override).toBeDefined();
         expect(override!.generation).toBe(2);
