@@ -52,9 +52,10 @@ import {
   type RewardsSettingsView,
 } from './rewards-settings-validate';
 import type { RewardPoolEntry } from './reward-pool-validate';
-import type {
-  DrawnPrize,
-  RewardOddsRow,
+import {
+  drawPrize,
+  type DrawnPrize,
+  type RewardOddsRow,
 } from '../../workflows/steps/draw-prize';
 import type { MedusaContainer } from '@medusajs/framework/types';
 
@@ -1060,12 +1061,9 @@ class PacksModuleService extends MedusaService({
       return { status: 'capped' };
     }
 
-    // 4) Pick the prize (pure — writes nothing). drawPrize lives in the
-    //    workflows layer, which transitively imports this module (PACKS_MODULE);
-    //    a top-level value import would form a load-time cycle (service ↔ workflow)
-    //    that breaks module init. A dynamic import deferred to call time sidesteps
-    //    it — by the time settleRewardDraw runs, every module is fully initialized.
-    const { drawPrize } = await import('../../workflows/steps/draw-prize.js');
+    // 4) Pick the prize (pure — writes nothing). drawPrize is statically imported
+    //    at the top of this file (Task 1 made draw-prize.ts a pure leaf with no
+    //    back-reference to service, eliminating the previous load-time cycle).
     const prize = await drawPrize(resolveContainer, rewardOdds);
 
     // 5) Settle the payout. The reward_draw ordinal is the NEXT row (count+1) —
