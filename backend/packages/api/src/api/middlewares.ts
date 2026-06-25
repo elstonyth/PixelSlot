@@ -292,6 +292,29 @@ export default defineMiddlewares({
         createCreditTopupRateLimit(),
       ],
     },
+    {
+      // Reward-economy state (GET /store/rewards) — claimable grants + draw
+      // state + vaulted prizes. Shares the store read budget with vault/credits/
+      // vip/notifications (the account UI fetches them together).
+      matcher: '/store/rewards',
+      method: 'GET',
+      middlewares: [authenticate('customer', ['bearer']), storeReadRateLimit],
+    },
+    {
+      // Reward redemption writes — claim a grant, open a daily box, withdraw a
+      // vaulted prize. All state/money mutations, so they share the delivery
+      // write-tier budget (the same family as topup/buyback/delivery). The
+      // fail-closed redemption gate on claim+draw lives in the route handlers;
+      // these entries are the auth + rate-limit gate only. The id (grantId in
+      // the path, pull_id/address_id in the body) is never the actor — actor_id
+      // comes from the verified bearer token in every handler.
+      matcher: '/store/rewards/*',
+      method: 'POST',
+      middlewares: [
+        authenticate('customer', ['bearer']),
+        deliveryWriteRateLimit,
+      ],
+    },
     // Admin money-mutation routes — already auth-protected by the framework
     // admin auth, so no explicit authenticate() entry is needed here. All share
     // one limiter instance (one budget + one Redis connection). The limiter keys
