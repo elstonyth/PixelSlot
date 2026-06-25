@@ -5,7 +5,8 @@ import {
   InjectTransactionManager,
   MedusaContext,
 } from '@medusajs/framework/utils';
-import type { Context } from '@medusajs/framework/types';
+import type { Context, HttpTypes } from '@medusajs/framework/types';
+import { validateDeliveryRequest, snapshotAddress } from './delivery';
 import Pack from './models/pack';
 import Card from './models/card';
 import PackOdds from './models/pack-odds';
@@ -1114,6 +1115,98 @@ class PacksModuleService extends MedusaService({
     );
 
     return { status: 'drawn', prize, draw_ordinal: drawOrdinal };
+  }
+
+  // Ship a vaulted reward-prize Pull as a physical delivery (B7). Mirrors
+  // settleRewardDraw's discipline (read-then-write under the per-customer `credit:`
+  // advisory lock in ONE transaction) — NOT the lockless requestDeliveryStep,
+  // because the daily withdrawal cap is a COUNT-then-INSERT that must be atomic per
+  // customer per day. The Pull.status flip vaulted → delivering under the same lock
+  // (not the per-(order,pull) unique) is the one-active-shipment enforcer: a
+  // concurrent second withdrawal of the same Pull re-reads it as 'delivering' and
+  // returns 'invalid'.
+  //
+  // Returns:
+  //   'requested' — order + item created, Pull flipped.
+  //   'invalid'   — Pull not source='reward', not owned, or not 'vaulted'
+  //                 (also: missing required shipping fields on the address).
+  //   'capped'    — today's is_reward delivery_order count already hit
+  //                 withdrawals_per_day.
+  @InjectTransactionManager()
+  async recordRewardWithdrawal(
+    customerId: string,
+    pullId: string,
+    address: Partial<HttpTypes.StoreCustomerAddress>,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ status: 'requested' | 'capped' | 'invalid' }> {
+    const em = sharedContext.transactionManager as unknown as LedgerSqlManager;
+
+    // 0) Serialize against any concurrent credit/withdrawal mutation for THIS
+    //    customer — held across the validation, the cap COUNT, and the writes.
+    await em.execute('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [
+      `credit:${customerId}`,
+    ]);
+
+    // 1) Re-read the Pull UNDER the lock and validate it via the same pure helper
+    //    the lockless delivery path uses: must be owned + 'vaulted'. The extra
+    //    reward-source gate is B7-specific (only reward prizes ship via this path).
+    const [pull] = await this.listPulls({ id: pullId }, { take: 1 }, sharedContext);
+    const verdict = validateDeliveryRequest(
+      pull ? [pull] : [],
+      [pullId],
+      customerId,
+    );
+    if (verdict !== 'ok' || pull?.source !== 'reward') {
+      return { status: 'invalid' };
+    }
+
+    // 2) Snapshot the shipping address (denormalized at request time). A missing
+    //    required field is a bad request, surfaced here as 'invalid' (the route
+    //    has already resolved + ownership-checked the address upstream).
+    const snapshot = snapshotAddress(address);
+    if (!snapshot) {
+      return { status: 'invalid' };
+    }
+
+    // 3) Daily-cap COUNT under the lock: today's is_reward delivery orders for
+    //    this customer. created_at::date keys the day (DeliveryOrder has no
+    //    draw_day column). The lock makes COUNT-then-INSERT atomic per customer.
+    const { withdrawals_per_day } = await this.rewardsSettings(sharedContext);
+    const countRows = await em.execute<{ n: string | null }[]>(
+      `SELECT COUNT(*) AS n FROM delivery_order
+         WHERE customer_id = ? AND is_reward = TRUE
+           AND created_at::date = CURRENT_DATE AND deleted_at IS NULL`,
+      [customerId],
+    );
+    if (Number(countRows[0]?.n ?? 0) >= withdrawals_per_day) {
+      return { status: 'capped' };
+    }
+
+    // 4) Create the order + item, then flip the Pull under the lock. All three
+    //    writes share the locked txn, so @InjectTransactionManager rolls them back
+    //    together if any throws — no manual undo dance (unlike requestDeliveryStep,
+    //    which has no surrounding transaction).
+    const [order] = await this.createDeliveryOrders(
+      [
+        {
+          customer_id: customerId,
+          status: 'requested' as const,
+          is_reward: true,
+          ...snapshot,
+        },
+      ],
+      sharedContext,
+    );
+    await this.createDeliveryOrderItems(
+      [{ delivery_order_id: order.id, pull_id: pullId }],
+      sharedContext,
+    );
+    await this.updatePulls(
+      { selector: { id: pullId }, data: { status: 'delivering' } },
+      sharedContext,
+    );
+
+    return { status: 'requested' };
   }
 
   // Resolve the reward_box Pack for a VIP box_tier. The reward_box Pack's slug is
