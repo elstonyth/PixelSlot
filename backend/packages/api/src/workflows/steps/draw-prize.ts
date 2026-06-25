@@ -1,6 +1,6 @@
 import { Modules, ContainerRegistrationKeys } from '@medusajs/framework/utils';
 import type { MedusaContainer } from '@medusajs/framework/types';
-import { pickWonRow } from './roll-pack';
+import { pickWonRow } from '../../modules/packs/pick';
 import { getCardStockByHandle } from '../../modules/packs/card-stock';
 
 // RewardOddsRow — the subset of PackOdds fields drawPrize reads.
