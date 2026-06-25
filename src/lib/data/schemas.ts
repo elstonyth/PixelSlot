@@ -254,6 +254,67 @@ export const MarkReadSchema = z.looseObject({
   read_at: z.union([z.string(), z.date()]),
 });
 
+// --- actions/rewards.ts -----------------------------------------------------
+
+/** GET /store/rewards grant row (claimable voucher or frame). */
+export const RewardGrantSchema = z.looseObject({
+  id: z.string(),
+  kind: z.enum(['voucher', 'frame', 'box', 'prize']),
+  status: z.enum(['granted', 'fulfilled', 'expired']),
+  payload: z.looseObject({}).nullable().optional(),
+  granted_at: z.string(),
+});
+
+/** GET /store/rewards draw state (daily box). */
+export const RewardDrawStateSchema = z.looseObject({
+  draws_today: finite,
+  draws_per_day: finite,
+  pool_enabled: z.boolean(),
+  tier: z.string(),
+});
+
+/** GET /store/rewards vaulted prize row. */
+export const RewardPrizeSchema = z.looseObject({
+  pull_id: z.string(),
+  prize_kind: z.enum(['product', 'credit', 'nothing']),
+  prize_snapshot: z.looseObject({}).nullable().optional(),
+  status: z.string(),
+  draw_day: z.string(),
+});
+
+/** GET /store/rewards outer envelope. */
+export const RewardsEnvelopeSchema = z.looseObject({
+  grants: z.array(z.looseObject({})).optional(),
+  draw_state: z.looseObject({}).nullable().optional(),
+  prizes: z.array(z.looseObject({})).optional(),
+});
+
+/** POST /store/rewards/claim/:grantId response. */
+export const ClaimGrantSchema = z.looseObject({
+  claimed: z.boolean(),
+  kind: z.string(),
+});
+
+/** POST /store/rewards/draw response. */
+export const DrawBoxSchema = z.looseObject({
+  status: z.enum(['drawn', 'unavailable', 'capped']),
+  prize: z
+    .looseObject({
+      kind: z.enum(['product', 'credit', 'nothing']),
+      title: z.string().optional(),
+      image: z.string().optional(),
+      amount_myr: finite.optional(),
+      product_handle: z.string().optional(),
+    })
+    .optional(),
+  draw_ordinal: finite.optional(),
+});
+
+/** POST /store/rewards/withdraw response. */
+export const WithdrawPrizeSchema = z.looseObject({
+  status: z.enum(['requested', 'capped', 'invalid']),
+});
+
 // --- actions/delivery.ts ----------------------------------------------------
 
 /** GET /store/delivery-orders item — guards the fields the mapper consumes. */
