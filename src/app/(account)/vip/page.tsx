@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { AccountHeader, Panel, StatCards } from '@/components/account/ui';
 import { getVip } from '@/lib/actions/vip';
 import { rm } from '@/lib/format';
@@ -69,6 +70,16 @@ export default async function VipPage() {
           </p>
         </Panel>
       )}
+      <p className="mt-4 text-[13px] text-white/40">
+        View your daily box and reward grants on the{' '}
+        <Link
+          href="/rewards"
+          className="text-emerald-400 underline-offset-2 hover:underline"
+        >
+          My Rewards
+        </Link>{' '}
+        page.
+      </p>
     </>
   );
 }

@@ -14,6 +14,7 @@ import {
   Wallet as WalletIcon,
   Crown,
   Bell,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils';
 export const ACCOUNT_NAV: { label: string; href: string; icon: LucideIcon }[] =
   [
     { label: 'VIP', href: '/vip', icon: Crown },
+    { label: 'Rewards', href: '/rewards', icon: Sparkles },
     { label: 'Vault', href: '/vault', icon: Vault },
     { label: 'Wallet', href: '/wallet', icon: WalletIcon },
     { label: 'Settings', href: '/settings', icon: Settings },

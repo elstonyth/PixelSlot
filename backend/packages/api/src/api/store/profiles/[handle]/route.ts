@@ -42,8 +42,14 @@ export async function GET(
   }
 
   const packs: PacksModuleService = req.scope.resolve(PACKS_MODULE);
+  // C1: exclude reward Pulls from the public profile (leaderboard, collection,
+  // recent feed) — they are private vault items only visible in /store/vault.
+  // Filter IN the query (source='pack', the positive of source!='reward', which
+  // every non-reward row carries: the column is NOT NULL DEFAULT 'pack'). A
+  // post-`.filter()` would run AFTER the MAX_PULLS cap, so a collector with many
+  // recent reward pulls would lose older real pulls to the truncation.
   const pulls = await packs.listPulls(
-    { customer_id: customer.id },
+    { customer_id: customer.id, source: 'pack' },
     { take: MAX_PULLS, order: { rolled_at: 'DESC' } },
   );
 
@@ -67,7 +73,11 @@ export async function GET(
 
   const byHandle = cardByHandle(cards);
   const priceBySlug = new Map(packRows.map((p) => [p.slug, p.price]));
-  const rarityOf = makeRarityOf(odds) as (p: string, c: string) => Rarity;
+  // Reward rows (card_id null) carry no card rarity — exclude before the lookup.
+  const cardOdds = odds.filter(
+    (o): o is typeof o & { card_id: string } => o.card_id != null,
+  );
+  const rarityOf = makeRarityOf(cardOdds) as (p: string, c: string) => Rarity;
 
   // Stats over the full pull history (same formulas as the leaderboard:
   // volume = Σ won-card FMV, points = Σ pack price × 100).
@@ -118,7 +128,7 @@ export async function GET(
     .filter(
       (p) =>
         (p as unknown as { showcased: boolean }).showcased &&
-        p.status === "vaulted",
+        p.status === 'vaulted',
     )
     .flatMap((p) => {
       const card = byHandle.get(p.card_id);
