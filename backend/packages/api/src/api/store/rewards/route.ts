@@ -46,9 +46,9 @@ export async function GET(
       { customer_id: customerId, status: 'vaulted', source: 'reward' },
       { order: { rolled_at: 'DESC' }, take: PRIZE_LIMIT },
     ),
-    packs.listVipMemberStates({ customer_id: customerId }, { take: 1 }).then(
-      ([row]) => row ?? null,
-    ),
+    packs
+      .listVipMemberStates({ customer_id: customerId }, { take: 1 })
+      .then(([row]) => row ?? null),
   ]);
 
   // Fix (1): `granted_at` was missing — storefront RewardGrantSchema requires it.
@@ -58,7 +58,7 @@ export async function GET(
     kind: g.kind as string,
     payload: g.payload,
     status: g.status as string,
-    granted_at: g.created_at as string,
+    granted_at: g.created_at.toISOString(),
   }));
 
   // Draw state: resolve the customer's tier so the UI can show draws_per_day and
@@ -128,5 +128,10 @@ export async function GET(
     .filter((e): e is NonNullable<typeof e> => e !== null);
 
   // Fix (5): surface the gate flag so the client can pre-disable Claim/Draw.
-  res.json({ grants, draw_state, prizes, redemption_enabled: rewardsRedemptionEnabled() });
+  res.json({
+    grants,
+    draw_state,
+    prizes,
+    redemption_enabled: rewardsRedemptionEnabled(),
+  });
 }
