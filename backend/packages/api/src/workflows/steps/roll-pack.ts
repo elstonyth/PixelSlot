@@ -2,6 +2,7 @@ import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
 import { MedusaError } from '@medusajs/framework/utils';
 import { PACKS_MODULE } from '../../modules/packs';
 import type PacksModuleService from '../../modules/packs/service';
+import { pickWonRow } from '../../modules/packs/pick';
 
 type RollPackInput = {
   pack_id: string; // = Pack.slug
@@ -84,25 +85,6 @@ export async function fetchPackData(
       `Pack '${packId}' has invalid odds.`,
     );
   return { pack, odds, totalWeight };
-}
-
-// pickWonRow — pure weighted selection over any array of { weight: number }.
-// Extracted so the reward-draw engine (B4) can reuse the same algorithm without
-// depending on PacksModuleService or any I/O.
-// ponytail: last-row fallback handles roll >= totalWeight (rounding / float drift).
-export function pickWonRow<T extends { weight: number }>(
-  rows: T[],
-  roll: number,
-): T {
-  let won = rows[rows.length - 1];
-  for (const r of rows) {
-    roll -= r.weight;
-    if (roll < 0) {
-      won = r;
-      break;
-    }
-  }
-  return won;
 }
 
 // drawFromData — performs ONE independent weighted draw from pre-fetched pack data.
