@@ -29,4 +29,10 @@ describe('pickWonRow', () => {
     expect(pickWonRow(rows, 70)).toEqual(rows[1]); // roll=70: 70-70=0, not <0; 0-30=-30 < 0 → second
     expect(pickWonRow(rows, 99)).toEqual(rows[1]); // past total → last
   });
+
+  it('throws a descriptive error on an empty rows array (caller-precondition)', () => {
+    expect(() => pickWonRow([] as { weight: number }[], 0.5)).toThrow(
+      /must be non-empty/,
+    );
+  });
 });
