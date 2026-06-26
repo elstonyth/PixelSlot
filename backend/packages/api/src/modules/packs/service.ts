@@ -1684,6 +1684,11 @@ class PacksModuleService extends MedusaService({
           // lifetimeExternalSenFor is @InjectManager like creditSummary, so the
           // level read stays off the locked path. (F5)
           const sponsorLifetimeSen = await this.lifetimeExternalSenFor(sponsorId);
+          // UNIT TRAP: lifetimeExternalSenFor returns integer SEN, but
+          // levelForSpend expects MYR (it calls toSen internally) — same
+          // conversion the VIP grant path does (rebuildVipMemberState /
+          // grantLevelUpRewards). Passing raw SEN would inflate the tier 100×.
+          const sponsorLifetimeMyr = fromSen(sponsorLifetimeSen);
           const ladderRows = await this.listVipLevels(
             {},
             {
@@ -1700,7 +1705,7 @@ class PacksModuleService extends MedusaService({
             direct_referral_pct: Number(r.direct_referral_pct),
           }));
           const sponsorLevel = levelForSpend(
-            sponsorLifetimeSen,
+            sponsorLifetimeMyr,
             levelLadder,
           );
           const pct = directReferralPctForLevel(sponsorLevel, pctLadder);
