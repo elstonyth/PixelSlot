@@ -26,6 +26,7 @@ import { openAuth } from './AuthButton';
 import { useAuth } from './auth/AuthProvider';
 import UserMenu from './auth/UserMenu';
 import { logout } from '@/lib/actions/auth';
+import NotificationBell from './NotificationBell';
 
 type NavItem = {
   label: string;
@@ -42,7 +43,7 @@ type NavItem = {
 // Pack Party collapses to a non-clickable "Coming Soon" tab. Flip the env vars
 // (see src/lib/features.ts) to restore the real links.
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Packs', href: '/claw', icon: Layers, badge: 'NEW' },
+  { label: 'Packs', href: '/slots', icon: Layers, badge: 'NEW' },
   features.packParty
     ? { label: 'Pack Party', href: '/pack-party', icon: PartyPopper }
     : {
@@ -240,8 +241,11 @@ export default function SiteHeader() {
             <HelpCircle className="h-4 w-4 text-neutral-400" aria-hidden />
           </a>
           {customer ? (
-            <div className="hidden lg:block">
-              <UserMenu customer={customer} />
+            <div className="flex items-center gap-1.5">
+              <NotificationBell />
+              <div className="hidden lg:block">
+                <UserMenu customer={customer} />
+              </div>
             </div>
           ) : (
             <>

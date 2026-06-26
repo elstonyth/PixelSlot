@@ -130,6 +130,8 @@ export const CREDIT_REASONS = [
   'team_override',
   'commission_reversal',
   'cashout',
+  'voucher_claim',
+  'reward_credit',
 ] as const;
 export type CreditReason = (typeof CREDIT_REASONS)[number];
 
@@ -178,6 +180,152 @@ export const OpenBuybackSchema = z.looseObject({
   vault_percent: finite.optional(),
   vault_amount: finite.optional(),
   instant_deadline_ms: finite.optional(),
+});
+
+// --- actions/wallet.ts ------------------------------------------------------
+
+/** GET /store/credits — nested `wallet` block used by getWallet().
+ *  The backend returns `{ wallet: { balance, available, locked, is_frozen,
+ *  next_unlock }, transactions: [...] }`. getWallet() extracts
+ *  `(raw as { wallet? }).wallet` and parses it with this schema. */
+export const WalletSchema = z.looseObject({
+  balance: finite,
+  available: finite,
+  locked: finite,
+  is_frozen: z.boolean(),
+  next_unlock: z.looseObject({ amount: finite, date: z.string() }).nullable(),
+});
+
+// --- actions/vip.ts ---------------------------------------------------------
+
+/** GET /store/vip — VIP level, cumulative spend, and next-rung teaser.
+ *  Fields mirror the route's `res.json(...)` shape exactly (snake_case). */
+export const VipSchema = z.looseObject({
+  level: finite,
+  highest_level_ever: finite,
+  spend: finite,
+  next: z
+    .looseObject({
+      level: finite,
+      threshold: finite,
+      remaining: finite,
+      reward: z.looseObject({
+        voucher_amount: finite,
+        box_tier: z.string(),
+        frame_unlock: z.boolean(),
+      }),
+    })
+    .nullable(),
+});
+
+// --- actions/referral.ts ----------------------------------------------------
+
+/** GET /store/referral — referral summary for the authenticated customer. */
+export const ReferralSummarySchema = z.looseObject({
+  directRecruits: z.array(
+    z.looseObject({ handle: z.string().nullable(), contribution: finite }),
+  ),
+  downstreamCount: finite,
+  totalEarned: finite,
+});
+
+/** POST /store/referral — apply-referral response (just the new link id). */
+export const ReferralApplySchema = z.looseObject({ id: z.string() });
+
+// --- actions/notifications.ts -----------------------------------------------
+
+/** GET /store/notifications — single notification row in the feed. */
+export const NotificationSchema = z.looseObject({
+  id: z.string(),
+  template: z.string(),
+  data: z.looseObject({}).nullable().optional(),
+  created_at: z.string(),
+  read_at: z.union([z.string(), z.date()]).nullable(),
+});
+
+/** GET /store/notifications — outer envelope (notifications array + unread_count). */
+export const NotificationsEnvelopeSchema = z.looseObject({
+  unread_count: finite,
+});
+
+/** POST /store/notifications/:id/read — mark-read response. */
+export const MarkReadSchema = z.looseObject({
+  id: z.string(),
+  read_at: z.union([z.string(), z.date()]),
+});
+
+// --- actions/rewards.ts -----------------------------------------------------
+
+/** GET /store/rewards grant row (claimable voucher or frame). */
+export const RewardGrantSchema = z.looseObject({
+  id: z.string(),
+  kind: z.enum(['voucher', 'frame', 'box', 'prize']),
+  status: z.enum(['granted', 'fulfilled', 'revoked']),
+  payload: z.looseObject({}).nullable().optional(),
+  granted_at: z.string(),
+});
+
+/** GET /store/rewards draw state (daily box). */
+export const RewardDrawStateSchema = z.looseObject({
+  draws_today: finite,
+  draws_per_day: finite,
+  pool_enabled: z.boolean(),
+  tier: z.string(),
+});
+
+/** GET /store/rewards vaulted prize row. */
+export const RewardPrizeSchema = z.looseObject({
+  pull_id: z.string(),
+  prize_kind: z.enum(['product', 'credit', 'nothing']),
+  prize_snapshot: z.looseObject({}).nullable().optional(),
+  status: z.string(),
+  draw_day: z.string(),
+});
+
+/** Address input for prize withdrawal (subset of AddAddressInput). Defined here
+ *  because this module is the app's sole `zod` importer (eslint no-restricted-imports). */
+export const WithdrawAddressSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  address1: z.string().min(1),
+  city: z.string().min(1),
+  postalCode: z.string().min(1),
+  countryCode: z.string().min(2).max(2),
+});
+export type WithdrawAddressInput = z.infer<typeof WithdrawAddressSchema>;
+
+/** GET /store/rewards outer envelope. */
+export const RewardsEnvelopeSchema = z.looseObject({
+  grants: z.array(z.looseObject({})).optional(),
+  draw_state: z.looseObject({}).nullable().optional(),
+  prizes: z.array(z.looseObject({})).optional(),
+  redemption_enabled: z.boolean().optional(),
+});
+
+/** POST /store/rewards/claim/:grantId response. */
+export const ClaimGrantSchema = z.looseObject({
+  claimed: z.boolean(),
+  kind: z.string(),
+});
+
+/** POST /store/rewards/draw response. */
+export const DrawBoxSchema = z.looseObject({
+  status: z.enum(['drawn', 'unavailable', 'capped']),
+  prize: z
+    .looseObject({
+      kind: z.enum(['product', 'credit', 'nothing']),
+      title: z.string().optional(),
+      image: z.string().optional(),
+      amount_myr: finite.optional(),
+      product_handle: z.string().optional(),
+    })
+    .optional(),
+  draw_ordinal: finite.optional(),
+});
+
+/** POST /store/rewards/withdraw response. */
+export const WithdrawPrizeSchema = z.looseObject({
+  status: z.enum(['requested', 'capped', 'invalid']),
 });
 
 // --- actions/delivery.ts ----------------------------------------------------

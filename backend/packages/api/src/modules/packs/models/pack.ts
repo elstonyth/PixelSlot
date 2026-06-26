@@ -35,6 +35,9 @@ export const Pack = model.define("pack", {
   in_stock: model.boolean().default(true),
   rank: model.number().default(0),
   status: model.enum(["active", "draft"]).default("active"),
+  // reward_box pool controls — A1
+  pool_enabled: model.boolean().default(false),
+  draws_per_day: model.number().default(0),
 });
 
 export default Pack;

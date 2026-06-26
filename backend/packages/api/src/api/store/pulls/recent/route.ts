@@ -21,7 +21,9 @@ export async function GET(
   const packs: PacksModuleService = req.scope.resolve(PACKS_MODULE);
 
   const pulls = await packs.listPulls(
-    {},
+    // ponytail: $ne filter mirrors the leaderboard SQL exclusion — reward prizes
+    // are private vault items, not public feed entries.
+    { source: { $ne: 'reward' } } as Parameters<typeof packs.listPulls>[0],
     { order: { rolled_at: 'DESC' }, take: RECENT_LIMIT },
   );
 
@@ -37,7 +39,11 @@ export async function GET(
   const oddsRows = handles.length
     ? await packs.listPackOdds({ card_id: handles }, { take: 1000 })
     : [];
-  const rarityOf = makeRarityOf(oddsRows);
+  // Reward rows (card_id null) carry no card rarity — exclude before the lookup.
+  const cardOdds = oddsRows.filter(
+    (o): o is typeof o & { card_id: string } => o.card_id != null,
+  );
+  const rarityOf = makeRarityOf(cardOdds);
 
   const recent = pulls
     .map((p) => {

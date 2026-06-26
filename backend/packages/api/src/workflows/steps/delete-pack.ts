@@ -1,15 +1,30 @@
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
-import { MedusaError } from "@medusajs/framework/utils";
-import { PACKS_MODULE } from "../../modules/packs";
-import type PacksModuleService from "../../modules/packs/service";
+import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
+import { MedusaError } from '@medusajs/framework/utils';
+import { PACKS_MODULE } from '../../modules/packs';
+import type PacksModuleService from '../../modules/packs/service';
 
 export type DeletePackInput = { slug: string };
 
+// Snapshots ALL of a pack's odds rows for compensation, including reward rows
+// (card_id null) — keep card_id/rarity nullable and carry the full payout shape
+// (kind/product_handle/credit_amount) so a deleted reward_box pool round-trips
+// faithfully instead of losing its prize definitions on rollback.
 type OddsSnapshot = {
   pack_id: string;
-  card_id: string;
+  card_id: string | null;
+  rarity:
+    | 'Immortal'
+    | 'Legendary'
+    | 'Epic'
+    | 'Rare'
+    | 'Uncommon'
+    | 'Common'
+    | null;
   weight: number;
   locked: boolean;
+  kind: 'product' | 'credit' | 'nothing' | null;
+  product_handle: string | null;
+  credit_amount: number | null;
 };
 
 type CompensateData =
@@ -22,7 +37,10 @@ type CompensateData =
         image: string;
         boost: boolean;
         rank: number;
-        status: "active" | "draft";
+        status: 'active' | 'draft';
+        // reward_box packs carry pool config — restore it too.
+        pool_enabled: boolean;
+        draws_per_day: number;
       };
       odds: OddsSnapshot[];
     }
@@ -32,7 +50,7 @@ type CompensateData =
 // Pull history are kept (cards live independently; the ledger is permanent).
 // Compensation recreates the pack and its odds rows.
 export const deletePackStep = createStep(
-  "delete-pack",
+  'delete-pack',
   async (input: DeletePackInput, { container }) => {
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
 
@@ -40,13 +58,13 @@ export const deletePackStep = createStep(
     if (!pack) {
       throw new MedusaError(
         MedusaError.Types.NOT_FOUND,
-        `Pack '${input.slug}' not found.`
+        `Pack '${input.slug}' not found.`,
       );
     }
 
     const oddsRows = await packs.listPackOdds(
       { pack_id: input.slug },
-      { take: 1000 }
+      { take: 1000 },
     );
 
     const snapshot: CompensateData = {
@@ -59,12 +77,18 @@ export const deletePackStep = createStep(
         boost: pack.boost,
         rank: pack.rank,
         status: pack.status,
+        pool_enabled: pack.pool_enabled,
+        draws_per_day: pack.draws_per_day,
       },
       odds: oddsRows.map((o) => ({
         pack_id: o.pack_id,
         card_id: o.card_id,
+        rarity: o.rarity,
         weight: o.weight,
         locked: o.locked,
+        kind: o.kind,
+        product_handle: o.product_handle,
+        credit_amount: o.credit_amount != null ? Number(o.credit_amount) : null,
       })),
     };
 
@@ -82,7 +106,7 @@ export const deletePackStep = createStep(
     if (data.odds.length) {
       await packs.createPackOdds(data.odds);
     }
-  }
+  },
 );
 
 export default deletePackStep;

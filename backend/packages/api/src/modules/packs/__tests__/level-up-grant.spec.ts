@@ -11,8 +11,8 @@
  * Ladder anchors (vip-levels.data.ts):
  *   L1 = 0 MYR, L2 = 3 MYR, L3 = 25 MYR, L4 = 83 MYR, L5 = 198 MYR
  * Open 200 MYR → lifetime 200 sen×100=20000 sen → L5.
- * L2 has voucher_amount=2 → voucher+box; frame_unlock=false → no frame.
- * L3 has voucher_amount=2 → voucher+box. L4 same. L5 same.
+ * L2 has voucher_amount=2 → voucher only; box tier derives live at draw time (B3/B6).
+ * L3 has voucher_amount=2 → voucher only. L4 same. L5 same.
  */
 
 import path from 'path';
@@ -116,7 +116,7 @@ moduleIntegrationTestRunner<PacksModuleService>({
           { take: 100 },
         );
 
-        // Each level grants at least a box. Levels 2-5 all have voucher_amount=2 → voucher+box.
+        // Each level grants voucher only (box no longer per-rung — tier derives live via settleRewardDraw).
         // frame_unlock is false for all L2-L5 in the seed data.
         const grantedLevels = [...new Set(grants.map((g) => g.level))].sort(
           (a, b) => a - b,
@@ -126,11 +126,12 @@ moduleIntegrationTestRunner<PacksModuleService>({
         // No L1 row at all
         expect(grants.some((g) => g.level === 1)).toBe(false);
 
-        // Each of L2..L5 has both voucher and box (voucher_amount=2 > 0, frame_unlock=false)
+        // Each of L2..L5 has voucher only (voucher_amount=2 > 0, frame_unlock=false).
+        // Box is no longer granted per-rung; tier derives live at draw time (B3/B6).
         for (const lvl of [2, 3, 4, 5]) {
           const lvlGrants = grants.filter((g) => g.level === lvl);
           const kinds = lvlGrants.map((g) => g.kind).sort();
-          expect(kinds).toContain('box');
+          expect(kinds).not.toContain('box');
           expect(kinds).toContain('voucher');
           expect(kinds).not.toContain('frame');
           expect(kinds).not.toContain('prize');
