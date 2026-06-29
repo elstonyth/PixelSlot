@@ -9,6 +9,8 @@ import { usd, timeAgo } from "../../lib/format";
 export const config: RouteConfig = {
   label: "Pull Ledger",
   icon: ChartBar,
+  nested: "/gacha",
+  rank: 3,
 };
 
 const PullLedgerPage = () => {

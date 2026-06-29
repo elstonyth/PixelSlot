@@ -35,6 +35,8 @@ import { usd } from '../../lib/format';
 export const config: RouteConfig = {
   label: 'Gacha Packs',
   icon: Gift,
+  nested: '/gacha',
+  rank: 2,
 };
 
 // Known pack categories — the storefront maps these to labels + icons, so the

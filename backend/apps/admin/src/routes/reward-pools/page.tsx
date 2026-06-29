@@ -31,6 +31,8 @@ import { resolveImageUrl } from '../../lib/image-url';
 export const config: RouteConfig = {
   label: 'Reward Pools',
   icon: Gift,
+  nested: '/gacha',
+  rank: 4,
 };
 
 // VIP box tiers (vip_level.box_tier): nine lowercase a–j + uppercase Z (level 100).

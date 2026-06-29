@@ -8,6 +8,7 @@ import { usd } from "../../lib/format";
 export const config: RouteConfig = {
   label: "Economy",
   icon: CurrencyDollar,
+  rank: 30,
 };
 
 const EconomyPage = () => {
