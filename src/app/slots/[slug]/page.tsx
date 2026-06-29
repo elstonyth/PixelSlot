@@ -20,9 +20,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const pack = findPack(slug);
   return {
-    title: pack
-      ? `${pack.name} — ${pack.categoryName} | Pokenic`
-      : 'Pack | Pokenic',
+    title: pack ? `${pack.name} — ${pack.categoryName}` : 'Pack',
   };
 }
 

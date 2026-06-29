@@ -15,9 +15,7 @@ export async function generateMetadata({
   const { gen } = await params;
   const region = REGION[gen];
   return {
-    title: region
-      ? `Pokémon · Generation ${gen} (${region}) — Pokenic`
-      : 'Pokémon — Pokenic',
+    title: region ? `Pokémon · Generation ${gen} (${region})` : 'Pokémon',
     description: 'Browse the Pokédex by generation.',
   };
 }
