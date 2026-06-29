@@ -32,6 +32,8 @@ import CardPokemonFields from './CardPokemonFields';
 export const config: RouteConfig = {
   label: 'Gacha Cards',
   icon: Sparkles,
+  nested: '/gacha',
+  rank: 1,
 };
 
 // Edit-only form state (inventory-first: NEW cards are registered from an

@@ -24,6 +24,8 @@ import { usd } from "../../lib/format";
 export const config: RouteConfig = {
   label: "Customer Support",
   icon: Buildings,
+  nested: "/operations",
+  rank: 2,
 };
 
 const SupportPage = () => {

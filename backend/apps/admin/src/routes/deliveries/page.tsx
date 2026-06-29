@@ -17,7 +17,12 @@ import { useDeliveryOrders, useUpdateDeliveryOrder } from '../../lib/queries';
 import type { AdminDeliveryOrder, DeliveryStatus } from '../../lib/admin-rest';
 import { resolveImageUrl } from '../../lib/image-url';
 
-export const config: RouteConfig = { label: 'Deliveries', icon: TruckFast };
+export const config: RouteConfig = {
+  label: 'Deliveries',
+  icon: TruckFast,
+  nested: '/operations',
+  rank: 1,
+};
 
 const STATUSES: DeliveryStatus[] = [
   'requested',
