@@ -430,8 +430,6 @@ export interface SaveRewardPoolResult {
   };
 }
 
-// GET the reward_box pool config + entries for a VIP tier. Empty body shape
-// ({ pool: null, entries: [] }) means the tier was never authored.
 // ── Achievements ────────────────────────────────────────────────────────────
 
 async function putJson<T>(path: string, body: unknown): Promise<T> {
@@ -485,6 +483,8 @@ export async function updateAchievementDef(
 
 // ── Reward Pools ─────────────────────────────────────────────────────────────
 
+// GET the reward_box pool config + entries for a VIP tier. Empty body shape
+// ({ pool: null, entries: [] }) means the tier was never authored.
 export async function getRewardPool(tier: string): Promise<RewardPoolResponse> {
   return getJson<RewardPoolResponse>(
     `/admin/reward-pools/${encodeURIComponent(tier)}`,
