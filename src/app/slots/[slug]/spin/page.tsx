@@ -19,9 +19,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const pack = findPack(slug);
   return {
-    title: pack
-      ? `${pack.name} — Slot Machine`
-      : 'Slot Machine',
+    title: pack ? `${pack.name} — Slot Machine` : 'Slot Machine',
   };
 }
 
