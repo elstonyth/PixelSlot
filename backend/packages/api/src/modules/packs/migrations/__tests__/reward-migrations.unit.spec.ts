@@ -109,6 +109,12 @@ test('credit-ceiling migration (20260630120000) adds pack_odds_credit_amount_max
   ) as Migration20260630120000;
   const sql = await collectSql(m);
   const joined = sql.join('\n');
+  const updateIdx = sql.findIndex((stmt) =>
+    /UPDATE "pack_odds" SET "credit_amount" = 10000/i.test(stmt),
+  );
+  const addConstraintIdx = sql.findIndex((stmt) =>
+    /ADD CONSTRAINT "pack_odds_credit_amount_max_check"/i.test(stmt),
+  );
 
   // Adds the ceiling CHECK constraint…
   expect(joined).toMatch(/pack_odds_credit_amount_max_check/i);
@@ -119,4 +125,8 @@ test('credit-ceiling migration (20260630120000) adds pack_odds_credit_amount_max
   expect(joined).toMatch(/credit_amount"?\s+IS NULL/i);
   // …and clamps any pre-existing over-cap row first so the ADD never violates.
   expect(joined).toMatch(/UPDATE "pack_odds" SET "credit_amount" = 10000/i);
+  // ORDER matters: the clamp UPDATE must run BEFORE the ADD CONSTRAINT, else the
+  // constraint would reject existing over-cap rows at creation time.
+  expect(updateIdx).toBeGreaterThanOrEqual(0);
+  expect(addConstraintIdx).toBeGreaterThan(updateIdx);
 });

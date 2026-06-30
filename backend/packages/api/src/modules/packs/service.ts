@@ -850,16 +850,21 @@ class PacksModuleService extends MedusaService({
     // so sponsors keep clawed-back credit AND the auto-freeze projection below is
     // computed on a partial set. Mirrors reverseOpen's loop on the same key.
     const PAGE = 1000;
-    let allRows = await this.listCreditTransactions(
+    const allRows = await this.listCreditTransactions(
       { source_transaction_id: open },
       { skip: 0, take: PAGE, order: { created_at: 'ASC', id: 'ASC' } },
     );
+    // Append in place (push, not concat) so paging stays O(n), not O(n²). The
+    // `=== skip` guard is exact: each fetch takes AT MOST PAGE rows, so the
+    // accumulated length equals skip iff the last page was full (more to fetch)
+    // and is strictly less on the final partial/empty page (stop) — it can never
+    // exceed skip, so this never loops forever nor stops early.
     for (let skip = PAGE; allRows.length === skip; skip += PAGE) {
       const next = await this.listCreditTransactions(
         { source_transaction_id: open },
         { skip, take: PAGE, order: { created_at: 'ASC', id: 'ASC' } },
       );
-      allRows = allRows.concat(next);
+      allRows.push(...next);
     }
     const credits = allRows.filter(
       (r) =>
