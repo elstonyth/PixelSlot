@@ -22,6 +22,7 @@ export default function SellConfirmModal({
   percent,
   netCredit,
   secondsLeft,
+  count,
   busy = false,
   onConfirm,
   onCancel,
@@ -34,10 +35,13 @@ export default function SellConfirmModal({
   percent: number;
   netCredit: number;
   secondsLeft?: number;
+  // Bulk sell-back: when set, fmv/netCredit are totals and the copy pluralizes.
+  count?: number;
   busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const bulk = typeof count === 'number';
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
@@ -107,16 +111,18 @@ export default function SellConfirmModal({
         </button>
 
         <div className="flex items-center gap-3">
-          <Image
-            src={image}
-            alt={cardName}
-            width={56}
-            height={78}
-            className="h-[78px] w-auto rounded-md object-contain"
-          />
+          {!bulk && (
+            <Image
+              src={image}
+              alt={cardName}
+              width={56}
+              height={78}
+              className="h-[78px] w-auto rounded-md object-contain"
+            />
+          )}
           <div className="min-w-0">
             <h2 className="font-heading text-lg font-bold text-white">
-              Sell this card?
+              {bulk ? `Sell ${count} cards?` : 'Sell this card?'}
             </h2>
             <p className="truncate text-[13px] text-white/60">{cardName}</p>
           </div>
@@ -124,7 +130,9 @@ export default function SellConfirmModal({
 
         <dl className="mt-5 space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm">
           <div className="flex justify-between">
-            <dt className="text-white/55">Market value</dt>
+            <dt className="text-white/55">
+              {bulk ? 'Total market value' : 'Market value'}
+            </dt>
             <dd className="text-white/85">{rm(fmv)}</dd>
           </div>
           <div className="flex justify-between">
@@ -143,8 +151,8 @@ export default function SellConfirmModal({
           {rateType === 'instant' && typeof secondsLeft === 'number'
             ? `Instant offer — ${secondsLeft}s left. `
             : ''}
-          Selling is permanent: the card leaves your vault and the amount is
-          credited to your site balance.
+          Selling is permanent: the {bulk ? 'cards leave' : 'card leaves'} your
+          vault and the amount is credited to your site balance.
         </p>
 
         <div className="mt-5 flex gap-2">
