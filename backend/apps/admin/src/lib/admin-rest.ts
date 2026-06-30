@@ -475,10 +475,11 @@ export async function updateAchievementDef(
   key: string,
   body: AchievementDefBody,
 ): Promise<AchievementDefDTO> {
-  return putJson<AchievementDefDTO>(
+  const r = await putJson<{ def: AchievementDefDTO }>(
     `/admin/achievements/${encodeURIComponent(key)}`,
     body,
   );
+  return r.def;
 }
 
 // ── Reward Pools ─────────────────────────────────────────────────────────────

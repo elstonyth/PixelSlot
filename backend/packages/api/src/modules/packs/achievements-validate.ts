@@ -23,8 +23,8 @@ export function validateAchievementDef(raw: unknown): AchievementDefBody {
   };
   const num = (v: unknown, f: string) => {
     const n = Number(v);
-    if (!Number.isFinite(n) || n < 0)
-      throw new MedusaError(MedusaError.Types.INVALID_DATA, `${f} must be a non-negative number`);
+    if (!Number.isSafeInteger(n) || n < 0)
+      throw new MedusaError(MedusaError.Types.INVALID_DATA, `${f} must be a non-negative integer`);
     return n;
   };
   const metric = str(b['metric'], 'metric');

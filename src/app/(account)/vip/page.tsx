@@ -21,7 +21,7 @@ function rewardLabel(r: {
 }
 
 export default async function VipPage() {
-  const res = await getVip();
+  const [res, achRes] = await Promise.all([getVip(), getAchievements()]);
   if (!res.ok) {
     return (
       <>
@@ -33,7 +33,6 @@ export default async function VipPage() {
     );
   }
   const v = res.vip;
-  const achRes = await getAchievements();
   const pct =
     v.next && v.next.threshold > 0
       ? Math.min(100, Math.round((v.spend / v.next.threshold) * 100))
@@ -83,7 +82,13 @@ export default async function VipPage() {
         </Link>{' '}
         page.
       </p>
-      {achRes.ok && <AchievementsSection data={achRes.data} />}
+      {achRes.ok ? (
+        <AchievementsSection data={achRes.data} />
+      ) : (
+        <Panel className="mt-8">
+          <p className="text-sm text-white/60">{achRes.error}</p>
+        </Panel>
+      )}
     </>
   );
 }

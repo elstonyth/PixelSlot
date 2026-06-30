@@ -22,7 +22,7 @@ export async function GET(
 
   const packs = req.scope.resolve<PacksModuleService>(PACKS_MODULE);
 
-  const [summary, defs, grants, stateRow, pulls] = await Promise.all([
+  const [summary, defs, grants, stateRow, counts] = await Promise.all([
     packs.creditSummary(customerId),
     packs.listAchievementDefs(
       {},
@@ -35,16 +35,18 @@ export async function GET(
     packs
       .listAchievementMemberStates({ customer_id: customerId }, { take: 1 })
       .then(([row]) => row ?? null),
-    packs.listPulls(
-      { customer_id: customerId },
-      { select: ['source', 'status'], take: 100000 },
-    ),
+    packs.pullCounts(customerId),
   ]);
 
+  // Fix C: use MAX(current, peak) so live fallback is peak-correct where a
+  // member_state row exists (post-subscriber customers already have peaks via
+  // grants; this guards legacy customers who have a state row but no grants).
+  const currentCasesOpened = counts.casesOpened;
+  const currentCollectionSize = counts.collectionSize;
   const metrics = {
     spend: summary.externalFundedSpendTotal,
-    cases_opened: pulls.filter((p) => p.source === 'pack').length,
-    collection_size: pulls.filter((p) => p.status !== 'bought_back').length,
+    cases_opened: Math.max(currentCasesOpened, Number(stateRow?.peak_cases_opened ?? 0)),
+    collection_size: Math.max(currentCollectionSize, Number(stateRow?.peak_collection_size ?? 0)),
   };
   const unlockedByKey = new Map(grants.map((g) => [g.achievement_key, g]));
 
@@ -66,13 +68,15 @@ export async function GET(
       const metric = d.metric as AchMetric;
       const current = Math.min(metrics[metric], threshold);
       const g = unlockedByKey.get(d.key);
+      // Use grant xp_awarded snapshot when available (Fix C: per-badge xp)
+      const xp = g?.xp_awarded != null ? Number(g.xp_awarded) : Number(d.xp);
       return {
         key: d.key,
         name: d.name,
         description: d.description,
         category: d.category,
         rarity: d.rarity,
-        xp: Number(d.xp),
+        xp,
         metric,
         unlocked: earned.has(d.key),
         unlocked_at: g ? g.unlocked_at : null,

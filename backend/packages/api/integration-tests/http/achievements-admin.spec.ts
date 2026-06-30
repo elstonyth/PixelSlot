@@ -167,6 +167,54 @@ medusaIntegrationTestRunner({
         expect(res.status).toBe(400);
       });
 
+      // ---------------------------------------------------------------- POST create
+
+      it('POST /admin/achievements creates a new def (201) and persists it', async () => {
+        const res = await unwrapResponse(
+          api.post(
+            '/admin/achievements',
+            {
+              key: 'post_test_ach',
+              name: 'Post Test',
+              description: 'Created via POST',
+              category: 'spending',
+              rarity: 'Common',
+              xp: 10,
+              metric: 'spend',
+              threshold: 100,
+            },
+            { headers: adminHeaders() },
+          ),
+        );
+        expect(res.status).toBe(201);
+        expect(res.data.def.key).toBe('post_test_ach');
+
+        // Verify persistence.
+        const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+        const [saved] = await packs.listAchievementDefs({ key: 'post_test_ach' }, { take: 1 });
+        expect(saved).toBeDefined();
+        expect(Number(saved?.xp)).toBe(10);
+      });
+
+      it('POST /admin/achievements with missing key → 400', async () => {
+        const res = await unwrapResponse(
+          api.post(
+            '/admin/achievements',
+            {
+              name: 'No Key',
+              description: 'Missing key field',
+              category: 'spending',
+              rarity: 'Common',
+              xp: 10,
+              metric: 'spend',
+              threshold: 100,
+            },
+            { headers: adminHeaders() },
+          ),
+        );
+        expect(res.status).toBe(400);
+      });
+
       // ---------------------------------------------------------------- PUT 404
 
       it('PUT /admin/achievements/nonexistent-key → 404', async () => {

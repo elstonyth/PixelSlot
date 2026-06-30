@@ -194,6 +194,7 @@ medusaIntegrationTestRunner({
 
         expect(body.collector_level).toBe(1);
         expect(body.total_xp).toBe(0);
+        expect((body as { highest_level_ever?: number }).highest_level_ever).toBe(1);
 
         // Level-2 rung must be present and correct.
         expect(body.next_level).not.toBeNull();
@@ -260,10 +261,17 @@ medusaIntegrationTestRunner({
         expect(openRes.status).toBe(200);
 
         // Wait for the async subscriber to grant cases_opened_1.
-        await waitFor(
-          () => packs.listAchievementGrants({ customer_id: customer.actorId }),
+        const grantRows = await waitFor(
+          () => packs.listAchievementGrants(
+            { customer_id: customer.actorId },
+            { select: ['achievement_key', 'unlocked_at'], take: 100 },
+          ),
           (rows) => rows.some((g: { achievement_key: string }) => g.achievement_key === 'cases_opened_1'),
         );
+        // Persistence check: grant row must exist with a non-null unlocked_at.
+        const grantRow = grantRows.find((g: { achievement_key: string }) => g.achievement_key === 'cases_opened_1');
+        expect(grantRow).toBeDefined();
+        expect((grantRow as { unlocked_at: unknown }).unlocked_at).not.toBeNull();
 
         // Now hit GET /store/achievements and verify the wire shape.
         const res = await unwrapResponse(

@@ -3165,6 +3165,27 @@ class PacksModuleService extends MedusaService({
     };
   }
 
+  // COUNT aggregate for pull metrics — no row-scan ceiling (replaces listPulls take:100000).
+  @InjectManager()
+  async pullCounts(
+    customerId: string,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ casesOpened: number; collectionSize: number }> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ cases_opened: number; collection_size: number }[]>(
+      `SELECT COUNT(*) FILTER (WHERE source = 'pack')::int AS cases_opened,
+              COUNT(*) FILTER (WHERE status <> 'bought_back')::int AS collection_size
+         FROM pull WHERE customer_id = ? AND deleted_at IS NULL`,
+      [customerId],
+    );
+    const row = rows[0];
+    return {
+      casesOpened: Number(row?.cases_opened ?? 0),
+      collectionSize: Number(row?.collection_size ?? 0),
+    };
+  }
+
   // Idempotent achievement grant: computes current metrics, derives which
   // achievement thresholds are met (against monotonic peaks so unlocks never
   // revoke on sell-back), inserts new grant rows via ON CONFLICT DO NOTHING,
@@ -3180,14 +3201,9 @@ class PacksModuleService extends MedusaService({
     const em = (sharedContext.transactionManager ??
       sharedContext.manager) as unknown as LedgerSqlManager;
 
-    // 1. Metrics (fresh). spend in MYR; counts from one listPulls query.
+    // 1. Metrics (fresh). spend in MYR; counts via COUNT aggregate (no row-scan cap).
     const summary = await this.creditSummary(customerId);
-    const pulls = await this.listPulls(
-      { customer_id: customerId },
-      { select: ['source', 'status'], take: 100000 },
-    );
-    const casesOpened = pulls.filter((p) => p.source === 'pack').length;
-    const collectionSize = pulls.filter((p) => p.status !== 'bought_back').length;
+    const { casesOpened, collectionSize } = await this.pullCounts(customerId, sharedContext);
 
     const defs = await this.listAchievementDefs(
       {},
@@ -3233,12 +3249,12 @@ class PacksModuleService extends MedusaService({
       if (Array.isArray(r) && r.length > 0) newlyUnlocked.push(key);
     }
 
-    // 5. Recompute total XP from grant rows (snapshot-safe) + collector level.
-    const grants = await this.listAchievementGrants(
-      { customer_id: customerId },
-      { select: ['xp_awarded'], take: 10000 },
+    // 5. Recompute total XP via SUM aggregate (snapshot-safe) + collector level.
+    const xpRows = await em.execute<{ total_xp: number }[]>(
+      `SELECT COALESCE(SUM(xp_awarded),0)::int AS total_xp FROM achievement_grant WHERE customer_id = ? AND deleted_at IS NULL`,
+      [customerId],
     );
-    const totalXp = grants.reduce((s, g) => s + Number(g.xp_awarded), 0);
+    const totalXp = Number(xpRows[0]?.total_xp ?? 0);
     const level = levelForXp(totalXp);
 
     // 6. Monotonic state upsert (peaks + highest_level_ever via GREATEST).

@@ -83,14 +83,18 @@ moduleIntegrationTestRunner<PacksModuleService>({
 
       it('peak_cases_opened does not drop when a card is sold back', async () => {
         // 25 pack pulls
-        await service.createPulls(
+        const pulls = await service.createPulls(
           Array.from({ length: 25 }, (_, i) => ({ customer_id: cust, pack_id: 'p', card_id: `c${i}`, rolled_at: new Date(), status: 'vaulted' as const, source: 'pack' as const })),
         );
         await service.grantAchievements(cust, 'open_a');
         let [state] = await service.listAchievementMemberStates({ customer_id: cust });
         expect(Number(state.peak_cases_opened)).toBe(25);
 
-        // selling back does not reduce cases_opened (source still 'pack'); peak holds
+        // Actually sell back one pull so collection_size drops — peak must still hold
+        const firstPull = pulls[0];
+        expect(firstPull).toBeDefined();
+        await service.updatePulls([{ id: firstPull!.id, status: 'bought_back' }]);
+
         await service.grantAchievements(cust, 'open_b');
         [state] = await service.listAchievementMemberStates({ customer_id: cust });
         expect(Number(state.peak_cases_opened)).toBe(25);
