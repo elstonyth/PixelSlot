@@ -99,9 +99,9 @@ try {
 
   // ── Vault renders with the new multi-select affordance ──────────────────────
   await page.goto(`${BASE}/vault`, { waitUntil: 'domcontentloaded' });
-  const selectBtn = page.getByRole('button', { name: /select cards to ship/i });
+  const selectBtn = page.getByRole('button', { name: /^select cards$/i });
   await selectBtn.waitFor({ timeout: 20000 });
-  ok('vault renders "Select cards to ship" button');
+  ok('vault renders "Select cards" button');
   await shot(page, '01-vault');
 
   // Count vault cards before requesting delivery (Sell buttons = 1 per card).

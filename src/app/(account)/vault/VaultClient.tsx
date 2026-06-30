@@ -42,10 +42,12 @@ export default function VaultClient({
   const [confirmItem, setConfirmItem] = useState<VaultItem | null>(null);
   const [showcasingId, setShowcasingId] = useState<string | null>(null);
 
-  // Multi-select → request-delivery flow.
+  // Multi-select → bulk ship or bulk sell-back.
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deliverOpen, setDeliverOpen] = useState(false);
+  const [confirmBulkSell, setConfirmBulkSell] = useState(false);
+  const [bulkSelling, setBulkSelling] = useState(false);
 
   const toggleSelect = (pullId: string) =>
     setSelected((prev) => {
@@ -55,6 +57,18 @@ export default function VaultClient({
       return next;
     });
   const selectedItems = items.filter((i) => selected.has(i.pullId));
+  const selectedFmv = selectedItems.reduce((s, i) => s + i.card.marketValue, 0);
+  const selectedBuyback = selectedItems.reduce(
+    (s, i) => s + i.buyback.amount,
+    0,
+  );
+  // The vault buyback is a flat rate, uniform across all vaulted items (see the
+  // footer copy + actions/vault.ts), so the first item's percent represents the
+  // whole batch. The confirm's "You receive" total is the exact sum of per-item
+  // amounts (selectedBuyback) — independent of this — so only the displayed rate
+  // label leans on the invariant, and the credited total stays correct anyway.
+  const selectedPercent =
+    selectedItems[0]?.buyback.percent ?? FLAT_BUYBACK_PERCENT;
 
   const vaultValue = items.reduce((sum, i) => sum + i.card.marketValue, 0);
 
@@ -118,6 +132,58 @@ export default function VaultClient({
     }
   }
 
+  // ponytail: bulk sell-back loops the single-pull buyback. The backend has no
+  // batch route and serializes credit writes per-customer (advisory lock), so a
+  // sequential loop is correct; add a server-side batch action if a vault ever
+  // holds enough cards that the round-trips matter.
+  async function bulkSell() {
+    if (bulkSelling) return;
+    setError(null);
+    setBulkSelling(true);
+    const ids = selectedItems.map((i) => i.pullId);
+    const sold: string[] = [];
+    let lastBalance: number | null = null;
+    // Remember the first failure's reason so the summary can say WHY (e.g. rate
+    // limited vs already sold), not just how many — keeps going either way so
+    // one failure doesn't strand the rest of the batch.
+    let firstError: string | null = null;
+    for (const id of ids) {
+      try {
+        const res = await sellBackPull(id);
+        if (res.ok) {
+          sold.push(id);
+          lastBalance = res.balance;
+        } else if (!firstError) {
+          firstError = res.error;
+        }
+      } catch {
+        if (!firstError) firstError = 'Something went wrong. Please try again.';
+      }
+    }
+    if (sold.length > 0) {
+      const soldSet = new Set(sold);
+      setItems((prev) => prev.filter((i) => !soldSet.has(i.pullId)));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        sold.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+    if (lastBalance !== null) setBalance(lastBalance);
+    const failed = ids.length - sold.length;
+    setBulkSelling(false);
+    setConfirmBulkSell(false);
+    if (failed > 0) {
+      setError(
+        `${failed} card${failed === 1 ? '' : 's'} couldn't be sold back${
+          sold.length > 0 ? ` — the other ${sold.length} sold` : ''
+        }.${firstError ? ` ${firstError}` : ''}`,
+      );
+    } else {
+      setSelectMode(false);
+    }
+  }
+
   return (
     <>
       <AccountHeader
@@ -144,17 +210,27 @@ export default function VaultClient({
             }}
             className="rounded-lg border border-white/15 px-3 py-1.5 text-[12px] font-semibold text-white/70 hover:text-white"
           >
-            {selectMode ? 'Cancel selection' : 'Select cards to ship'}
+            {selectMode ? 'Cancel selection' : 'Select cards'}
           </button>
           {selectMode && (
-            <button
-              type="button"
-              disabled={selected.size === 0}
-              onClick={() => setDeliverOpen(true)}
-              className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1.5 text-[12px] font-bold text-white disabled:opacity-50"
-            >
-              Request delivery ({selected.size})
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={selected.size === 0}
+                onClick={() => setConfirmBulkSell(true)}
+                className="rounded-lg border border-amber-400/60 bg-amber-400/10 px-3 py-1.5 text-[12px] font-bold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50"
+              >
+                Sell ({selected.size})
+              </button>
+              <button
+                type="button"
+                disabled={selected.size === 0}
+                onClick={() => setDeliverOpen(true)}
+                className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1.5 text-[12px] font-bold text-white disabled:opacity-50"
+              >
+                Request delivery ({selected.size})
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -326,6 +402,24 @@ export default function VaultClient({
             setConfirmItem(null);
           }}
           onCancel={() => setConfirmItem(null)}
+        />
+      )}
+
+      {confirmBulkSell && (
+        <SellConfirmModal
+          open
+          count={selectedItems.length}
+          cardName={`${selectedItems.length} card${
+            selectedItems.length === 1 ? '' : 's'
+          } from your vault`}
+          image=""
+          fmv={selectedFmv}
+          rateType="flat"
+          percent={selectedPercent}
+          netCredit={selectedBuyback}
+          busy={bulkSelling}
+          onConfirm={bulkSell}
+          onCancel={() => !bulkSelling && setConfirmBulkSell(false)}
         />
       )}
 
