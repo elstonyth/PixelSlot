@@ -13,6 +13,7 @@ import { openBatch, revealPull } from '@/lib/actions/packs';
 import type { WonCard } from '@/lib/actions/packs';
 import { getCreditBalance, sellBackPull } from '@/lib/actions/vault';
 import { useSound } from '@/lib/use-sound';
+import { rm } from '@/lib/format';
 import {
   type ResolvedPack,
   type Pack,
@@ -350,7 +351,7 @@ export default function SlotMachineClient({
                         <p className="mt-1 text-[13px] text-white/60">
                           Value{' '}
                           <span className="font-bold text-white">
-                            {won.value}
+                            {won.marketPriceMyr != null ? rm(won.marketPriceMyr ?? 0) : won.value}
                           </span>
                         </p>
                       </div>
