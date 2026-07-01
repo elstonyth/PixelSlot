@@ -235,7 +235,10 @@ export default function PackDetailClient({
         id: `${res.card.id}-${Date.now()}`,
         name: res.card.name,
         image: res.card.image,
-        value: res.card.value,
+        value:
+          res.card.marketPriceMyr != null
+            ? rm(res.card.marketPriceMyr)
+            : res.card.value,
         rarity: res.card.rarity,
         packName: active.name,
         packIcon: active.image,

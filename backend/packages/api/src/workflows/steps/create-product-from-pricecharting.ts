@@ -30,8 +30,6 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-type CompensateData = { productId: string } | undefined;
-
 export const createProductFromPcInvoke = async (
   input: CreateProductFromPcInput,
   { container }: { container: MedusaContainer },
@@ -57,7 +55,9 @@ export const createProductFromPcInvoke = async (
       products: [
         {
           title: input.name,
-          handle: slug(`${input.name}-${input.grader}-${input.grade}`),
+          handle: slug(
+            `${input.name}-${input.grader}-${input.grade}-${input.pc_product_id}`,
+          ),
           status: input.for_sale === false ? "draft" : "published",
           shipping_profile_id: ctx.shippingProfileId,
           thumbnail: input.image,
@@ -88,7 +88,10 @@ export const createProductFromPcInvoke = async (
   });
 
   const product = result[0];
-  return new StepResponse(product, { productId: product.id } satisfies CompensateData);
+  // No compensation function here: createProductsWorkflow.run(...) is a Medusa
+  // core workflow that registers its own rollback (it self-compensates on
+  // failure), so this step doesn't need to delete the product itself.
+  return new StepResponse(product);
 };
 
 export const createProductFromPcStep = createStep(

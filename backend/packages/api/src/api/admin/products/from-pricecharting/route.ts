@@ -47,10 +47,17 @@ const requirePositiveNumber = (value: unknown, field: string): number => {
 
 const requireUrl = (value: unknown, field: string): string => {
   const s = requireString(value, field);
+  let parsed: URL;
   try {
-    new URL(s);
+    parsed = new URL(s);
   } catch {
     throw new MedusaError(MedusaError.Types.INVALID_DATA, `'${field}' must be a valid URL.`);
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `'${field}' must use http or https.`,
+    );
   }
   return s;
 };

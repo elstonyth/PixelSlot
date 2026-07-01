@@ -65,6 +65,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
   const body = req.body as Body;
   const manual_override = requireBoolean(body.manual_override, "manual_override");
   const manual_rate = requirePositiveNumberOrNull(body.manual_rate, "manual_rate");
+  if (manual_override && manual_rate == null) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "'manual_rate' is required when 'manual_override' is true.",
+    );
+  }
 
   const { packs, row } = await loadRow(req.scope);
   if (row) {

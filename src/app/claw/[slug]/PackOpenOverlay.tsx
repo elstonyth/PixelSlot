@@ -211,10 +211,11 @@ export default function PackOpenOverlay({
     : null;
   const yearMatch = card.name.match(/\b(19|20)\d{2}\b/);
   const yearLabel = yearMatch ? yearMatch[0] : null;
+  const displayValue = marketPriceMyr != null ? rm(marketPriceMyr) : card.value;
   const rows: { label: string; value: string }[] = [
     yearLabel
       ? { label: 'Year', value: yearLabel }
-      : { label: 'Value', value: card.value },
+      : { label: 'Value', value: displayValue },
     { label: 'Category', value: category },
     ...(gradeLabel ? [{ label: 'Grade', value: gradeLabel }] : []),
   ];
@@ -656,7 +657,9 @@ export default function PackOpenOverlay({
                 <span className="text-[13px] text-white/70">
                   Value:{' '}
                   <span className="font-bold text-white">
-                    {marketPriceMyr != null ? rm(marketPriceMyr ?? 0) : card.value}
+                    {marketPriceMyr != null
+                      ? rm(marketPriceMyr ?? 0)
+                      : card.value}
                   </span>
                   {!isReal && ' · demo'}
                 </span>

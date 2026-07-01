@@ -217,7 +217,7 @@ export default function SlotMachineClient({
       id: `${won.id}-${now}-${i}`,
       name: won.name,
       image: won.image,
-      value: won.value,
+      value: won.marketPriceMyr != null ? rm(won.marketPriceMyr) : won.value,
       rarity: won.rarity,
       packName: pack.name,
       packIcon: pack.image,
@@ -233,7 +233,9 @@ export default function SlotMachineClient({
 
     const first = held.cards[0];
     if (held.cards.length === 1 && first) {
-      setAnnounce(`Won ${first.name}, ${first.value}`);
+      const firstValue =
+        first.marketPriceMyr != null ? rm(first.marketPriceMyr) : first.value;
+      setAnnounce(`Won ${first.name}, ${firstValue}`);
     } else {
       setAnnounce(`Won ${held.cards.length} cards`);
     }
@@ -282,7 +284,10 @@ export default function SlotMachineClient({
                 className="font-heading text-2xl font-bold tracking-tight"
                 style={{ color: `rgb(${firstRgb})` }}
               >
-                YOU WON — {firstTier.toUpperCase()} · {wonCards[0]!.value}
+                YOU WON — {firstTier.toUpperCase()} ·{' '}
+                {wonCards[0]!.marketPriceMyr != null
+                  ? rm(wonCards[0]!.marketPriceMyr)
+                  : wonCards[0]!.value}
               </p>
             )}
             {wonCards.length > 1 && (
@@ -351,7 +356,9 @@ export default function SlotMachineClient({
                         <p className="mt-1 text-[13px] text-white/60">
                           Value{' '}
                           <span className="font-bold text-white">
-                            {won.marketPriceMyr != null ? rm(won.marketPriceMyr ?? 0) : won.value}
+                            {won.marketPriceMyr != null
+                              ? rm(won.marketPriceMyr ?? 0)
+                              : won.value}
                           </span>
                         </p>
                       </div>

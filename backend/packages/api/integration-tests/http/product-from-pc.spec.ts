@@ -114,7 +114,7 @@ medusaIntegrationTestRunner({
           ),
         );
         expect(res.status).toBe(201);
-        expect(res.data.product.handle).toBe("charizard-psa-10");
+        expect(res.data.product.handle).toBe("charizard-psa-10-6910");
 
         const prod = await unwrapResponse(
           api.get(

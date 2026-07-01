@@ -50,4 +50,32 @@ describe('toAdminCardDto', () => {
   it('does not emit a stock field', () => {
     expect(toAdminCardDto(card)).not.toHaveProperty('stock');
   });
+
+  // Passing fxRate adds `priceBreakdown` (raw FMV, the fx rate used, the
+  // no-markup MYR price, the card's own display price, and the markup
+  // difference) — all rounded to cents by displayMarketPrice/toMoney.
+  // Fixture: market_value 0.15, market_multiplier 1.2, fxRate 4.7 ->
+  // marketMyr = round(0.15*4.7*1*100)/100 = 0.71
+  // displayPrice = round(0.15*4.7*1.2*100)/100 = 0.85
+  // markup = round((0.85-0.71)*100)/100 = 0.14
+  it('adds a rounded priceBreakdown when an fxRate is passed', () => {
+    const dto = toAdminCardDto(card, 4.7) as ReturnType<
+      typeof toAdminCardDto
+    > & {
+      priceBreakdown: {
+        raw: number;
+        fxRate: number;
+        marketMyr: number;
+        displayPrice: number;
+        markup: number;
+      };
+    };
+    expect(dto.priceBreakdown).toEqual({
+      raw: 0.15,
+      fxRate: 4.7,
+      marketMyr: 0.71,
+      displayPrice: 0.85,
+      markup: 0.14,
+    });
+  });
 });
