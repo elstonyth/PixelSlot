@@ -175,12 +175,18 @@
       "pricePlaceholder": "Defaults to FMV",
       "forSale": "List on marketplace",
       "forSaleHint": "When off, the card stays a pack prize but is hidden from the store.",
+      "linked": "Linked · synced {{synced}}",
+      "neverSynced": "not yet synced",
+      "unlink": "Unlink",
+      "markup": "Markup over FMV (%)",
+      "markupHint": "Display-only markup applied on top of the tracked PriceCharting value. 20 = show 20% above FMV.",
       "save": "Save",
       "cancel": "Cancel"
     },
     "toast": {
       "created": "Card registered.",
       "updated": "Card updated.",
+      "unlinked": "Card unlinked from PriceCharting — now priced manually.",
       "deleted": "Card removed from the gacha system."
     },
     "delete": {

@@ -103,6 +103,11 @@ export interface AdminCardUpdate {
   for_sale: boolean;
   pokemon_dex: number | null;
   sprite_image: string | null;
+  /** Explicit `null` unlinks the card from PriceCharting (reverts to manual
+   *  pricing); `undefined` leaves the current link untouched. */
+  pc_product_id?: string | null;
+  pc_grade?: string | null;
+  market_multiplier?: number;
 }
 
 export interface OddsRow {
