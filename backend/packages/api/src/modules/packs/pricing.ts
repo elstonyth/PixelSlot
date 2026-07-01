@@ -17,6 +17,19 @@ export function effectiveRate(row: { rate: number; manual_override: boolean; man
   return Number.isFinite(r) && r > 0 ? r : DEFAULT_USD_MYR;
 }
 
+// Resolve the current effective USD->MYR rate for a request — the single seam
+// store/admin routes call so they never touch FxRate rows or effectiveRate's
+// fallback logic directly. Row fields (rate/manual_rate) are bigNumber and can
+// come back as strings/objects; effectiveRate already does Number(...) with a
+// finite/>0 guard, so no extra normalization is needed here (verified against
+// the identical raw-row usage in admin/pricing/fx/route.ts).
+export async function resolveFxRate(packs: {
+  listFxRates: (f: unknown, c: unknown) => Promise<Array<{ rate: number; manual_override: boolean; manual_rate: number | null }>>;
+}): Promise<number> {
+  const [row] = await packs.listFxRates({ pair: "USD_MYR" }, { take: 1 });
+  return effectiveRate(row ?? null);
+}
+
 export async function fetchUsdMyr(url: string = FX_USD_MYR_URL): Promise<number> {
   const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
   const data = (await resp.json()) as { rates?: { MYR?: number } };
