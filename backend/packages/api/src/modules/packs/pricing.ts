@@ -23,11 +23,21 @@ export function effectiveRate(row: { rate: number; manual_override: boolean; man
 // come back as strings/objects; effectiveRate already does Number(...) with a
 // finite/>0 guard, so no extra normalization is needed here (verified against
 // the identical raw-row usage in admin/pricing/fx/route.ts).
+//
+// Defensive on the DB read: callers (e.g. GET /admin/cards) Promise.all this
+// alongside the card list, so a transient FxRate query failure must not 500
+// the whole endpoint — fall back to the default rate instead. Every caller
+// already tolerates the fallback (displayMarketPrice/effectiveRate degrade
+// gracefully), so swallowing here is safe.
 export async function resolveFxRate(packs: {
   listFxRates: (f: unknown, c: unknown) => Promise<Array<{ rate: number; manual_override: boolean; manual_rate: number | null }>>;
 }): Promise<number> {
-  const [row] = await packs.listFxRates({ pair: "USD_MYR" }, { take: 1 });
-  return effectiveRate(row ?? null);
+  try {
+    const [row] = await packs.listFxRates({ pair: "USD_MYR" }, { take: 1 });
+    return effectiveRate(row ?? null);
+  } catch {
+    return DEFAULT_USD_MYR;
+  }
 }
 
 export async function fetchUsdMyr(url: string = FX_USD_MYR_URL): Promise<number> {

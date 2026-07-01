@@ -160,21 +160,26 @@ const GachaCardsPage = () => {
     }
   };
 
+  // Unlink clears ONLY the PC link — it must not carry the operator's
+  // in-progress (possibly unsaved) edits to other fields from the open form.
+  // Values below are the card's last-loaded state (from the list), not
+  // `form`'s live (possibly dirty) state.
   const unlink = async () => {
-    if (!form) return;
+    const card = cards?.find((c) => c.handle === form?.handle);
+    if (!form || !card) return;
     try {
       await updateCard.mutateAsync({
-        handle: form.handle,
-        name: form.name.trim(),
-        set: form.set.trim(),
-        grader: form.grader.trim(),
-        grade: form.grade.trim(),
-        market_value: Number(form.market_value),
-        image: form.image.trim(),
-        price: form.price.trim() === '' ? undefined : Number(form.price),
-        for_sale: form.for_sale,
-        pokemon_dex: form.pokemon_dex,
-        sprite_image: form.sprite_image,
+        handle: card.handle,
+        name: card.name,
+        set: card.set,
+        grader: card.grader,
+        grade: card.grade,
+        market_value: card.market_value,
+        image: card.image,
+        price: card.price ?? undefined,
+        for_sale: card.for_sale,
+        pokemon_dex: card.pokemon_dex,
+        sprite_image: card.sprite_image,
         pc_product_id: null,
       });
       toast.success(t('cards.toast.unlinked'));

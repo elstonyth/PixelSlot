@@ -92,14 +92,19 @@ function displayMarketPrice(
 
 const DEFAULT_USD_MYR = 4.7;
 
-// FX rate for the marketplace listing price, fetched once per request and
-// shared across all cards in the grid. Same in-flight-promise caching pattern
-// as getStoreRegionId — a miss/failure clears the cache so the next call
+// FX rate for the marketplace listing price, cached for a few minutes and
+// shared across all cards in the grid (avoids stampeding the backend on every
+// request while still picking up an admin FX override or the daily sync
+// within a bounded delay — a process-lifetime cache would never see either
+// without a restart). A miss/failure clears the cache so the next call
 // retries. Falls back to DEFAULT_USD_MYR (never blocks the listing on a
 // transient backend outage).
+const FX_CACHE_TTL_MS = 5 * 60 * 1000;
 let fxRatePromise: Promise<number> | null = null;
+let fxRateCachedAt = 0;
 function getFxRate(): Promise<number> {
-  if (!fxRatePromise) {
+  if (!fxRatePromise || Date.now() - fxRateCachedAt > FX_CACHE_TTL_MS) {
+    fxRateCachedAt = Date.now();
     fxRatePromise = sdk.client
       .fetch<{ rate: number }>('/store/pricing/fx')
       .then(({ rate }) =>

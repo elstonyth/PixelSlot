@@ -108,6 +108,7 @@ const AddFromPriceChartingPage = () => {
     setPcProduct(null);
     setPcGrade(null);
     setMarketValue(null);
+    setImage('');
     try {
       setMatches(await searchPriceCharting(q));
     } catch (err) {
@@ -124,6 +125,7 @@ const AddFromPriceChartingPage = () => {
     setPcProduct(null);
     setPcGrade(null);
     setMarketValue(null);
+    setImage('');
     try {
       setPcProduct(await getPriceChartingProduct(m.id));
     } catch (err) {
@@ -160,7 +162,7 @@ const AddFromPriceChartingPage = () => {
     }
   };
 
-  const multiplier = Number(multiplierPct) / 100;
+  const multiplier = 1 + Number(multiplierPct) / 100;
   const fxEffective = fx?.effective ?? null;
   const preview =
     marketValue !== null && fxEffective !== null && Number.isFinite(multiplier) && multiplier > 0

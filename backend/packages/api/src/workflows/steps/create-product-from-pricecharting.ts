@@ -2,6 +2,9 @@ import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
 import type { MedusaContainer } from "@medusajs/framework/types";
 import { createProductsWorkflow } from "@medusajs/medusa/core-flows";
 import { resolveCardProductContext } from "../../modules/packs/card-product";
+import { PACKS_MODULE } from "../../modules/packs";
+import type PacksModuleService from "../../modules/packs/service";
+import { displayMarketPrice, resolveFxRate } from "../../modules/packs/pricing";
 
 // Create a standalone marketplace Product from a PriceCharting lookup. This is
 // deliberately catalog-only: NO gacha Card is created (contrast create-card,
@@ -37,7 +40,17 @@ export const createProductFromPcInvoke = async (
   // other catalog-writing path in this repo uses (card-product.ts) — a
   // standalone product still needs these to be a valid Mercur listing.
   const ctx = await resolveCardProductContext(container);
-  const price = input.price ?? input.market_value;
+  // The variant is priced in MYR, but market_value is raw USD FMV — when the
+  // caller omits `price`, derive the MYR amount the same way the admin preview
+  // does (FMV x FX x markup), never store the raw USD number into an MYR field.
+  const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
+  const price =
+    input.price ??
+    displayMarketPrice(
+      input.market_value,
+      await resolveFxRate(packs),
+      input.market_multiplier ?? 1.2,
+    );
 
   const { result } = await createProductsWorkflow(container).run({
     input: {

@@ -5,6 +5,7 @@ import type PacksModuleService from "../modules/packs/service";
 import { pcFetch } from "../api/admin/pricecharting/client";
 import { fetchUsdMyr } from "../modules/packs/pricing";
 import { refreshCardPrice, type CardRow } from "../modules/packs/sync-market-prices";
+import { pageAll } from "../api/utils/page-all";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -32,9 +33,11 @@ export default async function syncMarketPricesJob(container: MedusaContainer): P
     logger.warn(`[sync-market-prices] FX failed, keeping last-known: ${(e as Error).message}`);
   }
 
-  const cards: CardRow[] = (await packs.listCards({}, { take: 10000 })).filter(
-    (c: CardRow) => c.pc_product_id,
-  );
+  // Paginate past linked cards beyond a single page — a `take: N` cap would
+  // silently stop syncing cards past N as the catalog grows.
+  const cards: CardRow[] = (
+    await pageAll<CardRow>((opts) => packs.listCards({}, opts))
+  ).filter((c: CardRow) => c.pc_product_id);
   let changed = 0;
   for (const card of cards) {
     try {
