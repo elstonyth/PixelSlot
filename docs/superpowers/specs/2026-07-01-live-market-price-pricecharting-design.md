@@ -119,8 +119,8 @@ Add (all nullable / defaulted so the 51 seeded cards migrate cleanly):
 
 **FX rate storage** (app-level, not per-card): a single persisted setting holding
 `usd_myr_rate`, `usd_myr_rate_at`, `usd_myr_rate_source`, and a manual-override
-flag/value. Implemented as a small settings record/module (mirroring the existing
-server-persisted-setting pattern used for the win-rate lock). Refreshed daily.
+flag/value. The exact mechanism (a dedicated small model vs. a reused settings
+store) is an implementation-plan detail. Refreshed daily.
 
 ## 6. Backend design
 
@@ -138,9 +138,13 @@ New admin path "Add from PriceCharting":
 1. Admin uploads the card image (existing `uploadImage` pipeline — **the Prices
    API returns no image**, so this stays a manual upload / placeholder).
 2. Create the Medusa Product (title = PC name, handle derived, status from
-   `for_sale`) via Medusa's product-create.
-3. Register the Card (reuse `createCardWorkflow`) with `market_value` = chosen
-   tier's USD value, plus `pc_product_id`, `pc_grade`, `market_multiplier`.
+   `for_sale`) via Medusa's product-create, **with the uploaded image attached**:
+   `createCardStep` reads the image from `product.thumbnail`/`images` and
+   **rejects a product that has no image**, so it must be present before step 3.
+3. Register the Card (reuse `createCardStep`) with `market_value` = chosen tier's
+   USD value, plus `pc_product_id`, `pc_grade`, `market_multiplier`. These three
+   are **new inputs** — today's `RegisterCardInput` does not carry them, so the
+   step signature + `Card` insert must be extended.
 Chained in one workflow with compensation (roll back the Product if Card
 registration fails), so the admin experiences one atomic action.
 
