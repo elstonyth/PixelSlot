@@ -31,8 +31,9 @@ export type WonCard = {
   sprite_image: string | null;
   /** Live MYR display price (raw USD FMV x FX x per-card multiplier) — mirrors
    *  the vault's marketPriceMyr so the reveal shows the same live number.
-   *  0 if an older backend omitted it (guarded at render, never NaN). */
-  marketPriceMyr: number;
+   *  Null if an older/un-enriched backend omitted it — the reveal then falls
+   *  back to the legacy `value` field instead of rendering "RM 0.00". */
+  marketPriceMyr: number | null;
 };
 
 export type OpenPackResult =
@@ -150,7 +151,7 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
         rarity: wonCard.rarity as Rarity,
         pokemon_dex: wonCard.pokemon_dex ?? null,
         sprite_image: wonCard.sprite_image ?? null,
-        marketPriceMyr: wonCard.marketPriceMyr ?? 0,
+        marketPriceMyr: wonCard.marketPriceMyr ?? null,
       },
       pullId: typeof pull?.id === 'string' ? pull.id : null,
       marketValue: wonCard.market_value,

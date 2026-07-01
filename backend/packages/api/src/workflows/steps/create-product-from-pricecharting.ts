@@ -14,7 +14,7 @@ export type CreateProductFromPcInput = {
   set: string;
   grader: string;
   grade: string;
-  market_value: number; // MYR FMV — a decimal, never cents
+  market_value: number; // raw USD FMV (PriceCharting per-grade value) — a decimal, never cents
   image: string;
   price?: number | null;
   for_sale?: boolean;
