@@ -21,7 +21,7 @@ import {
 import { useFxRate, useCreateProductFromPriceCharting, useUploadImage } from '../../../lib/queries';
 import { resolveImageUrl } from '../../../lib/image-url';
 import { validateImageFile } from '../../../lib/image-validation';
-import { rm } from '../../../lib/format';
+import { usd } from '../../../lib/format';
 
 export const config: RouteConfig = {
   label: 'Add from PriceCharting',
@@ -309,7 +309,7 @@ const AddFromPriceChartingPage = () => {
                     type="button"
                     onClick={() => pickTier(p.grade, p.usd)}
                   >
-                    {p.grade}: {rm(p.usd)}
+                    {p.grade}: {usd(p.usd)}
                   </Button>
                 ))}
               </div>

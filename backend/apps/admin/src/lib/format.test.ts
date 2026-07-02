@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rm, timeAgo, fmtPct } from './format';
+import { rm, usd, timeAgo, fmtPct } from './format';
 
 describe('rm', () => {
   it('formats a number with two decimals and an RM prefix', () => {
@@ -10,6 +10,15 @@ describe('rm', () => {
   });
   it('returns an em dash for null', () => {
     expect(rm(null)).toBe('—');
+  });
+});
+
+describe('usd', () => {
+  it('formats a number with two decimals and a $ prefix', () => {
+    expect(usd(15044.29)).toBe('$15,044.29');
+  });
+  it('returns an em dash for null', () => {
+    expect(usd(null)).toBe('—');
   });
 });
 

@@ -9,6 +9,16 @@ export const rm = (n: number | null): string =>
         maximumFractionDigits: 2,
       })}`;
 
+// USD variant — PriceCharting grade prices are raw USD; only after FX do they
+// become RM. Use this for source-USD amounts so they aren't mislabelled RM.
+export const usd = (n: number | null): string =>
+  n === null
+    ? '—'
+    : `$${n.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+
 // `now` is injectable so the function is pure and testable with a fixed clock;
 // the default keeps every existing callsite (`timeAgo(iso)`) byte-identical.
 export function timeAgo(iso: string, now: number = Date.now()): string {
