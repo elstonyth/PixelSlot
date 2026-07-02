@@ -184,6 +184,7 @@ const AddFromPriceChartingPage = () => {
     image.trim() !== '' &&
     Number.isFinite(multiplier) &&
     multiplier > 0 &&
+    stock.trim() !== '' &&
     Number.isInteger(Number(stock)) &&
     Number(stock) >= 0 &&
     !saving &&
