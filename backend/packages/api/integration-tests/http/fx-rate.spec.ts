@@ -55,6 +55,28 @@ medusaIntegrationTestRunner({
         expect(afterUpdate.data.effective).toBe(4.2);
         expect(afterUpdate.data.manual_rate).toBe(4.2);
       });
+
+      // Auth proof: the FX write sets a global pricing multiplier; an
+      // unauthenticated POST must be rejected by the framework /admin guard.
+      it("rejects an unauthenticated POST with 401", async () => {
+        const res = await unwrapResponse(
+          api.post("/admin/pricing/fx", { manual_override: true, manual_rate: 4.85 }),
+        );
+        expect(res.status).toBe(401);
+      });
+
+      // Upper-bound guard: reject an absurd rate so a fat-fingered/hostile
+      // value can't distort every displayed price.
+      it("rejects manual_rate > 1000 with 400", async () => {
+        const res = await unwrapResponse(
+          api.post(
+            "/admin/pricing/fx",
+            { manual_override: true, manual_rate: 1001 },
+            adminHeaders(),
+          ),
+        );
+        expect(res.status).toBe(400);
+      });
     });
   },
 });
