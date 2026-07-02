@@ -1,7 +1,7 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import { Modules } from "@medusajs/framework/utils";
-import PacksModuleService from "../../../../modules/packs/service";
-import { PACKS_MODULE } from "../../../../modules/packs";
+import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http';
+import { Modules } from '@medusajs/framework/utils';
+import PacksModuleService from '../../../../modules/packs/service';
+import { PACKS_MODULE } from '../../../../modules/packs';
 
 // GET /admin/gacha/eligible-products — inventory products that can be registered
 // as gacha cards (i.e. catalog products whose handle is not already a Card).
@@ -10,7 +10,7 @@ import { PACKS_MODULE } from "../../../../modules/packs";
 // registers as a pack-only card (for_sale=false).
 export async function GET(
   req: MedusaRequest,
-  res: MedusaResponse
+  res: MedusaResponse,
 ): Promise<void> {
   const packs: PacksModuleService = req.scope.resolve(PACKS_MODULE);
   const productModule = req.scope.resolve(Modules.PRODUCT);
@@ -24,7 +24,7 @@ export async function GET(
     packs.listCards({}, { take: CATALOG_CAP }),
   ]);
   if (products.length === CATALOG_CAP || cards.length === CATALOG_CAP) {
-    (req.scope.resolve("logger") as { warn: (m: string) => void }).warn(
+    (req.scope.resolve('logger') as { warn: (m: string) => void }).warn(
       `[admin/gacha/eligible-products] hit the ${CATALOG_CAP}-row cap ` +
         `(products=${products.length}, cards=${cards.length}); the picker may be ` +
         `showing a partial catalog — add pagination.`,
@@ -33,16 +33,36 @@ export async function GET(
 
   const registered = new Set(cards.map((c) => c.handle));
 
+  // Gacha facts staged on product.metadata (by /admin/products/from-pricecharting
+  // or a manual product edit) ride along so the register dialog can autofill
+  // Set / Grade / Grader / FMV on pick instead of making the operator retype them.
+  const str = (v: unknown): string | null =>
+    typeof v === 'string' && v.trim() !== '' ? v : null;
+  const num = (v: unknown): number | null => {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
   const eligible = products
     .filter((p) => p.handle && !registered.has(p.handle))
     .sort((a, b) => a.title.localeCompare(b.title))
-    .map((p) => ({
-      id: p.id,
-      title: p.title,
-      handle: p.handle,
-      thumbnail: p.thumbnail ?? null,
-      status: p.status,
-    }));
+    .map((p) => {
+      const meta = (p.metadata ?? {}) as Record<string, unknown>;
+      return {
+        id: p.id,
+        title: p.title,
+        handle: p.handle,
+        thumbnail: p.thumbnail ?? null,
+        status: p.status,
+        set: str(meta.set),
+        grade: str(meta.grade),
+        grader: str(meta.grader),
+        fmv: num(meta.fmv),
+        pc_product_id: str(meta.pc_product_id),
+        pc_grade: str(meta.pc_grade),
+      };
+    });
 
   res.json({ products: eligible });
 }
