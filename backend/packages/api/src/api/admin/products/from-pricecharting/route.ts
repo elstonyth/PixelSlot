@@ -14,6 +14,7 @@ type Body = {
   price?: unknown;
   for_sale?: unknown;
   market_multiplier?: unknown;
+  stock?: unknown;
 };
 
 const requireString = (value: unknown, field: string): string => {
@@ -29,6 +30,17 @@ const requireNonNegativeNumber = (value: unknown, field: string): number => {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
       `'${field}' must be a non-negative number.`,
+    );
+  }
+  return n;
+};
+
+const requireNonNegativeInteger = (value: unknown, field: string): number => {
+  const n = typeof value === "string" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isInteger(n) || n < 0) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `'${field}' must be a non-negative integer.`,
     );
   }
   return n;
@@ -86,6 +98,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     body.market_multiplier === undefined
       ? 1.2
       : requirePositiveNumber(body.market_multiplier, "market_multiplier");
+  const stock =
+    body.stock === undefined ? 1 : requireNonNegativeInteger(body.stock, "stock");
 
   const { result } = await createProductFromPriceChartingWorkflow(req.scope).run({
     input: {
@@ -100,6 +114,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       price,
       for_sale,
       market_multiplier,
+      stock,
     },
   });
 
