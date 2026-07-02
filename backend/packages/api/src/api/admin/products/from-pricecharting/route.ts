@@ -36,6 +36,14 @@ const requireNonNegativeNumber = (value: unknown, field: string): number => {
 };
 
 const requireNonNegativeInteger = (value: unknown, field: string): number => {
+  // Reject "" explicitly: Number("") === 0 would silently coerce a blank field to
+  // 0, diverging from the admin UI's canSubmit (which requires a non-empty stock).
+  if (value === "") {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `'${field}' must be provided.`,
+    );
+  }
   const n = typeof value === "string" ? Number(value) : value;
   if (typeof n !== "number" || !Number.isInteger(n) || n < 0) {
     throw new MedusaError(

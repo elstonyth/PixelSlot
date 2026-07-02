@@ -106,6 +106,11 @@ export const createProductFromPcInvoke = async (
   });
   const product = result[0];
 
+  // Single rollback path — delete the just-created product if it can't be stocked
+  // (resolved lazily so the success path doesn't pay for the module lookup).
+  const rollbackProduct = () =>
+    container.resolve(Modules.PRODUCT).deleteProducts([product.id]);
+
   // createProductsWorkflow auto-creates the inventory ITEM (manage_inventory
   // true); resolve it, then create the LEVEL — the same two-step the seed uses.
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
@@ -115,12 +120,14 @@ export const createProductFromPcInvoke = async (
     filters: { id: product.id },
   });
   const rows = data as NewProductRow[];
+  // A from-PC product is built with exactly ONE canonical variant + inventory item,
+  // so [0] is correct by construction; the null-guard below covers "not created".
   const inventoryItemId =
     rows?.[0]?.variants?.[0]?.inventory_items?.[0]?.inventory?.id ?? null;
 
   if (!inventoryItemId) {
     // No item = we can't stock it; roll back so no orphan product is left.
-    await container.resolve(Modules.PRODUCT).deleteProducts([product.id]);
+    await rollbackProduct();
     throw new MedusaError(
       MedusaError.Types.UNEXPECTED_STATE,
       "Inventory item was not created for the new product variant.",
@@ -146,7 +153,7 @@ export const createProductFromPcInvoke = async (
     // only runs when a LATER workflow step fails, not when THIS invoke throws,
     // so it cannot cover an in-invoke failure. Do not remove this in favour of
     // compensate() or the product would be orphaned on level-creation failure.
-    await container.resolve(Modules.PRODUCT).deleteProducts([product.id]);
+    await rollbackProduct();
     throw e;
   }
 
