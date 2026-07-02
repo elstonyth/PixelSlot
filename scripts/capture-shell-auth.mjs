@@ -78,5 +78,22 @@ await page.goto(BASE + '/leaderboard', {
 await page.waitForTimeout(1500);
 await shot('auth-leaderboard-phone.png');
 
+// Daily reward: capture claimable state, click Claim, capture claimed state.
+await page.goto(BASE + '/daily', {
+  waitUntil: 'domcontentloaded',
+  timeout: 30000,
+});
+await page.waitForTimeout(1500);
+await shot('auth-daily-before.png');
+const claimBtn = page.getByRole('button', { name: /^Claim RM/ });
+if (await claimBtn.count()) {
+  await claimBtn.click();
+  await page.waitForTimeout(2500);
+  await shot('auth-daily-after.png');
+} else {
+  console.log('NOTE: no claimable button (already claimed or paused)');
+  await shot('auth-daily-after.png');
+}
+
 await browser.close();
 console.log('done');
