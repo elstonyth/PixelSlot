@@ -376,7 +376,7 @@ const AddFromPriceChartingPage = () => {
             </Label>
             <Input
               type="number"
-              min={0}
+              min={1}
               step={1}
               className="max-w-[8rem]"
               value={stock}
