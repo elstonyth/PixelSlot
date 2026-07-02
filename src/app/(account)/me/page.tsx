@@ -16,7 +16,8 @@ import {
 import { getCustomer } from '@/lib/data/customer';
 import { getOwnProfileHandle } from '@/lib/data/profiles';
 import { getWallet } from '@/lib/actions/wallet';
-import { rm } from '@/lib/format';
+import { getVip } from '@/lib/actions/vip';
+import { rm, rm0 } from '@/lib/format';
 import { LogoutButton, TopUpButton } from './MeActions';
 
 export const metadata: Metadata = {
@@ -31,8 +32,8 @@ const QUICK_ACCESS: { label: string; href: string; icon: LucideIcon }[] = [
   { label: 'Rewards', href: '/rewards', icon: Sparkles },
   { label: 'Orders', href: '/orders', icon: Package },
   { label: 'History', href: '/transactions', icon: Receipt },
-  { label: 'Referrals', href: '/referrals', icon: Gift },
   { label: 'Vouchers', href: '/vouchers', icon: Ticket },
+  { label: 'Settings', href: '/settings', icon: Settings },
   { label: 'Withdraw', href: '/bank-withdrawal', icon: Landmark },
   { label: 'Inbox', href: '/notifications', icon: Bell },
 ];
@@ -43,15 +44,15 @@ const ABOUT_LINKS: { label: string; href: string }[] = [
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
   { label: 'Activity', href: '/activity' },
-  { label: 'Settings', href: '/settings' },
 ];
 
 export default async function MePage() {
   // Layout guard guarantees a customer here.
   const customer = (await getCustomer())!;
-  const [walletResult, handle] = await Promise.all([
+  const [walletResult, handle, vipResult] = await Promise.all([
     getWallet(),
     getOwnProfileHandle(),
+    getVip(),
   ]);
 
   const displayName =
@@ -116,6 +117,82 @@ export default async function MePage() {
           </p>
         )}
       </section>
+
+      {/* VIP progress */}
+      {vipResult.ok && (
+        <Link
+          href="/vip"
+          className="block rounded-2xl border border-white/10 bg-neutral-900 p-5 transition-colors hover:border-white/25"
+        >
+          <div className="flex items-baseline justify-between">
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-neutral-500">
+              VIP
+            </p>
+            <span className="font-heading text-chase text-xl">
+              LV {vipResult.vip.level}
+            </span>
+          </div>
+          {vipResult.vip.next ? (
+            <>
+              <div
+                className="mt-3 h-1.5 overflow-hidden rounded-full bg-neutral-800"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={vipResult.vip.next.threshold}
+                aria-valuenow={
+                  vipResult.vip.next.threshold - vipResult.vip.next.remaining
+                }
+                aria-label={`Progress to VIP level ${vipResult.vip.next.level}`}
+              >
+                <div
+                  className="bg-chase h-full rounded-full"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.max(
+                        2,
+                        ((vipResult.vip.next.threshold -
+                          vipResult.vip.next.remaining) /
+                          vipResult.vip.next.threshold) *
+                          100,
+                      ),
+                    )}%`,
+                  }}
+                />
+              </div>
+              <p className="mt-2 text-[13px] text-neutral-400">
+                {rm0(vipResult.vip.next.remaining)} more to LV{' '}
+                {vipResult.vip.next.level}
+                {vipResult.vip.next.reward.voucherAmount > 0 &&
+                  ` — unlocks a ${rm0(vipResult.vip.next.reward.voucherAmount)} voucher`}
+              </p>
+            </>
+          ) : (
+            <p className="mt-2 text-[13px] text-neutral-400">
+              Max level reached — you&rsquo;re at the top of the ladder.
+            </p>
+          )}
+        </Link>
+      )}
+
+      {/* Invite friends */}
+      <Link
+        href="/referrals"
+        className="border-chase/30 bg-chase/10 flex items-center justify-between rounded-2xl border p-4 transition-colors hover:border-chase/60"
+      >
+        <div className="flex items-center gap-3">
+          <span className="bg-chase/20 flex h-10 w-10 items-center justify-center rounded-full">
+            <Gift className="text-chase h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-white">Invite friends</p>
+            <p className="text-[12px] text-neutral-400">
+              Earn credit on every pack they rip
+            </p>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-neutral-500" aria-hidden />
+      </Link>
 
       {/* Quick access grid */}
       <section className="rounded-2xl border border-white/10 bg-neutral-900 p-5">

@@ -64,5 +64,19 @@ await page.goto(BASE + '/vault', {
 await page.waitForTimeout(1500);
 await shot('auth-vault-phone.png');
 
+await page.goto(BASE + '/referrals', {
+  waitUntil: 'domcontentloaded',
+  timeout: 30000,
+});
+await page.waitForTimeout(1500);
+await shot('auth-referrals-phone.png');
+
+await page.goto(BASE + '/leaderboard', {
+  waitUntil: 'domcontentloaded',
+  timeout: 30000,
+});
+await page.waitForTimeout(1500);
+await shot('auth-leaderboard-phone.png');
+
 await browser.close();
 console.log('done');
