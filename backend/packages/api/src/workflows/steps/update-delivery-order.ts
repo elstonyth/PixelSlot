@@ -98,10 +98,20 @@ export const updateDeliveryOrderStep = createStep(
     }
 
     // Which pulls this order covers (needed for delivered/canceled side-effects).
-    const items = await packs.listDeliveryOrderItems(
-      { delivery_order_id: order.id },
-      { take: 1000 },
-    );
+    // Page to exhaustion — EVERY covered pull's status must be updated, so a
+    // silent take:1000 truncation would strand pulls (correctness, not display).
+    const PAGE = 1000;
+    const items: Awaited<
+      ReturnType<typeof packs.listDeliveryOrderItems>
+    > = [];
+    for (let skip = 0; ; skip += PAGE) {
+      const page = await packs.listDeliveryOrderItems(
+        { delivery_order_id: order.id },
+        { take: PAGE, skip },
+      );
+      items.push(...page);
+      if (page.length < PAGE) break;
+    }
     const pullIds = items.map((i) => i.pull_id);
 
     // Compute timestamp side-effects.
