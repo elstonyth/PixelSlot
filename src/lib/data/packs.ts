@@ -7,11 +7,10 @@
  * scoped but bypasses Mercur's seller-visibility product middleware, so packs
  * need no house-seller link to be listed.
  *
- * Resilience: `getPackCategories()` degrades gracefully to the static mock
- * catalog (`src/lib/packs-data.ts`) if the backend is unreachable, so the
- * page stays populated and `npm run check` stays green on a backend-down build.
- * The mock catalog also supplies the presentational per-category labels/icons
- * (local assets, not backend-derived).
+ * The backend is the single source of truth: zero backend packs (or an
+ * unreachable backend) ⇒ zero storefront packs — the pages render their empty
+ * states instead of a mock catalog. The local catalog (`src/lib/packs-data.ts`)
+ * only supplies the presentational per-category labels/icons (local assets).
  */
 
 import { sdk } from '@/lib/medusa';
@@ -25,7 +24,8 @@ import {
   RecentPullSchema,
 } from '@/lib/data/schemas';
 import {
-  CATEGORIES as MOCK_CATEGORIES,
+  CATEGORIES as CATEGORY_META,
+  CAT_ICON,
   findPack,
   type Pack,
   type PackCategory,
@@ -62,18 +62,25 @@ const toPack = (p: BackendPack): Pack => ({
   inStock: p.in_stock === false ? false : undefined,
 });
 
+/** 'one-piece' → 'One Piece' — label for a category key the local meta lacks. */
+const titleCase = (key: string): string =>
+  key
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
 /**
- * Pack catalog grouped by category, in the live-site category order. Each
- * category's packs come entirely from the backend (ordered by rank); empty
- * categories are dropped. Presentational labels/icons come from the mock
- * catalog. Falls back to the full mock catalog on any backend failure.
+ * Pack catalog grouped by category, in the live-site category order. The packs
+ * come entirely from the backend (ordered by rank) — the backend is the single
+ * source of truth, so zero backend packs (or an unreachable backend) yields
+ * empty categories and the pages render their empty states. Presentational
+ * labels/icons come from the local category meta.
  */
 export async function getPackCategories(): Promise<PackCategory[]> {
   try {
     const { packs } = await sdk.client.fetch<{ packs: BackendPack[] }>(
       '/store/packs',
     );
-    if (!Array.isArray(packs) || packs.length === 0) return MOCK_CATEGORIES;
 
     // Group backend packs by category key (response is already rank-ordered).
     // Skip malformed rows defensively — the fetch generic is a type assertion,
@@ -82,29 +89,36 @@ export async function getPackCategories(): Promise<PackCategory[]> {
     const byCategory = new Map<string, Pack[]>();
     for (const p of parseList(
       PackRowSchema,
-      packs,
+      Array.isArray(packs) ? packs : [],
     ) as unknown as BackendPack[]) {
       const list = byCategory.get(p.category) ?? [];
       list.push(toPack(p));
       byCategory.set(p.category, list);
     }
 
-    // Preserve the live-site category order + presentational meta; keep only
-    // categories that actually have backend packs.
-    const categories = MOCK_CATEGORIES.map((cat) => ({
+    // Known categories keep the live-site order + presentational meta (empty
+    // ones still render a chip; the client shows empty states). A backend pack
+    // in a category the local meta doesn't know still renders — title-cased
+    // label + fallback icon — instead of silently disappearing.
+    const known = CATEGORY_META.map((cat) => ({
       ...cat,
       packs: byCategory.get(cat.id) ?? [],
     }));
-
-    // Keep empty categories so they still render a chip; the client hides empty
-    // sections on "All" and shows an empty state when one is selected directly.
-    // Fall back to the full mock only if NOTHING resolved.
-    return categories.some((c) => c.packs.length > 0)
-      ? categories
-      : MOCK_CATEGORIES;
+    const knownIds = new Set(known.map((c) => c.id));
+    const extras = [...byCategory.entries()]
+      .filter(([id]) => !knownIds.has(id))
+      .map(([id, list]) => ({
+        id,
+        tab: titleCase(id),
+        heading: `${titleCase(id)} Packs`,
+        icon: CAT_ICON.pokemon,
+        packs: list,
+      }));
+    return [...known, ...extras];
   } catch (error) {
     logger.error('[packs] failed to load packs from backend:', error);
-    return MOCK_CATEGORIES;
+    // Backend unreachable — truthfully show no packs rather than a mock set.
+    return CATEGORY_META.map((cat) => ({ ...cat, packs: [] }));
   }
 }
 
@@ -120,9 +134,8 @@ export interface PackBase {
  * also resolves here — fixing the 404 where the detail page used to gate on the
  * static `findPack` 8-pack list while the list rendered live backend packs.
  *
- * `getPackCategories` already degrades to the static mock catalog when the
- * backend is down, so the 8 baked packs still resolve offline. Returns null only
- * when no category contains the slug (genuinely unknown pack → the page 404s).
+ * Returns null when no category contains the slug — unknown pack, or the
+ * backend is down/empty (source of truth) → the page 404s.
  */
 export async function getPackBySlug(slug: string): Promise<PackBase | null> {
   const categories = await getPackCategories();
@@ -170,8 +183,8 @@ export interface PackDetail {
 /**
  * Pack detail for /claw/[slug]: the highest-value cards (Top Hits), derived
  * from the backend prize pool (`GET /store/packs/:slug`). Returns null on any
- * backend failure or empty pool so the detail page falls back to its static
- * mock Top Hits.
+ * backend failure or empty pool so the detail page renders its empty gacha
+ * state (the backend is the source of truth — no mock fallback).
  *
  * The customer-facing Pull Odds are intentionally NOT computed here — they are
  * decoupled from the secret per-card weights and rendered from the static
