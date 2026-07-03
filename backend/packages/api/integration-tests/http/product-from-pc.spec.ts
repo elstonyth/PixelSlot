@@ -96,6 +96,17 @@ medusaIntegrationTestRunner({
       });
 
       it("creates a product with the PC link on metadata (no card)", async () => {
+        // Pin FX so the no-markup listing price is a deterministic golden
+        // vector: FMV 100 × FX 4.0 × NO margin = RM 400.
+        const fxPost = await unwrapResponse(
+          api.post(
+            "/admin/pricing/fx",
+            { manual_override: true, manual_rate: 4.0 },
+            adminHeaders(),
+          ),
+        );
+        expect(fxPost.status).toBe(200);
+
         const res = await unwrapResponse(
           api.post(
             "/admin/products/from-pricecharting",
@@ -108,7 +119,7 @@ medusaIntegrationTestRunner({
               grade: "10",
               market_value: 100,
               image: "https://example.com/charizard.png",
-              market_multiplier: 1.2,
+              pokemon_dex: 6,
             },
             adminHeaders(),
           ),
@@ -125,7 +136,31 @@ medusaIntegrationTestRunner({
         expect(prod.data.product.metadata.pc_product_id).toBe("6910");
         expect(prod.data.product.metadata.pc_grade).toBe("PSA 10");
         expect(prod.data.product.metadata.fmv).toBe(100);
-        expect(prod.data.product.metadata.market_multiplier).toBe(1.2);
+        // Margin moved to gacha-card registration — product creation stores
+        // NO multiplier, and stages the pixel-Pokémon pick for inheritance.
+        expect(prod.data.product.metadata.market_multiplier).toBeUndefined();
+        expect(prod.data.product.metadata.pokemon_dex).toBe(6);
+
+        // Listing price is plain FMV × FX (no markup) and the default stock
+        // is 0 — units are counted when the physical slabs are in hand.
+        const query = getContainer().resolve("query");
+        const { data } = await query.graph({
+          entity: "product",
+          fields: [
+            "variants.prices.amount",
+            "variants.inventory_items.inventory.location_levels.stocked_quantity",
+          ],
+          filters: { id: res.data.product.id },
+        });
+        const variant = data[0].variants?.[0];
+        const amounts = (variant?.prices ?? []).map(
+          (p: { amount: unknown }) => Number(p.amount),
+        );
+        expect(amounts).toContain(400);
+        const stocked =
+          variant?.inventory_items?.[0]?.inventory?.location_levels?.[0]
+            ?.stocked_quantity;
+        expect(Number(stocked)).toBe(0);
       });
     });
   },
