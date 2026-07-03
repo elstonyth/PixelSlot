@@ -172,12 +172,13 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
 
   // Fill FMV from the picked grade; the grade label doubles as a sensible
   // default for the (still editable) grade field when it is empty. The tier is
-  // USD; the field is MYR, so convert (raw USD until FX loads — canSave blocks
-  // save in that window).
+  // USD, the field is MYR, so convert. Guarded on fxEff: if the rate hasn't
+  // loaded we leave the field untouched (the chips are disabled in that window)
+  // — never plant a raw USD number that save's myrToUsd would divide again.
   const applyPrice = (grade: string, usd: number) =>
     setFields((f) => ({
       ...f,
-      market_value: String(fxEff !== null ? usdToMyr(usd, fxEff) : usd),
+      market_value: fxEff !== null ? String(usdToMyr(usd, fxEff)) : f.market_value,
       grade: f.grade.trim() ? f.grade : grade,
     }));
 
@@ -391,6 +392,9 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
                         size="small"
                         variant="secondary"
                         type="button"
+                        // FMV is authored in MYR; without the live rate we can't
+                        // convert the USD tier, so block the pick until it loads.
+                        disabled={fxEff === null}
                         onClick={() => applyPrice(p.grade, p.usd)}
                       >
                         {p.grade}: {tierLabel(p.usd)}
