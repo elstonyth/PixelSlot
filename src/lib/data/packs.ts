@@ -156,11 +156,11 @@ export async function getPackBySlug(slug: string): Promise<PackBase | null> {
 
 // One joined odds row from the detail route — card display fields ONLY.
 //
-// 🔒 SECRET ODDS (Phase 6): the per-card `weight` is the real, admin-tuned win
-// rate and is NOT exposed by the backend route, so it is absent here by design.
-// The customer-facing Pull Odds are a SEPARATE, static published display (the
-// `ODDS` constant in packs-data.ts) — never derived from these weights. Only
-// non-secret card fields (incl. market_value, which drives Top Hits) arrive.
+// 🔒 SECRET ODDS: the per-card `weight` is the real, admin-tuned win rate and
+// is NOT exposed by the backend route, so it is absent here by design. The
+// customer-facing Pull Odds are the SEPARATE, admin-PUBLISHED `published_odds`
+// on the pack (see PackDetail.publishedOdds) — never derived from these
+// weights. Only non-secret card fields (incl. market_value → Top Hits) arrive.
 interface BackendOddsEntry {
   handle: string;
   name: string;

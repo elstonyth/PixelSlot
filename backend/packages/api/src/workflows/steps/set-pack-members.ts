@@ -2,7 +2,7 @@ import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
 import { MedusaError } from '@medusajs/framework/utils';
 import { PACKS_MODULE } from '../../modules/packs';
 import type PacksModuleService from '../../modules/packs/service';
-import type { OddsRarity } from '@acme/odds-math';
+import { computeOdds, type OddsInput, type OddsRarity } from '@acme/odds-math';
 
 export type SetPackMembersInput = {
   pack_id: string; // = Pack.slug
@@ -22,7 +22,12 @@ type RemovedRow = {
   locked: boolean;
 };
 type CompensateData =
-  | { createdIds: string[]; removed: RemovedRow[] }
+  | {
+      createdIds: string[];
+      removed: RemovedRow[];
+      /** Survivors' pre-renormalization weights, for rollback. */
+      reweighted: { id: string; weight: number }[];
+    }
   | undefined;
 
 // set-pack-members — reconcile a pack's prize pool to a desired card set by
@@ -105,22 +110,67 @@ export const setPackMembersStep = createStep(
     }
 
     let createdIds: string[] = [];
+    let createdByCard = new Map<string, string>();
     if (toAdd.length) {
       const created = await packs.createPackOdds(
         toAdd.map((card_id) => ({
           pack_id: input.pack_id,
           card_id,
           // New members join as Common; the operator picks the real per-pack
-          // tier in the win-rate editor, which recomputes the weights from it.
+          // tier in the pool editor, which recomputes the weights from it.
           rarity: 'Common' as const,
           weight: NEW_MEMBER_WEIGHT,
           locked: false,
         })),
       );
       createdIds = created.map((c) => c.id);
+      createdByCard = new Map(created.map((c) => [c.card_id as string, c.id]));
     }
     if (toRemove.length) {
       await packs.deletePackOdds(toRemove.map((o) => o.id));
+    }
+
+    // Re-normalize so a membership edit can never dilute a LOCKED win rate:
+    // adding a weight-100 row to a normalized Σ=10000 pool would silently
+    // shave every rate (a 95% lock → ~94.1%), and since the UI no longer
+    // shows weights, nobody would notice — the next rarity save would then
+    // bake the diluted rate in permanently. Locked rows keep their PRE-EDIT
+    // effective % (derived from the original pool total); unlocked rows —
+    // including the new members — re-split the remainder by rarity. Skipped
+    // only when the result can't be honored (e.g. a pure removal leaving an
+    // all-locked pool whose locks no longer sum to 100); the draw itself is
+    // scale-invariant, so untouched weights still roll proportionally.
+    const originalTotal = existing.reduce((s, o) => s + o.weight, 0) || 1;
+    const survivors = existing.filter((o) => desiredSet.has(o.card_id));
+    const entries: OddsInput[] = [
+      ...survivors.map((o) => ({
+        card_id: o.card_id,
+        locked: o.locked,
+        pct: o.locked ? (o.weight / originalTotal) * 100 : 0,
+        rarity: (o.rarity ?? 'Common') as string,
+      })),
+      ...toAdd.map((card_id) => ({
+        card_id,
+        locked: false,
+        pct: 0,
+        rarity: 'Common',
+      })),
+    ];
+    let reweighted: { id: string; weight: number }[] = [];
+    if (entries.length > 0) {
+      const { computed, error } = computeOdds(entries);
+      if (!error) {
+        const idByCard = new Map<string, string>([
+          ...survivors.map((o) => [o.card_id, o.id] as const),
+          ...createdByCard.entries(),
+        ]);
+        const updates = computed.flatMap((c) => {
+          const id = idByCard.get(c.card_id);
+          return id ? [{ id, weight: c.weight }] : [];
+        });
+        reweighted = survivors.map((o) => ({ id: o.id, weight: o.weight }));
+        await packs.updatePackOdds(updates);
+      }
     }
 
     const removed: RemovedRow[] = toRemove.map((o) => ({
@@ -140,7 +190,7 @@ export const setPackMembersStep = createStep(
         added: toAdd.length,
         removed: toRemove.length,
       },
-      { createdIds, removed } satisfies CompensateData,
+      { createdIds, removed, reweighted } satisfies CompensateData,
     );
   },
   async (data: CompensateData, { container }) => {
@@ -151,6 +201,9 @@ export const setPackMembersStep = createStep(
     }
     if (data.removed.length) {
       await packs.createPackOdds(data.removed);
+    }
+    if (data.reweighted?.length) {
+      await packs.updatePackOdds(data.reweighted);
     }
   },
 );

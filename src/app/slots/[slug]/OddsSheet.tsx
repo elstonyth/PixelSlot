@@ -54,7 +54,9 @@ export function OddsSheet({
             <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
-        {odds && odds.length > 0 ? (
+        {/* Published ⇢ render (even overall-only, tiers empty) — matching the
+            pack page's gate, which keys off publishedOdds being set. */}
+        {odds ? (
           <>
             <ul className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
               {overall !== null && (

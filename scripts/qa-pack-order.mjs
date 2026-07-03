@@ -2,6 +2,16 @@
 // new order flows through to the storefront, then restore.
 import { chromium } from 'playwright';
 
+// Admin credentials come from env (repo rule: no hardcoded secrets) — the
+// same dev login the e2e suite uses. e.g.:
+//   QA_ADMIN_EMAIL=... QA_ADMIN_PASSWORD=... node scripts/<this>.mjs
+const ADMIN_EMAIL = process.env.QA_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.QA_ADMIN_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('Set QA_ADMIN_EMAIL and QA_ADMIN_PASSWORD (dev admin login).');
+  process.exit(1);
+}
+
 const ADMIN = 'http://localhost:7000/dashboard';
 const OUT = 'C:/Users/PC/Desktop/Projects/Pokenic_Game/docs/research';
 
@@ -44,8 +54,8 @@ await page.waitForSelector('table tbody tr, input[name="email"]', {
   timeout: 25000,
 });
 if (await page.locator('input[name="email"]').count()) {
-  await page.fill('input[name="email"]', 'admin@pokenic.app');
-  await page.fill('input[name="password"]', 'xvAklfgvCGWZVqOUl2n6aA9');
+  await page.fill('input[name="email"]', ADMIN_EMAIL);
+  await page.fill('input[name="password"]', ADMIN_PASSWORD);
   await page.keyboard.press('Enter');
   await page.waitForURL((u) => !u.pathname.includes('login'), {
     timeout: 15000,

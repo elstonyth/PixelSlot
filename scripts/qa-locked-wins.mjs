@@ -1,6 +1,16 @@
 // Step 8 verification: prove locked win rates drive real draws.
 // Creates a throwaway pack, locks one card at 95% via the hidden manual seam,
 // opens it 10× as the test customer, reports the distribution, cleans up.
+
+// Admin credentials come from env (repo rule: no hardcoded secrets) — the
+// same dev login the e2e suite uses. e.g.:
+//   QA_ADMIN_EMAIL=... QA_ADMIN_PASSWORD=... node scripts/<this>.mjs
+const ADMIN_EMAIL = process.env.QA_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.QA_ADMIN_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('Set QA_ADMIN_EMAIL and QA_ADMIN_PASSWORD (dev admin login).');
+  process.exit(1);
+}
 const BASE = 'http://localhost:9000';
 const SLUG = 'qa-lockcheck';
 const OPENS = 10;
@@ -10,8 +20,8 @@ const admin = await fetch(`${BASE}/auth/user/emailpass`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    email: 'admin@pokenic.app',
-    password: 'xvAklfgvCGWZVqOUl2n6aA9',
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
   }),
 }).then((r) => r.json());
 const AH = {
