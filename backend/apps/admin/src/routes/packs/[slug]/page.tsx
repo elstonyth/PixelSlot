@@ -482,7 +482,7 @@ const PackOddsEditorPage = () => {
                         </span>
                         <span className="text-ui-fg-subtle text-xs">
                           {[c.grader, c.grade].filter(Boolean).join(' ') || '—'}{' '}
-                          · {rm(c.market_value)}
+                          · {rm(c.priceBreakdown.marketMyr)}
                         </span>
                       </div>
                     </label>
