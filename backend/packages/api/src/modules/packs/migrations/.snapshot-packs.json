@@ -2203,6 +2203,16 @@
           "default": "false",
           "mappedType": "boolean"
         },
+        "top_hit": {
+          "name": "top_hit",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
         "kind": {
           "name": "kind",
           "type": "text",

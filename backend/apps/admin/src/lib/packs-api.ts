@@ -136,6 +136,8 @@ export interface OddsRow {
   locked: boolean;
   /** Current win % = weight / Σweight × 100. */
   pct: number;
+  /** Admin-picked Top Hit flag (storefront display only). */
+  top_hit: boolean;
 }
 
 export interface PackOddsResponse {
@@ -208,6 +210,12 @@ type PacksApi = {
             members: string[];
             added: number;
             removed: number;
+          }>;
+        };
+        'top-hits': {
+          mutate: (input: { $slug: string; card_ids: string[] }) => Promise<{
+            top_hits: string[];
+            changed: number;
           }>;
         };
       };

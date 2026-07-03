@@ -73,6 +73,8 @@ export async function GET(
       return card
         ? {
             ...toCardView(card, o.rarity ?? 'Common'),
+            // Admin-picked Top Hit flag (display only — not draw data).
+            top_hit: o.top_hit === true,
             marketPriceMyr: displayMarketPrice(
               toMoney(card.market_value),
               fxRate,

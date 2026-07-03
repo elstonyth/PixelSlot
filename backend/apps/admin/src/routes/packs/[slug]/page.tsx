@@ -30,6 +30,7 @@ import {
   usePacks,
   useSaveMembers,
   useSaveOdds,
+  useSaveTopHits,
   useUpdatePack,
 } from '../../../lib/queries';
 import { fmtPct, rm } from '../../../lib/format';
@@ -48,6 +49,7 @@ const PackOddsEditorPage = () => {
   const { data, isError: loadError } = usePackOdds(slug);
   const saveOdds = useSaveOdds();
   const saveMembersMut = useSaveMembers();
+  const saveTopHits = useSaveTopHits();
   const [rows, setRows] = useState<EditRow[] | null>(null);
   const saving = saveOdds.isPending;
   const packTitle = data?.pack.title ?? '';
@@ -109,6 +111,27 @@ const PackOddsEditorPage = () => {
       else next.add(handle);
       return next;
     });
+
+  // Top-hit toggle — optimistic buffer flip + immediate save of the complete
+  // flagged set (idempotent). Reverted on failure. Deliberately no query
+  // invalidation (see useSaveTopHits) so in-progress win-rate edits survive.
+  const toggleTopHit = async (cardId: string) => {
+    if (!rows || saveTopHits.isPending) return;
+    const prev = rows;
+    const next = rows.map((x) =>
+      x.card_id === cardId ? { ...x, topHit: !x.topHit } : x,
+    );
+    setRows(next);
+    try {
+      await saveTopHits.mutateAsync({
+        slug,
+        card_ids: next.filter((x) => x.topHit).map((x) => x.card_id),
+      });
+    } catch (err) {
+      setRows(prev);
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  };
 
   const saveMembers = async () => {
     try {
@@ -293,6 +316,9 @@ const PackOddsEditorPage = () => {
               <Table.Row>
                 <Table.HeaderCell>{t('packs.editor.card')}</Table.HeaderCell>
                 <Table.HeaderCell>{t('packs.editor.rarity')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-center">
+                  {t('packs.editor.topHit')}
+                </Table.HeaderCell>
                 <Table.HeaderCell className="text-right">
                   {t('packs.editor.value')}
                 </Table.HeaderCell>
@@ -360,6 +386,14 @@ const PackOddsEditorPage = () => {
                           ))}
                         </Select.Content>
                       </Select>
+                    </Table.Cell>
+                    <Table.Cell className="text-center">
+                      <Checkbox
+                        checked={r.topHit}
+                        disabled={saveTopHits.isPending}
+                        aria-label={t('packs.editor.topHit')}
+                        onCheckedChange={() => void toggleTopHit(r.card_id)}
+                      />
                     </Table.Cell>
                     <Table.Cell className="text-ui-fg-subtle text-right tabular-nums">
                       {rm(r.market_value)}

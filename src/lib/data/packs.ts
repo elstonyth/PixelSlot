@@ -171,6 +171,8 @@ interface BackendOddsEntry {
    *  request time; absent on an older backend → fall back to market_value. */
   marketPriceMyr?: number;
   image: string;
+  /** Admin-picked Top Hit flag (display only). */
+  top_hit?: boolean;
 }
 
 export interface PackDetail {
@@ -229,22 +231,27 @@ export async function getPackDetail(slug: string): Promise<PackDetail | null> {
     ) as unknown as BackendOddsEntry[];
     if (valid.length === 0) return null;
 
-    const pool: PackCard[] = [...valid]
-      .sort(
-        (a, b) =>
-          (b.marketPriceMyr ?? b.market_value) -
-          (a.marketPriceMyr ?? a.market_value),
-      )
-      .map((o) => ({
-        id: o.handle,
-        name: o.name,
-        image: o.image,
-        value: formatValue(o.marketPriceMyr ?? o.market_value),
-        rarity: o.rarity as Rarity,
-      }));
+    const toCard = (o: BackendOddsEntry): PackCard => ({
+      id: o.handle,
+      name: o.name,
+      image: o.image,
+      value: formatValue(o.marketPriceMyr ?? o.market_value),
+      rarity: o.rarity as Rarity,
+    });
+    const sorted = [...valid].sort(
+      (a, b) =>
+        (b.marketPriceMyr ?? b.market_value) -
+        (a.marketPriceMyr ?? a.market_value),
+    );
+    const pool: PackCard[] = sorted.map(toCard);
+
+    // Top Hits = the admin-flagged cards (value-sorted). No flags on this
+    // pack → fall back to the five highest-value cards.
+    const flagged = sorted.filter((o) => o.top_hit === true);
+    const topHits = flagged.length > 0 ? flagged.map(toCard) : pool.slice(0, 5);
 
     return {
-      topHits: pool.slice(0, 5),
+      topHits,
       pool,
       publishedOdds: parsePublishedOdds(published_odds),
     };

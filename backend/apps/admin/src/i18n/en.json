@@ -104,7 +104,8 @@
       "activateNeedsPool": "Add at least one card to the prize pool first.",
       "draftBanner": "Draft — hidden from the storefront. Add cards to the prize pool, save win rates, then activate.",
       "draftReadyBanner": "Draft — hidden from the storefront. The prize pool has cards; activate when the win rates look right.",
-      "unitsOwed": "{{count}} owed to winners"
+      "unitsOwed": "{{count}} owed to winners",
+      "topHit": "Top hit"
     }
   },
   "pcAdd": {
