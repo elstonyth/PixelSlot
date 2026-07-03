@@ -40,7 +40,9 @@ export async function GET(
   // Prices come from the token'd API; the card photo is scraped from PC's
   // public product page in parallel (the API returns no image). The scrape is
   // best-effort — resolvePcImageUrl swallows failures to null — so it can never
-  // break the price lookup, and no extra latency is added on top of the API call.
+  // break the price lookup. Its timeout is deliberately tighter than the API's,
+  // so a slow offers page can add at most that bounded delay; usually both
+  // finish together and the scrape adds nothing.
   const [result, scrapedImage] = await Promise.all([
     pcFetch<PcProductResponse>('/api/product', { id }),
     resolvePcImageUrl(id),

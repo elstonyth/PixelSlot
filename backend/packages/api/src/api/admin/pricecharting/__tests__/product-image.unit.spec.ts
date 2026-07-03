@@ -1,4 +1,4 @@
-import { extractPcImageUrl } from '../product-image';
+import { extractPcImageUrl, resolvePcImageUrl } from '../product-image';
 
 // Pull the card photo out of a PriceCharting offers-page body and normalize its
 // size to /240.jpg (the size the ingest step's 240→1600 bump expects). The real
@@ -45,5 +45,59 @@ describe('extractPcImageUrl', () => {
     ],
   ])('returns null for %s', (_label, html) => {
     expect(extractPcImageUrl(html)).toBeNull();
+  });
+});
+
+// resolvePcImageUrl wraps extractPcImageUrl with an id guard, an HTTP fetch,
+// and graceful failure. fetch is mocked so no network is hit.
+describe('resolvePcImageUrl', () => {
+  const IMG = 'https://storage.googleapis.com/images.pricecharting.com/abc/120.jpg';
+  const NORMALIZED =
+    'https://storage.googleapis.com/images.pricecharting.com/abc/240.jpg';
+  const mockFetch = (impl: () => Promise<unknown>) =>
+    jest.spyOn(global, 'fetch').mockImplementation(impl as typeof fetch);
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it('fetches the offers page and returns the normalized photo', async () => {
+    const spy = mockFetch(async () => ({
+      ok: true,
+      text: async () => `<img src="${IMG}">`,
+    }));
+    await expect(resolvePcImageUrl('630417')).resolves.toBe(NORMALIZED);
+    // The scraped id must land in the offers URL, not anywhere else.
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('/offers?product=630417'),
+      expect.anything(),
+    );
+  });
+
+  it.each([
+    ['non-numeric id', 'abc'],
+    ['empty id', ''],
+    ['id with path injection', '630417/../../etc'],
+  ])('returns null without fetching for %s', async (_label, id) => {
+    const spy = mockFetch(async () => {
+      throw new Error('should not fetch');
+    });
+    await expect(resolvePcImageUrl(id)).resolves.toBeNull();
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('returns null on a non-ok response', async () => {
+    mockFetch(async () => ({ ok: false, text: async () => '' }));
+    await expect(resolvePcImageUrl('630417')).resolves.toBeNull();
+  });
+
+  it('returns null when the fetch throws (timeout/network)', async () => {
+    mockFetch(async () => {
+      throw new Error('aborted');
+    });
+    await expect(resolvePcImageUrl('630417')).resolves.toBeNull();
+  });
+
+  it('returns null when the page has no matching image', async () => {
+    mockFetch(async () => ({ ok: true, text: async () => '<div>no photo</div>' }));
+    await expect(resolvePcImageUrl('630417')).resolves.toBeNull();
   });
 });

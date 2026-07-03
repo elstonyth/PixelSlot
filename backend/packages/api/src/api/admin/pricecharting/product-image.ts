@@ -16,7 +16,12 @@ import {
 } from '../media/ingest-pc-image';
 
 const OFFERS_URL = 'https://www.pricecharting.com/offers';
-const TIMEOUT_MS = 10_000;
+// Deliberately tighter than the price API's 10s timeout: the image is a
+// best-effort nice-to-have, so a slow offers page must not stall the price
+// lookup it runs in parallel with (see the product route). A healthy page
+// answers in well under a second; past 5s we drop the image and the operator
+// can paste/upload manually.
+const TIMEOUT_MS = 5_000;
 
 // The card photo on PriceCharting's public GCS bucket, e.g.
 // …/images.pricecharting.com/<hash>/240.jpg. Built from the SAME host +
