@@ -80,10 +80,12 @@ export async function GET(
   );
   const rarityOf = makeRarityOf(cardOdds) as (p: string, c: string) => Rarity;
 
-  // Stats — same definitions as the leaderboard so both surfaces agree:
-  // volume = Σ won-card MYR display value (FMV × multiplier × FX), points =
-  // real pack_open spend from the credit ledger × 100 (spend is RM, so the
-  // ledger's sen ARE the points).
+  // Stats — same definitions as the leaderboard: points = real pack_open
+  // spend from the credit ledger × 100 (spend is RM, so the ledger's sen ARE
+  // the points — exact match with the board). volume = Σ won-card MYR display
+  // value (FMV × multiplier × FX); it can drift from the board by cents
+  // (per-card rounding here vs one sum-level round there) and is computed
+  // over the MAX_PULLS-capped list (pre-existing cap).
   const fxRate = await resolveFxRate(packs);
   const cardMyr = (card: (typeof cards)[number]): number =>
     displayMarketPrice(

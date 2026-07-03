@@ -2369,8 +2369,10 @@ class PacksModuleService extends MedusaService({
 
     // Two windowed aggregates joined by customer: spend from the ledger (the
     // ranking), pulls + winnings from the Pull ledger (display columns). The
-    // window predicates are plain `col >= ?` so the created_at / rolled_at
-    // indexes stay usable (a nullable-param OR would be non-sargable).
+    // window predicates are plain `col >= ?` (a nullable-param OR would be
+    // non-sargable): the pulls window rides IDX_pull_rolled_at, the spend scan
+    // rides the partial IDX_credit_transaction_pack_open_created_at
+    // (reason = 'pack_open' rows only).
     const rows = await em.execute<
       {
         customer_id: string;
@@ -2382,7 +2384,10 @@ class PacksModuleService extends MedusaService({
       // NET spend per customer: charges are negative, open-reversals are
       // positive mirror rows with the SAME 'pack_open' reason — summing the
       // net keeps a reversed open from counting as spend. HAVING > 0 drops
-      // fully-reversed (or zero-spend) customers from the board.
+      // fully-reversed (or zero-spend) customers from the board. On the
+      // WEEKLY window this nets by row date: a reversal landing inside the
+      // window subtracts from that week even if its original charge predates
+      // it — intended (the week's honest net spend), not a bug.
       'WITH spend AS ( ' +
         '  SELECT customer_id, ROUND(SUM(-amount) * 100)::bigint AS spend_cents ' +
         '    FROM credit_transaction ' +

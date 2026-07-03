@@ -16,6 +16,7 @@ jest.setTimeout(240 * 1000);
 const ADMIN_EMAIL = 'pack-guard-admin@pokenic.test';
 const PASSWORD = 'supersecret-test-pw';
 const CARD_HANDLE = 'guard-test-card';
+const CARD_HANDLE_2 = 'guard-test-card-2';
 
 const PACK_BODY = {
   title: 'Guard Test Pack',
@@ -54,6 +55,15 @@ medusaIntegrationTestRunner({
             market_value: 100,
             image: '/cdn/test-card.webp',
           },
+          {
+            handle: CARD_HANDLE_2,
+            name: 'Guard Test Card BGS 9',
+            set: 'Test Set',
+            grader: 'BGS',
+            grade: '9',
+            market_value: 40,
+            image: '/cdn/test-card-2.webp',
+          },
         ]);
       });
 
@@ -91,7 +101,9 @@ medusaIntegrationTestRunner({
         expect(activateEmpty.status).toBe(400);
         expect(activateEmpty.data.message).toMatch(/prize pool/i);
 
-        // 4. Assign a card, then activation succeeds.
+        // 4. Assign a card; win rates are saveable ON THE DRAFT (draft is the
+        //    designated authoring state — the editor must work pre-activation);
+        //    then activation succeeds.
         const setMembers = await unwrapResponse(
           api.post(
             '/admin/packs/guard-pack/members',
@@ -100,6 +112,24 @@ medusaIntegrationTestRunner({
           ),
         );
         expect(setMembers.status).toBe(200);
+
+        const draftOddsSave = await unwrapResponse(
+          api.post(
+            '/admin/packs/guard-pack/odds',
+            {
+              entries: [
+                {
+                  card_id: CARD_HANDLE,
+                  locked: false,
+                  pct: 0,
+                  rarity: 'Rare',
+                },
+              ],
+            },
+            { headers: adminHeaders },
+          ),
+        );
+        expect(draftOddsSave.status).toBe(200);
 
         const activate = await unwrapResponse(
           api.post(
@@ -121,6 +151,46 @@ medusaIntegrationTestRunner({
         );
         expect(clearMembers.status).toBe(400);
         expect(clearMembers.data.message).toMatch(/draft/i);
+
+        // 5b. Stripping an ACTIVE pool down to only ZERO-WEIGHT rows is
+        //     rejected too — locking one card at 100% leaves the other at
+        //     weight 0, and removing the winnable card would break every
+        //     spin exactly like an empty pool.
+        const addSecond = await unwrapResponse(
+          api.post(
+            '/admin/packs/guard-pack/members',
+            { card_ids: [CARD_HANDLE, CARD_HANDLE_2] },
+            { headers: adminHeaders },
+          ),
+        );
+        expect(addSecond.status).toBe(200);
+        const lockFirst = await unwrapResponse(
+          api.post(
+            '/admin/packs/guard-pack/odds',
+            {
+              entries: [
+                { card_id: CARD_HANDLE, locked: true, pct: 100, rarity: 'Rare' },
+                {
+                  card_id: CARD_HANDLE_2,
+                  locked: false,
+                  pct: 0,
+                  rarity: 'Common',
+                },
+              ],
+            },
+            { headers: adminHeaders },
+          ),
+        );
+        expect(lockFirst.status).toBe(200);
+        const stripToZeroWeight = await unwrapResponse(
+          api.post(
+            '/admin/packs/guard-pack/members',
+            { card_ids: [CARD_HANDLE_2] },
+            { headers: adminHeaders },
+          ),
+        );
+        expect(stripToZeroWeight.status).toBe(400);
+        expect(stripToZeroWeight.data.message).toMatch(/winnable|draft/i);
 
         // 6. Missing status on a write defaults to DRAFT (fail-safe), never
         //    active.
