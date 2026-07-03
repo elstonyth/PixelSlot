@@ -301,10 +301,20 @@ const PackOddsEditorPage = () => {
                           <span className="max-w-[18rem] truncate">
                             {r.name}
                           </span>
-                          {r.stock === 0 && (
-                            <span className="text-ui-tag-orange-text text-xs">
-                              {t('packs.editor.buybackOnly')}
+                          {r.stock !== null && r.stock < 0 ? (
+                            // Wins keep counting below 0 — this is how many
+                            // physical units the operator owes winners.
+                            <span className="text-ui-tag-red-text text-xs font-medium">
+                              {t('packs.editor.unitsOwed', {
+                                count: Math.abs(r.stock),
+                              })}
                             </span>
+                          ) : (
+                            r.stock === 0 && (
+                              <span className="text-ui-tag-orange-text text-xs">
+                                {t('packs.editor.buybackOnly')}
+                              </span>
+                            )
                           )}
                         </div>
                       </div>

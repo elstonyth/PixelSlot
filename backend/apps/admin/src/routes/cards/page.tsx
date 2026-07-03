@@ -287,9 +287,13 @@ const GachaCardsPage = () => {
                 </Table.Cell>
                 <Table.Cell
                   className={
-                    c.stock === 0
-                      ? 'text-ui-tag-orange-text text-right tabular-nums'
-                      : 'text-ui-fg-subtle text-right tabular-nums'
+                    // Negative = units OWED to winners (wins keep counting
+                    // below 0 by design) — red beats orange for "act now".
+                    c.stock !== null && c.stock < 0
+                      ? 'text-ui-tag-red-text text-right font-medium tabular-nums'
+                      : c.stock === 0
+                        ? 'text-ui-tag-orange-text text-right tabular-nums'
+                        : 'text-ui-fg-subtle text-right tabular-nums'
                   }
                 >
                   {c.stock === null ? '∞' : c.stock.toLocaleString('en-US')}
