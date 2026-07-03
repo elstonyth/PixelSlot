@@ -115,7 +115,7 @@
       "upload": "Upload image",
       "replace": "Replace image",
       "urlPlaceholder": "Image URL",
-      "hint": "Paste the PriceCharting card photo URL (right-click the photo on their product page → copy image address) or upload your own. A pasted PriceCharting URL is auto-fetched and stored through the media pipeline on save — never hotlinked.",
+      "hint": "Auto-filled from the PriceCharting card photo when a match is picked. Paste a different PriceCharting image URL or upload your own to override. A PriceCharting URL is fetched and stored through the media pipeline on save — never hotlinked.",
       "autoFilled": "Will be fetched & stored on save"
     },
     "submit": "Add product",

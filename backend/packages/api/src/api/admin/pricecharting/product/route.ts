@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http';
 import { pcFetch, PC_TOKEN_MISSING } from '../client';
+import { resolvePcImageUrl } from '../product-image';
 import { PRICE_FIELDS } from '../../../../modules/packs/pricecharting-grades';
 
 // GET /admin/pricecharting/product?id=… — per-grade values for one PriceCharting
@@ -36,7 +37,16 @@ export async function GET(
     return;
   }
 
-  const result = await pcFetch<PcProductResponse>('/api/product', { id });
+  // Prices come from the token'd API; the card photo is scraped from PC's
+  // public product page in parallel (the API returns no image). The scrape is
+  // best-effort — resolvePcImageUrl swallows failures to null — so it can never
+  // break the price lookup. Its timeout is deliberately tighter than the API's,
+  // so a slow offers page can add at most that bounded delay; usually both
+  // finish together and the scrape adds nothing.
+  const [result, scrapedImage] = await Promise.all([
+    pcFetch<PcProductResponse>('/api/product', { id }),
+    resolvePcImageUrl(id),
+  ]);
   if (result.kind === 'no-token') {
     res.status(503).json({ message: PC_TOKEN_MISSING });
     return;
@@ -58,14 +68,16 @@ export async function GET(
     return [{ grade: label, usd: Math.round(pennies) / 100 }];
   });
 
-  // Upstream's `image` is the card photo on PriceCharting's public GCS bucket
-  // (…/images.pricecharting.com/<hash>/240.jpg). Passed through so the admin
-  // can preview it and the create flow can ingest it via the media pipeline.
-  const image =
+  // Card photo: the scraped product-page image (…/images.pricecharting.com/
+  // <hash>/240.jpg), which the admin previews and the create flow ingests via
+  // the media pipeline. Falls back to the API's `image` field on the off chance
+  // upstream ever populates it (today it's always null).
+  const apiImage =
     typeof result.data.image === 'string' &&
     /^https:\/\//.test(result.data.image)
       ? result.data.image
       : null;
+  const image = scrapedImage ?? apiImage;
 
   res.json({
     product: {

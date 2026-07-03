@@ -57,9 +57,11 @@ const usdToMyr = (usd: number, fx: number): number =>
   Math.round(usd * fx * 100) / 100;
 
 // Client mirror of backend api/admin/media/ingest-pc-image.ts isPcImageUrl —
-// PriceCharting's API exposes no image, so the operator pastes the photo URL
-// from the PC product page; the backend detects this host and ingests the
-// bytes through the media pipeline on save. Keep in sync with the backend.
+// PriceCharting's price API exposes no image, so the backend scrapes the photo
+// URL from the PC product page and returns it as product.image (auto-filled on
+// pick below); the operator can still paste/replace. On save the backend
+// detects this host and ingests the bytes through the media pipeline. Keep in
+// sync with the backend.
 const isPcImageUrl = (url: string): boolean => {
   try {
     const u = new URL(url);
@@ -98,9 +100,10 @@ const AddFromPriceChartingPage = () => {
   // actually in hand, not implied by creating the listing.
   const [stock, setStock] = useState('0');
 
-  // Step 4 — image. Auto-filled from PriceCharting's card photo when they have
-  // one; the backend re-fetches it through the media pipeline on save (never
-  // hotlinked). Upload/replace stays available.
+  // Step 4 — image. Auto-filled from the card photo the backend scrapes off
+  // PriceCharting's product page (returned as pcProduct.image on pick); the
+  // backend re-fetches it through the media pipeline on save (never hotlinked).
+  // Upload/replace stays available.
   const [image, setImage] = useState('');
 
   // Step 5 — pixel Pokémon (staged on product.metadata; inherited when the
