@@ -4,6 +4,7 @@
 // Horizontal review rail (spec decision #8): active card center stage,
 // neighbors peek dimmer/smaller/angled from the edges; swipe with momentum
 // snaps to a card; desktop gets visible prev/next buttons.
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
@@ -22,11 +23,55 @@ export function GalleryRail({
   children: (index: number) => React.ReactNode;
 }) {
   const clamp = (i: number) => Math.max(0, Math.min(count - 1, i));
+
+  // Center by MEASURED px, not by a vw formula: each item is w-[78vw]
+  // max-w-[340px], so once 78vw clamps to 340px the vw step no longer matches
+  // the item width and the active card lands off-screen (>~436px viewport).
+  // A ResizeObserver (not a one-shot layout read) is required: the rail mounts
+  // during the reveal theater and its items start at width 0 until the flex
+  // resolves — a single measure races that and leaves x=0 (track left-aligned,
+  // active card off-center). The observer fires the moment real dimensions land
+  // and on every subsequent resize.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRef = useRef<HTMLDivElement>(null);
+  const [{ containerWidth, itemWidth }, setDims] = useState({
+    containerWidth: 0,
+    itemWidth: 0,
+  });
+  useEffect(() => {
+    // offsetWidth = untransformed layout box (getBoundingClientRect would fold
+    // in the Framer scale animation and give a wrong step width).
+    const measure = () =>
+      setDims({
+        containerWidth: containerRef.current?.offsetWidth ?? 0,
+        itemWidth: itemRef.current?.offsetWidth ?? 0,
+      });
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (containerRef.current) ro.observe(containerRef.current);
+    if (itemRef.current) ro.observe(itemRef.current);
+    return () => ro.disconnect();
+  }, [count]);
+
+  // Track offset that puts card i dead-center. itemWidth includes the px-2
+  // gutter (part of the box), so the per-step distance is exactly itemWidth.
+  const centerX = (i: number) =>
+    itemWidth > 0 ? containerWidth / 2 - itemWidth / 2 - i * itemWidth : 0;
+
+  // Two decoupled layers so drag and positioning never fight over one transform:
+  //  • OUTER drag layer — captures the swipe gesture only; dragConstraints pins
+  //    it at origin so it doesn't move (offset/velocity in onDragEnd are relative
+  //    and still meaningful). Reading position off the drag node is what broke
+  //    before (`drag` owns x, so an animate on the same node gets clamped).
+  //  • INNER track — owns the resting position via the declarative animate={{ x }}
+  //    prop (no drag on this node → nothing interrupts it; a mid-reveal remount
+  //    can't strand a half-finished imperative spring).
+  const targetX = centerX(activeIndex);
+
   return (
     <div className="relative flex w-full flex-col items-center gap-3">
-      <div className="relative w-full overflow-hidden">
+      <div ref={containerRef} className="relative w-full overflow-hidden">
         <motion.div
-          className="flex items-center"
           drag={count > 1 && !reduced ? 'x' : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.18}
@@ -37,34 +82,41 @@ export function GalleryRail({
               onIndexChange(clamp(activeIndex - 1));
             }
           }}
-          animate={{ x: `calc(50% - ${activeIndex * 78}vw - 39vw)` }}
-          transition={
-            reduced
-              ? { duration: 0 }
-              : { type: 'spring', stiffness: 260, damping: 30 }
-          }
           style={{ touchAction: 'pan-y' }}
         >
-          {Array.from({ length: count }, (_, i) => {
-            const isActive = i === activeIndex;
-            return (
-              <motion.div
-                key={i}
-                className="w-[78vw] max-w-[340px] shrink-0 px-2"
-                animate={{
-                  scale: isActive ? 1 : 0.82,
-                  opacity: isActive ? 1 : 0.45,
-                  rotateY: reduced ? 0 : (i - activeIndex) * -14,
-                }}
-                transition={
-                  reduced ? { duration: 0 } : { duration: 0.3, ease: 'easeOut' }
-                }
-                onClick={() => !isActive && onIndexChange(i)}
-              >
-                {children(i)}
-              </motion.div>
-            );
-          })}
+          <motion.div
+            className="flex items-center"
+            animate={{ x: targetX }}
+            transition={
+              reduced
+                ? { duration: 0 }
+                : { type: 'spring', stiffness: 260, damping: 30 }
+            }
+          >
+            {Array.from({ length: count }, (_, i) => {
+              const isActive = i === activeIndex;
+              return (
+                <motion.div
+                  key={i}
+                  ref={i === 0 ? itemRef : undefined}
+                  className="w-[78vw] max-w-[340px] shrink-0 px-2"
+                  animate={{
+                    scale: isActive ? 1 : 0.82,
+                    opacity: isActive ? 1 : 0.45,
+                    rotateY: reduced ? 0 : (i - activeIndex) * -14,
+                  }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : { duration: 0.3, ease: 'easeOut' }
+                  }
+                  onClick={() => !isActive && onIndexChange(i)}
+                >
+                  {children(i)}
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </motion.div>
         {/* desktop prev/next */}
         {count > 1 && (
