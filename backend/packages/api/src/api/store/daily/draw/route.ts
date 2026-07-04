@@ -13,7 +13,7 @@ import { rewardsRedemptionEnabled } from '../../../../modules/packs/rewards-gate
 //
 // FAIL-CLOSED GATE: the redemption gate is the FIRST line — a 403 returns BEFORE
 // the workflow runs (no reward_draw row written) while REWARDS_REDEMPTION_ENABLED
-// is unset (spec §13). Verbatim guard from the old /store/rewards/draw route.
+// is unset (spec §13).
 //
 // AUTH + RATE LIMIT: registered in api/middlewares.ts. The customer id comes ONLY
 // from the verified bearer token, never the body.

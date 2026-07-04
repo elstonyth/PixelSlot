@@ -293,25 +293,10 @@ export default defineMiddlewares({
       ],
     },
     {
-      // Reward-economy state (GET /store/rewards) — claimable grants + draw
-      // state + vaulted prizes. Shares the store read budget with vault/credits/
-      // vip/notifications (the account UI fetches them together).
-      matcher: '/store/rewards',
-      method: 'GET',
-      middlewares: [authenticate('customer', ['bearer']), storeReadRateLimit],
-    },
-    {
-      // Daily check-in state (GET /store/rewards/daily) — same read family as
-      // /store/rewards above; the claim POST is covered by /store/rewards/*.
-      matcher: '/store/rewards/daily',
-      method: 'GET',
-      middlewares: [authenticate('customer', ['bearer']), storeReadRateLimit],
-    },
-    {
-      // Reward redemption writes — claim a grant, open a daily box, withdraw a
+      // Reward redemption writes — claim a grant, withdraw a
       // vaulted prize. All state/money mutations, so they share the delivery
       // write-tier budget (the same family as topup/buyback/delivery). The
-      // fail-closed redemption gate on claim+draw lives in the route handlers;
+      // fail-closed redemption gate on claim lives in the route handlers;
       // these entries are the auth + rate-limit gate only. The id (grantId in
       // the path, pull_id/address_id in the body) is never the actor — actor_id
       // comes from the verified bearer token in every handler.
@@ -323,8 +308,8 @@ export default defineMiddlewares({
       ],
     },
     {
-      // Consolidated daily-rewards state (GET /store/daily) — same read family
-      // as /store/rewards above (the /daily surface fetches it on load).
+      // Consolidated daily-rewards state (GET /store/daily) — the /daily
+      // surface fetches it on load.
       matcher: '/store/daily',
       method: 'GET',
       middlewares: [authenticate('customer', ['bearer']), storeReadRateLimit],
@@ -377,28 +362,14 @@ export default defineMiddlewares({
       middlewares: [adminActionRateLimit],
     },
     {
-      // Daily check-in config write — mutates the reward economy; shares the
-      // admin money-mutation budget like rewards-settings above.
-      matcher: '/admin/daily-reward-settings',
-      method: 'POST',
-      middlewares: [adminActionRateLimit],
-    },
-    {
       matcher: '/admin/customers/*/credits',
       method: 'POST',
       middlewares: [adminActionRateLimit],
     },
     {
-      // Daily-box pool config write (POST /admin/reward-pools/:tier) — mutates the
-      // reward economy, so it shares the admin money-mutation budget.
-      matcher: '/admin/reward-pools/*',
-      method: 'POST',
-      middlewares: [adminActionRateLimit],
-    },
-    {
       // Daily-box authoring write (POST /admin/daily-rewards/boxes/:tier) —
-      // mutates the reward economy like reward-pools above. Auth is the
-      // framework default /admin guard.
+      // mutates the reward economy, so it shares the admin money-mutation
+      // budget. Auth is the framework default /admin guard.
       matcher: '/admin/daily-rewards/boxes/*',
       method: 'POST',
       middlewares: [adminActionRateLimit],

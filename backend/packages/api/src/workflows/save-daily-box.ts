@@ -19,9 +19,8 @@ export type SaveDailyBoxInput = {
 // save-daily-box-step — validate + fold odds OUTSIDE the transaction (pure,
 // cheap to fail before touching the DB), then hand the computed weights to
 // packs.saveDailyBox, which does the atomic replace-all (delete + create
-// reward_box_prize rows, update the box row, write the audit row) — mirrors
-// save-reward-pool.ts's split between pure validation and the transactional
-// service method.
+// reward_box_prize rows, update the box row, write the audit row) — splits
+// pure validation from the transactional service method.
 const saveDailyBoxStep = createStep(
   'save-daily-box',
   async (input: SaveDailyBoxInput, { container }) => {
