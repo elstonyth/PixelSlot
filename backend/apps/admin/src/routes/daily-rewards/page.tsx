@@ -822,6 +822,7 @@ const BoxesTab = () => {
                     <Input
                       type="number"
                       min={1}
+                      max={1}
                       value={r.qtyInput}
                       onChange={(e) =>
                         setRow(r.localId, { qtyInput: e.target.value })

@@ -61,6 +61,8 @@ export function validateDailyBox(raw: unknown): DailyBoxBody {
       if (!handle) throw new Error(`Prize ${i + 1}: a product must be selected.`);
       const qty = Number(p.qty ?? 1);
       if (!Number.isInteger(qty) || qty < 1) throw new Error(`Prize ${i + 1}: qty must be an integer ≥ 1.`);
+      // ponytail: qty restricted to 1 — multi-qty needs per-pull draw linkage (reward_draw.vault_pull_id is single)
+      if (qty !== 1) throw new Error(`Prize ${i + 1}: qty must be 1 (multi-qty prizes are not yet supported).`);
       return { kind: 'product', locked, pct: locked ? pct : 0, product_handle: handle, qty };
     }
     return { kind: 'nothing', locked, pct: locked ? pct : 0 };

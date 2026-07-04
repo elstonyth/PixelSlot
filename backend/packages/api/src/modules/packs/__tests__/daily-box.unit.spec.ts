@@ -35,6 +35,14 @@ describe('validateDailyBox', () => {
       ...base, prizes: [{ kind: 'product', locked: false, pct: 0, product_handle: 'pikachu', qty: 0 }],
     })).toThrow(/qty/i);
   });
+  test('product prizes restrict qty to 1 (multi-qty not yet supported)', () => {
+    expect(() => validateDailyBox({
+      ...base, prizes: [{ kind: 'product', locked: false, pct: 0, product_handle: 'pikachu', qty: 2 }],
+    })).toThrow(/qty/i);
+    expect(validateDailyBox({
+      ...base, prizes: [{ kind: 'product', locked: false, pct: 0, product_handle: 'pikachu', qty: 1 }],
+    }).prizes[0]).toMatchObject({ qty: 1 });
+  });
   test('draws_per_day bounds 1..10 and mandatory reason', () => {
     expect(() => validateDailyBox({ ...base, draws_per_day: 0 })).toThrow();
     expect(() => validateDailyBox({ ...base, draws_per_day: 11 })).toThrow();
