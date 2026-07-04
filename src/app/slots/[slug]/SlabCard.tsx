@@ -14,6 +14,7 @@ import { motion } from 'motion/react';
 import type { WonCard } from '@/lib/actions/packs';
 import { rm } from '@/lib/format';
 import { isTopRarity } from '@/lib/rarity';
+import { CARD_ASPECT } from '@/lib/vault-reel';
 import { cn } from '@/lib/utils';
 
 export function SlabCard({
@@ -91,13 +92,13 @@ export function SlabCard({
     >
       <motion.button
         type="button"
-        onClick={onFlip}
-        disabled={!onFlip}
+        onClick={flipped ? undefined : onFlip} // flip is one-way; guard mid-flight re-taps
+        disabled={!onFlip || flipped}
         aria-label={flipped ? card.name : 'Flip to reveal your card'}
         className="relative block w-[75vw] max-w-[300px] [transform-style:preserve-3d]"
         style={
           {
-            aspectRatio: '3 / 4.2', // = CARD_ASPECT — MUST match CardTile (shape-synced morph)
+            aspectRatio: String(CARD_ASPECT), // shape-synced morph (spec #16) — shared with CardTile
             perspective: '1200px',
           } as CSSProperties
         }
