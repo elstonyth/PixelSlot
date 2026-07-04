@@ -176,16 +176,18 @@ export default async function MePage() {
           {dailyResult.ok && (
             <div className="mt-3 space-y-1 border-t border-white/5 pt-3">
               <p className="text-[13px] text-neutral-400">
-                Today&rsquo;s box:{' '}
-                <span className="font-semibold text-white">
-                  {dailyResult.state.box &&
-                  dailyResult.state.box.drawsToday >=
-                    dailyResult.state.box.drawsPerDay
-                    ? 'opened — resets tomorrow'
-                    : dailyResult.state.box
-                      ? 'ready to open'
-                      : '—'}
-                </span>
+                <Link href="/daily" className="hover:text-white">
+                  Today&rsquo;s box:{' '}
+                  <span className="font-semibold text-white">
+                    {dailyResult.state.box &&
+                    dailyResult.state.box.drawsToday >=
+                      dailyResult.state.box.drawsPerDay
+                      ? 'opened — resets tomorrow'
+                      : dailyResult.state.box
+                        ? 'ready to open'
+                        : '—'}
+                  </span>
+                </Link>
               </p>
               <p className="text-[13px] text-neutral-400">
                 <Link href="/daily" className="hover:text-white">
