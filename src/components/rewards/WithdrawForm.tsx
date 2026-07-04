@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { openAuth } from '@/components/AuthButton';
 import { withdrawPrize } from '@/lib/actions/daily';
 import type { WithdrawAddressInput } from '@/lib/data/schemas';
 
@@ -28,15 +29,18 @@ export function WithdrawForm({
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const [done, setDone] = useState(false);
 
   async function submit() {
     setBusy(true);
     setError(null);
+    setNeedsAuth(false);
     const res = await withdrawPrize(pullId, form);
     setBusy(false);
     if (!res.ok) {
       setError(res.error);
+      setNeedsAuth(res.needsAuth === true);
       return;
     }
     if (res.status === 'requested') {
@@ -154,6 +158,18 @@ export function WithdrawForm({
       {error && (
         <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-300">
           {error}
+          {needsAuth && (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={() => openAuth('login')}
+                className="font-semibold underline underline-offset-2"
+              >
+                Log in
+              </button>
+            </>
+          )}
         </p>
       )}
       <div className="flex gap-2">

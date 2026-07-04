@@ -55,17 +55,20 @@ const admin = await call(`${BASE}/auth/user/emailpass`, {
   body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
 }).then((r) => r.json());
 if (!admin.token) throw new Error('admin auth failed — check QA_ADMIN_* env');
-const AH = { 'Content-Type': 'application/json', Authorization: `Bearer ${admin.token}` };
-const keys = await call(`${BASE}/admin/api-keys?type=publishable`, { headers: AH }).then((r) =>
-  r.json(),
-);
+const AH = {
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${admin.token}`,
+};
+const keys = await call(`${BASE}/admin/api-keys?type=publishable`, {
+  headers: AH,
+}).then((r) => r.json());
 const pub = keys.api_keys?.[0]?.token;
 if (!pub) throw new Error('no publishable key');
 
 // --- snapshot tier a for the post-test restore ---
-const before = await call(`${BASE}/admin/daily-rewards/boxes/a`, { headers: AH }).then((r) =>
-  r.json(),
-);
+const before = await call(`${BASE}/admin/daily-rewards/boxes/a`, {
+  headers: AH,
+}).then((r) => r.json());
 
 // --- author tier a: RM1 locked 95% + RM2 locked 5% ---
 const authored = await call(`${BASE}/admin/daily-rewards/boxes/a`, {
@@ -77,8 +80,18 @@ const authored = await call(`${BASE}/admin/daily-rewards/boxes/a`, {
     draws_per_day: 1,
     reason: 'qa-daily-box-locks: temporary 95/5 lock proof',
     prizes: [
-      { kind: 'credit', locked: true, pct: LOCK_PCT, amount_myr: LOCKED_AMOUNT },
-      { kind: 'credit', locked: true, pct: 100 - LOCK_PCT, amount_myr: OTHER_AMOUNT },
+      {
+        kind: 'credit',
+        locked: true,
+        pct: LOCK_PCT,
+        amount_myr: LOCKED_AMOUNT,
+      },
+      {
+        kind: 'credit',
+        locked: true,
+        pct: 100 - LOCK_PCT,
+        amount_myr: OTHER_AMOUNT,
+      },
     ],
   }),
 });
@@ -107,7 +120,8 @@ for (let i = 0; i < N; i++) {
     headers: CH,
     body: JSON.stringify({ email }),
   });
-  if (!created.ok) throw new Error(`create customer ${i + 1} failed: ${created.status}`);
+  if (!created.ok)
+    throw new Error(`create customer ${i + 1} failed: ${created.status}`);
 
   // Re-login: the register token carries no customer actor yet — only a
   // post-creation login token authenticates store routes (same as the
@@ -139,10 +153,14 @@ for (let i = 0; i < N; i++) {
   );
 
   // The state read must not leak either (checked once per customer).
-  const stateRaw = await call(`${BASE}/store/daily`, { headers: CH }).then((r) => r.text());
+  const stateRaw = await call(`${BASE}/store/daily`, { headers: CH }).then(
+    (r) => r.text(),
+  );
   if (LEAK.test(stateRaw)) {
     leaked = true;
-    console.error(`GET /store/daily for customer ${i + 1} leaks odds-ish keys: ${stateRaw}`);
+    console.error(
+      `GET /store/daily for customer ${i + 1} leaks odds-ish keys: ${stateRaw}`,
+    );
   }
   await new Promise((r) => setTimeout(r, 1200)); // pace the limiter
 }

@@ -116,7 +116,8 @@ export default function DailyClient({ initial }: { initial: DailyState }) {
   if (drawing) drawLabel = 'Opening…';
   else if (!redemptionEnabled) drawLabel = 'Rewards are coming soon';
   else if (!box) drawLabel = 'No box for your tier yet';
-  else if (drawsLeft <= 0) drawLabel = `Come back in ${countdown(box.nextReset)}`;
+  else if (drawsLeft <= 0)
+    drawLabel = `Come back in ${countdown(box.nextReset)}`;
 
   const vaultedPrizes = shipPrizes.filter(
     (p) => p.prizeKind === 'product' && p.status === 'vaulted',
@@ -331,8 +332,8 @@ export default function DailyClient({ initial }: { initial: DailyState }) {
       {!redemptionEnabled && (
         <p className="mt-6 flex items-center gap-2 rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-[12px] text-neutral-400">
           <AlertCircle className="h-4 w-4 shrink-0" aria-hidden />
-          Rewards are coming soon — draws and claims will unlock once
-          redemption opens.
+          Rewards are coming soon — draws and claims will unlock once redemption
+          opens.
         </p>
       )}
     </div>

@@ -14,7 +14,10 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 
 const FRONT = 'http://localhost:4000';
 const API = 'http://localhost:9000';
-const CUST = { email: 'test@pokenic.app', password: 'PokenicTest123!' };
+const CUST = {
+  email: process.env.QA_CUSTOMER_EMAIL ?? 'test@pokenic.app',
+  password: process.env.QA_CUSTOMER_PASSWORD ?? 'PokenicTest123!',
+};
 
 mkdirSync('docs/research', { recursive: true });
 let failures = 0;
@@ -33,7 +36,8 @@ const pubRes = await fetch(`${API}/auth/user/emailpass`, {
     password: process.env.QA_ADMIN_PASSWORD,
   }),
 }).then((r) => r.json());
-if (!pubRes.token) throw new Error('admin auth failed (needed for publishable key)');
+if (!pubRes.token)
+  throw new Error('admin auth failed (needed for publishable key)');
 const keys = await fetch(`${API}/admin/api-keys?type=publishable`, {
   headers: { Authorization: `Bearer ${pubRes.token}` },
 }).then((r) => r.json());
@@ -61,18 +65,26 @@ console.log(
 );
 
 const browser = await chromium.launch({ headless: true });
-const context = await browser.newContext({ viewport: { width: 420, height: 900 } });
+const context = await browser.newContext({
+  viewport: { width: 420, height: 900 },
+});
 const page = await context.newPage();
 
 // --- 1. logged-out /daily: teaser + JoinPrompt, no crash ---
-await page.goto(`${FRONT}/daily`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.goto(`${FRONT}/daily`, {
+  waitUntil: 'domcontentloaded',
+  timeout: 20000,
+});
 await page.waitForSelector('h1:has-text("DAILY REWARDS")', { timeout: 15000 });
 check(true, 'logged-out /daily renders the DAILY REWARDS teaser');
 check(
   (await page.locator('text=Join to start your streak').count()) > 0,
   'logged-out /daily shows the JoinPrompt',
 );
-await page.screenshot({ path: 'docs/research/task15-front-daily-loggedout.png', fullPage: true });
+await page.screenshot({
+  path: 'docs/research/task15-front-daily-loggedout.png',
+  fullPage: true,
+});
 
 // --- login: set the httpOnly JWT cookie the server actions read ---
 await context.addCookies([
@@ -86,13 +98,19 @@ await context.addCookies([
 ]);
 
 // --- 2. logged-in /daily: box hero for the customer's tier ---
-await page.goto(`${FRONT}/daily`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.goto(`${FRONT}/daily`, {
+  waitUntil: 'domcontentloaded',
+  timeout: 20000,
+});
 await page.waitForSelector('h1:has-text("DAILY REWARDS")', { timeout: 15000 });
 check(
   (await page.locator(`text=${pre.box.tier} tier —`).count()) > 0,
   `logged-in /daily shows the tier-${pre.box.tier} box hero (${pre.box.name})`,
 );
-await page.screenshot({ path: 'docs/research/task15-front-daily-loggedin.png', fullPage: true });
+await page.screenshot({
+  path: 'docs/research/task15-front-daily-loggedin.png',
+  fullPage: true,
+});
 
 // --- 3. draw to the cap: PrizeReveal each time, then the capped state ---
 const drawsLeft = pre.box.draws_per_day - pre.box.draws_today;
@@ -104,15 +122,23 @@ for (let i = 0; i < drawsLeft; i++) {
   // Case-insensitive: the kind labels render through a CSS `uppercase` class,
   // so innerText comes back as e.g. "CREDIT WON".
   const text = (await dialog.innerText()).replace(/\s+/g, ' ');
-  const kind =
-    /credit won/i.test(text) ? 'credit'
-    : /voucher won/i.test(text) ? 'voucher'
-    : /prize won/i.test(text) ? 'product'
-    : /no prize today/i.test(text) ? 'nothing'
-    : 'UNKNOWN';
-  check(kind !== 'UNKNOWN', `draw ${i + 1}/${drawsLeft}: PrizeReveal shown (${kind})`);
+  const kind = /credit won/i.test(text)
+    ? 'credit'
+    : /voucher won/i.test(text)
+      ? 'voucher'
+      : /prize won/i.test(text)
+        ? 'product'
+        : /no prize today/i.test(text)
+          ? 'nothing'
+          : 'UNKNOWN';
+  check(
+    kind !== 'UNKNOWN',
+    `draw ${i + 1}/${drawsLeft}: PrizeReveal shown (${kind})`,
+  );
   if (i === 0)
-    await page.screenshot({ path: 'docs/research/task15-front-daily-reveal.png' });
+    await page.screenshot({
+      path: 'docs/research/task15-front-daily-reveal.png',
+    });
   await dialog.locator('button:has-text("Continue")').click();
   await dialog.waitFor({ state: 'detached', timeout: 15000 });
   // onClose triggers a server-action refetch; give it a beat + pace the limiter.
@@ -124,12 +150,17 @@ check(
   after.box.draws_today === after.box.draws_per_day,
   `draw cap reached server-side (${after.box.draws_today}/${after.box.draws_per_day})`,
 );
-await page.waitForSelector('button:has-text("Come back in")', { timeout: 15000 });
+await page.waitForSelector('button:has-text("Come back in")', {
+  timeout: 15000,
+});
 check(
   await page.locator('button:has-text("Come back in")').isDisabled(),
   'capped state: draw button disabled with the reset countdown',
 );
-await page.screenshot({ path: 'docs/research/task15-front-daily-capped.png', fullPage: true });
+await page.screenshot({
+  path: 'docs/research/task15-front-daily-capped.png',
+  fullPage: true,
+});
 
 // --- 4. claim one voucher: moves from claimable to claimed ---
 const claimable0 = after.vouchers.claimable.length;
@@ -160,18 +191,27 @@ if (claimable0 > 0) {
     (await page.locator('details >> text=Claimed').count()) > 0,
     'claimed section lists the claimed voucher',
   );
-  await page.screenshot({ path: 'docs/research/task15-front-daily-claimed.png', fullPage: true });
+  await page.screenshot({
+    path: 'docs/research/task15-front-daily-claimed.png',
+    fullPage: true,
+  });
 } else {
   console.log('SKIP: no claimable vouchers to claim');
 }
 
 // --- 5. /rewards redirects to /daily ---
-await page.goto(`${FRONT}/rewards`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.goto(`${FRONT}/rewards`, {
+  waitUntil: 'domcontentloaded',
+  timeout: 20000,
+});
 await page.waitForURL((u) => u.pathname === '/daily', { timeout: 15000 });
 check(true, '/rewards redirected to /daily');
 
 // --- 6. /me: VIP block status lines + Rewards quick-access ---
-await page.goto(`${FRONT}/me`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.goto(`${FRONT}/me`, {
+  waitUntil: 'domcontentloaded',
+  timeout: 20000,
+});
 await page.waitForSelector('text=Today’s box:', { timeout: 15000 });
 const final = await apiDaily();
 check(
@@ -182,23 +222,32 @@ check(
   (await page
     .locator(`text=${final.vouchers.claimable.length} to claim`)
     .count()) > 0 &&
-    (await page.locator(`text=${final.vouchers.claimed.length} claimed`).count()) > 0,
+    (await page
+      .locator(`text=${final.vouchers.claimed.length} claimed`)
+      .count()) > 0,
   `/me status line 2: "${final.vouchers.claimable.length} to claim · ${final.vouchers.claimed.length} claimed" matches the API`,
 );
 check(
   (await page.locator('a[href="/daily"]:has-text("Rewards")').count()) > 0,
   '/me Rewards quick-access links to /daily',
 );
-await page.screenshot({ path: 'docs/research/task15-front-me.png', fullPage: true });
+await page.screenshot({
+  path: 'docs/research/task15-front-me.png',
+  fullPage: true,
+});
 
 // --- 7. /vouchers: hero + claimable with "Claim on Daily" + claimed history ---
-await page.goto(`${FRONT}/vouchers`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+await page.goto(`${FRONT}/vouchers`, {
+  waitUntil: 'domcontentloaded',
+  timeout: 20000,
+});
 await page.waitForSelector('h1:has-text("Your Vouchers")', { timeout: 15000 });
 check(true, '/vouchers hero renders');
 if (final.vouchers.claimable.length > 0) {
   check(
-    (await page.locator('a[href="/daily"]:has-text("Claim on Daily")').count()) ===
-      final.vouchers.claimable.length,
+    (await page
+      .locator('a[href="/daily"]:has-text("Claim on Daily")')
+      .count()) === final.vouchers.claimable.length,
     `/vouchers lists ${final.vouchers.claimable.length} active vouchers with "Claim on Daily" links`,
   );
 }
@@ -208,7 +257,10 @@ check(
       (await page.locator('text=No claimed vouchers yet').count()) === 0),
   `/vouchers claimed history renders with real data (${final.vouchers.claimed.length} claimed)`,
 );
-await page.screenshot({ path: 'docs/research/task15-front-vouchers.png', fullPage: true });
+await page.screenshot({
+  path: 'docs/research/task15-front-vouchers.png',
+  fullPage: true,
+});
 
 await browser.close();
 console.log(failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`);

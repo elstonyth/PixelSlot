@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties } from 'react';
+import { type CSSProperties, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { rm } from '@/lib/format';
 import type { DrawPrize } from '@/lib/actions/daily';
@@ -13,9 +13,44 @@ export function PrizeReveal({
   prize: DrawPrize;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Focus the dialog on mount so keyboard/SR users land inside it, not on
+    // whatever was behind it. Escape closes; Tab is trapped to the dialog's
+    // own focusable elements since nothing behind it should be reachable.
+    dialogRef.current?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
     <div
-      className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 p-6 motion-safe:animate-[fadeIn_0.3s_ease-out]"
+      ref={dialogRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 p-6 outline-none motion-safe:animate-[fadeIn_0.3s_ease-out]"
       role="dialog"
       aria-modal="true"
       aria-label="Daily box reveal"
