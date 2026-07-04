@@ -37,7 +37,9 @@
             "rewards_settings",
             "credit",
             "reward_pool",
-            "daily_reward_settings"
+            "daily_reward_settings",
+            "daily_box",
+            "voucher_ladder"
           ],
           "mappedType": "enum"
         },
@@ -66,7 +68,9 @@
             "adjust_credit",
             "edit_rewards_settings",
             "edit_reward_pool",
-            "edit_daily_reward_settings"
+            "edit_daily_reward_settings",
+            "edit_daily_box",
+            "edit_voucher_ladder"
           ],
           "mappedType": "enum"
         },
