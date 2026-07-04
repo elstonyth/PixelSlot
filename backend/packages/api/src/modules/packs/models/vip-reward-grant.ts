@@ -18,7 +18,7 @@ export const VipRewardGrant = model
       name: 'UQ_vip_reward_grant_customer_level_kind',
       on: ['customer_id', 'level', 'kind'],
       unique: true,
-      where: 'deleted_at IS NULL',
+      where: 'deleted_at IS NULL AND source_open_id IS NULL',
     },
     {
       name: 'IDX_vip_reward_grant_customer',

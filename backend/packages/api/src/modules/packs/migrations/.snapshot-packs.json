@@ -2979,6 +2979,7 @@
           "enumItems": [
             "product",
             "credit",
+            "voucher",
             "nothing"
           ],
           "mappedType": "enum"
@@ -2990,6 +2991,15 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "mappedType": "json"
+        },
+        "odds_snapshot": {
+          "name": "odds_snapshot",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
           "mappedType": "json"
         },
         "vault_pull_id": {
@@ -3643,7 +3653,7 @@
           "constraint": false,
           "primary": false,
           "unique": false,
-          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_vip_reward_grant_customer_level_kind\" ON \"vip_reward_grant\" (\"customer_id\", \"level\", \"kind\") WHERE deleted_at IS NULL"
+          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_vip_reward_grant_customer_level_kind\" ON \"vip_reward_grant\" (\"customer_id\", \"level\", \"kind\") WHERE deleted_at IS NULL AND source_open_id IS NULL"
         },
         {
           "keyName": "IDX_vip_reward_grant_customer",
