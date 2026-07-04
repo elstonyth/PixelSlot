@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Ticket } from 'lucide-react';
 import Reveal from '@/components/Reveal';
 import { getDaily } from '@/lib/actions/daily';
-import { relativeTime, rm0 } from '@/lib/format';
+import { relativeTime, voucherLabel } from '@/lib/format';
 
 export const metadata: Metadata = {
   title: 'Your Vouchers',
@@ -23,11 +23,6 @@ const HERO_SLABS = [
   '/images/claw/black-pack-icon.webp',
   '/images/claw/diamond-pack-icon.webp',
 ];
-
-function voucherLabel(kind: 'voucher' | 'frame', amountMyr?: number): string {
-  if (kind === 'frame') return 'Free pull frame';
-  return amountMyr ? `${rm0(amountMyr)} voucher` : 'Voucher';
-}
 
 export default async function VouchersPage() {
   const dailyResult = await getDaily();
@@ -93,7 +88,7 @@ export default async function VouchersPage() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-white">
-                      {voucherLabel(grant.kind, grant.amountMyr)}
+                      {voucherLabel(grant)}
                     </p>
                     <p className="text-[12px] text-white/50">
                       VIP LV {grant.level} · {relativeTime(grant.grantedAt)}
@@ -145,7 +140,7 @@ export default async function VouchersPage() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-white/70">
-                    {voucherLabel(grant.kind, grant.amountMyr)}
+                    {voucherLabel(grant)}
                   </p>
                   <p className="text-[12px] text-white/40">
                     VIP LV {grant.level} · {relativeTime(grant.grantedAt)}

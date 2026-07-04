@@ -64,7 +64,13 @@ export function WithdrawForm({
   }
 
   return (
-    <div className="mt-4 space-y-3">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+      className="mt-4 space-y-3"
+    >
       <p className="text-[13px] text-white/60">Enter your shipping address:</p>
       <div className="grid grid-cols-2 gap-2">
         <label className="block">
@@ -156,7 +162,10 @@ export function WithdrawForm({
         </label>
       </div>
       {error && (
-        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-300">
+        <p
+          role="alert"
+          className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[12px] text-red-300"
+        >
           {error}
           {needsAuth && (
             <>
@@ -174,9 +183,8 @@ export function WithdrawForm({
       )}
       <div className="flex gap-2">
         <button
-          type="button"
+          type="submit"
           disabled={busy}
-          onClick={submit}
           className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 px-4 py-2 text-[13px] font-bold text-white disabled:opacity-50"
         >
           {busy ? 'Requesting…' : 'Request shipping'}
@@ -189,6 +197,6 @@ export function WithdrawForm({
           Cancel
         </button>
       </div>
-    </div>
+    </form>
   );
 }

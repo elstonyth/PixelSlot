@@ -30,9 +30,22 @@ medusaIntegrationTestRunner({
   testSuite: ({ api, getContainer }) => {
     describe('/store/daily (daily box)', () => {
       let storeHeaders: Record<string, string>;
+      const prevRedemptionEnabled = process.env.REWARDS_REDEMPTION_ENABLED;
 
       const packs = () =>
         getContainer().resolve<PacksModuleService>(PACKS_MODULE);
+
+      beforeAll(() => {
+        process.env.REWARDS_REDEMPTION_ENABLED = 'true';
+      });
+
+      afterAll(() => {
+        if (prevRedemptionEnabled === undefined) {
+          delete process.env.REWARDS_REDEMPTION_ENABLED;
+        } else {
+          process.env.REWARDS_REDEMPTION_ENABLED = prevRedemptionEnabled;
+        }
+      });
 
       beforeEach(async () => {
         process.env.REWARDS_REDEMPTION_ENABLED = 'true';

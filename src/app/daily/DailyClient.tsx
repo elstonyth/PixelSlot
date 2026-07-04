@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { AlertCircle, Gift, Package, Sparkles } from 'lucide-react';
-import { rm } from '@/lib/format';
+import { rm, voucherLabel } from '@/lib/format';
 import { useTopUp } from '@/components/app-shell/TopUpProvider';
 import Reveal from '@/components/Reveal';
 import { PrizeReveal } from '@/components/rewards/PrizeReveal';
@@ -24,12 +24,6 @@ function countdown(nextReset: string): string {
   const hh = Math.floor(totalMinutes / 60);
   const mm = totalMinutes % 60;
   return `${hh}h ${mm}m`;
-}
-
-function voucherLabel(grant: VoucherGrant): string {
-  return grant.kind === 'voucher'
-    ? rm(grant.amountMyr ?? 0)
-    : `LV ${grant.level} Frame`;
 }
 
 export default function DailyClient({ initial }: { initial: DailyState }) {
