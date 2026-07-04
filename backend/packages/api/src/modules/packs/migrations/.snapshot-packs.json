@@ -3601,6 +3601,20 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'ladder'",
+          "enumItems": [
+            "ladder",
+            "box"
+          ],
+          "mappedType": "enum"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz",
@@ -3653,7 +3667,7 @@
           "constraint": false,
           "primary": false,
           "unique": false,
-          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_vip_reward_grant_customer_level_kind\" ON \"vip_reward_grant\" (\"customer_id\", \"level\", \"kind\") WHERE deleted_at IS NULL AND source_open_id IS NULL"
+          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_vip_reward_grant_customer_level_kind\" ON \"vip_reward_grant\" (\"customer_id\", \"level\", \"kind\") WHERE deleted_at IS NULL AND origin = 'ladder'"
         },
         {
           "keyName": "IDX_vip_reward_grant_customer",

@@ -3272,12 +3272,15 @@ class PacksModuleService extends MedusaService({
   // and drives levelsToGrant — L1 is never granted (levelsToGrant enforces L2 floor).
   //
   // Grant insert idempotency: uses raw INSERT … ON CONFLICT (customer_id, level, kind)
-  // WHERE deleted_at IS NULL DO NOTHING so a replayed event with the same
-  // (customerId, openId) simply skips existing rows without raising a 23505. A
-  // try/catch around the ORM's createVipRewardGrants would poison the enclosing
-  // txn (Postgres 25P02) on the first duplicate — raw DO NOTHING avoids this
-  // entirely. The partial WHERE clause must match the UQ_vip_reward_grant_customer_level_kind
-  // partial index (defined in vip-reward-grant.ts with `where: 'deleted_at IS NULL'`).
+  // WHERE deleted_at IS NULL AND origin = 'ladder' DO NOTHING so a replayed event
+  // with the same (customerId, openId) simply skips existing rows without raising
+  // a 23505. A try/catch around the ORM's createVipRewardGrants would poison the
+  // enclosing txn (Postgres 25P02) on the first duplicate — raw DO NOTHING avoids
+  // this entirely. The partial WHERE clause must match the
+  // UQ_vip_reward_grant_customer_level_kind partial index (defined in
+  // vip-reward-grant.ts with `where: "deleted_at IS NULL AND origin = 'ladder'"`).
+  // origin discriminates ladder grants (this method) from box-won grants, which
+  // are repeatable per (customer, level, kind) and fall outside this index.
   //
   // currentLevel uses the NET basis (creditSummary.externalFundedSpendTotal) so
   // it may drop below highest_level_ever after a clawback — that's by design.
@@ -3327,14 +3330,16 @@ class PacksModuleService extends MedusaService({
       for (const reward of rewards) {
         // Raw INSERT … ON CONFLICT … DO NOTHING — avoids 23505 poisoning the txn
         // (Postgres 25P02). The ON CONFLICT predicate MUST match the partial index
-        // UQ_vip_reward_grant_customer_level_kind (where: 'deleted_at IS NULL').
+        // UQ_vip_reward_grant_customer_level_kind (where: "deleted_at IS NULL AND
+        // origin = 'ladder'"). origin is always 'ladder' here — box-won grants are
+        // inserted elsewhere with origin: 'box' and are not subject to this arbiter.
         // Deterministic id: vrg_<customerId>_<level>_<kind> for deduplication.
         const grantId = `vrg_${customerId}_${L}_${reward.kind}`;
         await em.execute(
           `INSERT INTO vip_reward_grant
-             (id, customer_id, level, kind, payload, status, source_open_id, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?::jsonb, 'granted', ?, now(), now())
-           ON CONFLICT (customer_id, level, kind) WHERE deleted_at IS NULL DO NOTHING`,
+             (id, customer_id, level, kind, payload, status, source_open_id, origin, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?::jsonb, 'granted', ?, 'ladder', now(), now())
+           ON CONFLICT (customer_id, level, kind) WHERE deleted_at IS NULL AND origin = 'ladder' DO NOTHING`,
           [
             grantId,
             customerId,
