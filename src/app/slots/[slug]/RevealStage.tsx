@@ -32,6 +32,7 @@ export function RevealStage({
   spriteSrcs,
   reduced,
   onSkip,
+  onConclude,
   onSellBack,
   onReveal,
   onSold,
@@ -46,6 +47,8 @@ export function RevealStage({
   spriteSrcs: (string | undefined)[];
   reduced: boolean;
   onSkip: () => void;
+  /** Called once every card is sold/kept/expired — clears the stage (spec #27). */
+  onConclude: () => void;
   onSellBack: SellBackFn;
   onReveal?: RevealFn;
   onSold?: (balance: number) => void;
@@ -57,13 +60,16 @@ export function RevealStage({
   const [activeIndex, setActiveIndex] = useState(0);
   const [confirmIndex, setConfirmIndex] = useState<number | null>(null);
   const thunked = useRef(false);
-  const { deadlineMs, secondsLeft, expired, states, sell } = useSellWindow({
-    offers,
-    active: phase === 'review',
-    onReveal,
-    onSellBack,
-    onSold,
-  });
+  // Sell window anchors to the FLIP, not to card-back presentation (spec #25):
+  // the reveal ping fires and the Auction Clock counts only once flipped.
+  const { deadlineMs, secondsLeft, expired, states, sell, keep, allConcluded } =
+    useSellWindow({
+      offers,
+      active: phase === 'review' && flipped,
+      onReveal,
+      onSellBack,
+      onSold,
+    });
 
   const anyTop = cards.some((c) => isTopRarity(c.rarity));
 
@@ -77,6 +83,15 @@ export function RevealStage({
     sfx('thunk');
     vibrate([30, 40, 30]);
   }, [expired, sfx, vibrate]);
+
+  // Auto-conclude (spec #27): once every card is terminal, clear the stage after
+  // a short beat. Reduced motion still uses the beat so the credited/vault copy
+  // is readable before the machine returns; it is short either way.
+  useEffect(() => {
+    if (!allConcluded) return;
+    const id = window.setTimeout(onConclude, reduced ? 400 : 1400);
+    return () => clearTimeout(id);
+  }, [allConcluded, onConclude, reduced]);
 
   function flipAll() {
     if (flipped) return;
@@ -114,6 +129,9 @@ export function RevealStage({
         </p>
       );
     }
+    // Both actions after reveal (spec decision #26): Sell (primary) + Keep in
+    // vault (quiet secondary, ≥44px). Keep concludes the card immediately —
+    // it's already vaulted server-side, so no endpoint call.
     return (
       <>
         <button
@@ -125,6 +143,14 @@ export function RevealStage({
           {state.phase === 'selling'
             ? 'Selling…'
             : `Sell for ${rm(offer.amount)} (${offer.percent}%)`}
+        </button>
+        <button
+          type="button"
+          onClick={() => keep(i)}
+          disabled={!flipped || state.phase === 'selling'}
+          className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/12 bg-white/5 text-[13px] font-semibold text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+        >
+          Keep in vault
         </button>
         {state.phase === 'error' && (
           <p className="text-center text-[12px] font-medium text-red-400">
@@ -160,7 +186,13 @@ export function RevealStage({
           fromRect={winnerRects[i] ?? null}
           spriteSrc={spriteSrcs[i]}
         />
-        {flipped && footer(i)}
+        {/* Footer space is ALWAYS reserved (spec decision #23): the card center
+            must not shift when the flip stamps in the name + sell/keep buttons.
+            The slot holds a fixed min-height and only fills once flipped, so the
+            column height is identical before and after the flip. */}
+        <div className="flex min-h-[7rem] w-full max-w-[300px] flex-col items-center gap-2">
+          {flipped && footer(i)}
+        </div>
       </motion.div>
     );
   };
@@ -182,16 +214,20 @@ export function RevealStage({
           {cardAt}
         </GalleryRail>
       )}
-      {/* Clock is honest + always legible: it shows from review entry (before
-          the flip), since the shared window drains from review start — not only
-          once flipped. The per-card sell footer stays flip-gated (above). */}
-      {phase === 'review' && deadlineMs !== null && !expired && (
-        <AuctionClock
-          deadlineMs={deadlineMs}
-          secondsLeft={secondsLeft}
-          reduced={reduced}
-        />
-      )}
+      {/* Clock is FLIP-gated (spec decision #25): the sell window starts at the
+          first flip, so pre-flip there is no clock and no countdown UI. Its
+          vertical slot is ALWAYS reserved (fixed height) so the clock appearing
+          on flip doesn't grow the centered column and nudge the card up — the
+          card must stay put (spec decision #23). */}
+      <div className="flex h-5 w-full items-center justify-center">
+        {phase === 'review' && flipped && deadlineMs !== null && !expired && (
+          <AuctionClock
+            deadlineMs={deadlineMs}
+            secondsLeft={secondsLeft}
+            reduced={reduced}
+          />
+        )}
+      </div>
       {confirmIndex !== null && offers[confirmIndex] && (
         <SellConfirmModal
           open

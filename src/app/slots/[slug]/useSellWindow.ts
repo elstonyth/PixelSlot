@@ -101,6 +101,27 @@ export function useSellWindow({
     );
   }, [expired]);
 
+  // "Keep in vault" (spec decision #26): conclude this card immediately without
+  // any server call — the pull is ALREADY vaulted server-side, so keeping is a
+  // pure client-side state flip to 'vaulted'. Mirrors the sell guard: a no-op
+  // once the card is selling/sold/vaulted.
+  const keep = useCallback((index: number) => {
+    setStates((prev) => {
+      const cur = prev[index];
+      if (
+        !cur ||
+        cur.phase === 'selling' ||
+        cur.phase === 'sold' ||
+        cur.phase === 'vaulted'
+      ) {
+        return prev;
+      }
+      const next = [...prev];
+      next[index] = { phase: 'vaulted' };
+      return next;
+    });
+  }, []);
+
   // Returns true only on a successful server sell — lets the caller chirp
   // 'credit' on success and stay silent on a guard-block or error.
   const sell = useCallback(
@@ -153,5 +174,15 @@ export function useSellWindow({
     [offers, onSellBack, onSold],
   );
 
-  return { deadlineMs, secondsLeft, expired, states, sell };
+  // Every card is terminal (sold | vaulted) — drives the reveal auto-conclude
+  // (spec decision #27). Only real offers count; a null offer (no pull) is
+  // treated as already-concluded so it never blocks the conclusion.
+  const allConcluded =
+    states.length > 0 &&
+    states.every((s, i) => {
+      if (!offers[i]) return true;
+      return s.phase === 'sold' || s.phase === 'vaulted';
+    });
+
+  return { deadlineMs, secondsLeft, expired, states, sell, keep, allConcluded };
 }

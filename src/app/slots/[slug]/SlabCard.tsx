@@ -203,28 +203,33 @@ export function SlabCard({
           )}
         </span>
       </motion.button>
-      {/* info stamp — appears after the flip */}
-      {flipped && (
-        <motion.div
-          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: reduced ? 0 : 0.45 }}
-          className="flex flex-col items-center gap-1 text-center"
-        >
-          <p className="max-w-[75vw] truncate text-base font-bold text-white">
-            {card.name}
-          </p>
-          <p
-            className="rounded-full px-3 py-0.5 text-[12px] font-bold uppercase tracking-wide"
-            style={{
-              color: `rgb(${rarityRgb})`,
-              backgroundColor: `rgba(${rarityRgb}, 0.12)`,
-            }}
+      {/* info stamp — appears after the flip. Its space is ALWAYS reserved
+          (fixed min-height) so stamping in the name + ribbon never pushes the
+          card up (spec decision #23 — the card stays put on flip). Opacity/fade
+          only; no y-translate that would move the card's center. */}
+      <div className="flex min-h-[3.25rem] flex-col items-center justify-start gap-1 text-center">
+        {flipped && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, delay: reduced ? 0 : 0.45 }}
+            className="flex flex-col items-center gap-1"
           >
-            {card.rarity} · {value}
-          </p>
-        </motion.div>
-      )}
+            <p className="max-w-[75vw] truncate text-base font-bold text-white">
+              {card.name}
+            </p>
+            <p
+              className="rounded-full px-3 py-0.5 text-[12px] font-bold uppercase tracking-wide"
+              style={{
+                color: `rgb(${rarityRgb})`,
+                backgroundColor: `rgba(${rarityRgb}, 0.12)`,
+              }}
+            >
+              {card.rarity} · {value}
+            </p>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 }

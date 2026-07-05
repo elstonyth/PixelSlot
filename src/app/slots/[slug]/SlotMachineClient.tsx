@@ -104,6 +104,10 @@ export default function SlotMachineClient({
   const { balance, applyBalance } = useTopUp();
   const [recent, setRecent] = useState<RecentPull[]>(recentPulls);
   const [phase, setPhase] = useState<Phase>('idle');
+  // True once the player has spun at least once this session — drives the
+  // "Spin again" button label, which must persist after the reveal concludes
+  // back to 'idle' (spec decision #27), not only during 'review'.
+  const [hasSpun, setHasSpun] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsTopUp, setNeedsTopUp] = useState(false);
   const [oddsOpen, setOddsOpen] = useState(false);
@@ -202,6 +206,7 @@ export default function SlotMachineClient({
     setOffers([]);
     setAnnounce('');
     winnerRects.current = [];
+    setHasSpun(true);
     setPhase('resolving');
     sfx('ratchet');
     play('spin');
@@ -398,6 +403,16 @@ export default function SlotMachineClient({
     setPhase('review');
   }, []);
 
+  // Reveal concluded — every card sold/kept/expired (spec decision #27). Clear
+  // the reveal (RevealStage unmounts as `inReveal` goes false), fade the machine
+  // back in, and return to 'idle'. The reel stack shows the idle decoy strip
+  // again; `hasSpun` keeps the button reading "Spin again".
+  const handleConclude = useCallback(() => {
+    setSpin(null);
+    setOffers([]);
+    setPhase('idle');
+  }, []);
+
   // Settle watchdog: the customer is charged the moment openBatch returns ok,
   // but the reveal only lands when the reel engine reports completion. If that
   // settle is ever missed (a remounted column, a browser hiccup), force the
@@ -434,6 +449,8 @@ export default function SlotMachineClient({
 
   const inReveal =
     phase === 'flood' || phase === 'transform' || phase === 'review';
+  // Machine fully fades out once the reveal moves past the flood beat (spec #19).
+  const machineHidden = inReveal && phase !== 'flood';
   // No rarity color anywhere until the reel settles: flood derives from phase.
   const floodRgb = inReveal ? rarityRgb(topRarityOf(spin?.cards ?? [])) : null;
   // Sprite for each landed tile's tile→slab morph (custom image, else dex gif).
@@ -476,6 +493,13 @@ export default function SlotMachineClient({
               initial="hidden"
               animate="shown"
             >
+              {/* Transform/review: the machine fully fades out of the room (spec
+                  decision #19). The fade is driven through Framer's `animate`
+                  prop, NOT a Tailwind `opacity-0` class — the entrance variant
+                  writes an inline `opacity: 1`, and an inline style always beats
+                  a utility class, so a class-based fade never took effect (the
+                  reels stayed visible behind the card). Animating opacity here
+                  writes the inline value we actually want. */}
               <motion.div
                 variants={{
                   hidden: reduced ? { opacity: 0 } : { opacity: 0, y: -60 },
@@ -488,16 +512,21 @@ export default function SlotMachineClient({
                     },
                   },
                 }}
+                animate={
+                  machineHidden
+                    ? { opacity: 0, y: 0 }
+                    : undefined /* undefined → follow the `shown` variant */
+                }
+                transition={
+                  machineHidden
+                    ? { duration: reduced ? 0 : 0.5, ease: 'easeOut' }
+                    : undefined
+                }
                 className={cn(
                   'flex items-stretch gap-3 sm:gap-5',
-                  // Transform/review: the machine fully fades out of the room
-                  // (spec decision #19, supersedes the old ~40%-dim look) so the
-                  // reveal overlay below has an emptied stage to center in —
-                  // pointer-events-none so a tap during transform still reaches
-                  // the skip gesture on the overlay, not a dead reel column.
-                  inReveal &&
-                    phase !== 'flood' &&
-                    'pointer-events-none opacity-0 transition-opacity duration-500',
+                  // pointer-events-none so a tap during transform reaches the
+                  // skip gesture on the reveal overlay, not a dead reel column.
+                  machineHidden && 'pointer-events-none',
                 )}
               >
                 <SlotReelStack
@@ -537,6 +566,7 @@ export default function SlotMachineClient({
                   spriteSrcs={spriteSrcs}
                   reduced={reduced}
                   onSkip={skipToCards}
+                  onConclude={handleConclude}
                   onSellBack={sellBackPull}
                   onReveal={revealPull}
                   onSold={refreshBalance}
@@ -573,11 +603,7 @@ export default function SlotMachineClient({
               spinGuarded || cooldown || (customer != null && !canAfford)
             }
             label={
-              !customer
-                ? 'Log in to spin'
-                : phase === 'review'
-                  ? 'Spin again'
-                  : 'Spin'
+              !customer ? 'Log in to spin' : hasSpun ? 'Spin again' : 'Spin'
             }
             muted={muted}
             onSpin={handleSpin}
