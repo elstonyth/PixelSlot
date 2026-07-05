@@ -50,13 +50,13 @@ export function PublishedOddsList({
               />
               {o.rarity}
             </span>
-            <span className="text-[13px] tabular-nums text-white/55">
+            <span className="text-[13px] tabular-nums text-white/60">
               {o.chance}
             </span>
           </li>
         ))}
       </ul>
-      <p className="mt-2 px-1 text-[11px] text-white/35">
+      <p className="mt-2 px-1 text-[11px] text-white/60">
         Published rates for this pack.
       </p>
     </>
@@ -93,7 +93,7 @@ export function OddsSheet({
         aria-modal="true"
         aria-label="Published pull odds by rarity"
         tabIndex={-1}
-        className="max-h-[85vh] w-full overflow-y-auto rounded-t-3xl border-t border-white/10 bg-neutral-950/95 p-5 pb-[env(safe-area-inset-bottom)] backdrop-blur outline-none sm:inset-x-auto sm:bottom-auto sm:max-w-sm sm:rounded-2xl sm:border"
+        className="max-h-[85vh] w-full overflow-y-auto rounded-t-2xl border-t border-white/10 bg-neutral-950/95 p-5 pb-[env(safe-area-inset-bottom)] backdrop-blur outline-none sm:inset-x-auto sm:bottom-auto sm:max-w-sm sm:rounded-2xl sm:border"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
@@ -104,7 +104,7 @@ export function OddsSheet({
             type="button"
             onClick={onClose}
             aria-label="Close odds"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/10 hover:text-white"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>
@@ -114,7 +114,7 @@ export function OddsSheet({
         {odds ? (
           <PublishedOddsList odds={odds} overall={overall} />
         ) : (
-          <p className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center text-[13px] text-white/40">
+          <p className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center text-[13px] text-white/60">
             Odds for this pack haven&apos;t been published yet.
           </p>
         )}
