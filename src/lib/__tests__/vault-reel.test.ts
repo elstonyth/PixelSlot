@@ -53,6 +53,17 @@ describe('spinTotalMs', () => {
     expect(spinTotalMs(3)).toBe(columnDurationMs(2, 3));
     expect(spinTotalMs(1)).toBe(columnDurationMs(0, 1));
   });
+
+  // Spec decision #33 (a): a touch longer than the old ~2.86s / ~3.64s, but
+  // still snappy — a range, not exact constants, so retunes don't churn tests.
+  test('a single-reel spin runs ~3.5s (longer than before, still under 4s)', () => {
+    expect(columnDurationMs(0, 1)).toBeGreaterThan(3200);
+    expect(columnDurationMs(0, 1)).toBeLessThan(4000);
+  });
+  test('a 3-reel spin lands ~4.3s (longer than before, still under 5s)', () => {
+    expect(spinTotalMs(3)).toBeGreaterThan(4000);
+    expect(spinTotalMs(3)).toBeLessThan(5000);
+  });
 });
 
 describe('spinOffset', () => {
@@ -92,6 +103,37 @@ describe('spinOffset', () => {
     }
     expect(minSeen).toBeLessThan(TARGET); // it does overshoot (downward)
     expect(minSeen).toBeGreaterThanOrEqual(TARGET - ITEM_H * 0.6);
+  });
+
+  // Spec decision #33 (b): the settle must EASE IN from the friction/crawl's
+  // near-zero arrival velocity — no instantaneous velocity kick at the landing
+  // (that jerk was the "sudden stop"). Sample the instantaneous velocity right
+  // across the settle boundary (t4); the jump must be tiny.
+  test('settle eases in — no velocity jerk at the landing (t4 boundary)', () => {
+    for (const [col, count] of [
+      [0, 1],
+      [0, 3],
+      [2, 3],
+    ] as const) {
+      const isLast = col === count - 1;
+      const t4 =
+        WINDUP_MS +
+        (BLUR_MS + col * STOP_STAGGER_MS) +
+        FRICTION_MS +
+        (isLast ? CRAWL_MS : 0);
+      const w = 2;
+      const vBefore =
+        (spinOffset(t4 - w, TARGET, col, count, ITEM_H) -
+          spinOffset(t4, TARGET, col, count, ITEM_H)) /
+        w;
+      const vAfter =
+        (spinOffset(t4, TARGET, col, count, ITEM_H) -
+          spinOffset(t4 + w, TARGET, col, count, ITEM_H)) /
+        w;
+      // Both sides descending-or-still and continuous: the settle does not
+      // resume at a nonzero speed the way the old half-sine did (~0.67 px/ms).
+      expect(Math.abs(vAfter - vBefore)).toBeLessThan(0.15);
+    }
   });
   test('non-last column skips crawl (still lands exactly on target)', () => {
     const durNonLast = columnDurationMs(0, 2);

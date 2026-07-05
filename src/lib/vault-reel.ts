@@ -6,13 +6,13 @@ import { POKEDEX_MAX } from './reel';
 /** Ratchet wind-up: the strip pulls back half a cell before release. */
 export const WINDUP_MS = 180;
 /** Full-speed blur phase (columns start together; stagger extends this phase). */
-export const BLUR_MS = 1400;
-/** Friction phase: cells tick past slower and slower. */
-export const FRICTION_MS = 720;
+export const BLUR_MS = 1500;
+/** Friction phase: cells tick past slower and slower (longer = spec #33 landing). */
+export const FRICTION_MS = 850;
 /** Suspense crawl — LAST column only. */
-export const CRAWL_MS = 500;
-/** Half-row overshoot + pendulum settle. */
-export const SETTLE_MS = 260;
+export const CRAWL_MS = 600;
+/** Eased overshoot + settle (longer so the landing reads unhurried, spec #33). */
+export const SETTLE_MS = 380;
 /** Per-column stop stagger (L→R). */
 export const STOP_STAGGER_MS = 400;
 /** Rows visible in the reel window. */
@@ -73,6 +73,19 @@ const easeOutQuad = (p: number) => 1 - (1 - p) * (1 - p);
 const easeInQuad = (p: number) => p * p;
 const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
 
+/**
+ * Settle overshoot shape g(p), p in [0,1] (spec decision #33): a damped
+ * single-lobe `p²·e^{-k p}` normalized to peak 1. g(0)=0 with g'(0)=0 (eases IN
+ * from the friction/crawl's near-zero arrival velocity — no jerk), a quick dip
+ * to 1 at p≈2/k, then a slow recover to ≈0 by p=1 with g'(1)≈0. That asymmetry
+ * (fast overshoot, slow return) reads as a natural mechanical settle instead of
+ * the old half-sine's instant velocity kick.
+ */
+const SETTLE_K = 9;
+const SETTLE_PEAK = (2 / SETTLE_K) ** 2 * Math.exp(-2); // max of p²e^{-kp}
+const settleShape = (p: number) =>
+  (p * p * Math.exp(-SETTLE_K * p)) / SETTLE_PEAK;
+
 /** Total run time of column `colIndex` of `count` (all columns start together). */
 export function columnDurationMs(colIndex: number, count: number): number {
   const isLast = colIndex === count - 1;
@@ -101,13 +114,16 @@ export function spinTotalMs(count: number): number {
  *   wind-up (offset rises above start = strip pulls up) → blur (ease-in to
  *   speed, ~18-27 cells stream past) → friction (ease-out, offset still
  *   falling) → crawl (last column only, slow readable descent) → settle
- *   (damped overshoot BELOW the target = winner dips under the payline, then
- *   rises to rest).
- * The blur distance is sized so the blur's exit velocity MATCHES friction's
- * entry velocity (no jerk at the handoff — spec decision #31): friction opens
- * at 3·frictionPx/FRICTION_MS = itemH/40 px/ms, and an easeInQuad ramp reaches
- * that after covering (itemH/80)·blurMs. Total travel therefore needs the
- * winner pinned LOW on the strip (VAULT_WIN_INDEX) — the fit is test-encoded.
+ *   (eased damped overshoot BELOW the target = winner dips under the payline,
+ *   then eases back to rest).
+ * Two handoffs are velocity-continuous (no jerk):
+ *   • blur → friction: `blurPx` is derived so the blur's exit velocity equals
+ *     friction's entry velocity (3·frictionPx/FRICTION_MS) for any FRICTION_MS
+ *     (spec #31/#33). Total travel needs the winner pinned LOW on the strip
+ *     (VAULT_WIN_INDEX) — the strip fit is test-encoded.
+ *   • friction/crawl → settle: friction (easeOutCubic) and crawl (easeOutQuad)
+ *     both arrive at ~zero velocity, and settleShape STARTS at zero velocity,
+ *     so the landing eases in instead of kicking (spec #33 — natural landing).
  */
 export function spinOffset(
   tMs: number,
@@ -121,9 +137,12 @@ export function spinOffset(
   const windupPx = itemH / 2;
   const crawlPx = isLast ? itemH * 2 : 0;
   const frictionPx = itemH * 6;
-  const overshootPx = itemH / 2;
-  // Blur travel that lands exactly at friction's entry velocity (see doc above).
-  const blurPx = (itemH * blur) / 80;
+  // Settle overshoot depth (below the payline); kept < 0.6 cells (test-bounded).
+  const overshootPx = itemH * 0.32;
+  // Blur travel sized so the blur's EXIT velocity equals friction's ENTRY
+  // velocity (easeOutCubic'(0) = 3·frictionPx/FRICTION_MS), keeping the handoff
+  // velocity-continuous for ANY FRICTION_MS. Derived, not a magic divisor.
+  const blurPx = (3 * frictionPx * blur) / (2 * FRICTION_MS);
   // The winner starts this far ABOVE its landed (centered) position and descends.
   const startPx = targetPx + frictionPx + crawlPx + blurPx;
 
@@ -157,10 +176,12 @@ export function spinOffset(
     // Crawl: slow, readable, near-linear descent across the last two cells.
     return targetPx + crawlPx - crawlPx * easeOutQuad((tMs - t3) / CRAWL_MS);
   }
-  // Settle: damped single overshoot BELOW the target (winner dips under the
-  // payline), returning to rest. Mirror of the upward version's sign.
+  // Settle: eased damped overshoot BELOW the target (winner dips under the
+  // payline, then eases back). settleShape starts at ZERO velocity so it picks
+  // up seamlessly from friction/crawl (which arrive near zero velocity) — no
+  // kick, no sudden stop (spec decision #33).
   const p = (tMs - t4) / SETTLE_MS;
-  return targetPx - overshootPx * Math.sin(Math.PI * p) * (1 - p);
+  return targetPx - overshootPx * settleShape(p);
 }
 
 /**
