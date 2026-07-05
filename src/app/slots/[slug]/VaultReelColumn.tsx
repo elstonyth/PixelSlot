@@ -5,18 +5,14 @@
 // written imperatively to DOM refs (no React state per frame — 60fps budget).
 // Replaces the CSS-transition SlotReelColumn; same settle contract.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  buildDexStrip,
-  ITEM_H,
-  STRIP_LEN,
-  WIN_INDEX,
-  reelTargetY,
-} from '@/lib/reel';
+import { ITEM_H, STRIP_LEN, reelTargetY } from '@/lib/reel';
 import {
   spinOffset,
   columnDurationMs,
   cellCurve,
   blurStretch,
+  buildVaultStrip,
+  VAULT_WIN_INDEX,
   VISIBLE_CELLS,
 } from '@/lib/vault-reel';
 import { spriteGif } from '@/lib/mock/pokedex';
@@ -63,13 +59,13 @@ export function VaultReelColumn({
 
   // Report the landed tile's screen rect — the origin of the slab morph.
   const reportWinnerRect = () => {
-    const rect = cellRefs.current[WIN_INDEX]?.getBoundingClientRect();
+    const rect = cellRefs.current[VAULT_WIN_INDEX]?.getBoundingClientRect();
     if (rect) onWinnerRectRef.current?.(rect);
   };
 
   const isWin = winnerDex !== null || winnerImage !== undefined;
   const strip = useMemo(
-    () => buildDexStrip(winnerDex ?? 1, STRIP_LEN, WIN_INDEX),
+    () => buildVaultStrip(winnerDex, STRIP_LEN, VAULT_WIN_INDEX),
     [winnerDex],
   );
 
@@ -87,22 +83,30 @@ export function VaultReelColumn({
     if (!winEl || !stripEl) return;
     const winH = winEl.clientHeight || ITEM_H * VISIBLE_CELLS;
     const radius = winH / 2;
-    const target = Math.round(reelTargetY(WIN_INDEX, ITEM_H, winH));
+    const target = Math.round(reelTargetY(VAULT_WIN_INDEX, ITEM_H, winH));
 
+    // Dirty-range tracking: only cells inside (or just leaving) the window get
+    // style writes — not all STRIP_LEN cells every frame (spec #31 perf).
+    // Start as "everything dirty" so the first paint sweeps the whole strip
+    // once (cells default to opacity 1 before any paint).
+    let prevFirst = 0;
+    let prevLast = STRIP_LEN - 1;
     const paint = (offset: number, velocity: number) => {
       stripEl.style.transform = `translate3d(0, ${-offset}px, 0)`;
       const stretch = blurStretch(velocity);
       // Only style cells near the window (offset → visible index range).
       const first = Math.max(0, Math.floor(offset / ITEM_H) - 1);
       const last = Math.min(STRIP_LEN - 1, first + VISIBLE_CELLS + 2);
-      for (let i = 0; i < STRIP_LEN; i++) {
+      for (let i = prevFirst; i <= prevLast; i++) {
+        if (i >= first && i <= last) continue; // still visible, styled below
         const el = cellRefs.current[i];
         if (!el) continue;
-        if (i < first || i > last) {
-          el.style.transform = '';
-          el.style.opacity = '0';
-          continue;
-        }
+        el.style.transform = '';
+        el.style.opacity = '0';
+      }
+      for (let i = first; i <= last; i++) {
+        const el = cellRefs.current[i];
+        if (!el) continue;
         const cellCenter = i * ITEM_H + ITEM_H / 2 - offset;
         const dist = cellCenter - winH / 2;
         const c = cellCurve(dist, radius);
@@ -111,6 +115,8 @@ export function VaultReelColumn({
           `rotateX(${c.rotateXDeg}deg) scale(${c.scale}) scaleY(${stretch.scaleY})`;
         el.style.opacity = String(c.brightness * stretch.opacity);
       }
+      prevFirst = first;
+      prevLast = last;
     };
 
     // Idle: rest centered, static curve, no settle.
@@ -180,7 +186,7 @@ export function VaultReelColumn({
         className="flex flex-col items-center will-change-transform"
       >
         {strip.map((dex, i) => {
-          const isWinnerCell = i === WIN_INDEX;
+          const isWinnerCell = i === VAULT_WIN_INDEX;
           const landed = isWinnerCell && done;
           return (
             <div
@@ -188,7 +194,10 @@ export function VaultReelColumn({
               ref={(el) => {
                 cellRefs.current[i] = el;
               }}
-              className="flex shrink-0 items-center justify-center will-change-transform"
+              // No will-change here: promoting all 48 cells × N columns to
+              // compositor layers cooked phone GPUs (spec #31); the strip layer
+              // absorbs the per-frame transforms fine.
+              className="flex shrink-0 items-center justify-center"
               style={{
                 height: `${ITEM_H}px`,
                 // The landed tile hides while its morph clone is on stage —
@@ -203,7 +212,7 @@ export function VaultReelColumn({
                 landed={landed}
                 rarityRgb={landed ? rarityRgb : null}
                 reduced={reduced}
-                eager={Math.abs(i - WIN_INDEX) <= EAGER_RADIUS}
+                eager={Math.abs(i - VAULT_WIN_INDEX) <= EAGER_RADIUS}
                 imageSrc={isWinnerCell ? winnerImage : undefined}
               />
             </div>

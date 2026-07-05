@@ -1,6 +1,7 @@
 // Pure spin physics + 3D barrel curvature for the Vault Room reel. No DOM, no
 // React — see src/lib/__tests__/vault-reel.test.ts. Spec: slot-machine-redesign.md
 // ("Momentum & Mass + final crawl" + timing masterplan).
+import { POKEDEX_MAX } from './reel';
 
 /** Ratchet wind-up: the strip pulls back half a cell before release. */
 export const WINDUP_MS = 180;
@@ -22,6 +23,51 @@ export const VISIBLE_CELLS = 5;
  * (spec decision #16 — shape-synced reveal).
  */
 export const CARD_ASPECT = 3 / 4.2;
+/**
+ * Winner's strip index for the VAULT reel — LOW on the strip because cells
+ * stream TOP → BOTTOM (spec #22): all pre-roll travel comes from the cells
+ * ABOVE (after) the winner, so a low index leaves ~38 cells of genuine blur
+ * runway inside the fixed strip (spec decision #31). The bounds invariant
+ * (no frame paints past either strip end at max window height) is test-encoded.
+ */
+export const VAULT_WIN_INDEX = 9;
+/** Decoy sprites cycle a small pool — a real slot repeats its symbol set, and
+ *  12 distinct images per column (instead of 47) slashes decode/network cost. */
+export const VAULT_DECOY_POOL = 12;
+
+/**
+ * Vault analog of `buildDexStrip` (spec decision #31): decoys repeat from a
+ * small deterministic pool instead of 47 unique dexes; winner pinned at
+ * `winIndex`. Same geometry validation as buildDexStrip.
+ */
+export function buildVaultStrip(
+  winnerDex: number | null,
+  length: number,
+  winIndex: number,
+  poolSize = VAULT_DECOY_POOL,
+): number[] {
+  if (!Number.isInteger(length) || length <= 0) {
+    throw new RangeError('buildVaultStrip: length must be a positive integer');
+  }
+  if (!Number.isInteger(winIndex) || winIndex < 0 || winIndex >= length) {
+    throw new RangeError(
+      'buildVaultStrip: winIndex must be within [0, length)',
+    );
+  }
+  const safeWinner =
+    winnerDex !== null &&
+    Number.isInteger(winnerDex) &&
+    winnerDex >= 1 &&
+    winnerDex <= POKEDEX_MAX
+      ? winnerDex
+      : 1;
+  const strip = Array.from(
+    { length },
+    (_, i) => (((i % poolSize) * 167 + 13) % POKEDEX_MAX) + 1,
+  );
+  strip[winIndex] = safeWinner;
+  return strip;
+}
 
 const easeOutQuad = (p: number) => 1 - (1 - p) * (1 - p);
 const easeInQuad = (p: number) => p * p;
@@ -53,11 +99,15 @@ export function spinTotalMs(count: number): number {
  * pulls UP half a cell first (offset spikes ABOVE the start), then releases
  * downward. Piecewise:
  *   wind-up (offset rises above start = strip pulls up) → blur (ease-in to
- *   speed, offset falling) → friction (ease-out, offset still falling) → crawl
- *   (last column only, slow readable descent) → settle (damped overshoot BELOW
- *   the target = winner dips under the payline, then rises to rest).
- * The travel distance is bounded (friction + crawl ≈ 6-8 cells) so the descent
- * stays within the fixed strip regardless of how high `targetPx` is.
+ *   speed, ~18-27 cells stream past) → friction (ease-out, offset still
+ *   falling) → crawl (last column only, slow readable descent) → settle
+ *   (damped overshoot BELOW the target = winner dips under the payline, then
+ *   rises to rest).
+ * The blur distance is sized so the blur's exit velocity MATCHES friction's
+ * entry velocity (no jerk at the handoff — spec decision #31): friction opens
+ * at 3·frictionPx/FRICTION_MS = itemH/40 px/ms, and an easeInQuad ramp reaches
+ * that after covering (itemH/80)·blurMs. Total travel therefore needs the
+ * winner pinned LOW on the strip (VAULT_WIN_INDEX) — the fit is test-encoded.
  */
 export function spinOffset(
   tMs: number,
@@ -70,12 +120,12 @@ export function spinOffset(
   const blur = BLUR_MS + colIndex * STOP_STAGGER_MS;
   const windupPx = itemH / 2;
   const crawlPx = isLast ? itemH * 2 : 0;
-  // Pre-roll travel above the payline (bounded — independent of targetPx so the
-  // descent never runs past the top of the fixed strip).
   const frictionPx = itemH * 6;
   const overshootPx = itemH / 2;
+  // Blur travel that lands exactly at friction's entry velocity (see doc above).
+  const blurPx = (itemH * blur) / 80;
   // The winner starts this far ABOVE its landed (centered) position and descends.
-  const startPx = targetPx + frictionPx + crawlPx;
+  const startPx = targetPx + frictionPx + crawlPx + blurPx;
 
   const t1 = WINDUP_MS;
   const t2 = t1 + blur;

@@ -6,12 +6,16 @@ import {
   CRAWL_MS,
   SETTLE_MS,
   STOP_STAGGER_MS,
+  VISIBLE_CELLS,
+  VAULT_WIN_INDEX,
   columnDurationMs,
   spinTotalMs,
   spinOffset,
   cellCurve,
   blurStretch,
+  buildVaultStrip,
 } from '@/lib/vault-reel';
+import { ITEM_H as REEL_ITEM_H, STRIP_LEN, reelTargetY } from '@/lib/reel';
 
 const ITEM_H = 112;
 const TARGET = 3000;
@@ -92,6 +96,98 @@ describe('spinOffset', () => {
   test('non-last column skips crawl (still lands exactly on target)', () => {
     const durNonLast = columnDurationMs(0, 2);
     expect(spinOffset(durNonLast, TARGET, 0, 2, ITEM_H)).toBe(TARGET);
+  });
+
+  // Streaming-blur contract (spec decision #31): the blur phase must actually
+  // travel — many cells stream past, not the wind-up's half-cell crawling back.
+  test('blur phase streams at least 10 cells of travel', () => {
+    for (const [col, count] of [
+      [0, 1],
+      [0, 3],
+      [2, 3],
+    ] as const) {
+      const blurMs = BLUR_MS + col * STOP_STAGGER_MS;
+      const atBlurStart = spinOffset(WINDUP_MS, TARGET, col, count, ITEM_H);
+      const atBlurEnd = spinOffset(
+        WINDUP_MS + blurMs,
+        TARGET,
+        col,
+        count,
+        ITEM_H,
+      );
+      expect(atBlurStart - atBlurEnd).toBeGreaterThanOrEqual(ITEM_H * 10);
+    }
+  });
+
+  test('blur → friction handoff is velocity-continuous (no jerk)', () => {
+    for (const [col, count] of [
+      [0, 1],
+      [2, 3],
+    ] as const) {
+      const t2 = WINDUP_MS + BLUR_MS + col * STOP_STAGGER_MS;
+      const w = 10; // ms sampling window on each side
+      const vBefore =
+        (spinOffset(t2 - w, TARGET, col, count, ITEM_H) -
+          spinOffset(t2, TARGET, col, count, ITEM_H)) /
+        w;
+      const vAfter =
+        (spinOffset(t2, TARGET, col, count, ITEM_H) -
+          spinOffset(t2 + w, TARGET, col, count, ITEM_H)) /
+        w;
+      expect(vBefore).toBeGreaterThan(0); // descending on both sides
+      expect(vAfter).toBeGreaterThan(0);
+      const ratio = vAfter / vBefore;
+      expect(ratio).toBeGreaterThan(0.8);
+      expect(ratio).toBeLessThan(1.25);
+    }
+  });
+
+  // The whole travel (including the wind-up peak) must fit the fixed 48-cell
+  // strip at the REAL vault target: winner pinned at VAULT_WIN_INDEX, window at
+  // its max height (ITEM_H * VISIBLE_CELLS). No frame may paint past either end.
+  test('full travel stays inside the strip at the real vault target', () => {
+    const winH = REEL_ITEM_H * VISIBLE_CELLS;
+    const target = reelTargetY(VAULT_WIN_INDEX, REEL_ITEM_H, winH);
+    const maxOffset = STRIP_LEN * REEL_ITEM_H - winH;
+    for (const [col, count] of [
+      [0, 1],
+      [0, 3],
+      [1, 3],
+      [2, 3],
+    ] as const) {
+      const dur = columnDurationMs(col, count);
+      for (let t = 0; t <= dur; t += 8) {
+        const o = spinOffset(t, target, col, count, REEL_ITEM_H);
+        expect(o).toBeGreaterThanOrEqual(0);
+        expect(o).toBeLessThanOrEqual(maxOffset + 0.001);
+      }
+    }
+  });
+});
+
+describe('buildVaultStrip', () => {
+  test('pins the winner at the win index', () => {
+    const strip = buildVaultStrip(150, STRIP_LEN, VAULT_WIN_INDEX);
+    expect(strip).toHaveLength(STRIP_LEN);
+    expect(strip[VAULT_WIN_INDEX]).toBe(150);
+  });
+  test('decoys repeat from a small pool (slot symbol set)', () => {
+    const strip = buildVaultStrip(150, STRIP_LEN, VAULT_WIN_INDEX);
+    const decoys = new Set(strip.filter((_, i) => i !== VAULT_WIN_INDEX));
+    expect(decoys.size).toBeLessThanOrEqual(12);
+    expect(decoys.size).toBeGreaterThanOrEqual(8); // still varied, not one sprite
+  });
+  test('null / out-of-range winner falls back to a valid dex', () => {
+    for (const bad of [null, 0, 99999]) {
+      const strip = buildVaultStrip(bad, STRIP_LEN, VAULT_WIN_INDEX);
+      const w = strip[VAULT_WIN_INDEX]!;
+      expect(w).toBeGreaterThanOrEqual(1);
+      expect(w).toBeLessThanOrEqual(1025);
+    }
+  });
+  test('rejects invalid geometry like buildDexStrip', () => {
+    expect(() => buildVaultStrip(1, 0, 0)).toThrow(RangeError);
+    expect(() => buildVaultStrip(1, 10, 10)).toThrow(RangeError);
   });
 });
 
