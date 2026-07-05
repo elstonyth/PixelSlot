@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Minus } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { usePrefersReducedMotion } from '@/lib/use-reveal';
 import { useChromeInert } from '@/lib/use-chrome-inert';
@@ -35,7 +35,6 @@ import { SlotStatusBar } from './SlotStatusBar';
 import { SlotControls } from './SlotControls';
 import { OddsSheet } from './OddsSheet';
 import { VaultRoom } from './VaultRoom';
-import { EmptyPedestal } from './EmptyPedestal';
 import { Meter } from './Meter';
 import { RevealStage } from './RevealStage';
 import type { SellBackOffer } from '@/components/SellBackPanel';
@@ -491,9 +490,14 @@ export default function SlotMachineClient({
                 }}
                 className={cn(
                   'flex items-stretch gap-3 sm:gap-5',
+                  // Transform/review: the machine fully fades out of the room
+                  // (spec decision #19, supersedes the old ~40%-dim look) so the
+                  // reveal overlay below has an emptied stage to center in —
+                  // pointer-events-none so a tap during transform still reaches
+                  // the skip gesture on the overlay, not a dead reel column.
                   inReveal &&
                     phase !== 'flood' &&
-                    'opacity-40 transition-opacity duration-500',
+                    'pointer-events-none opacity-0 transition-opacity duration-500',
                 )}
               >
                 <SlotReelStack
@@ -513,43 +517,34 @@ export default function SlotMachineClient({
                   }}
                   hideWinners={phase === 'transform' || phase === 'review'}
                 />
-                <EmptyPedestal
-                  cellSize={cellSize}
-                  visible={reels < 3 && canAdjustReels}
-                  onAdd={addReel}
-                  reduced={reduced}
-                />
               </motion.div>
-              {/* "−" handle under the reel group. */}
-              {reels > 1 && canAdjustReels && (
-                <button
-                  type="button"
-                  aria-label="Remove a reel"
-                  onClick={removeReel}
-                  className="mx-auto mt-2 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-white/50 hover:text-white"
-                >
-                  <Minus className="h-4 w-4" aria-hidden />
-                </button>
-              )}
             </motion.div>
 
-            {/* Reveal overlay (flood → transform → review). */}
+            {/* Reveal overlay (flood → transform → review): a centered overlay
+                (spec decision #19) rather than a flow sibling, so the slab /
+                Gallery Rail centers in the viewport instead of appearing below
+                the reel window and pushing content off-screen. winnerRects are
+                measured at settle (before the machine fade above) and SlabCard's
+                FLIP morph uses viewport-relative coordinates, so an absolute
+                overlay here doesn't invalidate the morph math. */}
             {inReveal && spin && (
-              <RevealStage
-                phase={phase}
-                cards={spin.cards}
-                offers={offers}
-                winnerRects={winnerRects.current}
-                spriteSrcs={spriteSrcs}
-                reduced={reduced}
-                onSkip={skipToCards}
-                onSellBack={sellBackPull}
-                onReveal={revealPull}
-                onSold={refreshBalance}
-                sfx={sfx}
-                vibrate={vibrate}
-                play={play}
-              />
+              <div className="absolute inset-0 flex items-center justify-center px-fluid">
+                <RevealStage
+                  phase={phase}
+                  cards={spin.cards}
+                  offers={offers}
+                  winnerRects={winnerRects.current}
+                  spriteSrcs={spriteSrcs}
+                  reduced={reduced}
+                  onSkip={skipToCards}
+                  onSellBack={sellBackPull}
+                  onReveal={revealPull}
+                  onSold={refreshBalance}
+                  sfx={sfx}
+                  vibrate={vibrate}
+                  play={play}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -588,6 +583,10 @@ export default function SlotMachineClient({
             onSpin={handleSpin}
             onToggleMute={toggleMuted}
             onOpenOdds={() => setOddsOpen(true)}
+            onAddReel={addReel}
+            onRemoveReel={removeReel}
+            addDisabled={reels >= 3 || !canAdjustReels}
+            removeDisabled={reels <= 1 || !canAdjustReels}
           />
           {error && (
             <p
