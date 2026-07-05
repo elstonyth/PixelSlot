@@ -172,15 +172,18 @@ export function PokemonToken({
   // Figure-centred transform (preferred) vs box-contain fallback. The fallback
   // uses a FIXED 80% square box (not max-only) so a small custom sprite scales
   // UP to the same footprint as everything else, not just large ones down.
+  // pixelated (not auto): pixel Pokémon stay crisp when upscaled (desktop + the
+  // #39 center bulge) instead of bilinear-blurring into mush (spec #40).
   let imgClassName =
-    'h-[80%] w-[80%] object-contain object-center [image-rendering:auto]';
+    'h-[80%] w-[80%] object-contain object-center [image-rendering:pixelated]';
   let imgStyle: CSSProperties = {};
   if (figure) {
     const bw = figure.maxX - figure.minX + 1;
     const bh = figure.maxY - figure.minY + 1;
     const scale = (FIGURE_FILL * size) / Math.max(bw, bh);
     const half = size / 2;
-    imgClassName = 'absolute left-0 top-0 max-w-none [image-rendering:auto]';
+    imgClassName =
+      'absolute left-0 top-0 max-w-none [image-rendering:pixelated]';
     imgStyle = {
       width: `${figure.w}px`,
       height: `${figure.h}px`,
