@@ -152,14 +152,13 @@ export default function SlotMachineClient({
   );
 
   const canAfford = balance !== null && balance >= cost * reels;
-  // Spin is inert during the resolve/spin AND the reveal theater (flood /
-  // transform) — a tap there is a skip gesture, not a new spin.
-  const spinGuarded =
-    phase === 'resolving' ||
-    phase === 'spinning' ||
-    phase === 'flood' ||
-    phase === 'transform';
-  const canAdjustReels = phase === 'idle' || phase === 'review';
+  // Spin + reel add/remove are locked for the ENTIRE non-idle flow — resolve,
+  // spin, the reveal theater (flood/transform), AND the review/sell window
+  // (spec #43). They only re-enable once every card is sold/kept and the reveal
+  // auto-concludes back to 'idle' (#27), so "Spin again" can't fire while a
+  // card sits un-actioned.
+  const spinGuarded = phase !== 'idle';
+  const canAdjustReels = phase === 'idle';
 
   // Flash a meter direction cue, auto-resetting after the roll finishes.
   const cueMeter = useCallback((dir: 'up' | 'down') => {

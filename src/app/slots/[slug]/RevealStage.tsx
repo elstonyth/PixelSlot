@@ -189,9 +189,28 @@ export function RevealStage({
         {/* Footer space is ALWAYS reserved (spec decision #23): the card center
             must not shift when the flip stamps in the name + sell/keep buttons.
             The slot holds a fixed min-height and only fills once flipped, so the
-            column height is identical before and after the flip. */}
+            column height is identical before and after the flip. Pre-flip it
+            carries the tap-to-reveal hint (spec #42), active card only. */}
         <div className="flex min-h-[7rem] w-full max-w-[300px] flex-col items-center gap-2">
-          {flipped && footer(i)}
+          {flipped
+            ? footer(i)
+            : phase === 'review' &&
+              i === activeIndex && (
+                <motion.p
+                  aria-hidden
+                  animate={
+                    reduced ? {} : { y: [0, -4, 0], opacity: [0.55, 1, 0.55] }
+                  }
+                  transition={{
+                    duration: 1.6,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/75"
+                >
+                  <span aria-hidden>👆</span> Tap the card to reveal
+                </motion.p>
+              )}
         </div>
       </motion.div>
     );

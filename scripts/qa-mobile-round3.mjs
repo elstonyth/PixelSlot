@@ -135,7 +135,12 @@ try {
   const travel = await page.evaluate(
     () =>
       new Promise((res) => {
-        const el = document.querySelector('div.will-change-transform');
+        // Scope to the reel WINDOW: the top-plate ticker also carries
+        // will-change-transform (#41) and sits earlier in the DOM, so a bare
+        // selector would measure its X-only marquee (m42 always 0).
+        const el = document.querySelector(
+          'div.overflow-hidden.rounded-2xl div.will-change-transform',
+        );
         const read = () =>
           new DOMMatrixReadOnly(getComputedStyle(el).transform).m42;
         const a = read();
