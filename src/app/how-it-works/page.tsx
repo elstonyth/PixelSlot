@@ -358,7 +358,7 @@ export default function HowItWorksPage() {
                 <div className="relative h-44 w-full">
                   <Image
                     src={t.media}
-                    alt=""
+                    alt={`Photo shared by ${t.name}`}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover"
