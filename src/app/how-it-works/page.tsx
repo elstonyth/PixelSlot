@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { features } from '@/lib/features';
 import {
   Vault,
@@ -164,7 +165,7 @@ export default function HowItWorksPage() {
           src="/home/hero/ripped-packs/pokemon.webp"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70 blur-[40px] saturate-[1.7] animate-[heroBlob_18s_ease-in-out_infinite] motion-reduce:animate-none"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70 blur-[40px] saturate-[1.7] will-change-transform animate-[heroBlob_18s_ease-in-out_infinite] motion-reduce:animate-none motion-reduce:will-change-auto"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-neutral-950/90 via-neutral-950/55 to-neutral-950/20" />
         <div className="relative flex flex-col gap-8 px-6 py-12 sm:px-10 md:flex-row md:items-center md:py-16 2xl:px-16 2xl:py-20">
@@ -354,21 +355,25 @@ export default function HowItWorksPage() {
           {TESTIMONIALS.map((t, i) => (
             <Reveal key={t.handle} delay={i * 110} className="h-full">
               <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors duration-300 hover:border-white/20">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={t.media}
-                  alt=""
-                  className="h-44 w-full object-cover"
-                />
+                <div className="relative h-44 w-full">
+                  <Image
+                    src={t.media}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
                 <div className="flex flex-1 flex-col gap-3 p-5">
                   <p className="flex-1 text-[13px] leading-relaxed text-white/75">
                     {t.text}
                   </p>
                   <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={t.pfp}
                       alt={t.name}
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded-full object-cover"
                     />
                     <div className="leading-tight">
