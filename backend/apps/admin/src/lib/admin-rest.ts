@@ -3,6 +3,8 @@
 // cookie session as `client` (credentials: 'include' → the auto-protected
 // /admin/* routes). __BACKEND_URL__ is injected by the dashboard Vite plugin.
 
+import type { PullsResponse } from './packs-api';
+
 declare const __BACKEND_URL__: string;
 
 async function errorMessage(res: Response): Promise<string> {
@@ -95,6 +97,11 @@ export async function listEligibleProducts(): Promise<EligibleProduct[]> {
   );
   return data.products;
 }
+
+// ── Pull ledger ───────────────────────────────────────────────────────────────
+
+export const getPulls = (page = 0, limit = 50) =>
+  getJson<PullsResponse>(`/admin/pulls?limit=${limit}&offset=${page * limit}`);
 
 // ── Customer support view ────────────────────────────────────────────────────
 

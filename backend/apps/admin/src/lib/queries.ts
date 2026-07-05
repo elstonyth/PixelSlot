@@ -26,6 +26,7 @@ import {
   getCustomerCommissions,
   getEconomyReport,
   getFxRate,
+  getPulls,
   getDailyBoxes,
   getDailyBox,
   getVoucherLadder,
@@ -78,8 +79,8 @@ export const useCards = (
     enabled: opts.enabled ?? true,
   });
 
-export const usePulls = (): UseQueryResult<PullsResponse> =>
-  useQuery({ queryKey: qk.pulls, queryFn: () => packsApi.admin.pulls.query() });
+export const usePulls = (page = 0): UseQueryResult<PullsResponse> =>
+  useQuery({ queryKey: qk.pulls(page), queryFn: () => getPulls(page) });
 
 export const useEconomy = (): UseQueryResult<EconomyReport> =>
   useQuery({ queryKey: qk.economy, queryFn: getEconomyReport });
