@@ -34,10 +34,12 @@ import {
   getDailyBox,
   getVoucherLadder,
   getReferralTree,
+  getRewardsSettings,
   listDeliveryOrders,
   listEligibleProducts,
   reverseCommission,
   saveDailyBox,
+  saveRewardsSettings,
   saveVoucherRanges,
   setFxRate,
   suspendCommission,
@@ -60,6 +62,7 @@ import {
   type FxChange,
   type FxRateState,
   type ReferralTree,
+  type RewardsSettingsView,
   type VoucherLadderDTO,
   type VoucherRangeDTO,
 } from './admin-rest';
@@ -486,6 +489,23 @@ export const useSaveVoucherRanges = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.voucherLadder });
       toast.success('Voucher ranges saved');
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : String(e)),
+  });
+};
+
+export type { RewardsSettingsView } from './admin-rest';
+
+export const useRewardsSettings = (): UseQueryResult<RewardsSettingsView> =>
+  useQuery({ queryKey: qk.rewardsSettings, queryFn: getRewardsSettings });
+
+export const useSaveRewardsSettings = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: saveRewardsSettings,
+    onSuccess: () => {
+      toast.success('Engine settings saved');
+      qc.invalidateQueries({ queryKey: qk.rewardsSettings });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : String(e)),
   });

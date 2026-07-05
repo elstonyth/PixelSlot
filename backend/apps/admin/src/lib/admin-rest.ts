@@ -590,3 +590,19 @@ export async function saveVoucherRanges(body: {
 }): Promise<{ ok: true }> {
   return postJson<{ ok: true }>('/admin/daily-rewards/vouchers', body);
 }
+
+// ── Rewards engine settings ──────────────────────────────────────────────────
+
+export interface RewardsSettingsView {
+  commissionCooldownDays: number;
+  teamOverridePct: number;
+  overrideGenerationCap: number;
+  withdrawals_per_day: number;
+}
+
+export const getRewardsSettings = () =>
+  getJson<RewardsSettingsView>('/admin/rewards-settings');
+
+export const saveRewardsSettings = (
+  body: Partial<RewardsSettingsView> & { reason: string },
+) => postJson<RewardsSettingsView>('/admin/rewards-settings', body);

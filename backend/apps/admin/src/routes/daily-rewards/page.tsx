@@ -22,6 +22,8 @@ import {
   useSaveDailyBox,
   useVoucherLadder,
   useSaveVoucherRanges,
+  useRewardsSettings,
+  useSaveRewardsSettings,
   type DailyBoxEditorDTO,
   type DailyBoxPrizeDTO,
   type VoucherLadderDTO,
@@ -80,9 +82,9 @@ const rowFromPrize = (p: DailyBoxPrizeDTO): EditRow => ({
 });
 
 const DailyRewardsPage = () => {
-  const [tab, setTab] = useState<'boxes' | 'vouchers'>('boxes');
+  const [tab, setTab] = useState<'boxes' | 'vouchers' | 'settings'>('boxes');
   const boxesDirty = useRef(false);
-  const switchTab = (next: 'boxes' | 'vouchers') => {
+  const switchTab = (next: 'boxes' | 'vouchers' | 'settings') => {
     if (
       tab === 'boxes' &&
       next !== 'boxes' &&
@@ -115,9 +117,17 @@ const DailyRewardsPage = () => {
           >
             Vouchers
           </Button>
+          <Button
+            variant={tab === 'settings' ? 'primary' : 'secondary'}
+            onClick={() => switchTab('settings')}
+          >
+            Engine settings
+          </Button>
         </div>
       </div>
-      {tab === 'boxes' ? <BoxesTab dirtyRef={boxesDirty} /> : <VouchersTab />}
+      {tab === 'boxes' && <BoxesTab dirtyRef={boxesDirty} />}
+      {tab === 'vouchers' && <VouchersTab />}
+      {tab === 'settings' && <SettingsTab />}
     </Container>
   );
 };
@@ -1010,6 +1020,102 @@ const BoxesTab = ({ dirtyRef }: { dirtyRef: MutableRefObject<boolean> }) => {
           </FocusModal.Body>
         </FocusModal.Content>
       </FocusModal>
+    </div>
+  );
+};
+
+const SettingsTab = () => {
+  const { data, isError } = useRewardsSettings();
+  const save = useSaveRewardsSettings();
+  const [cooldown, setCooldown] = useState('');
+  const [overridePct, setOverridePct] = useState(''); // whole percent, e.g. "20"
+  const [genCap, setGenCap] = useState('');
+  const [withdrawals, setWithdrawals] = useState('');
+  const [reason, setReason] = useState('');
+  const [seeded, setSeeded] = useState(false);
+  if (data && !seeded) {
+    setSeeded(true);
+    setCooldown(String(data.commissionCooldownDays));
+    setOverridePct(String(Math.round(data.teamOverridePct * 100)));
+    setGenCap(String(data.overrideGenerationCap));
+    setWithdrawals(String(data.withdrawals_per_day));
+  }
+
+  const cooldownN = Number(cooldown);
+  const pctN = Number(overridePct);
+  const capN = Number(genCap);
+  const wdN = Number(withdrawals);
+  const errors: string[] = [];
+  if (!Number.isInteger(cooldownN) || cooldownN < 0)
+    errors.push('Cooldown must be an integer ≥ 0.');
+  if (!Number.isInteger(pctN) || pctN < 1 || pctN > 99)
+    errors.push('Team override must be a whole percent between 1 and 99.');
+  if (!Number.isInteger(capN) || capN < 1)
+    errors.push('Generation cap must be an integer ≥ 1.');
+  if (!Number.isInteger(wdN) || wdN < 1)
+    errors.push('Withdrawals/day must be an integer ≥ 1.');
+  const canSave =
+    !save.isPending && seeded && errors.length === 0 && reason.trim().length > 0;
+
+  const submit = () => {
+    if (!canSave) return;
+    save.mutate({
+      commissionCooldownDays: cooldownN,
+      teamOverridePct: pctN / 100,
+      overrideGenerationCap: capN,
+      withdrawals_per_day: wdN,
+      reason: reason.trim(),
+    });
+    setReason('');
+  };
+
+  if (isError)
+    return (
+      <div className="px-6 py-8">
+        <Text className="text-ui-fg-subtle">Failed to load settings.</Text>
+      </div>
+    );
+
+  const field = (
+    label: string,
+    value: string,
+    set: (v: string) => void,
+    hint: string,
+  ) => (
+    <div className="flex flex-col gap-y-1">
+      <Text size="small" weight="plus">{label}</Text>
+      <Input className="w-40" value={value} onChange={(e) => set(e.target.value)} />
+      <Text size="small" className="text-ui-fg-subtle">{hint}</Text>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-y-5 border-t px-6 py-6">
+      <Text className="text-ui-fg-subtle" size="small">
+        Commission-engine knobs. Changes are clamped and audited server-side.
+      </Text>
+      <div className="flex flex-wrap gap-6">
+        {field('Commission cooldown (days)', cooldown, setCooldown, 'Days before a commission matures.')}
+        {field('Team override (%)', overridePct, setOverridePct, 'Whole percent, 1–99. Stored as a fraction.')}
+        {field('Override generation cap', genCap, setGenCap, 'How many upline generations earn override.')}
+        {field('Withdrawals per day', withdrawals, setWithdrawals, 'Per-customer daily withdrawal limit.')}
+      </div>
+      {errors.length > 0 && (
+        <Text size="small" className="text-ui-fg-error">{errors[0]}</Text>
+      )}
+      <div className="flex items-end gap-4">
+        <div className="flex min-w-64 flex-1 flex-col gap-y-1">
+          <Text size="small" weight="plus">Reason</Text>
+          <Input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Required — audit note for this change"
+          />
+        </div>
+        <Button onClick={submit} isLoading={save.isPending} disabled={!canSave}>
+          Save settings
+        </Button>
+      </div>
     </div>
   );
 };
