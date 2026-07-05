@@ -68,6 +68,13 @@ const DeliveriesPage = () => {
     }
   };
 
+  // Mirrors delivery.ts checkTransition: moving TO shipped requires tracking.
+  const trackingRequired =
+    detail !== null &&
+    nextStatus === 'shipped' &&
+    detail.status !== 'shipped' &&
+    tracking.trim() === '';
+
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between gap-4 px-6 py-4">
@@ -182,7 +189,12 @@ const DeliveriesPage = () => {
               >
                 Cancel
               </Button>
-              <Button size="small" onClick={save} isLoading={update.isPending}>
+              <Button
+                size="small"
+                onClick={save}
+                isLoading={update.isPending}
+                disabled={trackingRequired}
+              >
                 Save
               </Button>
             </div>
@@ -227,6 +239,11 @@ const DeliveriesPage = () => {
                     onChange={(e) => setTracking(e.target.value)}
                     placeholder="Required to mark shipped"
                   />
+                  {trackingRequired && (
+                    <Text size="small" className="text-ui-fg-error">
+                      Tracking number required to mark shipped.
+                    </Text>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {detail.items.map((it) =>
