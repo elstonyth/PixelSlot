@@ -10,6 +10,7 @@ import {
   bakeSlabImage,
   deleteSlabFile,
   mirrorSlabToProduct,
+  resolveFrameBytes,
 } from '../api/admin/media/bake-slab';
 
 // repull-pc-images — replace EVERY catalog image with a freshly ingested copy
@@ -120,6 +121,11 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
   // Re-pull ⇒ re-bake (spec §C): a replaced photo invalidates the graded
   // card's baked composite. Best-effort — a failed bake leaves nulls (bare
   // photo) and the backfill script can retry later.
+  // The frame is resolved once per run (lazily, on the first graded card) and
+  // shared across all re-bakes — same rationale as rebakeAllGradedCards: a
+  // mid-run frame-fetch failure must not mix bundled-default and real-frame
+  // composites within one run.
+  let frameBytes: Buffer | null = null;
   const rebakeCard = async (
     card: {
       id: string;
@@ -130,10 +136,15 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
     stored: string,
   ) => {
     if (card.grader.trim() === '') return;
-    const baked = await bakeSlabImage(container, {
-      handle: card.handle,
-      image: stored,
-    });
+    frameBytes ??= await resolveFrameBytes(container);
+    const baked = await bakeSlabImage(
+      container,
+      {
+        handle: card.handle,
+        image: stored,
+      },
+      frameBytes,
+    );
     const oldKey = card.slab_image_key ?? null;
     await packs.updateCards([
       {

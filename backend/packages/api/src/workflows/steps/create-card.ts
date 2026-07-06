@@ -12,7 +12,10 @@ import { PACKS_MODULE } from '../../modules/packs';
 import type PacksModuleService from '../../modules/packs/service';
 import type { HouseSellerService } from '../../modules/packs/card-product';
 import { insertOrMapDuplicate } from './duplicate-race';
-import { bakeSlabImage } from '../../api/admin/media/bake-slab';
+import {
+  bakeSlabImage,
+  deleteSlabFile,
+} from '../../api/admin/media/bake-slab';
 
 // Inventory-first registration: the PRODUCT is the item, created in the product
 // catalog beforehand. Registering it as a gacha Card only records the gacha
@@ -238,6 +241,12 @@ export const registerCardInvoke = async (
       },
     });
   } catch (error) {
+    // The just-uploaded composite is referenced only by the Card row being
+    // undone here — reclaim it too (deleteSlabFile never throws), so a failed
+    // mirror doesn't orphan one file per retried registration.
+    if (baked) {
+      await deleteSlabFile(container, baked.key);
+    }
     await packs.deleteCards([card.id]);
     throw error;
   }

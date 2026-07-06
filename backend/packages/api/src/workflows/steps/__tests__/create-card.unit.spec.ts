@@ -9,13 +9,17 @@ import { registerCardInvoke } from "../create-card";
 
 jest.mock("../../../api/admin/media/bake-slab", () => ({
   bakeSlabImage: jest.fn().mockResolvedValue(null),
+  deleteSlabFile: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("@medusajs/medusa/core-flows", () => ({
   updateProductsWorkflow: jest.fn(() => ({
     run: jest.fn().mockResolvedValue({}),
   })),
 }));
-import { bakeSlabImage } from "../../../api/admin/media/bake-slab";
+import {
+  bakeSlabImage,
+  deleteSlabFile,
+} from "../../../api/admin/media/bake-slab";
 import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
 
 // The duplicate-registration contract of registerCardInvoke: a product can be
@@ -204,5 +208,27 @@ describe("registerCardInvoke slab bake", () => {
     expect(packs.createCards).toHaveBeenCalledWith([
       expect.objectContaining({ slab_image: null, slab_image_key: null }),
     ]);
+  });
+
+  it("a failed metadata mirror undoes the card AND reclaims the composite", async () => {
+    jest
+      .mocked(bakeSlabImage)
+      .mockResolvedValue({ url: "/static/slab-x.webp", key: "slab-x-key" });
+    jest.mocked(deleteSlabFile).mockClear();
+    // The mirror write throws after the bake + insert succeeded.
+    jest.mocked(updateProductsWorkflow).mockImplementationOnce(
+      () =>
+        ({
+          run: jest.fn().mockRejectedValue(new Error("mirror down")),
+        }) as never
+    );
+    const packs = happyPacks();
+    await expect(
+      registerCardInvoke(INPUT, { container: buildContainer(packs) })
+    ).rejects.toThrow("mirror down");
+    // Atomic undo: the Card row goes, and the just-uploaded composite —
+    // referenced only by that row — is reclaimed instead of orphaned.
+    expect(packs.deleteCards).toHaveBeenCalledWith(["card_1"]);
+    expect(deleteSlabFile).toHaveBeenCalledWith(expect.anything(), "slab-x-key");
   });
 });
