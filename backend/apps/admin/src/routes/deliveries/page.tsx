@@ -17,6 +17,7 @@ import { useDeliveryOrders, useUpdateDeliveryOrder } from '../../lib/queries';
 import type { AdminDeliveryOrder, DeliveryStatus } from '../../lib/admin-rest';
 import { resolveImageUrl } from '../../lib/image-url';
 import { Pager } from '../../components/Pager';
+import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 
 export const config: RouteConfig = {
   label: 'Deliveries',
@@ -38,6 +39,14 @@ const TONE: Record<DeliveryStatus, 'orange' | 'blue' | 'green' | 'grey'> = {
   shipped: 'blue',
   delivered: 'green',
   canceled: 'grey',
+};
+// Display labels only — state/API keep the raw lowercase values.
+const STATUS_LABEL: Record<DeliveryStatus, string> = {
+  requested: 'Requested',
+  packing: 'Packing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  canceled: 'Canceled',
 };
 
 const DeliveriesPage = () => {
@@ -94,14 +103,14 @@ const DeliveriesPage = () => {
             setFilter(v === 'all' ? undefined : (v as DeliveryStatus));
           }}
         >
-          <Select.Trigger className="w-44">
+          <Select.Trigger className="w-44" aria-label="Filter by status">
             <Select.Value />
           </Select.Trigger>
           <Select.Content>
             <Select.Item value="all">All statuses</Select.Item>
             {STATUSES.map((s) => (
               <Select.Item key={s} value={s}>
-                {s}
+                {STATUS_LABEL[s]}
               </Select.Item>
             ))}
           </Select.Content>
@@ -114,13 +123,14 @@ const DeliveriesPage = () => {
         </div>
       ) : orders === null ? (
         <div className="px-6 py-8">
-          <Text className="text-ui-fg-subtle">…</Text>
+          <LoadingSkeleton />
         </div>
       ) : orders.length === 0 ? (
         <div className="px-6 py-8">
           <Text className="text-ui-fg-subtle">No delivery orders.</Text>
         </div>
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <Table.Header>
             <Table.Row>
@@ -147,7 +157,7 @@ const DeliveriesPage = () => {
                         <img
                           key={it.pull_id}
                           src={resolveImageUrl(it.card.image)}
-                          alt=""
+                          alt={it.card.name}
                           className="h-8 w-6 rounded object-contain"
                         />
                       ) : null,
@@ -160,7 +170,9 @@ const DeliveriesPage = () => {
                   </div>
                 </Table.Cell>
                 <Table.Cell>
-                  <StatusBadge color={TONE[o.status]}>{o.status}</StatusBadge>
+                  <StatusBadge color={TONE[o.status]}>
+                    {STATUS_LABEL[o.status]}
+                  </StatusBadge>
                 </Table.Cell>
                 <Table.Cell className="text-right">
                   <Button
@@ -175,6 +187,7 @@ const DeliveriesPage = () => {
             ))}
           </Table.Body>
         </Table>
+        </div>
       )}
 
       {data && (
@@ -241,7 +254,7 @@ const DeliveriesPage = () => {
                     <Select.Content>
                       {STATUSES.map((s) => (
                         <Select.Item key={s} value={s}>
-                          {s}
+                          {STATUS_LABEL[s]}
                         </Select.Item>
                       ))}
                     </Select.Content>
@@ -255,9 +268,17 @@ const DeliveriesPage = () => {
                     value={tracking}
                     onChange={(e) => setTracking(e.target.value)}
                     placeholder="Required to mark shipped"
+                    aria-invalid={trackingRequired || undefined}
+                    aria-describedby={
+                      trackingRequired ? 'tracking-error' : undefined
+                    }
                   />
                   {trackingRequired && (
-                    <Text size="small" className="text-ui-fg-error">
+                    <Text
+                      id="tracking-error"
+                      size="small"
+                      className="text-ui-fg-error"
+                    >
                       Tracking number required to mark shipped.
                     </Text>
                   )}

@@ -166,8 +166,16 @@ const SupportPage = () => {
                   {results.map((c) => (
                     <Table.Row
                       key={c.id}
-                      className="cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer focus-visible:bg-ui-bg-base-hover focus-visible:outline-none"
                       onClick={() => open(c.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          open(c.id);
+                        }
+                      }}
                     >
                       <Table.Cell>{c.email}</Table.Cell>
                       <Table.Cell className="text-ui-fg-subtle">
