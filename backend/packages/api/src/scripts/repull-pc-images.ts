@@ -6,6 +6,7 @@ import type PacksModuleService from '../modules/packs/service';
 import { resolvePcImageUrl } from '../api/admin/pricecharting/product-image';
 import { ingestPcImage } from '../api/admin/media/ingest-pc-image';
 import { pcFetch } from '../api/admin/pricecharting/client';
+import { bakeSlabImage, deleteSlabFile } from '../api/admin/media/bake-slab';
 
 // repull-pc-images — replace EVERY catalog image with a freshly ingested copy
 // of its PriceCharting product photo, through the SAME seam "Add from
@@ -112,6 +113,36 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
   let replaced = 0;
   const kept: string[] = [];
 
+  // Re-pull ⇒ re-bake (spec §C): a replaced photo invalidates the graded
+  // card's baked composite. Best-effort — a failed bake leaves nulls (bare
+  // photo) and the backfill script can retry later.
+  const rebakeCard = async (
+    card: {
+      id: string;
+      handle: string;
+      grader: string;
+      slab_image_key?: string | null;
+    },
+    stored: string,
+  ) => {
+    if (card.grader.trim() === '') return;
+    const baked = await bakeSlabImage(container, {
+      handle: card.handle,
+      image: stored,
+    });
+    const oldKey = card.slab_image_key ?? null;
+    await packs.updateCards([
+      {
+        id: card.id,
+        slab_image: baked?.url ?? null,
+        slab_image_key: baked?.key ?? null,
+      },
+    ]);
+    if (oldKey && oldKey !== (baked?.key ?? null)) {
+      await deleteSlabFile(container, oldKey);
+    }
+  };
+
   // ---- 1. The whole marketplace catalog -----------------------------------
   const products = await listAll((skip, take) =>
     productModule.listProducts(only ? { handle: only } : {}, { skip, take }),
@@ -154,6 +185,7 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
       const card = product.handle ? cardByHandle.get(product.handle) : null;
       if (card) {
         await packs.updateCards([{ id: card.id, image: stored }]);
+        await rebakeCard(card, stored);
         doneHandles.add(card.handle);
       }
       replaced++;
@@ -175,6 +207,7 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
     try {
       const stored = await resolveStored(String(card.pc_product_id));
       await packs.updateCards([{ id: card.id, image: stored }]);
+      await rebakeCard(card, stored);
       replaced++;
       logger.info(`✓ card ${card.handle} ← pc:${card.pc_product_id}`);
     } catch (e) {
