@@ -6,6 +6,7 @@ import { MedusaError } from '@medusajs/framework/utils';
 import { PACKS_MODULE } from '../../../modules/packs';
 import type PacksModuleService from '../../../modules/packs/service';
 import { reqReason } from '../rewards-settings/validate';
+import { rebakeAllGradedCards } from '../media/bake-slab';
 
 // GET /admin/site-settings — current storefront presentation config.
 export async function GET(
@@ -50,5 +51,14 @@ export async function POST(
   const reason = reqReason(req.body);
   const slabFrameUrl = reqSlabFrameUrl(req.body);
   const packs = req.scope.resolve<PacksModuleService>(PACKS_MODULE);
-  res.json(await packs.editSiteSettings({ slabFrameUrl, adminId, reason }));
+  const settings = await packs.editSiteSettings({
+    slabFrameUrl,
+    adminId,
+    reason,
+  });
+  // The frame changed → every graded card's composite is stale. Re-bake them
+  // all in-request (spec §C; sync by decision #5 — seconds at today's ~17
+  // cards, per-card failures don't stop the loop and land in `failed`).
+  const rebaked = await rebakeAllGradedCards(req.scope);
+  res.json({ ...settings, rebaked });
 }

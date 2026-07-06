@@ -153,7 +153,8 @@ const StorefrontPage = () => {
           <div>
             <Heading level="h2">Slab frame</Heading>
             <Text className="text-ui-fg-subtle" size="small">
-              Overlaid on every card photo so pulls read as graded slabs. Upload
+              Baked into every graded card's photo (blank Grader = raw card, no
+              frame). Saving re-bakes all graded cards with this frame. Upload
               a transparent WebP/PNG at slab proportions (≈ 0.62, e.g. 800×1342)
               — or an AI render straight from a prompt template below (its
               magenta window/background is removed automatically). Keep the

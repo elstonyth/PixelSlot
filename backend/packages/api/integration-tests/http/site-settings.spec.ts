@@ -137,6 +137,7 @@ medusaIntegrationTestRunner({
         expect(postRes.status).toBe(200);
         expect(postRes.data).toEqual({
           slab_frame_url: 'https://cdn.test/frame.webp',
+          rebaked: { ok: expect.any(Number), failed: expect.any(Number) },
         });
 
         // Public store read must reflect the change (this is what the
@@ -168,7 +169,10 @@ medusaIntegrationTestRunner({
           ),
         );
         expect(resetRes.status).toBe(200);
-        expect(resetRes.data).toEqual({ slab_frame_url: null });
+        expect(resetRes.data).toEqual({
+          slab_frame_url: null,
+          rebaked: { ok: expect.any(Number), failed: expect.any(Number) },
+        });
 
         const rows = await packs.listAdminActionAudits(
           { entity_type: 'site_settings', action: 'edit_site_settings' },
