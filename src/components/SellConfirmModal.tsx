@@ -138,7 +138,9 @@ export default function SellConfirmModal({
             <dt className="text-white/55">
               {bulk ? 'Total market value' : 'Market value'}
             </dt>
-            <dd className="text-white/85">{rm(fmv)}</dd>
+            {/* 0 means the MYR price is unknown (older backend) — show a dash
+                rather than a fake RM 0.00 on a money confirm. */}
+            <dd className="text-white/85">{fmv > 0 ? rm(fmv) : '—'}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-white/55">

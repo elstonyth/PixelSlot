@@ -316,12 +316,13 @@ export default function SlotMachineClient({
 
     try {
       for (const roll of res.rolls) {
-        // MYR display price; marketValue is raw USD FMV (never render it
-        // behind "RM"). Older backends omit marketPriceMyr → fall back to
-        // the raw figure, same as lib/data/packs.ts. The offer's amount
+        // MYR display price; marketValue is raw USD FMV and must NEVER
+        // render behind "RM" — when an older backend omits marketPriceMyr,
+        // fall back to 0 (the vault seam's policy, actions/vault.ts) and let
+        // SellConfirmModal show "—" for an unknown value. The offer's amount
         // fallbacks derive from this SAME figure so a single offer can never
-        // mix currencies (fmv in MYR, amount computed from USD).
-        const displayFmv = roll.card.marketPriceMyr ?? roll.marketValue;
+        // mix currencies.
+        const displayFmv = roll.card.marketPriceMyr ?? 0;
         // Build the sell-back offer for this roll.
         const builtOffer: SellBackOffer | null =
           roll.pullId !== null

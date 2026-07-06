@@ -510,7 +510,8 @@ export default function VaultClient({
         <div className="fixed inset-x-4 bottom-24 z-40 mx-auto max-w-md rounded-2xl border border-white/10 bg-neutral-900 p-4 shadow-[0_8px_32px_rgba(0,0,0,0.6)] lg:bottom-8">
           <div className="flex items-baseline justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
-              {selected.size} selected · FMV {rm(selectedFmv)}
+              {selected.size} selected · FMV{' '}
+              {selectedFmv > 0 ? rm(selectedFmv) : '—'}
             </span>
             <span className="text-[13px] font-semibold text-buyback-fg">
               Sell for {rm(selectedBuyback)}
