@@ -205,15 +205,22 @@ export async function rebakeAllGradedCards(
       failed++;
       continue;
     }
-    const oldKey = card.slab_image_key ?? null;
-    await packs.updateCards([
-      { id: card.id, slab_image: baked.url, slab_image_key: baked.key },
-    ]);
-    if (oldKey && oldKey !== baked.key) {
-      await deleteSlabFile(container, oldKey);
+    try {
+      const oldKey = card.slab_image_key ?? null;
+      await packs.updateCards([
+        { id: card.id, slab_image: baked.url, slab_image_key: baked.key },
+      ]);
+      if (oldKey && oldKey !== baked.key) {
+        await deleteSlabFile(container, oldKey);
+      }
+      ok++;
+      logger.info(`bake-slab: ✓ ${card.handle} → ${baked.url}`);
+    } catch (e) {
+      logger.warn(
+        `bake-slab: persist failed for '${card.handle}': ${e instanceof Error ? e.message : String(e)}`,
+      );
+      failed++;
     }
-    ok++;
-    logger.info(`bake-slab: ✓ ${card.handle} → ${baked.url}`);
   }
   return { ok, failed };
 }
