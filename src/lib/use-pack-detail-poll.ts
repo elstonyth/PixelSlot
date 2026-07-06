@@ -5,8 +5,11 @@ import type { PackDetail } from '@/lib/data/packs';
 
 const POLL_MS = 60_000;
 
-/** Refreshes the whole pack grid's prices in one request every 60s while the
- *  tab is visible (same seed-then-poll contract as useLiveRecentPulls). */
+/** Live pack detail: fetches immediately on mount AND on every pack switch,
+ *  then refreshes every 60s while the tab is visible. The immediate tick
+ *  matters on sibling-pack switches: `initial` is always the URL pack's
+ *  server snapshot, so without it the grid would show the WRONG pack's pool
+ *  for up to a full poll interval. */
 export function usePackDetailPoll(
   slug: string,
   initial: PackDetail | null,
@@ -41,6 +44,7 @@ export function usePackDetailPoll(
         // keep the last good detail
       }
     };
+    void tick(); // correct the seed right away (effect re-runs per slug)
     const id = setInterval(tick, POLL_MS);
     return () => {
       active = false;
