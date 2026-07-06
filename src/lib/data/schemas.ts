@@ -284,6 +284,7 @@ export const RewardGrantSchema = z.looseObject({
   kind: z.enum(['voucher', 'frame', 'box', 'prize']),
   status: z.enum(['granted', 'fulfilled', 'revoked']).optional(),
   level: finite,
+  origin: z.enum(['ladder', 'box']).optional(),
   payload: z.looseObject({}).nullable().optional(),
   granted_at: z.string(),
 });

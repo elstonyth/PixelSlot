@@ -208,6 +208,8 @@ export type GrantView = {
   level: number;
   payload: unknown;
   granted_at: string;
+  /** 'ladder' = one-time level-up reward; 'box' = won from a daily box. */
+  origin: 'ladder' | 'box';
 };
 
 /** A vaulted reward-prize Pull, same shape as the old GET /store/rewards `prizes`. */
@@ -3373,6 +3375,7 @@ class PacksModuleService extends MedusaService({
       level: g.level,
       payload: g.payload,
       granted_at: g.created_at.toISOString(),
+      origin: (g.origin as 'ladder' | 'box' | null) ?? 'ladder',
     });
     const vouchers = {
       claimable: grantRows
