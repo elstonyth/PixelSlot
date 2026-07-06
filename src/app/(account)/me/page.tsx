@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 // account sidebar, minus Vault/Wallet which have their own surfaces now.
 const QUICK_ACCESS: { label: string; href: string; icon: LucideIcon }[] = [
   { label: 'VIP', href: '/vip', icon: Crown },
-  { label: 'Rewards', href: '/daily', icon: Sparkles },
+  { label: 'Daily Box', href: '/daily', icon: Sparkles },
   { label: 'Orders', href: '/orders', icon: Package },
   { label: 'History', href: '/transactions', icon: Receipt },
   { label: 'Vouchers', href: '/vouchers', icon: Ticket },
@@ -192,12 +192,22 @@ export default async function MePage() {
                 </Link>
               </p>
               <p className="text-[13px] text-neutral-400">
-                <Link href="/daily" className="hover:text-white">
-                  {dailyResult.state.vouchers.claimable.length} to claim
+                <Link href="/vip" className="hover:text-white">
+                  {
+                    dailyResult.state.vouchers.claimable.filter(
+                      (g) => g.kind === 'voucher',
+                    ).length
+                  }{' '}
+                  voucher(s) to claim
                 </Link>{' '}
                 ·{' '}
                 <Link href="/vouchers" className="hover:text-white">
-                  {dailyResult.state.vouchers.claimed.length} claimed
+                  {
+                    dailyResult.state.vouchers.claimed.filter(
+                      (g) => g.kind === 'voucher',
+                    ).length
+                  }{' '}
+                  claimed
                 </Link>
               </p>
             </div>
