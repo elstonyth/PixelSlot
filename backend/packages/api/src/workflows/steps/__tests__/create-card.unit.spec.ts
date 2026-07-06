@@ -16,6 +16,7 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
   })),
 }));
 import { bakeSlabImage } from "../../../api/admin/media/bake-slab";
+import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
 
 // The duplicate-registration contract of registerCardInvoke: a product can be
 // registered as a gacha card exactly once, and EVERY way a second registration
@@ -176,6 +177,13 @@ describe("registerCardInvoke slab bake", () => {
         slab_image_key: "slab-x-key",
       }),
     ]);
+    // The product-metadata mirror is PUBLICLY readable: it must carry the
+    // slab URL and must NEVER leak the private provider key.
+    const run = jest.mocked(updateProductsWorkflow).mock.results.at(-1)!
+      .value.run as jest.Mock;
+    const { metadata } = run.mock.calls[0][0].input.products[0];
+    expect(metadata).toMatchObject({ slab_image: "/static/slab-x.webp" });
+    expect(metadata).not.toHaveProperty("slab_image_key");
   });
 
   it("blank grader skips the bake and stores nulls", async () => {
