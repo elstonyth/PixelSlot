@@ -406,5 +406,12 @@ export default defineMiddlewares({
       method: 'POST',
       middlewares: [adminActionRateLimit],
     },
+    {
+      // Avatar-frame catalog write — cosmetic but repaints avatars storefront
+      // -wide; same admin money-mutation budget as site-settings.
+      matcher: '/admin/avatar-frames',
+      method: 'POST',
+      middlewares: [adminActionRateLimit],
+    },
   ],
 });

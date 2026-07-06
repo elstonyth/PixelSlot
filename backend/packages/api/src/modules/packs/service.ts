@@ -375,13 +375,21 @@ class PacksModuleService extends MedusaService({
   }
 
   // Storefront presentation globals. Reads the singleton row; falls back to
-  // defaults when absent (null slab frame → storefront bundles its own).
+  // defaults when absent (null slab frame → storefront bundles its own;
+  // avatar_frames → {} until the admin uploads milestone frames).
   @InjectManager()
   async siteSettings(
     @MedusaContext() sharedContext: Context = {},
-  ): Promise<{ slab_frame_url: string | null }> {
+  ): Promise<{
+    slab_frame_url: string | null;
+    avatar_frames: Record<string, string>;
+  }> {
     const [row] = await this.listSiteSettings({}, { take: 1 }, sharedContext);
-    return { slab_frame_url: row?.slab_frame_url ?? null };
+    return {
+      slab_frame_url: row?.slab_frame_url ?? null,
+      avatar_frames:
+        (row?.avatar_frames as Record<string, string> | null) ?? {},
+    };
   }
 
   // Admin edit of the site-settings singleton — upserts and writes an audit
@@ -417,6 +425,52 @@ class PacksModuleService extends MedusaService({
           entity_type: 'site_settings',
           entity_id: row?.id ?? 'singleton',
           action: 'edit_site_settings',
+          before,
+          after: data,
+          reason: input.reason,
+        },
+      ],
+      sharedContext,
+    );
+    return data;
+  }
+
+  // Admin edit of the avatar-frame catalog — upsert + audit, same discipline
+  // as editSiteSettings (which owns slab_frame_url; this method never touches
+  // it and vice versa).
+  @InjectTransactionManager()
+  async editAvatarFrames(
+    input: {
+      frames: Record<string, string>;
+      adminId: string;
+      reason: string;
+    },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ avatar_frames: Record<string, string> }> {
+    const [row] = await this.listSiteSettings({}, { take: 1 }, sharedContext);
+    const before = {
+      avatar_frames:
+        (row?.avatar_frames as Record<string, string> | null) ?? {},
+    };
+    const data = { avatar_frames: input.frames };
+    if (row) {
+      await this.updateSiteSettings(
+        { selector: { id: row.id }, data },
+        sharedContext,
+      );
+    } else {
+      await this.createSiteSettings(
+        [{ id: 'global', slab_frame_url: null, ...data }],
+        sharedContext,
+      );
+    }
+    await this.createAdminActionAudits(
+      [
+        {
+          admin_id: input.adminId,
+          entity_type: 'site_settings',
+          entity_id: row?.id ?? 'global',
+          action: 'edit_avatar_frames',
           before,
           after: data,
           reason: input.reason,
