@@ -7,6 +7,16 @@ import {
 import { PACKS_MODULE } from "../../../modules/packs";
 import { registerCardInvoke } from "../create-card";
 
+jest.mock("../../../api/admin/media/bake-slab", () => ({
+  bakeSlabImage: jest.fn().mockResolvedValue(null),
+}));
+jest.mock("@medusajs/medusa/core-flows", () => ({
+  updateProductsWorkflow: jest.fn(() => ({
+    run: jest.fn().mockResolvedValue({}),
+  })),
+}));
+import { bakeSlabImage } from "../../../api/admin/media/bake-slab";
+
 // The duplicate-registration contract of registerCardInvoke: a product can be
 // registered as a gacha card exactly once, and EVERY way a second registration
 // loses — the advisory pre-check, or the handle's UNIQUE constraint when two
@@ -46,6 +56,11 @@ const buildContainer = (
       listProducts: jest.fn().mockResolvedValue([PRODUCT]),
     },
     [ContainerRegistrationKeys.LOGGER]: { warn },
+    [ContainerRegistrationKeys.QUERY]: {
+      graph: jest.fn().mockResolvedValue({
+        data: [{ id: "prod_1", seller: { id: "sel_1" } }],
+      }),
+    },
   };
   return {
     resolve: (key: string) => {
@@ -131,5 +146,55 @@ describe("registerCardInvoke duplicate handling", () => {
     await expect(
       registerCardInvoke(INPUT, { container: buildContainer(packs) })
     ).rejects.toBe(dbDown);
+  });
+});
+
+describe("registerCardInvoke slab bake", () => {
+  beforeEach(() => jest.mocked(bakeSlabImage).mockReset().mockResolvedValue(null));
+
+  const happyPacks = () => ({
+    listCards: jest.fn().mockResolvedValue([]),
+    createCards: jest
+      .fn()
+      .mockResolvedValue([{ id: "card_1", handle: "test-card" }]),
+    deleteCards: jest.fn(),
+  });
+
+  it("graded input bakes before insert and stores url + key", async () => {
+    jest
+      .mocked(bakeSlabImage)
+      .mockResolvedValue({ url: "/static/slab-x.webp", key: "slab-x-key" });
+    const packs = happyPacks();
+    await registerCardInvoke(INPUT, { container: buildContainer(packs) });
+    expect(bakeSlabImage).toHaveBeenCalledWith(expect.anything(), {
+      handle: "test-card",
+      image: "/images/test-card.webp",
+    });
+    expect(packs.createCards).toHaveBeenCalledWith([
+      expect.objectContaining({
+        slab_image: "/static/slab-x.webp",
+        slab_image_key: "slab-x-key",
+      }),
+    ]);
+  });
+
+  it("blank grader skips the bake and stores nulls", async () => {
+    const packs = happyPacks();
+    await registerCardInvoke(
+      { ...INPUT, grader: "  " },
+      { container: buildContainer(packs) }
+    );
+    expect(bakeSlabImage).not.toHaveBeenCalled();
+    expect(packs.createCards).toHaveBeenCalledWith([
+      expect.objectContaining({ slab_image: null, slab_image_key: null }),
+    ]);
+  });
+
+  it("a failed bake still registers the card (nulls)", async () => {
+    const packs = happyPacks();
+    await registerCardInvoke(INPUT, { container: buildContainer(packs) });
+    expect(packs.createCards).toHaveBeenCalledWith([
+      expect.objectContaining({ slab_image: null, slab_image_key: null }),
+    ]);
   });
 });
