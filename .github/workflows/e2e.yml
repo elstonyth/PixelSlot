@@ -121,8 +121,13 @@ jobs:
           echo "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$PK" >> "$GITHUB_ENV"
           echo "PW_PK=$PK" >> "$GITHUB_ENV"
 
+      # Explicit NODE_ENV: `medusa start` defaults to production when unset,
+      # and production (rightly) hard-refuses ALLOW_MOCK_TOPUP=true at boot
+      # AND fail-fasts on missing JWT/COOKIE secrets.
       - name: Start backend (:9000)
         working-directory: backend/packages/api
+        env:
+          NODE_ENV: development
         run: nohup corepack yarn start > backend.log 2>&1 &
 
       # --- Admin dashboard (:7000) — vite dev, MERCUR_BACKEND_URL defaults to :9000 ---

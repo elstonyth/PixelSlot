@@ -123,6 +123,13 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/medusa-test
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
+      # The tracked packages/api test env file targets the LOCAL docker
+      # container (user 'medusa'); dotenv never overrides pre-set env, so these
+      # pin the test runner (@medusajs/test-utils initDb) to the CI service.
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
