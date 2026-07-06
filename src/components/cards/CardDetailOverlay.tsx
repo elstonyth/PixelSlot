@@ -50,15 +50,25 @@ export function CardDetailOverlay({
   const close = () => onCloseRef.current();
   useModalA11y(panelRef, open, close);
 
+  // Latest handle, readable from the open-keyed effect without depending on it.
+  const handleRef = useRef(handle);
+  useEffect(() => {
+    handleRef.current = handle;
+  });
+
   // URL sync. pushedRef distinguishes "closed by Back" (history already moved)
   // from "closed by Esc/Close" (we still owe a history.back()).
   const pushedRef = useRef(false);
+
+  // One pushed history entry per open/close cycle. Keyed on `open` (null↔card
+  // transitions only) so a card→card switch never tears this effect down —
+  // that's what made back() race pushState.
   useEffect(() => {
-    if (!handle) return;
+    if (!open) return;
     window.history.pushState(
       { pokenicCardOverlay: true },
       '',
-      `/card/${encodeURIComponent(handle)}`,
+      `/card/${encodeURIComponent(handleRef.current ?? '')}`,
     );
     pushedRef.current = true;
     const onPop = () => {
@@ -73,6 +83,18 @@ export function CardDetailOverlay({
         window.history.back();
       }
     };
+  }, [open]);
+
+  // Card→card switch while open: swap the URL in place — replaceState performs
+  // no traversal, so there is nothing to race.
+  useEffect(() => {
+    if (handle && pushedRef.current) {
+      window.history.replaceState(
+        { pokenicCardOverlay: true },
+        '',
+        `/card/${encodeURIComponent(handle)}`,
+      );
+    }
   }, [handle]);
 
   if (!seed) return null;
