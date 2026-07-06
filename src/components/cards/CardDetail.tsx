@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { SlabImage } from '@/components/SlabImage';
 import { usePrefersReducedMotion } from '@/lib/use-reveal';
@@ -30,17 +30,6 @@ export function CardDetail({
   const rgb = rarity ? rarityRgb(rarity) : '255,255,255';
   const priceLabel = detail ? rm(detail.marketPriceMyr) : seed.value;
 
-  // Pointer-tracked 3D tilt — pure presentation, off under reduced motion.
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (reduced) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    setTilt({
-      x: ((e.clientY - r.top) / r.height - 0.5) * -10,
-      y: ((e.clientX - r.left) / r.width - 0.5) * 10,
-    });
-  };
-
   // Real 30-day sparkline from history (hidden with <2 points).
   const history = detail?.priceHistory; // stable ref from state; undefined when no detail
   const spark = useMemo(() => {
@@ -61,18 +50,14 @@ export function CardDetail({
 
   return (
     <div className="grid w-full items-center gap-8 md:grid-cols-[minmax(0,420px)_1fr] md:gap-12">
-      {/* The slab — the hero. Rarity-tinted glow + idle float + pointer tilt. */}
+      {/* The slab — the hero. Rarity-tinted glow + idle float. */}
       <motion.div
         animate={reduced ? undefined : { y: [0, -6, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
         className="mx-auto w-[70vw] max-w-[320px] md:w-full md:max-w-[420px]"
       >
         <div
-          onPointerMove={onMove}
-          onPointerLeave={() => setTilt({ x: 0, y: 0 })}
           style={{
-            transform: `perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-            transition: 'transform 0.15s ease-out',
             filter: `drop-shadow(0 24px 60px rgba(0,0,0,0.7)) drop-shadow(0 0 46px rgba(${rgb},0.28))`,
           }}
         >
