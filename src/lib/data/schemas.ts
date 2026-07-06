@@ -84,6 +84,8 @@ export const LeaderboardEntrySchema = z.looseObject({
   points: finite,
   volume: finite,
   pulls: finite,
+  avatar_url: z.string().nullable().optional(),
+  equipped_frame_level: finite.nullable().optional(),
 });
 
 // --- data/profiles.ts -------------------------------------------------------
@@ -92,6 +94,15 @@ export const LeaderboardEntrySchema = z.looseObject({
 export const PublicProfileSchema = z.looseObject({
   handle: z.string(),
   stats: z.looseObject({}),
+  avatar_url: z.string().nullable().optional(),
+  equipped_frame_level: finite.nullable().optional(),
+});
+
+// --- data/avatar-frames.ts ---------------------------------------------------
+
+/** GET /store/avatar-frames — public milestone-frame catalog. */
+export const AvatarFramesSchema = z.looseObject({
+  frames: z.record(z.string(), z.string()),
 });
 
 /** GET /store/profiles/me — `{ handle }`. */
