@@ -23,9 +23,3 @@ export const getAvatarFrames = cache(
     }
   },
 );
-
-/** level → frame URL, null-safe on both sides. */
-export const frameUrlFor = (
-  frames: Record<string, string>,
-  level: number | null | undefined,
-): string | null => (level ? (frames[String(level)] ?? null) : null);

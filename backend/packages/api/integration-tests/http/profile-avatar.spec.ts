@@ -107,6 +107,16 @@ medusaIntegrationTestRunner({
         );
         expect(me.data.customer.metadata.avatar_url).toBe(res.data.avatar_url);
         expect(me.data.customer.metadata.handle).toBe(handle);
+
+        // The stored file must be the re-encoded webp (EXIF/GPS stripped), not
+        // the original bytes.
+        const stored = await api.get(
+          new URL(res.data.avatar_url).pathname,
+          { responseType: 'arraybuffer' },
+        );
+        const meta = await sharp(Buffer.from(stored.data)).metadata();
+        expect(meta.format).toBe('webp');
+        expect(meta.exif).toBeUndefined();
       });
 
       it('rejects a disguised non-image and an oversize photo', async () => {

@@ -71,15 +71,33 @@ export async function POST(
     throw new MedusaError(MedusaError.Types.INVALID_DATA, verdict.message);
   }
 
+  // Re-encode before storing: a phone photo carries EXIF (often GPS) and this
+  // image is served on PUBLIC surfaces (profile/leaderboard). sharp strips all
+  // metadata unless withMetadata() is opted into; .rotate() bakes in the EXIF
+  // orientation first so the strip doesn't sideways-flip portrait shots.
+  let clean: Buffer;
+  try {
+    clean = await sharp(file.buffer).rotate().webp({ quality: 90 }).toBuffer();
+  } catch {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      'Could not process the image — try a different photo.',
+    );
+  }
+
   const { result } = await uploadFilesWorkflow(req.scope).run({
     input: {
       files: [
         {
           // Strip path components a crafted multipart filename might carry
-          // (same guard as /admin/media).
-          filename: path.basename(file.originalname.replace(/\\/g, '/')),
-          mimeType: file.mimetype,
-          content: file.buffer.toString('base64'),
+          // (same guard as /admin/media), then swap the extension for the
+          // re-encoded webp we actually store.
+          filename:
+            path
+              .basename(file.originalname.replace(/\\/g, '/'))
+              .replace(/\.[a-z0-9]+$/i, '') + '.webp',
+          mimeType: 'image/webp',
+          content: clean.toString('base64'),
           access: 'public',
         },
       ],
