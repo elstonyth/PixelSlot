@@ -142,6 +142,27 @@ medusaIntegrationTestRunner({
           meAfterUnequip.data.customer.metadata.equipped_frame_level,
         ).toBeNull();
       });
+
+      it('surfaces avatar_url + equipped_frame_level on the public profile', async () => {
+        const token = await registerCustomer('frame-public@test.dev');
+        const customerId = await customerIdOf(token);
+        await packs().createVipMemberStates([
+          { customer_id: customerId, highest_level_ever: 20, current_level: 20 },
+        ]);
+
+        // Lazily assign the public handle, then equip.
+        const meProfile = await unwrapResponse(
+          api.get('/store/profiles/me', { headers: authed(token) }),
+        );
+        const handle = meProfile.data.handle as string;
+        await unwrapResponse(setFrame(20, authed(token)));
+
+        const pub = await unwrapResponse(
+          api.get(`/store/profiles/${handle}`, { headers: storeHeaders }),
+        );
+        expect(pub.data.equipped_frame_level).toBe(20);
+        expect(pub.data.avatar_url).toBeNull(); // no photo uploaded
+      });
     });
   },
 });
