@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import LeaderboardClient from './LeaderboardClient';
 import { getLeaderboard } from '@/lib/data/leaderboard';
 import { getOwnProfileHandle } from '@/lib/data/profiles';
+import { getAvatarFrames } from '@/lib/data/avatar-frames';
 
 // Live leaderboard, aggregated from the gacha Pull ledger. Fetched server-side
 // (the storefront origin can reach the backend; the browser is CORS-blocked) and
@@ -13,11 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function LeaderboardPage() {
-  const [weekly, alltime, ownHandle] = await Promise.all([
-    getLeaderboard('weekly'),
-    getLeaderboard('alltime'),
+  const [avatarFrames, ownHandle] = await Promise.all([
+    getAvatarFrames(),
     // null when logged out — the client hides the "your rank" card then.
     getOwnProfileHandle().catch(() => null),
+  ]);
+  const [weekly, alltime] = await Promise.all([
+    getLeaderboard('weekly', avatarFrames),
+    getLeaderboard('alltime', avatarFrames),
   ]);
 
   return (
