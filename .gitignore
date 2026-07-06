@@ -125,3 +125,7 @@ GEMINI.md
 
 # local dev credentials for scripts/*.mjs (login sweeps)
 /scripts/.dev-logins
+
+# Medusa build output (already ignored in backend/packages/api/.gitignore; repeated
+# here because code indexers like codebase-memory only read the ROOT gitignore)
+**/.medusa/
