@@ -4,7 +4,7 @@
 // operator instant feedback instead of a round-trip. KEEP THESE NUMBERS IN
 // SYNC with validate.ts.
 
-export type ImageKind = 'pack' | 'card' | 'sprite' | 'frame';
+export type ImageKind = 'pack' | 'card' | 'sprite' | 'frame' | 'avatar-frame';
 
 const ALLOWED_MIME = [
   'image/webp',
@@ -47,6 +47,12 @@ const PROFILES: Record<
     minHeight: 640,
     targetRatio: 0.62,
     aspectTolerance: 0.08,
+  },
+  'avatar-frame': {
+    minWidth: 256,
+    minHeight: 256,
+    targetRatio: 1,
+    aspectTolerance: 0.05,
   },
 };
 
