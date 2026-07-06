@@ -100,9 +100,7 @@ const DailyRewardsPage = () => {
     <Container className="p-0">
       <Tabs
         value={tab}
-        onValueChange={(v) =>
-          switchTab(v as 'boxes' | 'vouchers' | 'settings')
-        }
+        onValueChange={(v) => switchTab(v as 'boxes' | 'vouchers' | 'settings')}
         activationMode="manual"
       >
         <div className="flex items-center justify-between px-6 py-4">
@@ -1091,7 +1089,10 @@ const SettingsTab = () => {
   if (!Number.isInteger(wdN) || wdN < 1)
     errors.push('Withdrawals/day must be an integer ≥ 1.');
   const canSave =
-    !save.isPending && seeded && errors.length === 0 && reason.trim().length > 0;
+    !save.isPending &&
+    seeded &&
+    errors.length === 0 &&
+    reason.trim().length > 0;
 
   const submit = () => {
     if (!canSave) return;
@@ -1120,9 +1121,19 @@ const SettingsTab = () => {
     hint: string,
   ) => (
     <div className="flex flex-col gap-y-1">
-      <Label htmlFor={id} size="small" weight="plus">{label}</Label>
-      <Input id={id} className="w-40" value={value} onChange={(e) => set(e.target.value)} />
-      <Text size="small" className="text-ui-fg-subtle">{hint}</Text>
+      <Label htmlFor={id} size="small" weight="plus">
+        {label}
+      </Label>
+      <Input
+        id={id}
+        type="number"
+        className="w-40"
+        value={value}
+        onChange={(e) => set(e.target.value)}
+      />
+      <Text size="small" className="text-ui-fg-subtle">
+        {hint}
+      </Text>
     </div>
   );
 
@@ -1132,10 +1143,34 @@ const SettingsTab = () => {
         Commission-engine knobs. Changes are clamped and audited server-side.
       </Text>
       <div className="flex flex-wrap gap-6">
-        {field('settings-cooldown', 'Commission cooldown (days)', cooldown, setCooldown, 'Days before a commission matures.')}
-        {field('settings-override-pct', 'Team override (%)', overridePct, setOverridePct, 'Whole percent, 1–99. Stored as a fraction.')}
-        {field('settings-gen-cap', 'Override generation cap', genCap, setGenCap, 'How many upline generations earn override.')}
-        {field('settings-withdrawals', 'Withdrawals per day', withdrawals, setWithdrawals, 'Per-customer daily withdrawal limit.')}
+        {field(
+          'settings-cooldown',
+          'Commission cooldown (days)',
+          cooldown,
+          setCooldown,
+          'Days before a commission matures.',
+        )}
+        {field(
+          'settings-override-pct',
+          'Team override (%)',
+          overridePct,
+          setOverridePct,
+          'Whole percent, 1–99. Stored as a fraction.',
+        )}
+        {field(
+          'settings-gen-cap',
+          'Override generation cap',
+          genCap,
+          setGenCap,
+          'How many upline generations earn override.',
+        )}
+        {field(
+          'settings-withdrawals',
+          'Withdrawals per day',
+          withdrawals,
+          setWithdrawals,
+          'Per-customer daily withdrawal limit.',
+        )}
       </div>
       {errors.length > 0 && (
         <div className="flex flex-col gap-1">
@@ -1148,7 +1183,9 @@ const SettingsTab = () => {
       )}
       <div className="flex items-end gap-4">
         <div className="flex min-w-64 flex-1 flex-col gap-y-1">
-          <Label htmlFor="settings-reason" size="small" weight="plus">Reason</Label>
+          <Label htmlFor="settings-reason" size="small" weight="plus">
+            Reason
+          </Label>
           <Input
             id="settings-reason"
             value={reason}

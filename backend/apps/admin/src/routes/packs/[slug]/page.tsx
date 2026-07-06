@@ -321,7 +321,7 @@ const PackOddsEditorPage = () => {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Pack odds table">
           <Table>
             <Table.Header>
               <Table.Row>

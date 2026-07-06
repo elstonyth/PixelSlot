@@ -306,7 +306,7 @@ const PacksListPage = () => {
           <Text className="text-ui-fg-subtle">{t('packs.list.empty')}</Text>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Packs table">
         <Table>
           <Table.Header>
             <Table.Row>

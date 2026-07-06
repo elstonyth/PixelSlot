@@ -368,7 +368,7 @@ const Customer360Page = () => {
             <LoadingSkeleton />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Referral tree table">
           <Table>
             <Table.Header>
               <Table.Row>
@@ -457,7 +457,7 @@ const Customer360Page = () => {
             <Text className="text-ui-fg-subtle">{t('customer360.commissionsEmpty')}</Text>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Commissions table">
           <Table>
             <Table.Header>
               <Table.Row>

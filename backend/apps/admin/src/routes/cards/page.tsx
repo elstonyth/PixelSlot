@@ -321,7 +321,7 @@ const GachaCardsPage = () => {
           <Text className="text-ui-fg-subtle">{t('cards.list.empty')}</Text>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Cards table">
           <Table>
             <Table.Header>
               <Table.Row>

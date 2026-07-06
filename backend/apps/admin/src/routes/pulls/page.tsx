@@ -91,7 +91,7 @@ const PullLedgerPage = () => {
           <Heading level="h2">{t("pulls.recent")}</Heading>
         </div>
         {data && data.pulls.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Pulls table">
           <Table>
             <Table.Header>
               <Table.Row>
