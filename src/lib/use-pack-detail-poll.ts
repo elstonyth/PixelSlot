@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PackDetail } from '@/lib/data/packs';
 
 const POLL_MS = 60_000;
@@ -15,13 +15,13 @@ export function usePackDetailPoll(
 
   // Reset to the new seed only on a genuine pack switch — never on a
   // same-slug seed re-render, which would stomp fresher polled data.
-  const prevSlug = useRef(slug);
-  useEffect(() => {
-    if (prevSlug.current !== slug) {
-      prevSlug.current = slug;
-      setDetail(initial);
-    }
-  }, [slug, initial]);
+  // "Adjust state when props change" pattern: setState during render of the
+  // same component, per React docs; avoids the effect-cascade lint error.
+  const [prevSlug, setPrevSlug] = useState(slug);
+  if (prevSlug !== slug) {
+    setPrevSlug(slug);
+    setDetail(initial);
+  }
 
   useEffect(() => {
     let active = true;

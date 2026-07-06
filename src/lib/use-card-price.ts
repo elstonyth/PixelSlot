@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CardDetailData } from '@/lib/data/cards';
 
 // Prices move at most daily (nightly PriceCharting sync) plus FX/markup edits;
@@ -17,14 +17,14 @@ export function useCardPrice(
   const [data, setData] = useState(initial);
 
   // Reset to the new seed only on a genuine card switch (overlay reuse) —
-  // never on a same-handle seed re-render, which would stomp fresher polled data.
-  const prevHandle = useRef(handle);
-  useEffect(() => {
-    if (prevHandle.current !== handle) {
-      prevHandle.current = handle;
-      setData(initial);
-    }
-  }, [handle, initial]);
+  // never on a same-handle seed re-render, which would stomp fresher polled
+  // data. "Adjust state when props change" pattern: setState during render of
+  // the same component, per React docs; avoids the effect-cascade lint error.
+  const [prevHandle, setPrevHandle] = useState(handle);
+  if (prevHandle !== handle) {
+    setPrevHandle(handle);
+    setData(initial);
+  }
 
   useEffect(() => {
     if (!handle) return;
