@@ -144,16 +144,22 @@ export default function AuthForm({
           </p>
         )}
 
-        {note && (
-          <p
-            role={note.kind === 'error' ? 'alert' : undefined}
-            className={`mt-3 text-center text-[12px] ${
-              note.kind === 'error' ? 'text-red-400' : 'text-white/50'
-            }`}
-          >
-            {note.text}
-          </p>
-        )}
+        {/* Persistent live region: an alert node inserted already-populated may
+            not be announced; keeping it mounted (sr-only while empty) and only
+            swapping its text is announced reliably. */}
+        <p
+          aria-live="assertive"
+          aria-atomic="true"
+          className={
+            note
+              ? `mt-3 text-center text-[12px] ${
+                  note.kind === 'error' ? 'text-red-400' : 'text-white/50'
+                }`
+              : 'sr-only'
+          }
+        >
+          {note?.text}
+        </p>
 
         <p className="mt-6 text-center text-[13px] text-white/50">
           Remembered it?{' '}
@@ -276,17 +282,22 @@ export default function AuthForm({
         </button>
       </form>
 
-      {note && (
-        <p
-          id="auth-form-error"
-          role={note.kind === 'error' ? 'alert' : undefined}
-          className={`mt-3 text-center text-[12px] ${
-            note.kind === 'error' ? 'text-red-400' : 'text-white/50'
-          }`}
-        >
-          {note.text}
-        </p>
-      )}
+      {/* Persistent live region (see forgot-password note above); keeps the
+          aria-describedby target mounted too. */}
+      <p
+        id="auth-form-error"
+        aria-live="assertive"
+        aria-atomic="true"
+        className={
+          note
+            ? `mt-3 text-center text-[12px] ${
+                note.kind === 'error' ? 'text-red-400' : 'text-white/50'
+              }`
+            : 'sr-only'
+        }
+      >
+        {note?.text}
+      </p>
 
       <p className="mt-6 text-center text-[13px] text-white/50">
         {isSignup ? 'Already have an account? ' : 'New to Pokenic? '}
