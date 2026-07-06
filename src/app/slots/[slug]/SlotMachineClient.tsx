@@ -332,6 +332,7 @@ export default function SlotMachineClient({
                 fmv: displayFmv,
                 cardName: roll.card.name,
                 image: roll.card.image,
+                slabImage: roll.card.slab_image,
                 percent: roll.buyback?.percent ?? FLAT_BUYBACK_PERCENT,
                 amount:
                   roll.buyback?.amount ??

@@ -483,6 +483,7 @@ export default function PackDetailClient({
                   >
                     <SlabImage
                       src={c.image}
+                      slabSrc={c.slabImage}
                       alt=""
                       sizes="32px"
                       className="w-8 shrink-0"
