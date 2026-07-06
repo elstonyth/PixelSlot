@@ -30,8 +30,8 @@ import { Pager } from "../../components/Pager";
 export const config: RouteConfig = {
   label: "Customer Support",
   icon: Buildings,
-  nested: "/operations",
-  rank: 2,
+  nested: "/customers",
+  rank: 1,
 };
 
 const SupportPage = () => {

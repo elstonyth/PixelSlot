@@ -22,8 +22,8 @@ import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 export const config: RouteConfig = {
   label: 'Deliveries',
   icon: TruckFast,
-  nested: '/operations',
-  rank: 1,
+  nested: '/orders',
+  rank: 2,
 };
 
 const STATUSES: DeliveryStatus[] = [

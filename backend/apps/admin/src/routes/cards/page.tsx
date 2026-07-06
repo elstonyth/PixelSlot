@@ -35,8 +35,8 @@ import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 export const config: RouteConfig = {
   label: 'Gacha Cards',
   icon: Sparkles,
-  nested: '/gacha',
-  rank: 1,
+  nested: '/products',
+  rank: 2,
 };
 
 // Edit-only form state (inventory-first: NEW cards are registered from an

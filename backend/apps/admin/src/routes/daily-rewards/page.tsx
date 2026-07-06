@@ -1206,6 +1206,6 @@ export default DailyRewardsPage;
 export const config: RouteConfig = {
   label: 'Daily Rewards',
   icon: Calendar,
-  nested: '/gacha',
-  rank: 5,
+  nested: '/promotions',
+  rank: 1,
 };

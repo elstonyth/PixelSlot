@@ -13,8 +13,8 @@ import { LoadingSkeleton } from "../../components/LoadingSkeleton";
 export const config: RouteConfig = {
   label: "Pull Ledger",
   icon: ChartBar,
-  nested: "/gacha",
-  rank: 3,
+  nested: "/orders",
+  rank: 1,
 };
 
 const PullLedgerPage = () => {

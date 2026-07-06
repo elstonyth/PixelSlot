@@ -38,8 +38,8 @@ import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 export const config: RouteConfig = {
   label: 'Gacha Packs',
   icon: Gift,
-  nested: '/gacha',
-  rank: 2,
+  nested: '/products',
+  rank: 3,
 };
 
 // Known pack categories — the storefront maps these to labels + icons, so the
