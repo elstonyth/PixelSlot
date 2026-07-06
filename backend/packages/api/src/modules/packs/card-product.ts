@@ -118,6 +118,9 @@ export function buildCardProductInput(
       ...(card.metadata.sprite_image !== undefined
         ? { sprite_image: card.metadata.sprite_image }
         : {}),
+      ...(card.metadata.slab_image !== undefined
+        ? { slab_image: card.metadata.slab_image }
+        : {}),
     },
   };
 }

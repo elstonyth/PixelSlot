@@ -14,11 +14,26 @@ jest.mock('@medusajs/medusa/core-flows', () => ({
     run: jest.fn().mockResolvedValue({ result: [{ id: 'prod_new' }] }),
   })),
 }));
+// Stub ONLY the store-context resolver (it pulls seller/channel/etc. modules
+// the container stub doesn't carry); buildCardProductInput stays REAL — the
+// upsert test below exists to prove it carries slab_image through.
+jest.mock('../../../modules/packs/card-product', () => ({
+  ...jest.requireActual('../../../modules/packs/card-product'),
+  resolveCardProductContext: jest.fn().mockResolvedValue({
+    sellerId: 'sel_1',
+    shippingProfileId: 'sp_1',
+    salesChannelId: 'sc_1',
+    stockLocationId: 'sl_1',
+  }),
+}));
 import {
   bakeSlabImage,
   deleteSlabFile,
 } from '../../../api/admin/media/bake-slab';
-import { updateProductsWorkflow } from '@medusajs/medusa/core-flows';
+import {
+  createProductsWorkflow,
+  updateProductsWorkflow,
+} from '@medusajs/medusa/core-flows';
 import { updateCardInvoke } from '../update-card';
 
 const CARD = {
@@ -65,11 +80,14 @@ const INPUT = {
   sprite_image: null as string | null,
 };
 
-const buildContainer = (packs: Record<string, jest.Mock>) => {
+const buildContainer = (
+  packs: Record<string, jest.Mock>,
+  products: unknown[] = [PRODUCT],
+) => {
   const modules: Record<string, unknown> = {
     [PACKS_MODULE]: packs,
     [Modules.PRODUCT]: {
-      listProducts: jest.fn().mockResolvedValue([PRODUCT]),
+      listProducts: jest.fn().mockResolvedValue(products),
     },
     [ContainerRegistrationKeys.LOGGER]: { warn: jest.fn(), info: jest.fn() },
   };
@@ -148,6 +166,22 @@ describe('updateCardInvoke slab bake', () => {
     expect(packs.updateCards).toHaveBeenCalledWith([
       expect.objectContaining({ slab_image: null, slab_image_key: null }),
     ]);
+    expect(deleteSlabFile).toHaveBeenCalledWith(expect.anything(), 'old-key');
+  });
+
+  it('defensive upsert (missing product) mirrors slab_image into the recreated product, never the key', async () => {
+    jest
+      .mocked(bakeSlabImage)
+      .mockResolvedValue({ url: '/static/slab-new.webp', key: 'new-key' });
+    const packs = packsStub();
+    // No product for the handle → the upsert branch recreates it via the
+    // REAL buildCardProductInput; its metadata must carry the baked URL.
+    await updateCardInvoke(INPUT, { container: buildContainer(packs, []) });
+    const run = jest.mocked(createProductsWorkflow).mock.results.at(-1)!.value
+      .run as jest.Mock;
+    const { metadata } = run.mock.calls[0][0].input.products[0];
+    expect(metadata).toMatchObject({ slab_image: '/static/slab-new.webp' });
+    expect(metadata).not.toHaveProperty('slab_image_key');
     expect(deleteSlabFile).toHaveBeenCalledWith(expect.anything(), 'old-key');
   });
 });
