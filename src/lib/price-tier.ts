@@ -1,11 +1,6 @@
 // src/lib/price-tier.ts
 export type Tier =
-  | 'common'
-  | 'uncommon'
-  | 'rare'
-  | 'mythical'
-  | 'legendary'
-  | 'immortal';
+  'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary' | 'immortal';
 
 /**
  * Bucket a card's USD market value into one of six glow tiers (spec §3).

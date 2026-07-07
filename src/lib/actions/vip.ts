@@ -36,8 +36,7 @@ export type Vip = {
 };
 
 export type VipResult =
-  | { ok: true; vip: Vip }
-  | { ok: false; error: string; needsAuth?: boolean };
+  { ok: true; vip: Vip } | { ok: false; error: string; needsAuth?: boolean };
 
 const VIP_RULES: ErrorRule[] = [
   [

@@ -50,8 +50,7 @@ export type ReferralSummaryResult =
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type ApplyReferralResult =
-  | { ok: true; id: string }
-  | { ok: false; error: string; needsAuth?: boolean };
+  { ok: true; id: string } | { ok: false; error: string; needsAuth?: boolean };
 
 const REFERRAL_RULES: ErrorRule[] = [
   [
