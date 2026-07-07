@@ -26,7 +26,6 @@ import {
   BuybackResultSchema,
   CreditsSchema,
   CreditTransactionSchema,
-  type CreditReason,
 } from '@/lib/data/schemas';
 
 export type VaultItem = {
@@ -225,9 +224,10 @@ export async function topUpCredits(amount: number): Promise<TopUpActionResult> {
 export type CreditTxn = {
   id: string;
   amount: number;
-  // Derived from the single CREDIT_REASONS list so it can't drift from the
-  // schema; covers every backend ledger reason → commission rows are kept.
-  reason: CreditReason;
+  // Any string, not `CreditReason` — mirrors CreditTransactionSchema: an
+  // unlisted backend reason must still reach the UI (reasonLabel falls back
+  // to a prettified generic label) instead of the row being dropped upstream.
+  reason: string;
   createdAt: string;
 };
 
