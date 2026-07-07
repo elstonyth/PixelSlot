@@ -2332,6 +2332,49 @@ class PacksModuleService extends MedusaService({
     return Number(rows[0]?.cents ?? 0);
   }
 
+  // Per-reason lifetime ledger sums for /admin/economy — one GROUP BY instead
+  // of paging the whole ledger to Node (audit 2026-07-07 #5b). Emitted as
+  // synthetic {reason, amount} rows so economy.ts's unit-tested ledgerTotals
+  // fold (incl. its unknown-reason loud throw) keeps shaping the report.
+  @InjectManager()
+  async ledgerReasonTotals(
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<Array<{ reason: string; amount: number }>> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ reason: string; cents: string }[]>(
+      'SELECT reason, COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS cents ' +
+        'FROM credit_transaction WHERE deleted_at IS NULL GROUP BY reason',
+      [],
+    );
+    return rows.map((r) => ({ reason: r.reason, amount: Number(r.cents) / 100 }));
+  }
+
+  // Vault liability = Σ over vaulted pulls of ROUND(card FMV × fx × 100) sen,
+  // computed in the DB. Matches the old JS loop exactly: multiplier 1 (markup
+  // lives on sale price, not FMV), reward pulls and orphaned card refs drop out
+  // via the JOIN.
+  @InjectManager()
+  async vaultLiabilityMyr(
+    fx: number,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ count: number; liability: number }> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ n: string; cents: string }[]>(
+      'SELECT COUNT(*)::bigint AS n, ' +
+        '       COALESCE(SUM(ROUND(c.market_value * ? * 100)), 0)::bigint AS cents ' +
+        '  FROM pull p ' +
+        '  JOIN card c ON c.handle = p.card_id AND c.deleted_at IS NULL ' +
+        " WHERE p.status = 'vaulted' AND p.deleted_at IS NULL",
+      [fx],
+    );
+    return {
+      count: Number(rows[0]?.n ?? 0),
+      liability: Number(rows[0]?.cents ?? 0) / 100,
+    };
+  }
+
   // Insert a recruit→sponsor edge with the fraud guards (spec §7). Under ONE
   // transaction holding advisory locks on BOTH customer ids (sorted, so two
   // concurrent inserts can't deadlock), it: rejects self-referral; rejects a
