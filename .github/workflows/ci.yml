@@ -14,6 +14,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Most PRs here are storefront work — don't make them pay the ~10-min backend
+  # toll for code they didn't touch. Backend jobs run only when backend/** (or
+  # this workflow) changes; a skipped job counts as PASSING for branch
+  # protection, so required checks stay satisfied.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Detect changed areas
+        id: filter
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/ci.yml'
+
   # Storefront gate: lint, format, typecheck, unit tests, prod build.
   # Node 24 = the local baseline (root engines: >=24).
   quality:
@@ -53,6 +75,8 @@ jobs:
   # backend TS error passes CI and fails 5-10 min later inside the prod deploy.
   # Node 22 = prod-image parity (backend/Dockerfile pins 22-slim).
   backend-quality:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -98,6 +122,8 @@ jobs:
   # were sequential locally (~20 min). In CI each shard gets its own job +
   # postgres, so wall-clock = install + slowest shard (~8-10 min).
   integration-http:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
