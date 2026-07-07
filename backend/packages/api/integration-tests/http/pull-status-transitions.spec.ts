@@ -38,7 +38,9 @@ medusaIntegrationTestRunner({
         ]);
       });
 
-      const mkPull = async (status: 'vaulted' | 'delivering') => {
+      const mkPull = async (
+        status: 'vaulted' | 'delivering' | 'bought_back',
+      ) => {
         const [pull] = await packs.createPulls([
           {
             customer_id: 'cus_pst_test',
@@ -106,12 +108,42 @@ medusaIntegrationTestRunner({
             deleteCardWorkflow(getContainer()).run({
               input: { handle: CARD_HANDLE },
             }),
-          ).rejects.toMatchObject({ message: expect.stringMatching(/still hold/i) });
+          ).rejects.toMatchObject({
+            message: expect.stringMatching(/still hold/i),
+          });
           const [card] = await packs.listCards(
             { handle: CARD_HANDLE },
             { take: 1 },
           );
           expect(card).toBeTruthy(); // not deleted
+        });
+
+        it('refuses to delete while a copy is out for delivery', async () => {
+          await mkPull('delivering');
+          await expect(
+            deleteCardWorkflow(getContainer()).run({
+              input: { handle: CARD_HANDLE },
+            }),
+          ).rejects.toMatchObject({
+            message: expect.stringMatching(/still hold/i),
+          });
+          const [card] = await packs.listCards(
+            { handle: CARD_HANDLE },
+            { take: 1 },
+          );
+          expect(card).toBeTruthy(); // not deleted
+        });
+
+        it('history (bought_back) does NOT block deletion', async () => {
+          await mkPull('bought_back');
+          await deleteCardWorkflow(getContainer()).run({
+            input: { handle: CARD_HANDLE },
+          });
+          const cards = await packs.listCards(
+            { handle: CARD_HANDLE },
+            { take: 1 },
+          );
+          expect(cards).toHaveLength(0); // deleted
         });
       });
     });
