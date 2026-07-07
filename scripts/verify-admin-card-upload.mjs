@@ -100,7 +100,9 @@ if (uploaded?.url && original) {
 
     // 5c. a STORE surface returns the new URL (the reveal/Top Hits render exactly
     // this field) — find the card in any pack detail's top hits or card list
-    const storePacks = await (await fetch(`${API}/store/packs`))
+    const storePacks = await (
+      await fetch(`${API}/store/packs`)
+    )
       .json()
       .catch(() => ({}));
     const slugs = (storePacks.packs ?? [])
@@ -109,7 +111,9 @@ if (uploaded?.url && original) {
       .slice(0, 12);
     let seen = false;
     for (const slug of slugs) {
-      const det = await (await fetch(`${API}/store/packs/${slug}`))
+      const det = await (
+        await fetch(`${API}/store/packs/${slug}`)
+      )
         .json()
         .catch(() => ({}));
       const all = JSON.stringify(det);
