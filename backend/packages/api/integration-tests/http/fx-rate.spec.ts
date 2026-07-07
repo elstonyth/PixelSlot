@@ -28,7 +28,7 @@ medusaIntegrationTestRunner({
         const post = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: 4.85 },
+            { manual_override: true, manual_rate: 4.85, reason: 'test: pin FX' },
             adminHeaders(),
           ),
         );
@@ -44,7 +44,7 @@ medusaIntegrationTestRunner({
         const updatePost = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: 4.2 },
+            { manual_override: true, manual_rate: 4.2, reason: 'test: update FX' },
             adminHeaders(),
           ),
         );
@@ -71,7 +71,7 @@ medusaIntegrationTestRunner({
         const res = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: 1001 },
+            { manual_override: true, manual_rate: 1001, reason: 'test: over bound' },
             adminHeaders(),
           ),
         );
@@ -82,7 +82,7 @@ medusaIntegrationTestRunner({
         const res = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: 0 },
+            { manual_override: true, manual_rate: 0, reason: 'test: zero' },
             adminHeaders(),
           ),
         );
@@ -93,7 +93,7 @@ medusaIntegrationTestRunner({
         const res = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: -1 },
+            { manual_override: true, manual_rate: -1, reason: 'test: negative' },
             adminHeaders(),
           ),
         );
@@ -104,7 +104,7 @@ medusaIntegrationTestRunner({
         const res = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: 1000 },
+            { manual_override: true, manual_rate: 1000, reason: 'test: upper bound' },
             adminHeaders(),
           ),
         );
@@ -116,7 +116,7 @@ medusaIntegrationTestRunner({
         const res = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: "abc" },
+            { manual_override: true, manual_rate: "abc", reason: "test: non-numeric" },
             adminHeaders(),
           ),
         );
@@ -127,7 +127,7 @@ medusaIntegrationTestRunner({
         const res = await unwrapResponse(
           api.post(
             "/admin/pricing/fx",
-            { manual_override: true, manual_rate: "" },
+            { manual_override: true, manual_rate: "", reason: "test: empty" },
             adminHeaders(),
           ),
         );

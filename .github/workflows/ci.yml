@@ -8,17 +8,46 @@ on:
     branches:
       - master
 
+# Stacked pushes to the same ref supersede each other — don't bill for both.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Most PRs here are storefront work — don't make them pay the ~10-min backend
+  # toll for code they didn't touch. Backend jobs run only when backend/** (or
+  # this workflow) changes; a skipped job counts as PASSING for branch
+  # protection, so required checks stay satisfied.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Detect changed areas
+        id: filter
+        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/ci.yml'
+
+  # Storefront gate: lint, format, typecheck, unit tests, prod build.
+  # Node 24 = the local baseline (root engines: >=24).
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
           cache: npm
@@ -35,5 +64,164 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: Unit tests (vitest)
+        run: npm test
+
       - name: Build
         run: npm run build
+
+  # Backend gate: lint + typecheck + the same turbo build the DO App Platform
+  # Docker image runs (medusa build + admin/vendor vite). Without this, a
+  # backend TS error passes CI and fails 5-10 min later inside the prod deploy.
+  # Node 22 = prod-image parity (backend/Dockerfile pins 22-slim).
+  backend-quality:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+
+      - name: Cache yarn (berry global cache)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.yarn/berry/cache
+          key: yarn-${{ runner.os }}-${{ hashFiles('backend/yarn.lock') }}
+          restore-keys: yarn-${{ runner.os }}-
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: corepack yarn install --immutable
+
+      - name: Lint
+        working-directory: backend
+        run: corepack yarn lint
+
+      - name: Type check
+        working-directory: backend
+        run: corepack yarn check-types
+
+      - name: Build (medusa + admin/vendor vite)
+        working-directory: backend
+        run: corepack yarn build
+
+  # Backend HTTP integration gate. Not previously in CI — which is how the FX
+  # `reason`-requirement change silently broke these suites. Uses service
+  # containers; medusa's test runner creates/drops its own per-suite test DBs.
+  #
+  # The 3 jest shards exist to reset the node heap (run-http-shards.mjs); they
+  # were sequential locally (~20 min). In CI each shard gets its own job +
+  # postgres, so wall-clock = install + slowest shard (~8-10 min).
+  integration-http:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: medusa-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/medusa-test
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+      # The tracked packages/api test env file targets the LOCAL docker
+      # container (user 'medusa'); dotenv never overrides pre-set env, so these
+      # pin the test runner (@medusajs/test-utils initDb) to the CI service.
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+
+      - name: Cache yarn (berry global cache)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.yarn/berry/cache
+          key: yarn-${{ runner.os }}-${{ hashFiles('backend/yarn.lock') }}
+          restore-keys: yarn-${{ runner.os }}-
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: corepack yarn install --immutable
+
+      # jest resolves @acme/odds-math via its dist/ entrypoint, which doesn't
+      # exist on a fresh install. Build only the api's workspace deps (^ = deps,
+      # not api itself — jest SWC-transforms the api source directly).
+      - name: Build workspace deps
+        working-directory: backend
+        run: corepack yarn build --filter="@acme/api^..."
+
+      # The wrapper forwards extra args to jest, so --shard reaches jest
+      # directly and this job runs exactly one of the three heap-bounded shards.
+      - name: HTTP integration tests (shard ${{ matrix.shard }}/3)
+        working-directory: backend/packages/api
+        run: |
+          set -o pipefail
+          corepack yarn test:integration:http --shard=${{ matrix.shard }}/3 2>&1 | tee http-tests.log
+
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: http-integration-log-shard-${{ matrix.shard }}
+          path: backend/packages/api/http-tests.log
+          retention-days: 7
+
+  # Secret scan — forward-looking insurance for a payments-adjacent codebase.
+  # Historical false positives can be waived via a .gitleaksignore fingerprint.
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
