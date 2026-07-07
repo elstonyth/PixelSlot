@@ -11,6 +11,7 @@ const bad = (message: string): never => {
 export type AdminDeliveryUpdate = {
   status?: DeliveryStatus;
   tracking_number?: string | null;
+  proof_images?: string[];
 };
 
 // Validate the status query filter (?status=). Returns undefined when absent.
@@ -48,8 +49,21 @@ export function coerceDeliveryUpdateBody(raw: unknown): AdminDeliveryUpdate {
         ? b.tracking_number.trim() || null
         : null;
   }
-  if (out.status === undefined && out.tracking_number === undefined) {
-    bad('Provide `status` and/or `tracking_number`.');
+  if (b.proof_images !== undefined) {
+    if (
+      !Array.isArray(b.proof_images) ||
+      b.proof_images.some((u) => typeof u !== 'string' || u.trim() === '')
+    ) {
+      bad('`proof_images` must be an array of URL strings.');
+    }
+    out.proof_images = (b.proof_images as string[]).map((u) => u.trim());
+  }
+  if (
+    out.status === undefined &&
+    out.tracking_number === undefined &&
+    out.proof_images === undefined
+  ) {
+    bad('Provide `status`, `tracking_number`, and/or `proof_images`.');
   }
   return out;
 }

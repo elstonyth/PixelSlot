@@ -372,13 +372,38 @@ export default function OrdersClient({
                 <td className="whitespace-nowrap px-4 py-3 text-white/80">
                   {orderDate(o.createdAt)}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-white/80">
+                <td className="px-4 py-3 text-white/80">
                   {o.trackingNumber ? (
                     <span className="font-mono text-[12px] text-white/70">
                       {o.trackingNumber}
                     </span>
                   ) : (
                     <span className="text-white/55">—</span>
+                  )}
+                  {o.proofImages.length > 0 && (
+                    <div className="mt-2">
+                      <span className="block text-[11px] uppercase tracking-wide text-white/40">
+                        Delivery photos
+                      </span>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {o.proofImages.map((url) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary operator-uploaded proof URL (backend static / CDN), not an allowlisted next/image domain */}
+                            <img
+                              src={url}
+                              alt="Delivery proof"
+                              className="h-12 w-12 rounded-lg border border-white/10 object-cover transition-opacity hover:opacity-80"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-white/80">

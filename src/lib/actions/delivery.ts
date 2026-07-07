@@ -32,6 +32,9 @@ export type DeliveryOrderView = {
   createdAt: string;
   items: DeliveryOrderItemView[];
   address: { name: string; city: string; countryCode: string };
+  // Operator-uploaded proof-of-delivery photo URLs (empty when none). Backend
+  // key is `proof_images`; renamed here to match the camelCase view convention.
+  proofImages: string[];
 };
 
 export type DeliveryOrdersResult =
@@ -43,7 +46,8 @@ export type RequestDeliveryResult =
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type EditAddressResult =
-  { ok: true } | { ok: false; error: string; needsAuth?: boolean };
+  | { ok: true }
+  | { ok: false; error: string; needsAuth?: boolean };
 
 export type AddressView = {
   id: string;
@@ -82,6 +86,7 @@ interface BackendDeliveryOrder {
   id: string;
   status: DeliveryOrderView['status'];
   tracking_number: string | null;
+  proof_images?: string[] | null;
   created_at: string;
   address: { name: string; city: string; country_code: string };
   items: {
@@ -123,6 +128,7 @@ export async function getDeliveryOrders(): Promise<DeliveryOrdersResult> {
         city: o.address?.city ?? '',
         countryCode: o.address?.country_code ?? '',
       },
+      proofImages: o.proof_images ?? [],
       items: (o.items ?? []).map((it) => ({
         pullId: it.pull_id,
         card: it.card
