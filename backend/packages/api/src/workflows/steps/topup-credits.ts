@@ -22,7 +22,7 @@ export type TopUpCreditsInput = {
 };
 
 export type TopUpResult = {
-  /** USD credited (decimal, never cents). */
+  /** MYR (RM) credited (decimal, never cents). */
   amount: number;
   /** The gateway's charge reference (mock today, real later). */
   reference: string;

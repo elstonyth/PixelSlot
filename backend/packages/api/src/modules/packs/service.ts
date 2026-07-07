@@ -102,14 +102,14 @@ export type CreditMutationReason =
 
 export type CreditMutationInput = {
   customerId: string;
-  /** Signed USD decimal (never cents): negative = spend, positive = grant. */
+  /** Signed MYR (RM) decimal (never cents): negative = spend, positive = grant. */
   amount: number;
   reason: CreditMutationReason;
   /** Note (adjustment) / gateway ref (top-up); null otherwise. */
   reference?: string | null;
   /** The pull this credit came from (buyback rows only). */
   pullId?: string | null;
-  /** Minimum allowed resulting balance in USD (default $0 — no overdraft). */
+  /** Minimum allowed resulting balance in MYR (RM) (default RM 0 — no overdraft). */
   floor?: number;
   /** The open's stable id (open_id), stamped on pack_open charge rows. */
   sourceTransactionId?: string | null;
@@ -126,7 +126,7 @@ export type CreditMutationInput = {
 
 export type SettleOpenInput = {
   customerId: string;
-  /** Signed USD decimal — the open debit (always < 0). */
+  /** Signed MYR (RM) decimal — the open debit (always < 0). */
   amount: number;
   /** The open's stable id (open_id), stamped on the debit + commission rows. */
   sourceTransactionId: string;
@@ -683,9 +683,9 @@ class PacksModuleService extends MedusaService({
         MedusaError.Types.NOT_ALLOWED,
         input.reason === 'pack_open'
           ? 'Not enough credits to open this pack.'
-          : `Deduction exceeds the customer's balance ($${(
+          : `Deduction exceeds the customer's balance (RM ${(
               beforeCents / 100
-            ).toFixed(2)}) — the balance cannot go below $${(
+            ).toFixed(2)}) — the balance cannot go below RM ${(
               floorCents / 100
             ).toFixed(2)}.`,
       );
@@ -2157,8 +2157,8 @@ class PacksModuleService extends MedusaService({
 
   // Wallet summary: raw balance, available (freeze-aware), locked (pending-
   // unmatured + suspended commissions), and the earliest pending maturity
-  // tranche (date + amount). All amounts in MYR (USD equivalents). Amounts in
-  // MYR = amounts as stored (the ledger is already in MYR decimals).
+  // tranche (date + amount). All amounts in MYR (RM) — the ledger is already
+  // stored in MYR decimals, never USD.
   // available = isFrozen ? 0 : balance − locked  (matches availableBalance).
   @InjectManager()
   async walletSummary(
