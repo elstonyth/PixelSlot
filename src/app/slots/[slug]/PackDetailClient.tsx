@@ -207,11 +207,14 @@ export default function PackDetailClient({
               <p className="mb-3 text-[13px] text-white/70">
                 Every card in the pool and its current market price.
               </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {/* Mobile-first: 3-up like Top Hits — 2-up slabs filled the
+                  viewport and made the pool feel endless to scroll. */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-5">
                 {pool.map((c) => (
                   <CardTile
                     key={c.id}
                     card={c}
+                    sizes="(max-width: 1024px) 30vw, 200px"
                     onOpen={(card) => setOpenCard(toSeed(card))}
                   />
                 ))}

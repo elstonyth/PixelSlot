@@ -49,12 +49,13 @@ export function CardDetail({
   const delta = first !== undefined && last !== undefined ? last - first : null;
 
   return (
-    <div className="grid w-full items-center gap-8 md:grid-cols-[minmax(0,420px)_1fr] md:gap-12">
-      {/* The slab — the hero. Rarity-tinted glow + idle float. */}
+    <div className="grid w-full items-center gap-5 md:grid-cols-[minmax(0,420px)_1fr] md:gap-12">
+      {/* The slab — the hero. Rarity-tinted glow + idle float. Phone width is
+          dvh-capped so slab + facts fit one viewport (no overlay scrolling). */}
       <motion.div
         animate={reduced ? undefined : { y: [0, -6, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-        className="mx-auto w-[70vw] max-w-[320px] md:w-full md:max-w-[420px]"
+        className="mx-auto w-[min(62vw,26dvh)] max-w-[320px] md:w-full md:max-w-[420px]"
       >
         <div
           style={{
@@ -65,26 +66,27 @@ export function CardDetail({
             src={seed.image}
             slabSrc={detail?.slab_image ?? seed.slabImage}
             alt={seed.name}
-            sizes="(max-width: 768px) 70vw, 420px"
+            sizes="(max-width: 768px) 62vw, 420px"
             priority
             className="w-full"
           />
         </div>
       </motion.div>
 
-      {/* Facts */}
-      <div className="flex min-w-0 flex-col gap-4">
+      {/* Facts — phone sizes sit two steps down the scale so a long graded-
+          card name reads as a title, not a wall of display type. */}
+      <div className="flex min-w-0 flex-col gap-2.5 md:gap-4">
         {detail && (
-          <p className="text-[12px] font-semibold uppercase tracking-wider text-white/55">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55 md:text-[12px]">
             {detail.set} · {detail.grader} {detail.grade}
           </p>
         )}
-        <h1 className="font-heading text-3xl font-bold uppercase leading-[1.05] tracking-tight text-white sm:text-5xl">
+        <h1 className="font-heading text-lg font-bold uppercase leading-[1.15] tracking-tight text-white sm:text-3xl md:text-5xl md:leading-[1.05]">
           {seed.name}
         </h1>
         {rarity && (
           <span
-            className="w-fit rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wide"
+            className="w-fit rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide md:text-[12px]"
             style={{
               color: `rgb(${rgb})`,
               backgroundColor: `rgba(${rgb},0.12)`,
@@ -96,7 +98,7 @@ export function CardDetail({
 
         {/* Value block */}
         <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
-          <p className="font-heading text-4xl font-bold tabular-nums text-white">
+          <p className="font-heading text-2xl font-bold tabular-nums text-white md:text-4xl">
             {priceLabel}
             <span className="ml-2 text-sm font-normal text-white/50">est.</span>
           </p>
@@ -124,12 +126,12 @@ export function CardDetail({
         )}
 
         {spark && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 md:p-4">
             <svg
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
               aria-hidden="true"
-              className="h-20 w-full"
+              className="h-12 w-full md:h-20"
             >
               <polyline
                 points={spark}

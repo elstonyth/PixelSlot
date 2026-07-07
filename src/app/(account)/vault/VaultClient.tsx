@@ -374,7 +374,9 @@ export default function VaultClient({
           </Pill>
         </div>
       ) : (
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        // Mobile-first: 3-up keeps a scroll rhythm of ~2 rows per screen —
+        // 2-up slabs dominated the viewport and made browsing feel stuck.
+        <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-4">
           {visible.map((item) => {
             const isSelected = selected.has(item.pullId);
             const glow = rarityRgb(item.card.rarity);
@@ -390,7 +392,7 @@ export default function VaultClient({
                   src={item.card.image}
                   slabSrc={item.card.slabImage}
                   alt={item.card.name}
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 1024px) 33vw, 25vw"
                   className="w-full"
                 />
               </div>
@@ -399,7 +401,7 @@ export default function VaultClient({
               <div
                 key={item.pullId}
                 className={cn(
-                  'relative flex flex-col rounded-2xl border bg-neutral-900 p-3 transition-colors',
+                  'relative flex flex-col rounded-2xl border bg-neutral-900 p-2 transition-colors sm:p-3',
                   selectMode && isSelected
                     ? 'border-white ring-2 ring-white/50'
                     : 'border-white/10',
@@ -449,7 +451,7 @@ export default function VaultClient({
                         });
                       }}
                       aria-label={`View details for ${item.card.name}`}
-                      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-neutral-950/70 text-white/80 backdrop-blur transition-colors hover:bg-neutral-950/90 hover:text-white"
+                      className="absolute right-1 top-1 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-950/70 text-white/80 backdrop-blur transition-colors hover:bg-neutral-950/90 hover:text-white sm:right-2 sm:top-2 sm:h-8 sm:w-8"
                     >
                       <Eye className="h-4 w-4" aria-hidden />
                     </button>
@@ -464,7 +466,7 @@ export default function VaultClient({
                           : 'Feature on profile'
                       }
                       className={cn(
-                        'absolute left-1 top-1 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 transition-colors disabled:opacity-50',
+                        'absolute left-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 transition-colors disabled:opacity-50 sm:h-9 sm:w-9',
                         item.showcased
                           ? 'text-chase'
                           : 'text-neutral-400 hover:text-white',
@@ -484,24 +486,26 @@ export default function VaultClient({
                   </div>
                 )}
                 <p
-                  className="mt-2 line-clamp-2 min-h-[2.1rem] text-[12px] font-semibold leading-snug text-white"
+                  className="mt-1.5 line-clamp-2 min-h-[1.9rem] text-[11px] font-semibold leading-snug text-white sm:mt-2 sm:min-h-[2.1rem] sm:text-[12px]"
                   title={item.card.name}
                 >
                   {item.card.name}
                 </p>
-                <div className="mt-1 flex items-center justify-between text-[11px]">
+                <div className="mt-1 flex items-center justify-between gap-1 text-[10px] sm:text-[11px]">
                   <span
-                    className="font-bold uppercase tracking-wider"
+                    className="truncate font-bold uppercase tracking-wider"
                     style={{ color: `rgb(${glow})` }}
                   >
                     {item.card.rarity}
                   </span>
-                  <span className="font-heading text-[13px] text-white">
+                  <span className="font-heading shrink-0 text-[12px] text-white sm:text-[13px]">
                     {rm(item.card.marketPriceMyr ?? 0)}
                   </span>
                 </div>
+                {/* pack origin is secondary meta — desktop-only so 3-up phone
+                    tiles stay two text rows tall */}
                 <p
-                  className="mt-0.5 truncate text-[11px] text-neutral-400"
+                  className="mt-0.5 hidden truncate text-[11px] text-neutral-400 sm:block"
                   title={item.packTitle}
                 >
                   from {item.packTitle}
@@ -512,11 +516,19 @@ export default function VaultClient({
                     size="sm"
                     onClick={() => setConfirmItem(item)}
                     disabled={sellingId !== null}
-                    className="mt-2.5 h-9 text-[12px] text-buyback-fg"
+                    className="mt-2 h-8 px-2 text-[11px] text-buyback-fg sm:mt-2.5 sm:h-9 sm:text-[12px]"
                   >
-                    {sellingId === item.pullId
-                      ? 'Selling…'
-                      : `Sell · ${rm(item.buyback.amount)} (${item.buyback.percent}%)`}
+                    {sellingId === item.pullId ? (
+                      'Selling…'
+                    ) : (
+                      <>
+                        Sell · {rm(item.buyback.amount)}
+                        <span className="hidden sm:inline">
+                          {' '}
+                          ({item.buyback.percent}%)
+                        </span>
+                      </>
+                    )}
                   </Pill>
                 )}
               </div>
