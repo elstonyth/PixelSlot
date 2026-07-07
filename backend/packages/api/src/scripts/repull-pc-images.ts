@@ -249,6 +249,9 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
         `✗ card ${card.handle}: ${e instanceof Error ? e.message : String(e)} — kept existing image`,
       );
     }
+    // A cache miss here hits the same PriceCharting endpoints as loop 1
+    // (offers-page scrape + image download) — keep the same ~1 req/s pace.
+    await sleep(1100);
   }
 
   logger.info(
