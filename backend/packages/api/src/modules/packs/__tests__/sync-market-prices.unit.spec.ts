@@ -1,5 +1,6 @@
 import {
   refreshCardPrice,
+  recordPriceHistory,
   MAX_MARKET_VALUE_USD,
   MAX_SYNC_DELTA_RATIO,
   type CardRow,
@@ -102,5 +103,44 @@ describe("refreshCardPrice — sanity bounds", () => {
 
   it("sanity: ratio constant is what buyback exposure was priced against", () => {
     expect(MAX_SYNC_DELTA_RATIO).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('recordPriceHistory — latest-value comparison', () => {
+  const mkPacks = (latest: number | null) => {
+    const created: unknown[] = [];
+    return {
+      created,
+      packs: {
+        listCardPriceHistories: async () =>
+          latest === null ? [] : [{ value: latest }],
+        createCardPriceHistories: async (rows: unknown) =>
+          void created.push(rows),
+      },
+    };
+  };
+  const result = {
+    handle: 'h',
+    oldValue: 100,
+    newValue: 120,
+    changed: false, // update committed on a PREVIOUS run; this run sees no change
+  };
+
+  it('self-heals a gap: latest history disagrees with current value', async () => {
+    const { packs, created } = mkPacks(100);
+    await recordPriceHistory(packs, 'card_1', { ...result, newValue: 120 });
+    expect(created).toHaveLength(1);
+  });
+
+  it('skips when latest history already matches', async () => {
+    const { packs, created } = mkPacks(120);
+    await recordPriceHistory(packs, 'card_1', { ...result, newValue: 120 });
+    expect(created).toHaveLength(0);
+  });
+
+  it('writes the baseline on first sync', async () => {
+    const { packs, created } = mkPacks(null);
+    await recordPriceHistory(packs, 'card_1', { ...result, newValue: 120 });
+    expect(created).toHaveLength(1);
   });
 });

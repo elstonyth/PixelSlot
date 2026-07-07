@@ -44,17 +44,25 @@ export type RefreshResult = {
   skippedReason?: string;
 };
 
-// Append the FMV history trail for one sync result: a row on every value
-// change, plus one baseline row the first time a card syncs (so the curve has
-// a starting point). Skipped syncs (no token / no usable price) never write.
-// Shared by the daily job and the integration suite — packs is the module
-// service (structurally typed so tests can pass the real service directly).
+// Append the FMV history trail for one sync result by comparing the LATEST
+// history row to the card's current value (not a boolean "any history?" probe):
+// - first sync (no rows)            → baseline row
+// - value changed this run          → change row
+// - latest row ≠ current value      → self-heals a gap left by a failed insert
+//                                     on a previous run (card update committed,
+//                                     history didn't — audit 2026-07-07 M2)
+// - re-run / concurrent run, in-sync → no duplicate
+// ponytail: a concurrent duplicate insert of the SAME value in the same second
+// is still possible (two backends, no job lock) and harmless to the curve.
 export async function recordPriceHistory(
   packs: {
     listCardPriceHistories: (
       f: { card_id: string },
-      c: { take: number },
-    ) => Promise<unknown[]>;
+      c: {
+        take: number;
+        order?: Record<string, 'ASC' | 'DESC'>;
+      },
+    ) => Promise<Array<{ value: unknown }>>;
     createCardPriceHistories: (
       rows: Array<{ card_id: string; value: number }>,
     ) => Promise<unknown>;
@@ -63,10 +71,11 @@ export async function recordPriceHistory(
   r: RefreshResult,
 ): Promise<void> {
   if (r.skippedReason) return;
-  const hasHistory =
-    (await packs.listCardPriceHistories({ card_id: cardId }, { take: 1 }))
-      .length > 0;
-  if (r.changed || !hasHistory) {
+  const [latest] = await packs.listCardPriceHistories(
+    { card_id: cardId },
+    { take: 1, order: { created_at: 'DESC', id: 'DESC' } },
+  );
+  if (!latest || Number(latest.value) !== r.newValue) {
     await packs.createCardPriceHistories([
       { card_id: cardId, value: r.newValue },
     ]);
