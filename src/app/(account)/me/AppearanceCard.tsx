@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, Lock } from 'lucide-react';
 import { FramedAvatar } from '@/components/FramedAvatar';
+import { AnimatedFrame } from '@/components/AnimatedFrame';
 import { FRAME_LEVELS } from '@/lib/frame-levels';
 import { uploadAvatar, setAvatarFrame } from '@/lib/actions/profile-appearance';
 
@@ -25,7 +26,8 @@ export function AppearanceCard({
   subtitle: string;
   avatarUrl: string | null;
   equippedLevel: number | null;
-  highestLevel: number;
+  /** null = the VIP read failed — show "couldn't load", never "locked". */
+  highestLevel: number | null;
   frames: Record<string, string>;
 }) {
   const router = useRouter();
@@ -33,9 +35,32 @@ export function AppearanceCard({
   const [busy, setBusy] = useState<'photo' | number | 'unequip' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const initial = (displayName[0] ?? '?').toUpperCase();
-  const equippedFrameUrl = equippedLevel
-    ? (frames[String(equippedLevel)] ?? null)
+  // Equip updates LOCAL state instead of router.refresh(): a frame swap only
+  // changes this card, and the full-page refetch (~8 store reads per equip)
+  // is what blew the per-actor read budget during rapid swapping (2026-07-07
+  // round 2). The server metadata is already persisted by the POST; the next
+  // real navigation re-reads it.
+  const [localEquipped, setLocalEquipped] = useState(equippedLevel);
+  // Server prop changed (real navigation/refresh) — resync during render,
+  // the React-sanctioned pattern for prop-driven state adjustment.
+  const [prevEquipped, setPrevEquipped] = useState(equippedLevel);
+  if (prevEquipped !== equippedLevel) {
+    setPrevEquipped(equippedLevel);
+    setLocalEquipped(equippedLevel);
+  }
+  const equippedFrameUrl = localEquipped
+    ? (frames[String(localEquipped)] ?? null)
     : null;
+
+  // Self-heal a failed VIP read: the store-read burst window is 10s, so a
+  // refresh just past it usually succeeds — no manual reload needed. The
+  // interval unmounts with the component (navigation stops it).
+  const levelUnknown = highestLevel === null;
+  useEffect(() => {
+    if (!levelUnknown) return;
+    const id = window.setInterval(() => router.refresh(), 12_000);
+    return () => window.clearInterval(id);
+  }, [levelUnknown, router]);
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -64,7 +89,8 @@ export function AppearanceCard({
       setError(res.error);
       return;
     }
-    router.refresh();
+    // No router.refresh(): the POST persisted it; render from local state.
+    setLocalEquipped(level);
   }
 
   return (
@@ -82,6 +108,7 @@ export function AppearanceCard({
             src={avatarUrl}
             initial={initial}
             frameSrc={equippedFrameUrl}
+            animateLevel={localEquipped}
             size={72}
           />
           <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-neutral-800 text-white transition-colors group-hover:bg-neutral-700">
@@ -128,7 +155,7 @@ export function AppearanceCard({
           <p className="text-[12px] font-semibold uppercase tracking-wide text-neutral-400">
             Frames
           </p>
-          {equippedLevel && (
+          {localEquipped && (
             <button
               type="button"
               onClick={() => void handleFrame(null)}
@@ -142,11 +169,27 @@ export function AppearanceCard({
         <p className="mt-1 text-[12px] text-neutral-400">
           Unlock a new frame every 10 VIP levels.
         </p>
+        {levelUnknown && (
+          <p className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[13px] font-medium text-amber-300">
+            Couldn&rsquo;t load your VIP level, so frames can&rsquo;t be changed
+            right now — your unlocks are safe. Retrying automatically&hellip;{' '}
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              className="font-semibold underline underline-offset-2 hover:text-amber-100"
+            >
+              Try again now
+            </button>
+          </p>
+        )}
         <ul className="mt-4 grid grid-cols-5 gap-3">
           {FRAME_LEVELS.map((level) => {
             const url = frames[String(level)] ?? null;
-            const unlocked = highestLevel >= level;
-            const equipped = equippedLevel === level;
+            // Unknown level (failed read) is NOT "locked": no padlock, just
+            // temporarily not equippable.
+            const unlocked = highestLevel !== null && highestLevel >= level;
+            const locked = highestLevel !== null && highestLevel < level;
+            const equipped = localEquipped === level;
             const equippable = unlocked && url !== null && !equipped;
             return (
               <li key={level} className="flex flex-col items-center gap-1">
@@ -159,7 +202,9 @@ export function AppearanceCard({
                       ? `LV ${level} frame (equipped)`
                       : unlocked
                         ? `Equip LV ${level} frame`
-                        : `LV ${level} frame (unlocks at level ${level})`
+                        : locked
+                          ? `LV ${level} frame (unlocks at level ${level})`
+                          : `LV ${level} frame (level unavailable right now)`
                   }
                   className={`relative flex h-14 w-14 items-center justify-center rounded-full border p-1 transition-colors ${
                     equipped
@@ -170,17 +215,30 @@ export function AppearanceCard({
                   } disabled:cursor-not-allowed`}
                 >
                   {url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={url}
-                      alt=""
-                      aria-hidden
-                      className={`max-h-full max-w-full object-contain ${unlocked ? '' : 'opacity-30 grayscale'}`}
-                    />
+                    unlocked || equipped ? (
+                      // Unlocked art is alive in the workbook too (static
+                      // fallback lives inside AnimatedFrame).
+                      <AnimatedFrame
+                        frameSrc={url}
+                        level={level}
+                        size={46}
+                        plain
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={url}
+                        alt=""
+                        aria-hidden
+                        className={`max-h-full max-w-full object-contain ${
+                          locked ? 'opacity-30 grayscale' : 'opacity-50'
+                        }`}
+                      />
+                    )
                   ) : (
                     <span className="text-[10px] text-neutral-500">soon</span>
                   )}
-                  {!unlocked && (
+                  {locked && (
                     <Lock
                       className="absolute h-4 w-4 text-neutral-400"
                       aria-hidden

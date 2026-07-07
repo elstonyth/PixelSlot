@@ -115,12 +115,12 @@ export function CardDetailOverlay({
         aria-modal="true"
         aria-label={seed.name}
         onClick={(e) => e.stopPropagation()}
-        className="mx-auto flex min-h-full w-full flex-col px-fluid py-6 outline-none"
+        className="mx-auto flex min-h-full w-full flex-col px-fluid py-3 outline-none md:py-6"
       >
         <button
           type="button"
           onClick={close}
-          className="mb-6 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+          className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 md:mb-6"
         >
           <X className="h-4 w-4" aria-hidden /> Close
         </button>
@@ -128,7 +128,7 @@ export function CardDetailOverlay({
           initial={reduced ? false : { opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-1 items-center pb-10"
+          className="flex flex-1 items-center pb-4 md:pb-10"
         >
           <CardDetail
             seed={seed}
