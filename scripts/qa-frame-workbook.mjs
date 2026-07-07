@@ -83,10 +83,16 @@ for (const lv of [40, 20]) {
     continue;
   }
   await btn.click();
-  await page.waitForTimeout(3500); // server action + router.refresh
+  // Deterministic sync: equips apply from local state, so the equipped badge
+  // is the completion signal (no fixed sleep).
+  await page
+    .locator(`button[aria-label="LV ${lv} frame (equipped)"]`)
+    .waitFor({ state: 'visible', timeout: 10_000 });
   s = await state();
   console.log(`STEP after equip ${lv}:`, JSON.stringify(s));
-  await page.waitForTimeout(6000); // let the burst window breathe between equips
+  // Pacing (not synchronization): keep successive equips out of one burst
+  // window so step 2 measures normal use, not limiter pressure.
+  await page.waitForTimeout(6000);
 }
 await page.screenshot({ path: `${OUT}/2-after-equips.png` });
 

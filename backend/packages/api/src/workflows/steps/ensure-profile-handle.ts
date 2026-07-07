@@ -79,7 +79,10 @@ export const ensureProfileHandleStep = createStep(
     await customers.updateCustomers(data.customerId, {
       metadata: {
         ...(current.metadata ?? {}),
-        handle: data.previousMetadata.handle ?? null,
+        // Optional-chained: durable-workflow payloads can be deserialized by
+        // NEWER code than produced them — a rollback handler never throws on
+        // shape drift.
+        handle: data.previousMetadata?.handle ?? null,
       },
     });
   },
