@@ -35,8 +35,21 @@ export function AppearanceCard({
   const [busy, setBusy] = useState<'photo' | number | 'unequip' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const initial = (displayName[0] ?? '?').toUpperCase();
-  const equippedFrameUrl = equippedLevel
-    ? (frames[String(equippedLevel)] ?? null)
+  // Equip updates LOCAL state instead of router.refresh(): a frame swap only
+  // changes this card, and the full-page refetch (~8 store reads per equip)
+  // is what blew the per-actor read budget during rapid swapping (2026-07-07
+  // round 2). The server metadata is already persisted by the POST; the next
+  // real navigation re-reads it.
+  const [localEquipped, setLocalEquipped] = useState(equippedLevel);
+  // Server prop changed (real navigation/refresh) — resync during render,
+  // the React-sanctioned pattern for prop-driven state adjustment.
+  const [prevEquipped, setPrevEquipped] = useState(equippedLevel);
+  if (prevEquipped !== equippedLevel) {
+    setPrevEquipped(equippedLevel);
+    setLocalEquipped(equippedLevel);
+  }
+  const equippedFrameUrl = localEquipped
+    ? (frames[String(localEquipped)] ?? null)
     : null;
 
   // Self-heal a failed VIP read: the store-read burst window is 10s, so a
@@ -76,7 +89,8 @@ export function AppearanceCard({
       setError(res.error);
       return;
     }
-    router.refresh();
+    // No router.refresh(): the POST persisted it; render from local state.
+    setLocalEquipped(level);
   }
 
   return (
@@ -94,7 +108,7 @@ export function AppearanceCard({
             src={avatarUrl}
             initial={initial}
             frameSrc={equippedFrameUrl}
-            animateLevel={equippedLevel}
+            animateLevel={localEquipped}
             size={72}
           />
           <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-neutral-800 text-white transition-colors group-hover:bg-neutral-700">
@@ -141,7 +155,7 @@ export function AppearanceCard({
           <p className="text-[12px] font-semibold uppercase tracking-wide text-neutral-400">
             Frames
           </p>
-          {equippedLevel && (
+          {localEquipped && (
             <button
               type="button"
               onClick={() => void handleFrame(null)}
@@ -175,7 +189,7 @@ export function AppearanceCard({
             // temporarily not equippable.
             const unlocked = highestLevel !== null && highestLevel >= level;
             const locked = highestLevel !== null && highestLevel < level;
-            const equipped = equippedLevel === level;
+            const equipped = localEquipped === level;
             const equippable = unlocked && url !== null && !equipped;
             return (
               <li key={level} className="flex flex-col items-center gap-1">
