@@ -107,10 +107,15 @@ const PixelPokedexPage = () => {
       toast.error('Upload a sprite image first.');
       return;
     }
+    const dexNum = dex.trim() ? Number(dex) : null;
+    if (dexNum !== null && !Number.isInteger(dexNum)) {
+      toast.error('Dex # must be a whole number, or left blank.');
+      return;
+    }
     try {
       await createMut.mutateAsync({
         name: name.trim(),
-        dex: dex.trim() ? Number(dex) : null,
+        dex: dexNum,
         variant: variant.trim() || 'custom',
         types: types
           .split(',')
@@ -133,9 +138,11 @@ const PixelPokedexPage = () => {
             <div>
               <Heading level="h2">Pixel Pokédex</Heading>
               <Text className="text-ui-fg-subtle mt-1" size="small">
-                Every pixel-Pokémon in the library
-                {data ? ` — ${data.total.toLocaleString('en-US')} shown` : ''}.
-                Cards link to these entries by id.
+                Browse the pixel-Pokémon library
+                {data
+                  ? ` (${data.total.toLocaleString('en-US')} entries)`
+                  : ''}
+                . Cards link to these by id.
               </Text>
             </div>
             <Button

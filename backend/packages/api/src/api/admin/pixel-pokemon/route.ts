@@ -36,10 +36,20 @@ export async function GET(
   const limit = Math.min(Math.max(Number(req.query.limit ?? 60) || 60, 1), 200);
   const offset = Math.max(Number(req.query.offset ?? 0) || 0, 0);
 
-  const all = (await pixels.listPixelPokemon(
-    {},
-    { take: 2000, order: { dex: 'ASC' } },
-  )) as unknown as Row[];
+  // Fetch the WHOLE library, paged — never cap. A fixed `take` would drop rows
+  // past it, and since NULL-dex customs sort last under `dex ASC`, those custom
+  // rows (the ones this page exists to manage) would be the first casualties —
+  // silently corrupting total / all_types / the custom-only filter. (CodeRabbit)
+  const all: Row[] = [];
+  const PAGE = 1000;
+  for (let skip = 0; ; skip += PAGE) {
+    const batch = (await pixels.listPixelPokemon(
+      {},
+      { skip, take: PAGE, order: { dex: 'ASC' } },
+    )) as unknown as Row[];
+    all.push(...batch);
+    if (batch.length < PAGE) break;
+  }
 
   const dexQ = /^\d+$/.test(q) ? Number(q) : null;
   const filtered = all.filter((p) => {
@@ -90,7 +100,10 @@ export async function POST(
     return;
   }
   const image_url = typeof b.image_url === 'string' ? b.image_url.trim() : '';
-  if (!image_url || !/^(https?:\/\/|\/)/.test(image_url)) {
+  // http(s):// or a single root-relative path — reject javascript:/data: (XSS in
+  // the <img src> render) AND protocol-relative "//host" / "/\\host" (which would
+  // load an arbitrary external host). Normal uploads return our own media URL.
+  if (!image_url || !/^(https?:\/\/|\/(?![/\\]))/.test(image_url)) {
     res
       .status(400)
       .json({ message: "'image_url' must be an uploaded sprite URL." });
