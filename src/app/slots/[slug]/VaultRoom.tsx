@@ -23,17 +23,24 @@ export function VaultRoom({
   dimmed,
   reduced,
   tension = false,
+  blast = false,
   children,
 }: {
   floodRgb: string | null;
   dimmed: boolean;
   reduced: boolean;
   tension?: boolean;
+  blast?: boolean;
   children: React.ReactNode;
 }) {
   const rgb = floodRgb ?? WARM;
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-neutral-950">
+    <div
+      className={cn(
+        'relative flex min-h-0 flex-1 flex-col overflow-hidden bg-neutral-950',
+        blast && !reduced && 'animate-[vault-shake_0.5s_ease-in-out]',
+      )}
+    >
       {/* Ceiling spotlight — anchored top-center, MANY soft stops so no ring
           edge is ever visible. Warm when idle, rarity color during reveal. */}
       <div
@@ -59,7 +66,8 @@ export function VaultRoom({
         style={
           {
             background: `radial-gradient(85% 70% at 50% 46%, rgba(${rgb}, 0.20) 0%, rgba(${rgb}, 0.11) 28%, rgba(${rgb}, 0.05) 48%, rgba(${rgb}, 0.015) 64%, transparent 80%)`,
-            opacity: floodRgb ? 1 : 0,
+            opacity: floodRgb ? (blast ? 1 : 0.85) : 0,
+            filter: blast ? 'saturate(1.3)' : undefined,
           } as CSSProperties
         }
       />
@@ -100,6 +108,27 @@ export function VaultRoom({
               }
             />
           ))}
+        </div>
+      )}
+      {blast && !reduced && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
+          {Array.from({ length: 16 }, (_, i) => {
+            const angle = (i / 16) * Math.PI * 2;
+            const dist = 120 + (i % 4) * 40;
+            return (
+              <span
+                key={i}
+                className="absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full animate-[vault-burst_0.9s_ease-out_forwards]"
+                style={
+                  {
+                    background: `rgba(${rgb}, 0.9)`,
+                    '--bx': `${Math.cos(angle) * dist}px`,
+                    '--by': `${Math.sin(angle) * dist}px`,
+                  } as CSSProperties
+                }
+              />
+            );
+          })}
         </div>
       )}
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
