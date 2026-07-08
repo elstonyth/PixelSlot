@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, test } from 'vitest';
 import {
   reelTarget,
   buildStrip,
@@ -9,7 +9,9 @@ import {
   buildDexStrip,
   ITEM_H,
   POKEDEX_MAX,
+  reelPaintX,
 } from '@/lib/reel';
+import { spinOffset, spinTotalMs, columnDurationMs } from '@/lib/vault-reel';
 import type { Rarity } from '@/lib/packs-data';
 
 const POOL: Rarity[] = ['Legendary', 'Mythical', 'Rare', 'Uncommon', 'Common'];
@@ -105,5 +107,62 @@ describe('buildDexStrip', () => {
   it('throws when length is not a positive integer', () => {
     expect(() => buildDexStrip(25, 0, 0)).toThrow(RangeError);
     expect(() => buildDexStrip(25, 2.5, 0)).toThrow(RangeError);
+  });
+});
+
+describe('reelPaintX (horizontal right→left reflection)', () => {
+  test('lands exactly on target when the spin ends', () => {
+    expect(reelPaintX(3000, 3000)).toBe(3000);
+  });
+  test('starts LEFT of target (winner enters from the right)', () => {
+    // spinOffset starts HIGH (> target); reflected paint is BELOW target
+    expect(reelPaintX(5000, 3000)).toBeLessThan(3000);
+  });
+  test('rises as the spin offset falls (cells travel left)', () => {
+    expect(reelPaintX(4000, 3000)).toBeGreaterThan(reelPaintX(5000, 3000));
+    expect(reelPaintX(3000, 3000)).toBeGreaterThan(reelPaintX(4000, 3000));
+  });
+  test('symmetric around target — a downward overshoot paints a LEFT overshoot', () => {
+    expect(reelPaintX(2900, 3000)).toBe(3100);
+  });
+});
+
+describe('horizontal spin (reflection + real physics)', () => {
+  const pitch = ITEM_W;
+  const winW = pitch * 5;
+  const target = reelTarget(WIN_INDEX, pitch, winW);
+
+  test('winner starts right of center and settles centered', () => {
+    const startPaint = reelPaintX(spinOffset(0, target, 0, 1, pitch), target);
+    const endPaint = reelPaintX(
+      spinOffset(spinTotalMs(1), target, 0, 1, pitch),
+      target,
+    );
+    expect(startPaint).toBeLessThan(endPaint); // right→left
+    expect(endPaint).toBe(target);
+  });
+
+  // Bounds at the pitches that ACTUALLY run: ReelStrip uses
+  // pitch = round(cellSize·CARD_ASPECT) + 10 ≈ 64 (cellSize 76) or 79
+  // (cellSize 96) — not ITEM_W (124). The invariant is linear in pitch so 124
+  // passing implies the smaller pitches do, but exercise the real values.
+  test('the whole reflected travel stays inside the strip at real pitches', () => {
+    for (const p of [64, 79, ITEM_W]) {
+      const w = p * 5;
+      const tgt = reelTarget(WIN_INDEX, p, w);
+      const maxOffset = STRIP_LEN * p - w;
+      for (const [col, count] of [
+        [0, 1],
+        [0, 3],
+        [2, 3],
+      ] as const) {
+        const dur = columnDurationMs(col, count);
+        for (let t = 0; t <= dur; t += 8) {
+          const px = reelPaintX(spinOffset(t, tgt, col, count, p), tgt);
+          expect(px).toBeGreaterThanOrEqual(-0.001);
+          expect(px).toBeLessThanOrEqual(maxOffset + 0.001);
+        }
+      }
+    }
   });
 });
