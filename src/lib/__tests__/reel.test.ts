@@ -12,6 +12,11 @@ import {
   reelPaintX,
 } from '@/lib/reel';
 import { spinOffset, spinTotalMs, columnDurationMs } from '@/lib/vault-reel';
+import {
+  HREEL_WIN_INDEX,
+  HREEL_STRIP_LEN,
+  HREEL_VISIBLE_CELLS,
+} from '@/lib/hreel';
 import type { Rarity } from '@/lib/packs-data';
 
 const POOL: Rarity[] = ['Legendary', 'Mythical', 'Rare', 'Uncommon', 'Common'];
@@ -142,23 +147,26 @@ describe('horizontal spin (reflection + real physics)', () => {
     expect(endPaint).toBe(target);
   });
 
-  // Bounds at the pitches that ACTUALLY run: ReelStrip uses
-  // pitch = round(cellSize·CARD_ASPECT) + 10 ≈ 64 (cellSize 76) or 79
-  // (cellSize 96) — not ITEM_W (124). The invariant is linear in pitch so 124
-  // passing implies the smaller pitches do, but exercise the real values.
-  test('the whole reflected travel stays inside the strip at real pitches', () => {
-    for (const p of [64, 79, ITEM_W]) {
-      const w = p * 5;
-      const tgt = reelTarget(WIN_INDEX, p, w);
-      const maxOffset = STRIP_LEN * p - w;
+  // Bounds at the REAL runtime geometry: ReelStrip pins the winner at
+  // HREEL_WIN_INDEX on an HREEL_STRIP_LEN strip, HREEL_VISIBLE_CELLS wide, with
+  // pitch = round(cellSize·CARD_ASPECT) + 10 ≈ 64 (cellSize 76) or 79 (cellSize
+  // 96) and the target shifted −gap/2 (cell-center centering). No frame may
+  // paint past either strip end — this is what keeps the longer reel valid.
+  test('the reflected travel stays inside the long strip at real geometry', () => {
+    const GAP = 10; // ReelStrip CELL_GAP
+    for (const pitch of [64, 79]) {
+      const winW = pitch * HREEL_VISIBLE_CELLS;
+      const tgt = reelTarget(HREEL_WIN_INDEX, pitch, winW) - GAP / 2;
+      const maxOffset = HREEL_STRIP_LEN * pitch - winW;
       for (const [col, count] of [
         [0, 1],
         [0, 3],
+        [1, 3],
         [2, 3],
       ] as const) {
         const dur = columnDurationMs(col, count);
         for (let t = 0; t <= dur; t += 8) {
-          const px = reelPaintX(spinOffset(t, tgt, col, count, p), tgt);
+          const px = reelPaintX(spinOffset(t, tgt, col, count, pitch), tgt);
           expect(px).toBeGreaterThanOrEqual(-0.001);
           expect(px).toBeLessThanOrEqual(maxOffset + 0.001);
         }

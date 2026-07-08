@@ -79,9 +79,15 @@ export function ReelStrip({
         winnerRarity,
         HREEL_STRIP_LEN,
         HREEL_WIN_INDEX,
+        colIndex, // per-strip decoy seed → stacked strips look independent
       ),
-    [winnerDex, winnerRarity],
+    [winnerDex, winnerRarity, colIndex],
   );
+
+  // A Common winner's tier color is neutral gray — it barely reads as "landed"
+  // on the line; give it a soft white so a Common win still visibly pops.
+  const winnerGlow =
+    winnerRarity === 'Common' ? '235, 236, 245' : winnerRarityRgb;
 
   const reportWinnerRect = () => {
     const rect = cellRefs.current[HREEL_WIN_INDEX]?.getBoundingClientRect();
@@ -188,7 +194,7 @@ export function ReelStrip({
           const isWinnerCell = i === HREEL_WIN_INDEX;
           const litColor = done
             ? isWinnerCell
-              ? winnerRarityRgb
+              ? winnerGlow
               : undefined
             : rarityRgb(cell.rarity);
           return (

@@ -4,13 +4,14 @@
 // timing) stays in vault-reel.ts and is reused unchanged.
 import type { Rarity } from '@/lib/packs-data';
 import { RARITY_ORDER, isTopRarity } from '@/lib/rarity';
-import { POKEDEX_MAX, STRIP_LEN, WIN_INDEX } from '@/lib/reel';
+import { POKEDEX_MAX } from '@/lib/reel';
 
-/** High winner index so the reflected travel (reelPaintX) fits the fixed strip. */
-export const HREEL_WIN_INDEX = WIN_INDEX; // 36
-export const HREEL_STRIP_LEN = STRIP_LEN; // 48
-/** Cells visible across a strip window. */
-export const HREEL_VISIBLE_CELLS = 5;
+/** Winner index sits high on a LONG strip so the reflected right→left travel
+ *  (reelPaintX) has runway and stays in bounds — verified in reel.test.ts. */
+export const HREEL_WIN_INDEX = 48;
+export const HREEL_STRIP_LEN = 64;
+/** Cells visible across a strip window — a long horizontal reel. */
+export const HREEL_VISIBLE_CELLS = 9;
 /** Decoy sprites repeat from a small pool (real slots reuse a symbol set). */
 const DECOY_POOL = 12;
 
@@ -50,12 +51,15 @@ export function buildHReelStrip(
   winnerRarity: Rarity,
   length: number,
   winIndex: number,
+  seed = 0,
 ): HReelCell[] {
   if (!Number.isInteger(length) || length <= 0) {
     throw new RangeError('buildHReelStrip: length must be a positive integer');
   }
   if (!Number.isInteger(winIndex) || winIndex < 0 || winIndex >= length) {
-    throw new RangeError('buildHReelStrip: winIndex must be within [0, length)');
+    throw new RangeError(
+      'buildHReelStrip: winIndex must be within [0, length)',
+    );
   }
   const safeWinner =
     winnerDex !== null &&
@@ -64,12 +68,15 @@ export function buildHReelStrip(
     winnerDex <= POKEDEX_MAX
       ? winnerDex
       : 1;
+  // `seed` (the reel index) shifts the decoy pattern so stacked strips show
+  // DIFFERENT flanking Pokémon + tier colors — three independent-looking reels,
+  // not one repeated ×3. seed=0 keeps the original single-strip behavior.
   const cells: HReelCell[] = Array.from({ length }, (_, i) => ({
-    dex: (((i % DECOY_POOL) * 167 + 13) % POKEDEX_MAX) + 1,
-    rarity: decoyRarity(i),
+    dex: ((((i + seed * 4) % DECOY_POOL) * 167 + 13) % POKEDEX_MAX) + 1,
+    rarity: decoyRarity(i + seed),
   }));
   // Winner: real dex, DECOY color (real color applied on settle by ReelStrip).
-  cells[winIndex] = { dex: safeWinner, rarity: decoyRarity(winIndex) };
+  cells[winIndex] = { dex: safeWinner, rarity: decoyRarity(winIndex + seed) };
   const tease = teaseRarity(winnerRarity);
   const teaseIdx = winIndex - 1;
   if (tease && teaseIdx >= 0) {

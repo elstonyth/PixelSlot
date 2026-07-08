@@ -58,6 +58,18 @@ describe('buildHReelStrip', () => {
       decoyRarity(HREEL_WIN_INDEX - 1),
     ); // no faked near-miss
   });
+  test('different seeds produce different decoy strips (independent reels)', () => {
+    const a = buildHReelStrip(150, 'Rare', HREEL_STRIP_LEN, HREEL_WIN_INDEX, 0);
+    const b = buildHReelStrip(150, 'Rare', HREEL_STRIP_LEN, HREEL_WIN_INDEX, 1);
+    // the real winner is identical across strips...
+    expect(a[HREEL_WIN_INDEX]!.dex).toBe(b[HREEL_WIN_INDEX]!.dex);
+    // ...but the decoy dexes and/or colors differ somewhere
+    const dexDiffers = a.some(
+      (c, i) => i !== HREEL_WIN_INDEX && c.dex !== b[i]!.dex,
+    );
+    const colorDiffers = a.some((c, i) => c.rarity !== b[i]!.rarity);
+    expect(dexDiffers || colorDiffers).toBe(true);
+  });
   test('null / out-of-range winner dex falls back to a valid dex', () => {
     for (const bad of [null, 0, 99999]) {
       const s = buildHReelStrip(

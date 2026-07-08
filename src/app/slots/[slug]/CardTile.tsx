@@ -48,12 +48,15 @@ export function CardTile({
           width: `${cardW}px`,
           height: `${cardH}px`,
           borderColor: lit
-            ? `rgba(${rgb}, ${landed ? 0.95 : 0.55})`
+            ? `rgba(${rgb}, ${landed ? 1 : 0.7})`
             : 'rgba(255,255,255,0.10)',
+          // Tier LIGHTING: a real colored bloom (outer + inner) so each cell
+          // reads as lit by its reward tier, not just outlined. Winner blooms
+          // hardest on settle.
           boxShadow: lit
             ? landed
-              ? `0 0 18px 3px rgba(${rgb}, 0.7), inset 0 0 14px rgba(${rgb}, 0.35)`
-              : `0 0 10px 1px rgba(${rgb}, 0.35), inset 0 0 8px rgba(${rgb}, 0.18)`
+              ? `0 0 30px 7px rgba(${rgb}, 0.85), inset 0 0 22px rgba(${rgb}, 0.5)`
+              : `0 0 16px 3px rgba(${rgb}, 0.55), inset 0 0 14px rgba(${rgb}, 0.32)`
             : 'inset 0 0 8px rgba(0,0,0,0.5)',
           background: 'rgba(10,10,12,0.55)',
         } as CSSProperties
