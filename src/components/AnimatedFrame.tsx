@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import NextImage from 'next/image';
 import { usePrefersReducedMotion } from '@/lib/use-reveal';
-import { FRAME_MOTION } from '@/lib/frame-motion';
+import { FRAME_MOTION, FRAME_SCALE } from '@/lib/frame-motion';
 
 /**
  * Animated avatar-frame overlay — a WebGL UV-displacement shader (ported from
@@ -21,7 +21,6 @@ import { FRAME_MOTION } from '@/lib/frame-motion';
 // radius in canvas UV = (size/2) / (size*1.28*1.24) ≈ 0.315.
 // Plain mode (frames workbook tiles — no photo): the frame box IS `size`, and
 // the anchor is the art's own hole (60% of the art box, like the preview).
-const FRAME_SCALE = 1.28;
 const CANVAS_OVERSIZE = 1.24;
 const HOLE_R_AVATAR = 0.5 / (FRAME_SCALE * CANVAS_OVERSIZE);
 const HOLE_R_PLAIN = (0.6 * 0.5) / CANVAS_OVERSIZE;
@@ -385,7 +384,7 @@ export function AnimatedFrame({
         aria-hidden
         width={size}
         height={size}
-        sizes={`${plain ? size : Math.ceil(size * 1.28)}px`}
+        sizes={`${plain ? size : Math.ceil(size * FRAME_SCALE)}px`}
         loading="eager"
         className={
           plain

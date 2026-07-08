@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { AnimatedFrame } from '@/components/AnimatedFrame';
+import { FRAME_SCALE } from '@/lib/frame-motion';
 
 /**
  * Framed avatar — profile photo (or an initial-letter circle when there is no
@@ -71,7 +72,7 @@ export function FramedAvatar({
             aria-hidden
             width={size}
             height={size}
-            sizes={`${Math.ceil(size * 1.28)}px`}
+            sizes={`${Math.ceil(size * FRAME_SCALE)}px`}
             loading={priority ? 'eager' : 'lazy'}
             className="pointer-events-none absolute left-1/2 top-1/2 h-[128%] w-[128%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
           />
