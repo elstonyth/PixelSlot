@@ -35,6 +35,14 @@ describe('buildHReelStrip', () => {
     expect(s).toHaveLength(HREEL_STRIP_LEN);
     expect(s[HREEL_WIN_INDEX]!.dex).toBe(150);
   });
+  test('decoys come from a small but varied dex pool (slot symbol set)', () => {
+    const s = buildHReelStrip(150, 'Rare', HREEL_STRIP_LEN, HREEL_WIN_INDEX);
+    const decoyDexes = new Set(
+      s.filter((_, i) => i !== HREEL_WIN_INDEX).map((c) => c.dex),
+    );
+    expect(decoyDexes.size).toBeLessThanOrEqual(12); // small fixed symbol set
+    expect(decoyDexes.size).toBeGreaterThanOrEqual(8); // still varied
+  });
   test('the winner cell carries a DECOY color, never the real tier (spoiler guard)', () => {
     const s = buildHReelStrip(
       150,

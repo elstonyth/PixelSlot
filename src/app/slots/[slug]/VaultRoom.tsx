@@ -118,7 +118,10 @@ export function VaultRoom({
             return (
               <span
                 key={i}
-                className="absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full animate-[vault-burst_0.9s_ease-out_forwards]"
+                // -ml/-mt center the 6px dot on the container center (its own
+                // half-size); a Tailwind -translate would be clobbered by the
+                // vault-burst animation's transform, so use margin instead.
+                className="absolute left-1/2 top-1/2 -ml-[3px] -mt-[3px] h-1.5 w-1.5 rounded-full animate-[vault-burst_0.9s_ease-out_forwards]"
                 style={
                   {
                     background: `rgba(${rgb}, 0.9)`,
