@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@acme/odds-math": "workspace:*",
+    "@acme/pokemon": "workspace:*",
     "@medusajs/admin-sdk": "2.17.2",
     "@medusajs/admin-shared": "2.17.2",
     "@medusajs/cli": "2.17.2",
