@@ -1,0 +1,79 @@
+// Pure horizontal-reel strip logic: winner pinning, deterministic decoy tier
+// colors (the spin flicker), and the gated near-miss tease (spec §7b). No DOM,
+// no React — see src/lib/__tests__/hreel.test.ts. Physics (spinOffset, blur,
+// timing) stays in vault-reel.ts and is reused unchanged.
+import type { Rarity } from '@/lib/packs-data';
+import { RARITY_ORDER, isTopRarity } from '@/lib/rarity';
+import { POKEDEX_MAX, STRIP_LEN, WIN_INDEX } from '@/lib/reel';
+
+/** High winner index so the reflected travel (reelPaintX) fits the fixed strip. */
+export const HREEL_WIN_INDEX = WIN_INDEX; // 36
+export const HREEL_STRIP_LEN = STRIP_LEN; // 48
+/** Cells visible across a strip window. */
+export const HREEL_VISIBLE_CELLS = 5;
+/** Decoy sprites repeat from a small pool (real slots reuse a symbol set). */
+const DECOY_POOL = 12;
+
+export type HReelCell = { dex: number; rarity: Rarity };
+
+/**
+ * Deterministic decoy tier for cell `i`: a prime-step walk over the 6-tier
+ * palette so the strip flickers varied colors with zero render-time randomness.
+ * `(i*5+2) % 6` visits all six tiers with period 6.
+ */
+export function decoyRarity(i: number): Rarity {
+  return RARITY_ORDER[(i * 5 + 2) % RARITY_ORDER.length]!;
+}
+
+/**
+ * Near-miss tease tier, GATED to the real win (spec §7b): a top win teases its
+ * OWN tier (the prize approaches the line, then lands → big-win blast); a mid
+ * win teases ONE tier up; a Common win gets NO faked near-miss (null → the
+ * cell stays a normal decoy). Keeps "anticipation tease" from becoming the
+ * declined "fake near-miss on small wins".
+ */
+export function teaseRarity(winner: Rarity): Rarity | null {
+  if (isTopRarity(winner)) return winner;
+  if (winner === 'Common') return null;
+  const up = RARITY_ORDER.indexOf(winner) - 1; // one step toward the top
+  return RARITY_ORDER[Math.max(0, up)]!;
+}
+
+/**
+ * Build a horizontal strip: winner dex pinned at `winIndex` (its cell carries a
+ * DECOY color — the real tier is applied by the component on settle, so the
+ * spin never spoils the rarity), a gated near-miss tease at `winIndex-1`
+ * (the last decoy to cross the line before the winner), decoys elsewhere.
+ */
+export function buildHReelStrip(
+  winnerDex: number | null,
+  winnerRarity: Rarity,
+  length: number,
+  winIndex: number,
+): HReelCell[] {
+  if (!Number.isInteger(length) || length <= 0) {
+    throw new RangeError('buildHReelStrip: length must be a positive integer');
+  }
+  if (!Number.isInteger(winIndex) || winIndex < 0 || winIndex >= length) {
+    throw new RangeError('buildHReelStrip: winIndex must be within [0, length)');
+  }
+  const safeWinner =
+    winnerDex !== null &&
+    Number.isInteger(winnerDex) &&
+    winnerDex >= 1 &&
+    winnerDex <= POKEDEX_MAX
+      ? winnerDex
+      : 1;
+  const cells: HReelCell[] = Array.from({ length }, (_, i) => ({
+    dex: (((i % DECOY_POOL) * 167 + 13) % POKEDEX_MAX) + 1,
+    rarity: decoyRarity(i),
+  }));
+  // Winner: real dex, DECOY color (real color applied on settle by ReelStrip).
+  cells[winIndex] = { dex: safeWinner, rarity: decoyRarity(winIndex) };
+  const tease = teaseRarity(winnerRarity);
+  const teaseIdx = winIndex - 1;
+  if (tease && teaseIdx >= 0) {
+    cells[teaseIdx] = { ...cells[teaseIdx]!, rarity: tease };
+  }
+  return cells;
+}
