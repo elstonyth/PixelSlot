@@ -9,7 +9,7 @@
 // onSettled once, after this strip stops.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Rarity } from '@/lib/packs-data';
-import { ITEM_W, reelTarget, reelPaintX } from '@/lib/reel';
+import { reelTarget, reelPaintX } from '@/lib/reel';
 import {
   spinOffset,
   columnDurationMs,
