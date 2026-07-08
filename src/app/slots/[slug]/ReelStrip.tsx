@@ -187,15 +187,17 @@ export function ReelStrip({
       >
         {strip.map((cell, i) => {
           const isWinnerCell = i === HREEL_WIN_INDEX;
-          // The winner cell locks to the reward's TRUE tier color on settle
-          // (orange ⟹ Immortal, gray ⟹ Common) — the same rarity the reveal
-          // shows. The strong landed bloom + scale-up makes it pop, so no cell
-          // ever glows a color that isn't a real reward tier.
-          const litColor = done
-            ? isWinnerCell
-              ? winnerRarityRgb
-              : undefined
-            : rarityRgb(cell.rarity);
+          // WYSIWYG (what you see is what you get): the winner cell shows the
+          // reward's TRUE tier color the WHOLE time — it never flickers a decoy
+          // tier and then "changes" hue on stop. The color that lands on the
+          // line IS the reward (orange ⟹ Immortal, gray ⟹ Common), matching the
+          // reveal; it only intensifies (bloom + scale) when it locks. Decoys
+          // flicker their own tier while spinning, then fade neutral on settle.
+          const litColor = isWinnerCell
+            ? winnerRarityRgb
+            : done
+              ? undefined
+              : rarityRgb(cell.rarity);
           return (
             <div
               key={i}
