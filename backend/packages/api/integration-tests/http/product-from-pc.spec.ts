@@ -116,6 +116,22 @@ medusaIntegrationTestRunner({
         );
         expect(fxPost.status).toBe(200);
 
+        // Spec 2 §5 (id-only): stage the pixel-Pokémon by a PixelPokemon library
+        // id (not a raw dex); the route mirrors the pick onto product metadata
+        // for the gacha-card registration step to inherit.
+        const pp = await unwrapResponse(
+          api.post(
+            '/admin/pixel-pokemon',
+            {
+              name: 'Charizard',
+              dex: 6,
+              image_url: 'https://example.com/charizard-pixel.png',
+            },
+            adminHeaders(),
+          ),
+        );
+        const pixelId = pp.data.pixel_pokemon.id as string;
+
         const res = await unwrapResponse(
           api.post(
             '/admin/products/from-pricecharting',
@@ -128,7 +144,7 @@ medusaIntegrationTestRunner({
               grade: '10',
               market_value: 100,
               image: 'https://example.com/charizard.png',
-              pokemon_dex: 6,
+              pixel_pokemon_id: pixelId,
             },
             adminHeaders(),
           ),
@@ -146,9 +162,10 @@ medusaIntegrationTestRunner({
         expect(prod.data.product.metadata.pc_grade).toBe('PSA 10');
         expect(prod.data.product.metadata.fmv).toBe(100);
         // Margin moved to gacha-card registration — product creation stores
-        // NO multiplier, and stages the pixel-Pokémon pick for inheritance.
+        // NO multiplier, and stages the pixel-Pokémon PICK (its library id) for
+        // the register step to inherit and mirror.
         expect(prod.data.product.metadata.market_multiplier).toBeUndefined();
-        expect(prod.data.product.metadata.pokemon_dex).toBe(6);
+        expect(prod.data.product.metadata.pixel_pokemon_id).toBe(pixelId);
 
         // Listing price is plain FMV × FX (no markup) and the default stock
         // is 0 — units are counted when the physical slabs are in hand.
