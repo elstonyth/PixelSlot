@@ -35,7 +35,10 @@ export function buildCsp(): string {
   const sentry = 'https://*.sentry.io https://*.ingest.sentry.io';
 
   const connect = ["'self'", backend, media, sentry].filter(Boolean).join(' ');
-  const img = ["'self'", 'data:', 'blob:', backend, media]
+  // jsDelivr hosts the pixel-Pokémon sprites (src/lib/mock/pokedex.ts) — an
+  // enforced policy must allow it or every reel/pokédex sprite is blocked.
+  const spriteCdn = 'https://cdn.jsdelivr.net';
+  const img = ["'self'", 'data:', 'blob:', backend, media, spriteCdn]
     .filter(Boolean)
     .join(' ');
 

@@ -204,6 +204,11 @@ export type PackCard = {
   slabImage: string | null;
   value: string;
   rarity: Rarity;
+  /** The card's CONFIGURED pixel-Pokémon (mirror of its linked library entry),
+   *  from the store route. Lets the slot reel flicker the pack's actual
+   *  configured Pokémon. Optional: only the pool/top-hits carry it. */
+  pokemonDex?: number | null;
+  spriteImage?: string | null;
 };
 
 // Per-rarity pull odds — the statically-PUBLISHED display, decoupled by design

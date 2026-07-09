@@ -32,14 +32,14 @@ describe('@acme/pokemon', () => {
   });
 
   describe('sprite URL helpers', () => {
-    it('spriteGif points at the PokeAPI showdown gif for the dex', () => {
+    it('spriteGif points at the jsDelivr showdown gif for the dex', () => {
       expect(spriteGif(6)).toBe(
-        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif',
+        'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/6.gif',
       );
     });
-    it('spritePng points at the PokeAPI static png for the dex', () => {
+    it('spritePng points at the jsDelivr static png for the dex', () => {
       expect(spritePng(6)).toBe(
-        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png',
+        'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/6.png',
       );
     });
   });

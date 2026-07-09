@@ -21,6 +21,7 @@ import {
   HREEL_WIN_INDEX,
   HREEL_STRIP_LEN,
   HREEL_VISIBLE_CELLS,
+  type HReelCell,
 } from '@/lib/hreel';
 import { rarityRgb } from '@/lib/rarity';
 import { spriteGif } from '@/lib/mock/pokedex';
@@ -39,6 +40,7 @@ export function ReelStrip({
   colIndex,
   count,
   cellSize = 96,
+  decoyCards,
   onSettled,
   onWinnerRect,
   hideWinner = false,
@@ -52,6 +54,10 @@ export function ReelStrip({
   colIndex: number;
   count: number;
   cellSize?: number;
+  /** The pack's own cards (dex + configured rarity, paired) the decoy cells
+   *  flicker — so the reel shows only the pack's Pokémon in only the pack's
+   *  rarity colors. Empty/omitted → curated fallback. */
+  decoyCards?: readonly HReelCell[];
   onSettled?: () => void;
   onWinnerRect?: (rect: DOMRect) => void;
   hideWinner?: boolean;
@@ -80,8 +86,9 @@ export function ReelStrip({
         HREEL_STRIP_LEN,
         HREEL_WIN_INDEX,
         colIndex, // per-strip decoy seed → stacked strips look independent
+        decoyCards, // pack's own cards {dex, rarity} (empty → curated fallback)
       ),
-    [winnerDex, winnerRarity, colIndex],
+    [winnerDex, winnerRarity, colIndex, decoyCards],
   );
 
   const reportWinnerRect = () => {
