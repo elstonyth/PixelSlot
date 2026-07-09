@@ -136,6 +136,22 @@ medusaIntegrationTestRunner({
       });
 
       it("explicit margin from the register dialog wins over the default", async () => {
+        // Spec 2 §5 (id-only): the pixel-Pokémon is assigned by a PixelPokemon
+        // library id, not a raw dex. Stage a dex-9 entry, pick it at product
+        // creation, and the registered card links it + mirrors its dex.
+        const pp = await unwrapResponse(
+          api.post(
+            "/admin/pixel-pokemon",
+            {
+              name: "Blastoise",
+              dex: 9,
+              image_url: "https://example.com/blastoise-pixel.png",
+            },
+            adminHeaders(),
+          ),
+        );
+        const pixelId = pp.data.pixel_pokemon.id as string;
+
         const p = await unwrapResponse(
           api.post(
             "/admin/products/from-pricecharting",
@@ -148,7 +164,7 @@ medusaIntegrationTestRunner({
               grade: "9",
               market_value: 50,
               image: "https://example.com/blastoise.png",
-              pokemon_dex: 9,
+              pixel_pokemon_id: pixelId,
             },
             adminHeaders(),
           ),

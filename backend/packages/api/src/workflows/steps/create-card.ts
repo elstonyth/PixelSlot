@@ -10,6 +10,7 @@ import { MercurModules } from '@mercurjs/types';
 import { updateProductsWorkflow } from '@medusajs/medusa/core-flows';
 import { PACKS_MODULE } from '../../modules/packs';
 import type PacksModuleService from '../../modules/packs/service';
+import { resolvePixelPokemonPatch } from '../../modules/packs/card-pixel-pokemon';
 import type { HouseSellerService } from '../../modules/packs/card-product';
 import { insertOrMapDuplicate } from './duplicate-race';
 import {
@@ -28,8 +29,11 @@ export type RegisterCardInput = {
   grader: string;
   grade: string;
   market_value: number; // USD FMV — a decimal, never cents
-  pokemon_dex: number | null;
-  sprite_image: string | null;
+  // Spec 2 §5: the Pokémon is assigned by a PixelPokemon library id (the picker),
+  // not raw dex/sprite — the step resolves the id → the mirrored dex/sprite_image
+  // columns. undefined = not provided (inherit the id staged on the product's
+  // metadata by /from-pricecharting); null = explicitly none; string = link it.
+  pixel_pokemon_id?: string | null;
   // PriceCharting linkage — optional; when omitted, inherited from the
   // product's own metadata (set by /admin/products/from-pricecharting).
   pc_product_id?: string | null;
@@ -130,16 +134,46 @@ export const registerCardInvoke = async (
       : DEFAULT_MARKET_MULTIPLIER);
   // Pixel-Pokémon assignment staged at product creation (from-pricecharting)
   // is inherited the same way — an explicit pick in the register dialog wins.
-  const pokemonDex =
-    input.pokemon_dex ??
-    (Number.isInteger(Number(meta.pokemon_dex)) && Number(meta.pokemon_dex) >= 1
-      ? Number(meta.pokemon_dex)
-      : null);
-  const spriteImage =
-    input.sprite_image ??
-    (typeof meta.sprite_image === 'string' && meta.sprite_image.trim() !== ''
-      ? meta.sprite_image
-      : null);
+  // The register dialog sends a PixelPokemon library id: undefined = not picked
+  // (inherit the staged id), null = explicitly none, string = link it. The
+  // link's dex + image_url are then MIRRORED onto the card's render-cache
+  // columns so the storefront resolver is unchanged.
+  const stagedPixelId =
+    typeof meta.pixel_pokemon_id === 'string' &&
+    meta.pixel_pokemon_id.trim() !== ''
+      ? meta.pixel_pokemon_id
+      : null;
+  // An EXPLICIT pick in the register dialog hard-fails on a bad id (the operator
+  // can fix it). An INHERITED staged id is best-effort: a custom library entry
+  // can be deleted (PR #116), so a since-gone staged id must NOT block
+  // registration — degrade to name-derivation (unlinked) instead.
+  let pixelPatch;
+  if (input.pixel_pokemon_id !== undefined) {
+    pixelPatch = await resolvePixelPokemonPatch(packs, input.pixel_pokemon_id);
+  } else {
+    try {
+      pixelPatch = await resolvePixelPokemonPatch(packs, stagedPixelId);
+    } catch (error) {
+      // ONLY a genuinely-missing staged id degrades to unlinked. A real runtime
+      // failure (e.g. the asPixelPokemonCrud singular/plural bridge breaking —
+      // tsc can't catch that) must surface loudly, like the explicit path — not
+      // silently register every inherited card unlinked.
+      if (
+        !(
+          error instanceof MedusaError &&
+          error.type === MedusaError.Types.NOT_FOUND
+        )
+      ) {
+        throw error;
+      }
+      container
+        .resolve(ContainerRegistrationKeys.LOGGER)
+        .warn(
+          `create-card: staged pixel_pokemon_id '${stagedPixelId}' did not resolve — registering unlinked (name-derivation). ${error.message}`,
+        );
+      pixelPatch = await resolvePixelPokemonPatch(packs, null);
+    }
+  }
 
   const [card] = await insertOrMapDuplicate({
     insert: () =>
@@ -156,8 +190,9 @@ export const registerCardInvoke = async (
           // marketplace source of truth and is not touched by registration.
           price: null,
           for_sale: product.status === 'published',
-          pokemon_dex: pokemonDex,
-          sprite_image: spriteImage,
+          pixel_pokemon_id: pixelPatch.pixel_pokemon_id ?? null,
+          pokemon_dex: pixelPatch.pokemon_dex ?? null,
+          sprite_image: pixelPatch.sprite_image ?? null,
           slab_image: baked?.url ?? null,
           slab_image_key: baked?.key ?? null,
           pc_product_id: pcProductId,

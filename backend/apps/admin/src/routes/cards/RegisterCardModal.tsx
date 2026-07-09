@@ -43,8 +43,9 @@ type Fields = {
   grade: string;
   market_value: string; // operator-facing MYR (converted to USD on save)
   margin_pct: string; // display margin over FMV — Card.market_multiplier home
-  pokemon_dex: number | null;
-  sprite_image: string | null;
+  // Picker value (a PixelPokemon library id). null = none picked → the backend
+  // inherits any id staged on the product (from-pricecharting).
+  pixel_pokemon_id: string | null;
 };
 
 // Margin defaults to 20% here (the gacha card is where margin lives — product
@@ -55,8 +56,7 @@ const EMPTY_FIELDS: Fields = {
   grade: '',
   market_value: '',
   margin_pct: '20',
-  pokemon_dex: null,
-  sprite_image: null,
+  pixel_pokemon_id: null,
 };
 
 const RegisterCardModal = ({ open, onClose }: Props) => {
@@ -78,6 +78,10 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
 
   // Gacha facts.
   const [fields, setFields] = useState<Fields>(EMPTY_FIELDS);
+  // Did the operator touch the Pokémon picker? Only then does the payload carry
+  // pixel_pokemon_id — so an explicit CLEAR sends null (don't re-inherit the
+  // product's staged id), while an untouched picker sends undefined (inherit).
+  const [pokemonTouched, setPokemonTouched] = useState(false);
   const saving = registerCard.isPending;
 
   // PriceCharting lookup.
@@ -97,6 +101,7 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
       setFilter('');
       setProductId(null);
       setFields(EMPTY_FIELDS);
+      setPokemonTouched(false);
       setPcQuery('');
       setPcMatches(null);
       setPcProduct(null);
@@ -128,7 +133,11 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
         p.fmv !== null && fxEff !== null
           ? String(usdToMyr(p.fmv, fxEff))
           : f.market_value,
+      // Switching products must not carry a pokemon picked for the PREVIOUS
+      // product — the backend would then mirror the wrong sprite onto this card.
+      pixel_pokemon_id: null,
     }));
+    setPokemonTouched(false);
     // Seed the lookup query with the product title — usually the card name.
     setPcQuery(p.title);
     setPcMatches(null);
@@ -209,8 +218,10 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
         // rate before submit (fxEff non-null: guarded here + in canSave).
         market_value: myrToUsd(Number(fields.market_value), fxEff),
         market_multiplier: 1 + Number(fields.margin_pct) / 100,
-        pokemon_dex: fields.pokemon_dex,
-        sprite_image: fields.sprite_image,
+        // Untouched picker → undefined so the backend inherits any id staged
+        // on the product; touched → send the exact value (a picked id links, an
+        // explicit null clears — never silently re-inherits the staged link).
+        pixel_pokemon_id: pokemonTouched ? fields.pixel_pokemon_id : undefined,
       });
       toast.success(t('cards.toast.created'));
       onClose();
@@ -484,11 +495,11 @@ const RegisterCardModal = ({ open, onClose }: Props) => {
             </div>
 
             <CardPokemonFields
-              value={{
-                pokemon_dex: fields.pokemon_dex,
-                sprite_image: fields.sprite_image,
+              value={{ pixel_pokemon_id: fields.pixel_pokemon_id }}
+              onChange={(p) => {
+                setPokemonTouched(true);
+                patch(p);
               }}
-              onChange={(p) => patch(p)}
               suggestionName={selected?.title ?? ''}
             />
 

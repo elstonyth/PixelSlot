@@ -33,6 +33,11 @@ export type CardProductMetadata = {
   // create-card when the product is registered as a gacha card.
   pokemon_dex?: number;
   sprite_image?: string;
+  // Spec 2 §5 (id-only): the staged PixelPokemon library id. create-product-
+  // from-pricecharting stages this so create-card can inherit + resolve it to
+  // the mirrored dex/sprite. MUST be carried through buildCardProductInput's
+  // metadata allowlist below, or the staged pick is silently dropped.
+  pixel_pokemon_id?: string | null;
   // Public slab-composite mirror (URL only — the private provider key never
   // belongs in product metadata). Present only for graded cards.
   slab_image?: string | null;
@@ -117,6 +122,9 @@ export function buildCardProductInput(
         : {}),
       ...(card.metadata.sprite_image !== undefined
         ? { sprite_image: card.metadata.sprite_image }
+        : {}),
+      ...(card.metadata.pixel_pokemon_id !== undefined
+        ? { pixel_pokemon_id: card.metadata.pixel_pokemon_id }
         : {}),
       ...(card.metadata.slab_image !== undefined
         ? { slab_image: card.metadata.slab_image }
