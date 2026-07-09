@@ -6,6 +6,7 @@ import { Eye, Search, Star } from 'lucide-react';
 import { SlabImage } from '@/components/SlabImage';
 import { rm, rm0 } from '@/lib/format';
 import {
+  getVault,
   sellBackPull,
   sellBackPullsBatch,
   toggleShowcase,
@@ -187,51 +188,72 @@ export default function VaultClient({
   // same atomic per-pull logic, so the whole selection clears at once and the
   // balance jumps by the full credited amount (no pull leaves the vault
   // without payment; un-sellable ones are reported, not lost).
+  // Re-read the vault from the server as the source of truth. Used to self-heal
+  // after a batch failure: a batch can partial-commit and then error/time out,
+  // and the client can't know which pulls sold — so it re-reads rather than
+  // guess (a sold pull would otherwise linger in the list, credited but shown).
+  async function refreshVault() {
+    const fresh = await getVault();
+    if (fresh.ok) {
+      setItems(fresh.items);
+      setSelected(new Set());
+      syncBalance(fresh.balance);
+    }
+  }
+
   async function bulkSell() {
     if (bulkSelling) return;
     setError(null);
     setNotice(null);
     setBulkSelling(true);
     const ids = selectedItems.map((i) => i.pullId);
-    const res = await sellBackPullsBatch(ids);
-    setBulkSelling(false);
-    setConfirmBulkSell(false);
+    try {
+      const res = await sellBackPullsBatch(ids);
+      setConfirmBulkSell(false);
 
-    if (!res.ok) {
-      setError(res.error);
-      return;
-    }
+      if (!res.ok) {
+        setError(res.error);
+        // The batch may have committed some sales before failing — re-read the
+        // server so sold cards leave the list and the balance reflects them.
+        await refreshVault();
+        return;
+      }
 
-    // Remove exactly the pulls that sold (never the whole selection) and credit
-    // the balance by the real total — so what leaves the vault always matches
-    // what was paid for.
-    if (res.soldIds.length > 0) {
-      const soldSet = new Set(res.soldIds);
-      setItems((prev) => prev.filter((i) => !soldSet.has(i.pullId)));
-      setSelected((prev) => {
-        const next = new Set(prev);
-        res.soldIds.forEach((id) => next.delete(id));
-        return next;
-      });
-      syncBalance(res.balance);
-    }
+      // Remove exactly the pulls that sold (never the whole selection) and
+      // credit the balance by the real total — so what leaves the vault always
+      // matches what was paid for.
+      if (res.soldIds.length > 0) {
+        const soldSet = new Set(res.soldIds);
+        setItems((prev) => prev.filter((i) => !soldSet.has(i.pullId)));
+        setSelected((prev) => {
+          const next = new Set(prev);
+          res.soldIds.forEach((id) => next.delete(id));
+          return next;
+        });
+        syncBalance(res.balance);
+      }
 
-    if (res.failed > 0) {
-      setError(
-        `Sold ${res.sold} card${res.sold === 1 ? '' : 's'} for ${rm(
-          res.credited,
-        )}. ${res.failed} couldn't be sold${
-          res.firstError ? ` — ${res.firstError}` : ''
-        }.`,
-      );
-    } else {
-      // Explicit money confirmation — the whole complaint was "sold, no money."
-      setNotice(
-        `Sold ${res.sold} card${res.sold === 1 ? '' : 's'} for ${rm(
-          res.credited,
-        )} — added to your balance.`,
-      );
-      setSelectMode(false);
+      if (res.failed > 0) {
+        setError(
+          `Sold ${res.sold} card${res.sold === 1 ? '' : 's'} for ${rm(
+            res.credited,
+          )}. ${res.failed} couldn't be sold${
+            res.firstError ? ` — ${res.firstError}` : ''
+          }.`,
+        );
+      } else {
+        // Explicit money confirmation — the whole complaint was "sold, no money."
+        setNotice(
+          `Sold ${res.sold} card${res.sold === 1 ? '' : 's'} for ${rm(
+            res.credited,
+          )} — added to your balance.`,
+        );
+        setSelectMode(false);
+      }
+    } finally {
+      // Always re-enable the button — never strand it disabled if the action
+      // ever throws (today it returns a result, but this removes the footgun).
+      setBulkSelling(false);
     }
   }
 

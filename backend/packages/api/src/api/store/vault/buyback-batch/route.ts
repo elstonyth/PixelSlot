@@ -95,6 +95,14 @@ export async function POST(
     );
   }
 
+  // ponytail: N serial workflow runs — measured ~35ms/pull locally (~5.4s for
+  // 150; ~18s projected for a full 500-card batch, more on prod's
+  // higher-latency DB). Money stays safe on a mid-loop timeout: each committed
+  // pull is durable and a re-run skips it via the unique-pull_id guard, and the
+  // client refetches the vault on any batch failure to self-heal. Only a rare
+  // full-vault sell on a slow DB could approach a proxy timeout. Upgrade path if
+  // that ever bites: chunk client-side (~100/req) or move to a background job +
+  // poll. Not worth it for the realistic ≤~300-card case today.
   const workflow = buybackPullWorkflow(req.scope);
   const results: PullResult[] = [];
   let credited = 0;
@@ -108,12 +116,20 @@ export async function POST(
         throwOnError: false,
       });
       if (errors && errors.length > 0) {
-        results.push({ pull_id: id, ok: false, error: errorMessage(errors[0]) });
+        results.push({
+          pull_id: id,
+          ok: false,
+          error: errorMessage(errors[0]),
+        });
       } else if (result) {
         credited += result.amount;
         results.push({ pull_id: id, ok: true, amount: result.amount });
       } else {
-        results.push({ pull_id: id, ok: false, error: 'Could not sell this card.' });
+        results.push({
+          pull_id: id,
+          ok: false,
+          error: 'Could not sell this card.',
+        });
       }
     } catch (error) {
       // Defensive: an infra-level throw (not a step error) still must not abort
