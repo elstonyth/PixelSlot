@@ -50,6 +50,11 @@ describe('buildCsp', () => {
     expect(csp).toMatch(/img-src[^;]*http:\/\/localhost:9000/);
   });
 
+  it('allows the jsDelivr sprite CDN in img-src', () => {
+    const csp = buildCsp();
+    expect(csp).toMatch(/img-src[^;]*https:\/\/cdn\.jsdelivr\.net/);
+  });
+
   it('includes the media CDN host when set', () => {
     process.env.NEXT_PUBLIC_MEDIA_HOST = 'cdn.example.com';
     const csp = buildCsp();
