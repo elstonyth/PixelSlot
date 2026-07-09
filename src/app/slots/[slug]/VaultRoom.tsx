@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 // room that reads as the Immortal rarity ORANGE, so every spin looked like an
 // Immortal approach even when the win was Common. Neutral removes that false
 // rarity signal; the real tier color still floods on reveal (floodRgb).
-const WARM = '203, 213, 225'; // neutral spotlight rgb
+const IDLE_RGB = '203, 213, 225'; // neutral spotlight rgb
 
 // Fine film grain (SVG fractalNoise) tiled over the whole room. A low-opacity
 // NORMAL-blend overlay dithers 8-bit banding on the dark gradients — the
@@ -38,7 +38,7 @@ export function VaultRoom({
   blast?: boolean;
   children: React.ReactNode;
 }) {
-  const rgb = floodRgb ?? WARM;
+  const rgb = floodRgb ?? IDLE_RGB;
   return (
     <div
       className={cn(

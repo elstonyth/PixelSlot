@@ -50,8 +50,9 @@ export async function POST(
 
   const { result } = await createPackWorkflow(req.scope).run({ input });
   // A pack can be created directly as `active`, so bust the storefront list
-  // cache to reflect it now instead of ≤30s later. (Detail has nothing to bust
-  // yet — a new pack's pool is empty.)
+  // cache to reflect it now instead of ≤30s later. (No detail bust: this slug
+  // was never cached — the store detail route doesn't cache 404s — so there is
+  // nothing to evict there.)
   clearPackListCache();
   res.status(201).json({ pack: result });
 }
