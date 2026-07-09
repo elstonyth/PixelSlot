@@ -18,8 +18,9 @@ type Body = {
   price?: unknown;
   for_sale?: unknown;
   stock?: unknown;
-  pokemon_dex?: unknown;
-  sprite_image?: unknown;
+  // Spec 2 §5 (id-only): the pixel-Pokémon is staged by a PixelPokemon library
+  // id, not a raw dex/sprite (read via optPixelPokemonId below).
+  pixel_pokemon_id?: unknown;
 };
 
 const requireString = (value: unknown, field: string): string => {
