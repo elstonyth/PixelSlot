@@ -10,6 +10,7 @@ import {
   displayMarketPrice,
 } from '../../../../../modules/packs/pricing';
 import { cardByHandle } from '../../../../../modules/packs/card-view';
+import { clearPackDetailCache } from '../../../../store/packs/[slug]/route';
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
@@ -159,6 +160,10 @@ export async function POST(
   const { result } = await savePackOddsWorkflow(req.scope).run({
     input: { pack_id: slug, entries },
   });
+
+  // A per-card rarity change is shown on the storefront detail (Top Hits +
+  // the reel's rarity lighting), so bust the 30s detail cache to reflect it now.
+  clearPackDetailCache();
 
   res.json({ odds: result });
 }

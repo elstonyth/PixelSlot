@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http';
 import { MedusaError } from '@medusajs/framework/utils';
 import PacksModuleService from '../../../../../modules/packs/service';
 import { PACKS_MODULE } from '../../../../../modules/packs';
+import { clearPackDetailCache } from '../../../../store/packs/[slug]/route';
 
 // POST /admin/packs/:slug/top-hits — set the pack's Top Hits IN DISPLAY ORDER
 // (storefront display only; never touches weights/locks). Body:
@@ -64,7 +65,11 @@ export async function POST(
       (o) => (o.top_hit_order ?? null) !== (orderOf.get(o.card_id) ?? null),
     )
     .map((o) => ({ id: o.id, top_hit_order: orderOf.get(o.card_id) ?? null }));
-  if (updates.length > 0) await packs.updatePackOdds(updates);
+  if (updates.length > 0) {
+    await packs.updatePackOdds(updates);
+    // Top Hit order is storefront-detail display data — reflect it now.
+    clearPackDetailCache();
+  }
 
   res.json({ top_hits: ordered, changed: updates.length });
 }
