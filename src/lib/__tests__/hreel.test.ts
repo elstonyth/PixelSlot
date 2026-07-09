@@ -49,9 +49,11 @@ describe('buildHReelStrip', () => {
       { dex: 201, rarity: 'Immortal' as const },
       { dex: 202, rarity: 'Common' as const },
     ];
+    // 'Common' winner → teaseRarity is null → NO tease cell overriding a
+    // rarity, so every non-winner cell keeps its card's own pool rarity.
     const s = buildHReelStrip(
       150,
-      'Rare',
+      'Common',
       HREEL_STRIP_LEN,
       HREEL_WIN_INDEX,
       0,
