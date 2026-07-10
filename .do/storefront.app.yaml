@@ -20,7 +20,7 @@ services:
   - name: storefront
     dockerfile_path: Dockerfile
     github:
-      repo: elstonyth/Pokenic_Game
+      repo: elstonyth/PixelSlot
       branch: master
       deploy_on_push: true
     http_port: 3000

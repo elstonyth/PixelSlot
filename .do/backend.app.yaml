@@ -135,7 +135,7 @@ services:
     dockerfile_path: backend/Dockerfile
     source_dir: backend
     github:
-      repo: elstonyth/Pokenic_Game
+      repo: elstonyth/PixelSlot
       branch: master
       deploy_on_push: true
     http_port: 9000
@@ -166,7 +166,7 @@ workers:
     dockerfile_path: backend/Dockerfile
     source_dir: backend
     github:
-      repo: elstonyth/Pokenic_Game
+      repo: elstonyth/PixelSlot
       branch: master
       deploy_on_push: true
     instance_size_slug: basic-xxs
@@ -183,7 +183,7 @@ jobs:
     dockerfile_path: backend/Dockerfile
     source_dir: backend
     github:
-      repo: elstonyth/Pokenic_Game
+      repo: elstonyth/PixelSlot
       branch: master
     instance_size_slug: basic-xxs
     run_command: corepack yarn deploy:migrate-user
