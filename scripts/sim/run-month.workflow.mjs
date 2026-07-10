@@ -7,11 +7,13 @@ export const meta = {
 };
 
 // args: { runId, days, activePersonas?: string[] }
-const runId = args?.runId;
-const days = args?.days ?? 2;
+// Tolerate args arriving as a JSON string (the launcher may stringify it).
+const A = typeof args === 'string' ? JSON.parse(args) : args || {};
+const runId = A.runId;
+const days = A.days ?? 2;
 if (!runId) throw new Error('args.runId is required');
 
-const CUSTOMERS = args?.activePersonas ?? ['honest', 'refund-seeker'];
+const CUSTOMERS = A.activePersonas ?? ['honest', 'refund-seeker'];
 
 // Declared BEFORE the loop: this is a `const`, so referencing it from inside
 // the loop before its declaration line would be a temporal-dead-zone
