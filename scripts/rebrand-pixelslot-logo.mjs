@@ -55,17 +55,19 @@ const fontImport =
   "@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Titan+One&family=Fredoka:wght@700&family=Baloo+2:wght@800&display=swap');";
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ deviceScaleFactor: 2 });
+// try/finally so an error mid-render never orphans the chromium process.
+try {
+  const page = await browser.newPage({ deviceScaleFactor: 2 });
 
-if (mode === 'candidates') {
-  const rows = CANDIDATES.map(
-    (f) => `
+  if (mode === 'candidates') {
+    const rows = CANDIDATES.map(
+      (f) => `
       <div class="row">
         <div class="label">${f}</div>
         <div class="word" style="${wordCss(f, 96)}">PixelSlot</div>
       </div>`,
-  ).join('');
-  await page.setContent(`<!doctype html><html><head><style>
+    ).join('');
+    await page.setContent(`<!doctype html><html><head><style>
     ${fontImport}
     * { margin:0; box-sizing:border-box; }
     body { background:#171717; padding:56px 72px; width:1180px; }
@@ -74,16 +76,16 @@ if (mode === 'candidates') {
     .label { color:#8a8a8a; font-family:system-ui,sans-serif; font-size:15px; width:150px; letter-spacing:.06em; text-transform:uppercase; }
     .word { padding:12px 6px; }
   </style></head><body>${rows}</body></html>`);
-  // give the webfonts a beat to load
-  await page.evaluate(() => document.fonts.ready);
-  const out = resolve(ROOT, 'docs/research/pixelslot-logo-candidates.png');
-  const el = await page.$('body');
-  await el.screenshot({ path: out });
-  console.log('wrote', out);
-} else if (mode === 'icon') {
-  const S = 1024;
-  await page.setViewportSize({ width: S, height: S });
-  await page.setContent(`<!doctype html><html><head><style>
+    // give the webfonts a beat to load
+    await page.evaluate(() => document.fonts.ready);
+    const out = resolve(ROOT, 'docs/research/pixelslot-logo-candidates.png');
+    const el = await page.$('body');
+    await el.screenshot({ path: out });
+    console.log('wrote', out);
+  } else if (mode === 'icon') {
+    const S = 1024;
+    await page.setViewportSize({ width: S, height: S });
+    await page.setContent(`<!doctype html><html><head><style>
     ${fontImport}
     * { margin:0; box-sizing:border-box; }
     html,body { background:transparent; }
@@ -101,36 +103,37 @@ if (mode === 'candidates') {
       <div class="tag">PIXELSLOT.OFFICIAL</div>
     </div></div>
   </body></html>`);
-  await page.evaluate(() => document.fonts.ready);
-  const base = resolve(ROOT, 'public/branding/pixelslot-icon.png');
-  await (
-    await page.$('#badge')
-  ).screenshot({ path: base, omitBackground: true });
-  const targets = [
-    ['public/seo/icon-512x512.png', 512],
-    ['public/seo/icon-192x192.png', 192],
-    ['src/app/apple-icon.png', 180],
-    ['src/app/icon.png', 512],
-  ];
-  for (const [p, sz] of targets) {
-    await sharp(base).resize(sz, sz).png().toFile(resolve(ROOT, p));
-    console.log('wrote', p, `${sz}x${sz}`);
-  }
-  console.log('wrote', base);
-} else {
-  const size = 200;
-  await page.setContent(`<!doctype html><html><head><style>
+    await page.evaluate(() => document.fonts.ready);
+    const base = resolve(ROOT, 'public/branding/pixelslot-icon.png');
+    await (
+      await page.$('#badge')
+    ).screenshot({ path: base, omitBackground: true });
+    const targets = [
+      ['public/seo/icon-512x512.png', 512],
+      ['public/seo/icon-192x192.png', 192],
+      ['src/app/apple-icon.png', 180],
+      ['src/app/icon.png', 512],
+    ];
+    for (const [p, sz] of targets) {
+      await sharp(base).resize(sz, sz).png().toFile(resolve(ROOT, p));
+      console.log('wrote', p, `${sz}x${sz}`);
+    }
+    console.log('wrote', base);
+  } else {
+    const size = 200;
+    await page.setContent(`<!doctype html><html><head><style>
     ${fontImport}
     * { margin:0; box-sizing:border-box; }
     html,body { background:transparent; }
     #stage { display:inline-block; padding:${Math.round(size * 0.5)}px ${Math.round(size * 0.55)}px; }
     .word { ${wordCss(chosenFont, size)} }
   </style></head><body><div id="stage"><span class="word">PixelSlot</span></div></body></html>`);
-  await page.evaluate(() => document.fonts.ready);
-  const out = resolve(ROOT, 'public/branding/pixelslot-logo.png');
-  const el = await page.$('#stage');
-  await el.screenshot({ path: out, omitBackground: true });
-  console.log('wrote', out, 'font:', chosenFont);
+    await page.evaluate(() => document.fonts.ready);
+    const out = resolve(ROOT, 'public/branding/pixelslot-logo.png');
+    const el = await page.$('#stage');
+    await el.screenshot({ path: out, omitBackground: true });
+    console.log('wrote', out, 'font:', chosenFont);
+  }
+} finally {
+  await browser.close();
 }
-
-await browser.close();
