@@ -219,7 +219,7 @@
   // ---- Renderers -------------------------------------------------------------
   const canvas = document.getElementById('scene');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -274,7 +274,7 @@
   const key = new THREE.DirectionalLight(0x9fb4ff, 0.2);
   key.position.set(14, 26, 10);
   key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.mapSize.set(1024, 1024);
   Object.assign(key.shadow.camera, {
     left: -28,
     right: 28,
@@ -321,7 +321,9 @@
     });
     m.position.set(x, y, z);
     scene.add(m);
-    if (lightP > 0) {
+    // Cap the real point lights hard — too many tanks the framerate (drag lag).
+    // Emissive + bloom carry the glow; a handful of fill lights is plenty.
+    if (lightP > 0 && neonLights.length < 5) {
       const L = new THREE.PointLight(color, lightP, 10, 2);
       L.position.set(x, y, z + 0.4);
       scene.add(L);
@@ -662,7 +664,9 @@
     composer.setSize(innerWidth, innerHeight);
     labelRenderer.setSize(innerWidth, innerHeight);
   }
-  neonLights.forEach((L) => (L.intensity *= 0.4)); // dampen neon fill flood
+  // Keep at most 8 real point lights (perf), dampen the rest for mood.
+  neonLights.splice(8).forEach((L) => L.parent && L.parent.remove(L));
+  neonLights.forEach((L) => (L.intensity *= 0.45));
   addEventListener('resize', resize);
   resize();
   tick();
