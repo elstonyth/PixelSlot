@@ -97,8 +97,19 @@ for (let day = 1; day <= days; day++) {
 
   if (day < days) {
     log(`Day ${day} — time-shifting the world back one day`);
-    const { shiftDay } = await import('./time-shift-exec.mjs');
-    shiftDay(1, runId); // runId → reads runs/<runId>/db.json for creds
+    // The workflow sandbox has no Node/fs/child_process and bans dynamic
+    // import(), so the DB shift (docker exec psql) can't run in-workflow.
+    // Delegate to a Bash-capable agent that runs the CLI (reads db.json for
+    // creds via the runId arg).
+    await agent(
+      `Run EXACTLY this one shell command from the repo root and report its ` +
+        `output verbatim — do nothing else:\n\n` +
+        `node scripts/sim/time-shift-exec.mjs 1 ${runId}\n\n` +
+        `It shifts the sim Postgres back one day and flushes the sim Redis so ` +
+        `day ${day + 1}'s daily draws and time-gated accruals re-fire. If it ` +
+        `errors, report the exact error.`,
+      { label: `shift:d${day}`, phase: 'Day', model: 'haiku' },
+    );
   }
 }
 
