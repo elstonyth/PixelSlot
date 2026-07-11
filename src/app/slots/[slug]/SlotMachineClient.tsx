@@ -46,7 +46,7 @@ import { OddsSheet } from './OddsSheet';
 import { VaultRoom } from './VaultRoom';
 import { Meter } from './Meter';
 import { RevealStage } from './RevealStage';
-import type { SellBackOffer } from '@/components/SellBackPanel';
+import type { SellBackOffer } from './useSellWindow';
 
 const COOLDOWN_MS = 600;
 /** How long a meter direction cue (up/down) stays lit before resetting. */
