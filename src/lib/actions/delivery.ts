@@ -16,6 +16,7 @@ import { logger } from '@/lib/logger';
 import { getAuthToken, getCustomer } from '@/lib/data/customer';
 import { parseList, parseOne, DeliveryOrderSchema } from '@/lib/data/schemas';
 import { friendlyError, isAuthError, type ErrorRule } from '@/lib/errors';
+import { DELIVERY_RULES, DELIVERY_FALLBACK } from '@/lib/delivery-errors';
 
 export type DeliveryOrderItemView = {
   pullId: string;
@@ -60,27 +61,6 @@ export type AddressView = {
   countryCode: string;
   phone: string | null;
 };
-
-const DELIVERY_RULES: ErrorRule[] = [
-  [
-    /too many|rate.?limit|429/i,
-    'Too many requests — give it a moment and try again.',
-  ],
-  [
-    /unauthorized|not authenticated|401/i,
-    'Please log in to manage deliveries.',
-  ],
-  [
-    /no longer available|not allowed|409/i,
-    'One or more cards are no longer available to deliver.',
-  ],
-  [/not found|404/i, 'That card or address was not found.'],
-  [
-    /required|invalid|400/i,
-    'Check your selection and address, then try again.',
-  ],
-];
-const FALLBACK = 'Something went wrong. Please try again.';
 
 interface BackendDeliveryOrder {
   id: string;
@@ -146,7 +126,7 @@ export async function getDeliveryOrders(): Promise<DeliveryOrdersResult> {
     logger.error('[delivery] list failed:', error);
     return {
       ok: false,
-      error: friendlyError(error, DELIVERY_RULES, FALLBACK),
+      error: friendlyError(error, DELIVERY_RULES, DELIVERY_FALLBACK),
       needsAuth: isAuthError(error),
     };
   }
@@ -184,7 +164,7 @@ export async function requestDelivery(
     logger.error('[delivery] request failed:', error);
     return {
       ok: false,
-      error: friendlyError(error, DELIVERY_RULES, FALLBACK),
+      error: friendlyError(error, DELIVERY_RULES, DELIVERY_FALLBACK),
       needsAuth: isAuthError(error),
     };
   }
@@ -221,7 +201,7 @@ export async function editDeliveryAddress(
     logger.error('[delivery] edit address failed:', error);
     return {
       ok: false,
-      error: friendlyError(error, DELIVERY_RULES, FALLBACK),
+      error: friendlyError(error, DELIVERY_RULES, DELIVERY_FALLBACK),
       needsAuth: isAuthError(error),
     };
   }
@@ -284,7 +264,7 @@ export async function cancelDeliveryOrder(
     logger.error(`[delivery] cancel failed for '${orderId}':`, error);
     return {
       ok: false,
-      error: friendlyError(error, CANCEL_RULES, FALLBACK),
+      error: friendlyError(error, CANCEL_RULES, DELIVERY_FALLBACK),
       needsAuth: isAuthError(error),
     };
   }
@@ -366,7 +346,7 @@ export async function addAddress(
     logger.error('[delivery] add address failed:', error);
     return {
       ok: false,
-      error: friendlyError(error, DELIVERY_RULES, FALLBACK),
+      error: friendlyError(error, DELIVERY_RULES, DELIVERY_FALLBACK),
       needsAuth: isAuthError(error),
     };
   }
