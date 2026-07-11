@@ -6,11 +6,16 @@ export const meta = {
   phases: [{ title: 'Day' }],
 };
 
-// args: { runId, days, activePersonas?: string[] }
+// args: { runId, days, startDay?, activePersonas?: string[] }
+// `startDay` (default 1) continues an existing run: day labels, diaries, and
+// artifacts pick up where the previous launch stopped. The caller is
+// responsible for the BOUNDARY shift into startDay (the previous launch's
+// last day never shifts) — this loop only shifts between its own days.
 // Tolerate args arriving as a JSON string (the launcher may stringify it).
 const A = typeof args === 'string' ? JSON.parse(args) : args || {};
 const runId = A.runId;
 const days = A.days ?? 2;
+const startDay = A.startDay ?? 1;
 if (!runId) throw new Error('args.runId is required');
 
 const CUSTOMERS = A.activePersonas ?? ['honest', 'refund-seeker'];
@@ -41,7 +46,9 @@ const AUDIT_SCHEMA = {
 
 // --- prompt builders: each reads the charter file and pins the run context ---
 function base(runId, day) {
-  return `Run id: ${runId}. Simulated day: ${day}. Artifacts under scripts/sim/runs/${runId}/. Backend: http://localhost:9000. Publishable key: read runs/${runId}/pk.txt.`;
+  // :9100 — keep in sync with SIM.backendUrl in config.mjs (this sandbox
+  // cannot import it).
+  return `Run id: ${runId}. Simulated day: ${day}. Artifacts under scripts/sim/runs/${runId}/. Backend: http://localhost:9100. Publishable key: read runs/${runId}/pk.txt.`;
 }
 function customerPrompt(p, runId, day) {
   return `${base(runId, day)}\n\nFollow your charter exactly: scripts/sim/personas/${p}.md`;
@@ -53,7 +60,8 @@ function auditorPrompt(runId, day) {
   return `${base(runId, day)}\n\nFollow your charter exactly: scripts/sim/personas/auditor.md`;
 }
 
-for (let day = 1; day <= days; day++) {
+const lastDay = startDay + days - 1;
+for (let day = startDay; day <= lastDay; day++) {
   phase('Day');
   log(`Day ${day} — customers acting`);
 
@@ -95,7 +103,7 @@ for (let day = 1; day <= days; day++) {
     return { stoppedAt: day, reason: 'showstopper', audit };
   }
 
-  if (day < days) {
+  if (day < lastDay) {
     log(`Day ${day} — time-shifting the world back one day`);
     // The workflow sandbox has no Node/fs/child_process and bans dynamic
     // import(), so the DB shift (docker exec psql) can't run in-workflow.
@@ -113,4 +121,4 @@ for (let day = 1; day <= days; day++) {
   }
 }
 
-return { runId, days, complete: true };
+return { runId, startDay, days, complete: true };

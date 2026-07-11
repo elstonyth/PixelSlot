@@ -7,7 +7,13 @@ export const SIM = Object.freeze({
   dbName: 'pixelslot_sim',
   redisIndex: 9,
   viewerPort: 4500,
-  backendUrl: 'http://localhost:9000',
+  // :9100 — :9000 is the default dev backend port and other sessions/worktrees
+  // run theirs there (2026-07-11: a feat-withdraw-playthrough `medusa start`
+  // owned :9000 and silently answered the sim's health checks with the WRONG
+  // db). A sim-only port makes that collision impossible. Keep in sync with
+  // the hardcoded URL in run-month.workflow.mjs base() (the Workflow sandbox
+  // cannot import this file).
+  backendUrl: 'http://localhost:9100',
   // Persona ids match diary filenames and event `actor` fields.
   personas: [
     { id: 'honest', label: 'Honest', color: '#4ade80' },

@@ -35,8 +35,9 @@ if (dbName !== SIM.dbName) {
   );
   process.exit(1);
 }
+const simPort = new URL(SIM.backendUrl).port || '9000';
 console.log(
-  `[sim] backend → db "${dbName}" on :9000 (ALLOW_MOCK_TOPUP + REWARDS_REDEMPTION_ENABLED)`,
+  `[sim] backend → db "${dbName}" on :${simPort} (ALLOW_MOCK_TOPUP + REWARDS_REDEMPTION_ENABLED)`,
 );
 
 if (process.argv.includes('--dry-run')) process.exit(0);
@@ -44,6 +45,7 @@ if (process.argv.includes('--dry-run')) process.exit(0);
 const env = {
   ...process.env,
   DATABASE_URL: simUrl,
+  PORT: simPort,
   ALLOW_MOCK_TOPUP: 'true',
   REWARDS_REDEMPTION_ENABLED: 'true',
 };
