@@ -59,6 +59,9 @@ export type OpenPackResult =
         vaultAmount: number | null;
         /** Fallback instant deadline (epoch ms) when the reveal ping fails. */
         instantDeadlineMs: number | null;
+        /** false = quoted on the FX display fallback; selling would be
+         *  refused, so the reveal must not present this as a firm offer. */
+        firm: boolean;
       } | null;
       /** Credit balance AFTER the charge (opens debit the pack price — A2);
        *  null only if the backend response shape regresses. */
@@ -176,6 +179,7 @@ export async function openPack(slug: string): Promise<OpenPackResult> {
             vaultPercent: offer.vault_percent ?? null,
             vaultAmount: offer.vault_amount ?? null,
             instantDeadlineMs: offer.instant_deadline_ms ?? null,
+            firm: offer.firm ?? true,
           }
         : null,
       balance:
@@ -290,7 +294,8 @@ export async function openBatch(
 }
 
 export type RevealResult =
-  { ok: true; instantDeadlineMs: number } | { ok: false };
+  | { ok: true; instantDeadlineMs: number }
+  | { ok: false };
 
 // Reveal ping — stamps revealed_at server-side so the 30s instant window counts
 // from when the card is shown. Best-effort: any failure returns { ok: false }

@@ -46,6 +46,9 @@ export type VaultItem = {
   buyback: {
     percent: number;
     amount: number;
+    /** false = quoted on the FX display fallback; the sell would be refused,
+     *  so CTAs must not present the amount as a firm offer. */
+    firm: boolean;
   };
 };
 
@@ -71,7 +74,7 @@ interface BackendVaultItem {
     market_value: number;
     marketPriceMyr?: number;
   };
-  buyback: { percent: number; amount: number };
+  buyback: { percent: number; amount: number; firm?: boolean };
 }
 
 // Patterns local to the vault/credit actions (rate-limit, auth, the demo
@@ -135,7 +138,12 @@ export async function getVault(): Promise<VaultResult> {
         marketValue: i.card.market_value,
         marketPriceMyr: i.card.marketPriceMyr ?? 0,
       },
-      buyback: { percent: i.buyback.percent, amount: i.buyback.amount },
+      buyback: {
+        percent: i.buyback.percent,
+        amount: i.buyback.amount,
+        // Absent on an older backend = firm (pre-firmness behavior).
+        firm: i.buyback.firm ?? true,
+      },
     }));
     const credit = parseOne(BalanceSchema, creditRes);
 

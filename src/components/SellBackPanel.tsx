@@ -23,6 +23,10 @@ export type SellBackOffer = {
   vaultAmount: number;
   /** Fallback instant deadline (epoch ms) if the reveal ping fails. */
   instantDeadlineMs: number;
+  /** false = the quote was priced on the backend's FX display fallback and
+   *  selling would be refused ("Exchange rate unavailable") — render the
+   *  unavailable state instead of a firm offer (sim finding P1-1). */
+  firm: boolean;
 };
 
 export type SellBackFn = (
@@ -132,6 +136,23 @@ export function SellBackPanel({
   }
 
   if (!offer) return null;
+
+  // Non-firm quote: the backend would refuse the sell, so don't promise the
+  // amount or run a countdown — the card is vaulted and sellable once FX is
+  // back. (The reveal ping above still fires; stamping first-seen is correct.)
+  if (!offer.firm) {
+    return (
+      <div className="flex w-full max-w-[340px] flex-col items-center gap-2">
+        <p className="flex h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 text-sm font-bold text-white/50">
+          Sell-back temporarily unavailable
+        </p>
+        <p className="text-center text-[11px] text-white/50">
+          Pricing is being refreshed — this card is safe in your vault and can
+          be sold once rates are back.
+        </p>
+      </div>
+    );
+  }
 
   const barPct = sellExpired
     ? 0
