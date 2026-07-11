@@ -70,6 +70,31 @@ function auditorPrompt(runId, day) {
   return `${base(runId, day)}\n\nFollow your charter exactly: scripts/sim/personas/auditor.md`;
 }
 
+// A customer agent whose model response STALLS MID-STREAM dies and agent()
+// returns null after its own internal retries (hit live 2026-07-11:
+// cust:buyback-haggler:d4 stalled → the persona silently dropped its whole day,
+// leaving that day's adversarial coverage incomplete and corrupting the
+// "clean day" signal). Re-run a null/empty return up to 3x total. A persona
+// that legitimately did little still returns a non-empty summary string, so
+// this only re-fires on a genuine death, not on a quiet day.
+async function runCustomer(p, runId, day) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const out = await agent(customerPrompt(p, runId, day), {
+      label:
+        attempt === 1
+          ? `cust:${p}:d${day}`
+          : `cust:${p}:d${day}:retry${attempt - 1}`,
+      phase: 'Day',
+      model: 'opus',
+    });
+    if (typeof out === 'string' && out.trim() !== '') return out;
+    log(
+      `Day ${day} — ${p} agent returned null/empty (attempt ${attempt}/3) — ${attempt < 3 ? 'retrying' : 'giving up; day is persona-incomplete'}`,
+    );
+  }
+  return null;
+}
+
 // Identity guard BEFORE any agent acts (spec §4): a dev backend on the sim
 // port answers /health against the WRONG db, so preflight.mjs additionally
 // proves this run's publishable key + sim admin work. Abort loudly otherwise —
@@ -108,12 +133,7 @@ for (let day = startDay; day <= lastDay; day++) {
   for (let i = 0; i < CUSTOMERS.length; i += CHUNK) {
     await parallel(
       CUSTOMERS.slice(i, i + CHUNK).map(
-        (p) => () =>
-          agent(customerPrompt(p, runId, day), {
-            label: `cust:${p}:d${day}`,
-            phase: 'Day',
-            model: 'opus',
-          }),
+        (p) => () => runCustomer(p, runId, day),
       ),
     );
   }
