@@ -7,17 +7,19 @@ all three live surfaces: storefront `:4000`, admin dashboard `:7000`, backend `:
 
 | Spec                      | Flow                                                                                                                                                                                                                                                                                     |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `customer.spec.ts`        | signup → top-up → open pack (full reveal theater) → keep in vault → sell-back; backend credit ledger asserted via API. Plus: anonymous demo spin writes NO backend pull.                                                                                                                 |
+| `customer.spec.ts`        | signup → top-up → open pack (slot reel on `/slots/<slug>/spin`) → keep in vault → sell-back; backend credit ledger asserted via API. Plus: anonymous demo spin (`?demo=1`) writes NO backend pull.                                                                                       |
 | `admin.spec.ts`           | admin login → cards & packs catalogs render with management actions → **create a pack** + manage its prize pool → **adjust a customer's credits** (support) → economy report.                                                                                                            |
 | `odds-reflection.spec.ts` | **Headline.** Set one card to **100% win rate** (pack A via admin UI, pack B via odds API) → open the pack 3× → every pull is that exact card. Asserts the hardcoded published "Pull Odds" table never moves — the adjustment lands on real pull _behavior_, not the decorative display. |
 
 ## Why the 100% test instead of asserting the odds panel
 
-The storefront's visible "Pull Odds (by rarity)" panel is the hardcoded `ODDS`
-constant in `src/app/claw/packs-data.ts` — intentionally decoupled from the
-admin-tuned secret weights. So a frontend assertion on that panel can't prove an
-adjustment took effect. Forcing a card to 100% and confirming every real open
-returns it proves the adjustment reaches the actual pull engine.
+The storefront's visible "Pull Odds (by rarity)" panel renders the
+admin-PUBLISHED `pack.published_odds` (a display-only setting) — intentionally
+decoupled from the admin-tuned secret weights. So a frontend assertion on that
+panel can't prove an adjustment took effect. Forcing a card to 100% and
+confirming every real open returns it proves the adjustment reaches the actual
+pull engine; the spec also snapshots the panel before/after to prove win-rate
+writes never leak into the published display.
 
 ## Prerequisites (services must already be up)
 
@@ -52,9 +54,10 @@ npx playwright test --headed --project=e2e # watch it
 npx playwright show-report tests/e2e/.report
 ```
 
-> **Drift note (2026-07-07):** `customer`, `bulk-sell`, `delivery-request`, and
-> the `odds-reflection` headline are currently `test.fixme` — they drive UI the
-> slots/vault redesigns removed and need re-authoring (see each file's header).
+> **Re-authored (2026-07-12, plan 023):** `customer`, `bulk-sell`,
+> `delivery-request`, and the `odds-reflection` headline were rewritten against
+> the redesigned slots/vault UI — no `test.fixme` remains. If a future redesign
+> breaks them, update the selectors in the same PR; do not re-`fixme` them.
 
 Endpoints/creds are overridable via `PW_BASE`, `PW_ADMIN`, `PW_BACKEND`, `PW_PK`,
 `PW_ADMIN_EMAIL`, `PW_ADMIN_PASSWORD` (see `helpers/constants.ts`).

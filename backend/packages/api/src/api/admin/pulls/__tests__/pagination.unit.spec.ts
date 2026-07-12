@@ -38,7 +38,12 @@ function mkScope(totalPulls: number) {
       { handle: 'card-a', name: 'Card A', market_value: 10, image: 'x.png' },
     ],
     listPackOdds: async () => [],
-    listPacks: async () => [{ id: 'pack_1', title: 'Starter Pack' }],
+    // Pull.pack_id stores the pack SLUG (= Pack.slug) — the route joins by
+    // slug (plan 012), so the mock must carry one; a slug-less pack is exactly
+    // the bug the join fix addressed.
+    listPacks: async () => [
+      { id: 'pack_internal_1', slug: 'pack_1', title: 'Starter Pack' },
+    ],
     listFxRates: async () => [],
   };
   return {

@@ -6,7 +6,7 @@
 // layout.tsx still wrap this body.
 //
 // Layout for /repacks: a hero banner over blurred pack art, a
-// category chip rail + sort toolbar, then a grid of BIG pack cards each with a quantity
+// category chip rail, then a grid of BIG pack cards each with a quantity
 // stepper (− 1 + MAX) and an Open button — distinct from /claw (which has no stepper).
 // Pack ART is real (reused from the /claw catalog); the names/creators are community
 // flavored so the two pages don't render identically. (Layout fix, not an exact 1:1
@@ -14,7 +14,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Reveal from '@/components/Reveal';
 import QtyStepper from '@/components/QtyStepper';
@@ -300,16 +299,15 @@ export default function RepacksClient() {
               delay={90}
               className="mt-3 max-w-md text-sm leading-relaxed text-white/65 sm:text-base"
             >
-              Curated pulls with 85% guaranteed buyback. Filter and sort to find
-              your next rip.
+              Curated pulls with 85% guaranteed buyback. Filter to find your
+              next rip.
             </Reveal>
-            <Reveal delay={150}>
-              <Link
-                href="/clawmaker"
-                className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-neutral-100 px-6 py-3 text-sm font-semibold text-neutral-950 shadow-lg transition-colors duration-200 hover:bg-white"
-              >
-                <Plus className="h-4 w-4" aria-hidden /> Create a Claw
-              </Link>
+            <Reveal
+              as="p"
+              delay={150}
+              className="mt-4 text-[11px] text-white/55"
+            >
+              Demo preview — community repacks aren&apos;t live yet.
             </Reveal>
           </div>
 
@@ -329,50 +327,33 @@ export default function RepacksClient() {
         </div>
       </section>
 
-      {/* 2. CHIP RAIL + SORT TOOLBAR */}
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setCat(t.id)}
-              aria-pressed={cat === t.id}
-              className={cn(
-                'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors sm:text-[13px]',
-                cat === t.id
-                  ? 'bg-white text-neutral-950'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white',
-              )}
-            >
-              {t.icon && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={t.icon}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-4 w-4 shrink-0 rounded-full object-cover"
-                />
-              )}
-              {t.tab}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
+      {/* 2. CHIP RAIL */}
+      <div className="mb-5 flex items-center gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {TABS.map((t) => (
           <button
+            key={t.id}
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-white/10 sm:text-[13px]"
+            onClick={() => setCat(t.id)}
+            aria-pressed={cat === t.id}
+            className={cn(
+              'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors sm:text-[13px]',
+              cat === t.id
+                ? 'bg-white text-neutral-950'
+                : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white',
+            )}
           >
-            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden /> Filters
+            {t.icon && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={t.icon}
+                alt=""
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 rounded-full object-cover"
+              />
+            )}
+            {t.tab}
           </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-medium text-white/70 transition-colors hover:text-white sm:text-[13px]"
-          >
-            Last Pulled <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-          </button>
-        </div>
+        ))}
       </div>
 
       {/* 3. PACK GRID */}
