@@ -148,6 +148,28 @@ medusaIntegrationTestRunner({
         ).toBe(401);
       });
 
+      // Sim day-2 (ux-friction): an undeliverable address must be rejected at
+      // ENTRY with a 400 that names the missing field(s) — not discovered days
+      // later when delivery fails.
+      it('rejects address creation missing country/postal with a 400 naming the fields', async () => {
+        const token = await registerCustomer('del-addr@test.dev');
+        const res = await reqApi(
+          'post',
+          '/store/customers/me/addresses',
+          authed(token),
+          {
+            first_name: 'Ada',
+            address_1: '1 Analytical Way',
+            city: 'London',
+            country_code: null,
+            postal_code: null,
+          },
+        );
+        expect(res.status).toBe(400);
+        expect(res.data.message).toContain('country_code');
+        expect(res.data.message).toContain('postal_code');
+      });
+
       it('rejects a pull_ids batch over the 500 cap with INVALID_DATA', async () => {
         const token = await registerCustomer('del-cap@test.dev');
         // 501 well-formed string ids + a non-empty address: the shape check
