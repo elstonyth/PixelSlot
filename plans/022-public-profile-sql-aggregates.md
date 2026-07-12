@@ -117,6 +117,7 @@ Integration suites need `pokenic-postgres` / `pokenic-redis` running
 - `backend/packages/api/src/modules/packs/service.ts` — ONE new read method
   (e.g. `profileStatsForCustomer`), placed near `leaderboardTop`.
 - `backend/packages/api/integration-tests/http/public-profile.spec.ts`
+- `plans/README.md` (this plan's status row only).
 
 **Out of scope** (do NOT touch, even though they look related):
 

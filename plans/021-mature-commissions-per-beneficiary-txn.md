@@ -126,6 +126,7 @@ pokenic-redis`. The Medusa test runner creates and drops its own per-suite DBs.
   handling.
 - `backend/packages/api/integration-tests/http/mature-commissions.spec.ts`
   (create).
+- `plans/README.md` (this plan's status row only).
 
 **Out of scope** (do NOT touch, even though they look related):
 

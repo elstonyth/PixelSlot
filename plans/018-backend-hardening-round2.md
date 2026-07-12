@@ -183,8 +183,10 @@ style of `isPcImageUrl`. Apply it to both the `slab_frame_url` fetch
   to assert a `pull_ids` array over `MAX_BATCH` is rejected with `INVALID_DATA`.
 - Item 2: add a unit test for `isAllowedImageUrl` (or the media unit-test folder)
   asserting: a public CDN URL and a relative `/…` path are allowed; a loopback /
-  RFC-1918 / metadata-style host is rejected. Model after the existing media
-  `__tests__/*.unit.spec.ts`.
+  RFC-1918 / metadata-style host is rejected — in IPv6 forms too: `::1`,
+  link-local (`fe80::/10`) and ULA (`fc00::/7`) addresses, and IPv4-mapped IPv6
+  (`::ffff:127.0.0.1`, `::ffff:10.0.0.1`), the classic filter-bypass shapes.
+  Model after the existing media `__tests__/*.unit.spec.ts`.
 
 **Verify**: `npm run test:integration:http` and `npm run test:unit` → all pass.
 
@@ -192,7 +194,7 @@ style of `isPcImageUrl`. Apply it to both the `slab_frame_url` fetch
 
 - HTTP: over-`MAX_BATCH` delivery request → 400 `INVALID_DATA`.
 - Unit: `isAllowedImageUrl` allows legit CDN/relative, rejects private/loopback/
-  metadata hosts.
+  metadata hosts in both IPv4 and IPv6 (incl. IPv4-mapped `::ffff:…`) forms.
 - Verification: both suites pass; backend build exit 0.
 
 ## Done criteria

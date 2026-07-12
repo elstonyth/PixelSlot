@@ -76,7 +76,7 @@ end-to-end exercise. The headline below is "what the code-read found," not
 "verified working in a running system." Before shipping, run the flows (or the
 integration suites named in each plan) to confirm behavior.
 
-**Headline.** The commerce core held up under the read. **12 of the 15
+**Headline.** The commerce core held up under the read. **11 of the 15
 simulation findings are confirmed fixed in the current code** (idempotent-topup
 visibility, customer cancel route + concurrency serialization, VIP batch-open
 grant settlement, FX quote firmness on the sell path, four error-copy fixes),
@@ -116,7 +116,7 @@ Recorded so nobody re-audits them. Each was opened and confirmed by the advisor.
   harmless — a sold-back pull keeps `showcased=true`, yet both readers (vault
   list, public profile) gate on `status==='vaulted'`, so a sold card never
   appears publicly. Not a bug.
-- **12 simulation findings verified fixed in code** — idempotent-topup `replayed`
+- **11 simulation findings verified fixed in code** — idempotent-topup `replayed`
   flag (#2, PR #132), daily-draw "nothing" message (#3), delivery cancel route +
   concurrency serialization (#4/#8/#12, PR #131/#133), FX quote-vs-execute
   firmness on the sell path (#5, PR #129), topup keyless-400 copy (#1), address

@@ -91,8 +91,10 @@ any arithmetic — only the message string.
 **Out of scope:**
 
 - Any charge/floor arithmetic — do not touch.
-- The storefront display of this error — the storefront shows the server message;
-  improving the server string is sufficient.
+- The storefront display of this error — the storefront's `friendlyError`
+  (`src/lib/data/packs.ts`) replaces insufficient-credit messages with generic
+  copy, so this plan's numbers reach direct API clients only; surfacing them to
+  the storefront user is plan 016b's job.
 
 ## Git workflow
 
@@ -133,16 +135,19 @@ consistent in wording.
 ### Step 3: Assert the numbers in a test
 
 In the pack-open charge HTTP spec, add/extend an "insufficient credits" case
-asserting the 400 message contains the price and the balance (e.g. a regex for
-`RM` and the expected figures). Model after the existing charge-spec setup.
+asserting the 400 message contains the price, the balance, AND the shortfall
+(e.g. a regex for `RM` and the expected figures). Model after the existing
+charge-spec setup.
 
 **Verify**: from `backend/packages/api`, run the spec → passes.
 
 ## Test plan
 
 - HTTP spec: a customer with balance < pack price opens a pack → 400 whose
-  message names the price and balance (regex assertion). Also confirm the
-  balance is unchanged (fail-closed) — likely already asserted in the same spec.
+  message names the price, balance, and shortfall (regex assertion — the done
+  criteria require all three, so the test must not pass with the shortfall
+  missing). Also confirm the balance is unchanged (fail-closed) — likely
+  already asserted in the same spec.
 - Verification: the spec passes; backend build exit 0.
 
 ## Done criteria

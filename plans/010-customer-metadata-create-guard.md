@@ -103,6 +103,7 @@ cover the create route — one middleware registration entry.
 - `backend/packages/api/src/api/middlewares.ts` (add one registration entry)
 - `backend/packages/api/integration-tests/http/customer-metadata-guard.spec.ts`
   (extend — this spec already exists for the `/me` case)
+- `plans/README.md` (this plan's status row only)
 
 **Out of scope:**
 

@@ -90,6 +90,7 @@ correctness and trust problem. The fix is two extra invalidations.
 **In scope:**
 
 - `backend/apps/admin/src/lib/queries.ts` (broaden `useReverseCommission` invalidation only)
+- `plans/README.md` (this plan's status row only)
 
 **Out of scope:**
 
