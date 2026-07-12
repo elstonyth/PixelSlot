@@ -1,4 +1,4 @@
-# Plan 019: Show the top-up shortfall in the storefront insufficient-credit CTA
+# Plan 016b: Show the top-up shortfall in the storefront insufficient-credit CTA
 
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving on. If any

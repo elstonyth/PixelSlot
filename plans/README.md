@@ -185,12 +185,12 @@ first places to look if a flow misbehaves:
   class — the same recommendation round 1 made for the enum-mirror class (plan
   005). Consider it if a third instance appears.
 
-### Round-2 execution rollup (2026-07-12) — all 10 plans implemented in isolated worktrees, reviewer-verified, NOT merged
+### Round-2 execution rollup (2026-07-12) — all 10 plans implemented in isolated worktrees, reviewer-verified, merged into `feat/virtual-shop`
 
 Each plan was executed by a dispatched subagent in its own git worktree (branched
 from `e9ce6968`), then reviewed by the advisor (scope + diff + re-run criteria).
-**Nothing is merged — every change sits on its worktree branch for the maintainer
-to merge.** Verification ran live where a DB was needed (`pokenic-postgres` +
+**All 10 worktree branches were merged into `feat/virtual-shop` on 2026-07-12**
+(per-plan rows above carry the merge stamps). Verification ran live where a DB was needed (`pokenic-postgres` +
 `.env.test` were reachable from worktrees).
 
 | Plan | Verdict              | Worktree branch                    | Commit(s)               |
@@ -231,15 +231,15 @@ should auto-merge, but merge in this order and re-run the admin build after each
 
 **Two follow-ups the maintainer should decide (documented, not auto-built):**
 
-1. **016 storefront copy — RESOLVED by plan 019.** The backend (016) names
+1. **016 storefront copy — RESOLVED by plan 016b** (renumbered from 019). The backend (016) names
    price/balance/shortfall for API clients; the storefront `openPack` action
    deliberately maps `/not enough credits/i` through `friendlyError`
    (`src/lib/actions/packs.ts:104`) to a generic string + a `needsTopUp` CTA, so
    the raw numbers never reach the storefront. Rather than loosen that
-   sanitization, **plan 019** shows the shortfall client-side (computed from the
+   sanitization, **plan 016b** shows the shortfall client-side (computed from the
    `balance` + pack price already in scope) next to the existing top-up CTA —
    delivering the plan-016 intent on the storefront with zero backend coupling.
-   Both are DONE-not-merged. No open decision remains.
+   Both are DONE and merged into `feat/virtual-shop`. No open decision remains.
 2. **018 DNS-rebind residual.** The slab-bake SSRF guard blocks IP literals
    (incl. obfuscated IPv4 and IPv4-mapped IPv6) and known internal hostnames, but
    does not DNS-resolve — a public hostname resolving to a private IP is a

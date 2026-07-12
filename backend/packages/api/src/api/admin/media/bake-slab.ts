@@ -76,7 +76,8 @@ const isPrivateHost = (hostname: string): boolean => {
       host.startsWith('::ffff:') ||
       host.startsWith('fc') ||
       host.startsWith('fd') ||
-      host.startsWith('fe80')
+      // fe80::/10 spans fe80–febf, not just the literal fe80 prefix.
+      /^fe[89ab]/.test(host)
     );
   }
   return isPrivateIpv4(host);
