@@ -76,7 +76,8 @@ const isPrivateHost = (hostname: string): boolean => {
       host.startsWith('::ffff:') ||
       host.startsWith('fc') ||
       host.startsWith('fd') ||
-      host.startsWith('fe80')
+      // fe80::/10 spans fe80–febf, not just the literal fe80 prefix.
+      /^fe[89ab]/.test(host)
     );
   }
   return isPrivateIpv4(host);
@@ -108,21 +109,56 @@ export function isAllowedImageUrl(url: string): boolean {
   return !isPrivateHost(parsed.hostname);
 }
 
-const fetchBytes = async (url: string): Promise<Buffer | null> => {
+// Trusted base for storefront-relative image paths (e.g. '/cdn/cards/x.webp').
+// Operator config — the same source password-reset.ts builds links from — not
+// admin input, so resolving against it (even localhost in dev) is not an SSRF
+// widening: a relative path can only ever land on our own storefront.
+const assetOrigin = (): string =>
+  (process.env.STOREFRONT_URL ?? 'http://localhost:4000').replace(/\/+$/, '');
+
+const MAX_REDIRECTS = 3;
+
+export const fetchBytes = async (url: string): Promise<Buffer | null> => {
   // Fail closed (null → caller warns + falls back to the bundled default frame,
   // or skips the card) rather than fetching an internal host.
   if (!isAllowedImageUrl(url)) return null;
-  let resp: Response;
-  try {
-    resp = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-  } catch {
-    return null;
+  // isAllowedImageUrl passes storefront-relative paths, but Node's fetch()
+  // throws on them — resolve against the trusted storefront origin so
+  // relative card images actually bake instead of being silently skipped.
+  let target = url.startsWith('/') ? `${assetOrigin()}${url}` : url;
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    let resp: Response;
+    try {
+      resp = await fetch(target, {
+        // fetch() follows 3xx by default, so a public image URL could bounce
+        // to a blocked internal host AFTER the guard ran. Walk redirects
+        // manually and re-validate every hop instead.
+        redirect: 'manual',
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+    } catch {
+      return null;
+    }
+    if (resp.status >= 300 && resp.status < 400) {
+      const loc = resp.headers.get('location');
+      if (!loc) return null;
+      let next: URL;
+      try {
+        next = new URL(loc, target); // Location may be relative to the hop
+      } catch {
+        return null;
+      }
+      if (!isAllowedImageUrl(next.toString())) return null;
+      target = next.toString();
+      continue;
+    }
+    if (!resp.ok) return null;
+    const bytes = Buffer.from(await resp.arrayBuffer());
+    return bytes.length > 0 && bytes.length <= IMAGE_RULES.maxBytes
+      ? bytes
+      : null;
   }
-  if (!resp.ok) return null;
-  const bytes = Buffer.from(await resp.arrayBuffer());
-  return bytes.length > 0 && bytes.length <= IMAGE_RULES.maxBytes
-    ? bytes
-    : null;
+  return null; // redirect chain longer than MAX_REDIRECTS — fail closed
 };
 
 // The frame to bake with: the admin-configured URL when it is an absolute

@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { composeSlab, isAllowedImageUrl } from '../bake-slab';
+import { composeSlab, fetchBytes, isAllowedImageUrl } from '../bake-slab';
 
 // SSRF guard for the server-side slab-bake fetch (frame + card image). Public
 // hosts and storefront-relative paths are allowed (a strict CDN allowlist would
@@ -28,12 +28,71 @@ describe('isAllowedImageUrl', () => {
     ['IPv6 loopback', 'http://[::1]/x.png'],
     ['IPv4-mapped IPv6 loopback', 'http://[::ffff:127.0.0.1]/x.png'],
     ['IPv4-mapped IPv6 metadata', 'http://[::ffff:169.254.169.254]/x.png'],
+    ['IPv6 link-local fe80', 'http://[fe80::1]/x.png'],
+    ['IPv6 link-local mid-range (fe80::/10 is fe80-febf)', 'http://[fe95::1]/x.png'],
+    ['IPv6 link-local range top', 'http://[febf::1]/x.png'],
     ['file: scheme', 'file:///etc/passwd'],
     ['protocol-relative', '//evil.example.com/x.png'],
     ['garbage', 'not a url'],
     ['empty', ''],
   ])('rejects %s', (_label, url) => {
     expect(isAllowedImageUrl(url)).toBe(false);
+  });
+});
+
+// fetchBytes network contract: redirects are walked manually with every hop
+// re-validated (a public URL 3xx-ing to an internal host is the classic SSRF
+// bypass), and storefront-relative paths resolve against STOREFRONT_URL
+// instead of throwing inside Node's fetch. fetch is mocked — no sockets.
+describe('fetchBytes', () => {
+  const png = new Uint8Array([1, 2, 3]);
+  const redirect = (location: string) =>
+    new Response(null, { status: 302, headers: { location } });
+  let fetchMock: jest.SpyInstance;
+  const originalStorefrontUrl = process.env.STOREFRONT_URL;
+
+  beforeEach(() => {
+    fetchMock = jest.spyOn(globalThis, 'fetch');
+  });
+  afterEach(() => {
+    fetchMock.mockRestore();
+    if (originalStorefrontUrl === undefined) delete process.env.STOREFRONT_URL;
+    else process.env.STOREFRONT_URL = originalStorefrontUrl;
+  });
+
+  it('resolves storefront-relative paths against STOREFRONT_URL', async () => {
+    process.env.STOREFRONT_URL = 'https://shop.example.com/';
+    fetchMock.mockResolvedValue(new Response(png, { status: 200 }));
+    expect(await fetchBytes('/cdn/cards/x.webp')).toEqual(Buffer.from(png));
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://shop.example.com/cdn/cards/x.webp',
+      expect.objectContaining({ redirect: 'manual' }),
+    );
+  });
+
+  it('follows an allowed redirect and returns the bytes', async () => {
+    fetchMock
+      .mockResolvedValueOnce(redirect('https://cdn.example.com/real.webp'))
+      .mockResolvedValueOnce(new Response(png, { status: 200 }));
+    expect(await fetchBytes('https://images.example.com/a.webp')).toEqual(
+      Buffer.from(png),
+    );
+  });
+
+  it('refuses a redirect to an internal host', async () => {
+    fetchMock.mockResolvedValueOnce(
+      redirect('http://169.254.169.254/latest/meta-data'),
+    );
+    expect(await fetchBytes('https://images.example.com/a.webp')).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1); // never fetched the target
+  });
+
+  it('gives up after too many redirect hops', async () => {
+    fetchMock.mockResolvedValue(
+      redirect('https://images.example.com/loop.webp'),
+    );
+    expect(await fetchBytes('https://images.example.com/a.webp')).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(4); // initial + 3 hops
   });
 });
 

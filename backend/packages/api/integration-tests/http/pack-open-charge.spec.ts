@@ -196,7 +196,9 @@ medusaIntegrationTestRunner({
         // price, their balance, and exactly how much more to top up.
         expect(res.data.message).toContain(`RM ${PACK_PRICE.toFixed(2)}`); // price
         expect(res.data.message).toContain("RM 0.00"); // balance (unfunded)
-        expect(res.data.message).toMatch(/top up RM 10\.00 more/i); // shortfall
+        expect(res.data.message).toContain(
+          `top up at least RM ${PACK_PRICE.toFixed(2)}.`, // shortfall = full price
+        );
 
         // Nothing happened: no Pull, no stock movement, no ledger row.
         expect(await pullCount()).toBe(0);

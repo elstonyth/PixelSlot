@@ -74,6 +74,7 @@ lookup map by `slug`.
 
 - `backend/packages/api/src/api/admin/pulls/route.ts` (fix the filter + map key)
 - A new/extended integration spec asserting `pack_title` is populated (see Test plan)
+- `plans/README.md` (this plan's status row only)
 
 **Out of scope:**
 

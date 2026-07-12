@@ -107,6 +107,7 @@ whatever conversion the save handler actually uses).
 - `backend/apps/admin/src/routes/cards/page.tsx` (client guard + input bounds)
 - `backend/packages/api/src/api/admin/cards/validate.ts` (backend ceiling)
 - `backend/packages/api/src/api/admin/cards/__tests__/validate.unit.spec.ts` (add a case)
+- `plans/README.md` (this plan's status row only)
 
 **Out of scope:**
 

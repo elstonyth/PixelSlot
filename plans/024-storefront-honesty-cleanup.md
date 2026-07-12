@@ -149,8 +149,8 @@ illustrative.`
 3. Remove the non-functional search input and the `href="#"` on cards (render
    the card as a non-link, or drop the anchor).
 
-**Verify**: `grep -n "BadgeCheck\|verified\|rating" src/app/merchants/MerchantsClient.tsx`
-→ no matches (case-insensitive check for "verified" too); `npm run check` → exit 0.
+**Verify**: `grep -niE "BadgeCheck|verified|rating" src/app/merchants/MerchantsClient.tsx`
+→ no matches (`-i` so capitalized variants can't slip past); `npm run check` → exit 0.
 
 ### Step 2: `/social` — disclose and remove dead controls
 

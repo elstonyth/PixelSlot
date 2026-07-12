@@ -184,9 +184,16 @@ const Customer360Page = () => {
     else applyCommAction();
   }
 
+  // Mirror applyAdjustCredits' validation: Number('abc') is NaN (and 'Infinity'
+  // parses), neither === 0, so without the finite check the confirm button lit
+  // up for garbage input only to be rejected after the click.
+  const creditNum = Number(creditAmount.trim());
   const confirmDisabled =
     modal === 'credits'
-      ? !creditAmount.trim() || Number(creditAmount) === 0 || !creditNote.trim()
+      ? !creditAmount.trim() ||
+        !Number.isFinite(creditNum) ||
+        creditNum === 0 ||
+        !creditNote.trim()
       : !reason.trim();
 
   return (
