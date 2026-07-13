@@ -95,13 +95,13 @@ balance route matches the full route's `balance` — keep it green.
 **In scope**:
 
 - `backend/packages/api/src/modules/packs/service.ts` — give `walletSummary`
-  an optional pre-computed-inputs path; keep its lockedCommission/nextUnlock
+  an optional precomputed-inputs path; keep its lockedCommission/nextUnlock
   queries.
 - `backend/packages/api/src/api/store/credits/route.ts` — pass the shared
   scalars.
 - `src/modules/packs/__tests__/wallet-summary.spec.ts` — keep passing; adjust
   only if the signature change requires it (the direct-call cases must still
-  work with no pre-computed inputs).
+  work with no precomputed inputs).
 
 **Out of scope**:
 
@@ -156,7 +156,7 @@ others) to its return object and type. Existing callers ignore the new field
 
 **Verify**: `corepack yarn check-types` → exit 0.
 
-### Step 3: Give walletSummary a pre-computed-inputs path
+### Step 3: Give walletSummary a precomputed-inputs path
 
 Change `walletSummary(customerId)` to
 `walletSummary(customerId, precomputed?: { balance; depositedCents; usedCents })`.
