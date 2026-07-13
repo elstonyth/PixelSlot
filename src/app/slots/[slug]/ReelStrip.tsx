@@ -67,10 +67,12 @@ export function ReelStrip({
   reduced: boolean;
   colIndex: number;
   count: number;
-  /** Spin identity (the spin nonce). Retriggers the engine per spin — the
-   *  component itself must NOT remount, or the continuous position is lost —
-   *  and seeds the per-spin decoy randomization. */
-  spinKey: string | number;
+  /** Spin identity: the numeric spin nonce, or 'idle' when no spin is active.
+   *  Retriggers the engine per spin — the component itself must NOT remount,
+   *  or the continuous position is lost — and seeds the per-spin decoy
+   *  randomization (which is why a string nonce is not allowed: it would
+   *  silently collapse every spin to the same seed). */
+  spinKey: number | 'idle';
   cellSize?: number;
   /** The pack's own cards (dex + configured rarity, paired) the decoy cells
    *  flicker — so the reel shows only the pack's Pokémon in only the pack's

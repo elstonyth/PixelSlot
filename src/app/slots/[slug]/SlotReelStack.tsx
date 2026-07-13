@@ -33,7 +33,9 @@ export function SlotReelStack({
   hideWinners,
 }: {
   count: number;
-  spinKey: string | number;
+  /** Numeric spin nonce, or 'idle' between spins — numeric because it also
+   *  seeds ReelStrip's per-spin decoy randomization. */
+  spinKey: number | 'idle';
   winners: ColumnWinner[] | null;
   reduced: boolean;
   cellSize?: number;

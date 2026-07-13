@@ -86,6 +86,11 @@ export function spinTotalMs(count: number): number {
  *   • friction/crawl → settle: friction (easeOutCubic) and crawl (easeOutQuad)
  *     both arrive at ~zero velocity, and settleShape STARTS at zero velocity,
  *     so the landing eases in instead of kicking (spec #33 — natural landing).
+ *
+ * NOTE: no production caller since the press-launched spin (pressSpinOffset)
+ * replaced it. Kept deliberately as the tuned-physics derivation reference —
+ * pressSpinOffset's distances/handoffs are derived from THIS trajectory — and
+ * it stays test-covered in vault-reel.test.ts.
  */
 export function spinOffset(
   tMs: number,

@@ -1,14 +1,16 @@
 // Pure horizontal-reel strip logic: winner pinning, deterministic decoy tier
-// colors (the spin flicker), and the gated near-miss tease (spec §7b). No DOM,
-// no React — see src/lib/__tests__/hreel.test.ts. Physics (spinOffset, blur,
-// timing) stays in vault-reel.ts and is reused unchanged.
+// colors (the spin flicker), the gated near-miss tease (spec §7b), and the
+// press-spin strip (buildPressStrip). No DOM, no React — see
+// src/lib/__tests__/hreel.test.ts. Physics (pressSpinOffset, blur, timing)
+// stays in vault-reel.ts.
 import type { PackCard, Rarity } from '@/lib/packs-data';
 import { RARITY_ORDER, isTopRarity } from '@/lib/rarity';
 import { POKEDEX_MAX } from '@/lib/reel';
 import { resolveCardPokemon } from '@/lib/resolve-card-pokemon';
 
-/** Winner index sits high on a LONG strip so the reflected right→left travel
- *  (reelPaintX) has runway and stays in bounds — verified in reel.test.ts. */
+/** IDLE-strip build parameter only (spins pick their winner index dynamically
+ *  from the live position — see buildPressStrip). The idle build ignores the
+ *  winner slot entirely, keeping the strip a pure periodic tiling. */
 export const HREEL_WIN_INDEX = 48;
 export const HREEL_STRIP_LEN = 64;
 /** Cells visible across a strip window — a long horizontal reel. */
@@ -77,19 +79,6 @@ export function teaseRarity(winner: Rarity): Rarity | null {
   return RARITY_ORDER[Math.max(0, up)]!;
 }
 
-/**
- * Build a horizontal strip: winner dex pinned at `winIndex` (its cell carries a
- * DECOY color — the real tier is applied by the component on settle, so the
- * spin never spoils the rarity), a gated near-miss tease at `winIndex-1`
- * (the last decoy to cross the line before the winner), decoys elsewhere.
- *
- * `decoyCards` is the pool the flicker cells sample from — pass the PACK's own
- * cards, each PAIRING its dex with its CONFIGURED rarity, so the reel only shows
- * Pokémon tied to a reward in this pack AND only glows the pack's actual rarity
- * colors (a card set to Immortal always glows Immortal; a pack with only
- * Immortal + Common never flickers Legendary/Mythical/Rare/Uncommon). Empty/
- * omitted → the curated DECOY_DEXES with cycled colors (fallback only).
- */
 /** Deterministic 32-bit PRNG (mulberry32) — seeds the per-spin decoy shuffle so
  *  a spin's strip is stable across React re-renders but different every spin. */
 function mulberry32(seed: number): () => number {
@@ -184,6 +173,19 @@ export function buildPressStrip({
   return cells;
 }
 
+/**
+ * Build a horizontal strip: winner dex pinned at `winIndex` (its cell carries a
+ * DECOY color — the real tier is applied by the component on settle, so the
+ * spin never spoils the rarity), a gated near-miss tease at `winIndex-1`
+ * (the last decoy to cross the line before the winner), decoys elsewhere.
+ *
+ * `decoyCards` is the pool the flicker cells sample from — pass the PACK's own
+ * cards, each PAIRING its dex with its CONFIGURED rarity, so the reel only shows
+ * Pokémon tied to a reward in this pack AND only glows the pack's actual rarity
+ * colors (a card set to Immortal always glows Immortal; a pack with only
+ * Immortal + Common never flickers Legendary/Mythical/Rare/Uncommon). Empty/
+ * omitted → the curated DECOY_DEXES with cycled colors (fallback only).
+ */
 export function buildHReelStrip(
   winnerDex: number | null,
   winnerRarity: Rarity,

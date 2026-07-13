@@ -313,3 +313,23 @@ describe('buildPressStrip (press-launched spin strip)', () => {
     );
   });
 });
+
+describe('buildPressStrip edge cases', () => {
+  test('pool of 1: builds the full strip, duplicates allowed (bounded reroll)', () => {
+    const one = [{ dex: 25, rarity: 'Common' }] as const;
+    const press = buildPressStrip({
+      winnerDex: 6,
+      winnerRarity: 'Common',
+      winIndex: 30,
+      keepCells: 12,
+      seed: 1,
+      rngSeed: 7,
+      decoyCards: one,
+    });
+    expect(press).toHaveLength(30 + Math.ceil(9 / 2) + 2);
+    press.forEach((c, i) => {
+      if (i !== 30) expect(c.dex).toBe(25);
+    });
+    expect(press[30]!.dex).toBe(6);
+  });
+});

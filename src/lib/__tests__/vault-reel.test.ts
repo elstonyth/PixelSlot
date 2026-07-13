@@ -14,8 +14,15 @@ import {
   pressTravelPx,
   pressSpinOffset,
   blurStretch,
+  CARD_ASPECT,
 } from '@/lib/vault-reel';
-import { ITEM_H as REEL_ITEM_H, STRIP_LEN, reelTargetY } from '@/lib/reel';
+import {
+  ITEM_H as REEL_ITEM_H,
+  STRIP_LEN,
+  reelTarget,
+  reelTargetY,
+} from '@/lib/reel';
+import { HREEL_VISIBLE_CELLS } from '@/lib/hreel';
 
 const ITEM_H = 112;
 const TARGET = 3000;
@@ -351,5 +358,54 @@ describe('pressTravelPx / pressSpinOffset (press-launched spin)', () => {
         pressSpinOffset(tHandoff + 1, START, target, 0, 1, PITCH)) /
       d;
     expect(Math.abs(vAfter - vBefore)).toBeLessThan(vBefore * 0.1);
+  });
+});
+
+describe('press-spin paint bounds (regression: never paints past either strip end)', () => {
+  // Mirrors ReelStrip's exact arithmetic (cellSize -> pitch/winW, CELL_GAP=10,
+  // IDLE_BASE_INDEX=5, the winner-index inversion of reelTarget) and
+  // buildPressStrip's length formula (winIdx + ceil(visible/2) + 2). The old
+  // reel.test.ts "strip bounds" test guarded this invariant for the retired
+  // spinOffset/reelPaintX path; this is its press-spin successor. The margins
+  // are tight and load-bearing: settle overshoot (0.32 cells) vs the 2-cell
+  // tail margin on the right, windup (0.5 cells) vs IDLE_BASE_INDEX on the left.
+  const CELL_GAP = 10;
+  const IDLE_BASE_INDEX = 5;
+
+  test('window stays on the strip for every frame, start position, pool and column', () => {
+    for (const cellSize of [76, 96]) {
+      const pitch = Math.round(cellSize * CARD_ASPECT) + CELL_GAP;
+      const winW = pitch * HREEL_VISIBLE_CELLS;
+      const basePx = Math.round(
+        reelTarget(IDLE_BASE_INDEX, pitch, winW) - CELL_GAP / 2,
+      );
+      for (const poolLen of [1, 12, 50]) {
+        for (const [col, count] of [
+          [0, 1],
+          [0, 3],
+          [2, 3],
+        ] as const) {
+          // Sample the whole idle band, including just below the wrap boundary.
+          for (const frac of [0, 0.37, 0.99]) {
+            const startPx = basePx + frac * poolLen * pitch;
+            const travel = pressTravelPx(col, count, pitch);
+            const idx = Math.round(
+              (startPx + travel + winW / 2 + CELL_GAP / 2 - pitch / 2) / pitch,
+            );
+            const target = Math.round(
+              reelTarget(idx, pitch, winW) - CELL_GAP / 2,
+            );
+            const stripPx =
+              (idx + Math.ceil(HREEL_VISIBLE_CELLS / 2) + 2) * pitch;
+            const dur = columnDurationMs(col, count);
+            for (let t = 0; t <= dur + 32; t += 16) {
+              const px = pressSpinOffset(t, startPx, target, col, count, pitch);
+              expect(px).toBeGreaterThanOrEqual(0);
+              expect(px + winW).toBeLessThanOrEqual(stripPx);
+            }
+          }
+        }
+      }
+    }
   });
 });
