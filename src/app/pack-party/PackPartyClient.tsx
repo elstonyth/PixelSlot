@@ -573,8 +573,8 @@ export default function PackPartyClient() {
           Have cards to share?
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/60">
-          Host your own Pack Party, set the entry, and rip a pack live with
-          friends and fellow collectors. Everyone walks away with real cards.
+          Pack Party is coming soon. Host your own, set the entry, and rip a
+          pack live with friends and fellow collectors.
         </p>
         <button
           type="button"

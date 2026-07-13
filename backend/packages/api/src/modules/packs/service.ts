@@ -79,6 +79,11 @@ import { foldRanges, type VoucherRange } from './voucher-ranges';
 import { getCardStockByHandle } from './card-stock';
 import type { MedusaContainer } from '@medusajs/framework/types';
 
+// plan-033 playthrough basis: the "post-1b deposited" ledger predicate. Shared
+// between creditSummary and walletSummary so the two SQL scans can't drift.
+const DEPOSITED_PT_FILTER =
+  "reason = 'topup' AND amount > 0 AND external_funded_cents IS NOT NULL";
+
 // Postgres unique-violation detector (SQLSTATE 23505) for the commission
 // idempotency index. See settleOpen's commission catch for the exact semantics
 // — a 23505 there rejects the whole duplicate open; it does NOT silently no-op.
@@ -574,7 +579,7 @@ class PacksModuleService extends MedusaService({
         "  COALESCE(SUM(CASE WHEN reason = 'topup' AND amount > 0 THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS topup_cents, " +
         '  COALESCE(SUM(CASE WHEN amount < 0 THEN ROUND(-amount * 100) ELSE 0 END), 0)::bigint AS spend_cents, ' +
         "  COALESCE(SUM(CASE WHEN reason = 'pack_open' THEN -external_funded_cents ELSE 0 END), 0)::bigint AS ext_spend_cents, " +
-        "  COALESCE(SUM(CASE WHEN reason = 'topup' AND amount > 0 AND external_funded_cents IS NOT NULL THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS deposited_pt_cents " +
+        `  COALESCE(SUM(CASE WHEN ${DEPOSITED_PT_FILTER} THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS deposited_pt_cents ` +
         'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
       [customerId],
     );
@@ -2255,7 +2260,7 @@ class PacksModuleService extends MedusaService({
         }[]
       >(
         'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
-          "COALESCE(SUM(ROUND(amount * 100)) FILTER (WHERE reason = 'topup' AND amount > 0 AND external_funded_cents IS NOT NULL), 0)::bigint AS deposited_cents, " +
+          `COALESCE(SUM(ROUND(amount * 100)) FILTER (WHERE ${DEPOSITED_PT_FILTER}), 0)::bigint AS deposited_cents, ` +
           "COALESCE(SUM(-external_funded_cents) FILTER (WHERE reason = 'pack_open'), 0)::bigint AS used_cents " +
           'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
         [customerId],

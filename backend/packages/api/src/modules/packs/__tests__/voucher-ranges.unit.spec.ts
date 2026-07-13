@@ -48,7 +48,7 @@ describe('foldRanges', () => {
   });
   test('rejects amount above MAX_VOUCHER_MYR', () => {
     expect(() => foldRanges([{ from: 1, to: 100, amount_myr: MAX_VOUCHER_MYR + 0.01 }]))
-      .toThrow(/at most 2 decimals/i);
+      .toThrow(/between 0 and/i);
   });
   test('rejects non-cent-precise amount', () => {
     expect(() => foldRanges([{ from: 1, to: 100, amount_myr: 1.005 }]))

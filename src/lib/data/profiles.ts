@@ -89,7 +89,7 @@ export const getPublicProfile = cache(
         logger.error(`[profiles] schema validation failed for "${handle}"`);
         return { status: 'error' };
       }
-      return { status: 'ok', profile: profile as PublicProfile };
+      return { status: 'ok', profile: valid as unknown as PublicProfile };
     } catch (error) {
       // 404 = not a collector handle (e.g. a mock-pool username) — expected.
       if (error instanceof FetchError && error.status === 404) {
