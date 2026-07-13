@@ -27,18 +27,25 @@ try {
       }
       // Wait for a concrete readiness signal instead of network quiescence —
       // this page polls recent pulls (~4s) + prices (~60s), so networkidle never settles.
+      // ":has-text" is a substring match, so this covers the mobile dock's
+      // "Log in" as well as the desktop footer's "Log in to open" / "Open Pack".
+      // Default waitUntil state is "visible", so it settles on the on-screen CTA.
       await page
         .waitForSelector(
-          'button:has-text("Open Pack"), button:has-text("Log in to open")',
+          'button:has-text("Open Pack"), button:has-text("Log in")',
           {
             timeout: 15000,
           },
         )
         .catch(() => {});
       const m = await page.evaluate(() => {
-        const btn = [...document.querySelectorAll('button')].find((b) =>
-          /Open Pack|Log in to open/.test(b.textContent ?? ''),
-        );
+        // Filter to the visible CTA: the desktop footer button and the mobile
+        // dock button both live in the DOM, but only one is displayed per
+        // viewport (offsetParent is null when display:none). Measuring the
+        // hidden one returns top 0 and silently mis-reports reachability.
+        const btn = [...document.querySelectorAll('button')]
+          .filter((b) => b.offsetParent !== null)
+          .find((b) => /Open Pack|Log in/.test(b.textContent ?? ''));
         const stage = document.querySelector('main img[alt]');
         const pool = [...document.querySelectorAll('h2')].find((h) =>
           h.textContent?.includes('Cards in this pack'),
