@@ -141,6 +141,13 @@ export function buildPressStrip({
       : DECOY_DEXES.map((dex, i) => ({ dex, rarity: decoyRarity(i) }));
   // Enough tail past the winner to fill the window's right half when it lands.
   const length = winIndex + Math.ceil(HREEL_VISIBLE_CELLS / 2) + 2;
+  const safeWinner =
+    winnerDex !== null &&
+    Number.isInteger(winnerDex) &&
+    winnerDex >= 1 &&
+    winnerDex <= POKEDEX_MAX
+      ? winnerDex
+      : pool[0]!.dex;
   const rand = mulberry32(rngSeed);
   const cells: HReelCell[] = [];
   for (let i = 0; i < length; i++) {
@@ -150,22 +157,36 @@ export function buildPressStrip({
       cells.push({ dex: c.dex, rarity: c.rarity });
       continue;
     }
+    if (i === winIndex) {
+      // Pin the winner INLINE so the neighbor rerolls below can see it — a
+      // post-loop overwrite let winIndex±1 double the winner's sprite at the
+      // most-watched moment (the landing).
+      cells.push({ dex: safeWinner, rarity: winnerRarity });
+      continue;
+    }
     let c = pool[Math.floor(rand() * pool.length)]!;
     // Reroll immediate sprite repeats — a doubled cell reads as a stutter at
-    // speed. Bounded tries so a single-entry pool can't loop forever.
-    for (let tries = 0; tries < 4 && c.dex === cells[i - 1]?.dex; tries++) {
+    // speed. cells[i-1] covers the winner's RIGHT neighbor (the winner is
+    // already pushed); the LEFT neighbor must also reject the winner's dex
+    // ahead of time. Bounded tries so a single-entry pool can't loop forever.
+    const prevDex = cells[i - 1]?.dex;
+    const winnerAhead = i === winIndex - 1 ? safeWinner : undefined;
+    const blocked = (p: HReelCell) =>
+      p.dex === prevDex || p.dex === winnerAhead;
+    for (let tries = 0; tries < 4 && blocked(c); tries++) {
       c = pool[Math.floor(rand() * pool.length)]!;
+    }
+    if (blocked(c)) {
+      // Small pools can exhaust the tries; pick deterministically rather than
+      // give up — doubling the WINNER's sprite at the landing is the artifact
+      // that matters most, so prefer avoiding both, then at least the winner.
+      c =
+        pool.find((p) => !blocked(p)) ??
+        pool.find((p) => p.dex !== winnerAhead) ??
+        c;
     }
     cells.push({ dex: c.dex, rarity: c.rarity });
   }
-  const safeWinner =
-    winnerDex !== null &&
-    Number.isInteger(winnerDex) &&
-    winnerDex >= 1 &&
-    winnerDex <= POKEDEX_MAX
-      ? winnerDex
-      : pool[0]!.dex;
-  cells[winIndex] = { dex: safeWinner, rarity: winnerRarity };
   const tease = teaseRarity(winnerRarity);
   if (tease && winIndex - 1 >= 0) {
     cells[winIndex - 1] = { ...cells[winIndex - 1]!, rarity: tease };

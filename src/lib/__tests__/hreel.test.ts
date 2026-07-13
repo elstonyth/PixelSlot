@@ -315,6 +315,32 @@ describe('buildPressStrip (press-launched spin strip)', () => {
 });
 
 describe('buildPressStrip edge cases', () => {
+  test("the winner's neighbors never duplicate the winner's sprite", () => {
+    // Regression: the winner used to be overwritten AFTER the runway roll, so
+    // the anti-repeat reroll never saw it — winIndex±1 could double the
+    // winner's sprite right at the landing. Winner dex IS in the pool here, so
+    // without the inline pin + neighbor block this fails for some seeds.
+    const pool = [
+      { dex: 25, rarity: 'Common' },
+      { dex: 4, rarity: 'Rare' },
+      { dex: 7, rarity: 'Uncommon' },
+    ] as const;
+    for (let rngSeed = 1; rngSeed <= 40; rngSeed++) {
+      const press = buildPressStrip({
+        winnerDex: 25,
+        winnerRarity: 'Rare',
+        winIndex: 30,
+        keepCells: 12,
+        seed: 1,
+        rngSeed,
+        decoyCards: pool,
+      });
+      expect(press[30]!.dex).toBe(25);
+      expect(press[29]!.dex).not.toBe(25);
+      expect(press[31]!.dex).not.toBe(25);
+    }
+  });
+
   test('pool of 1: builds the full strip, duplicates allowed (bounded reroll)', () => {
     const one = [{ dex: 25, rarity: 'Common' }] as const;
     const press = buildPressStrip({
