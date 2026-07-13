@@ -29,6 +29,7 @@ import {
   priceNumber,
 } from '@/lib/packs-data';
 import { PublishedOddsList } from './OddsSheet';
+import { PoolByRarity } from './PoolByRarity';
 import { publishedOddsRows } from '@/lib/packs-format';
 import { useLiveRecentPulls } from '@/lib/use-recent-pulls';
 import { useTopUp } from '@/components/app-shell/TopUpProvider';
@@ -82,6 +83,11 @@ export default function PackDetailClient({
   const recent = useLiveRecentPulls(recentPulls);
 
   const claw = clawMachine(active);
+  // Baked packs get a full-bleed claw-machine render (light studio bg is part
+  // of the art); backend-created packs fall back to their uploaded pack photo,
+  // which must NOT sit in the light stage (white-bg photo pillarboxed in a
+  // light box reads as a broken cutout on the dark shell).
+  const hasMachineRender = claw.webp !== active.image;
   const priceNum = priceNumber(active.price);
 
   // Top Hits come from the backend prize pool (highest market_value) — the
@@ -142,23 +148,24 @@ export default function PackDetailClient({
         All packs
       </Link>
 
-      {/* ===== MAIN: claw machine (left) + configurator (right) ===== */}
+      {/* ===== MAIN: stage + configurator + card sections =====
+          Mobile order (single column) is stage → configurator → Top Hits →
+          pool, so buy/spin is one small swipe away instead of below the whole
+          card pool; on lg the configurator becomes the sticky right column. */}
       <div className="grid items-start gap-6 lg:grid-cols-[1.55fr_1fr]">
-        {/* ---- LEFT column ---- */}
-        <div className="flex flex-col gap-6">
-          {/* Claw machine stage */}
+        {/* ---- Stage ---- */}
+        {hasMachineRender ? (
+          /* Baked claw-machine render — full-bleed scene, the light studio bg
+             is part of the art, so the light gradient stage blends with it.
+             ANIMATED AVIF (the claw slides left↔right INSIDE the file) in a
+             FIXED Image (unoptimized, to keep the animation); packs without an
+             animated source fall back to the static rebranded webp. */
           <div className="relative flex aspect-[36/25] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-200 to-zinc-400">
             {active.boost && (
               <span className="absolute left-4 top-4 z-20 rounded-md bg-buyback px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
                 +{active.buybackPercent ?? FLAT_BUYBACK_PERCENT}% Buyback Boost
               </span>
             )}
-            {/* Claw-machine render. Like the live site this is an ANIMATED AVIF (the claw slides
-                left↔right INSIDE the file) rendered in a FIXED Image (unoptimized, to keep the
-                animation) — no whole-image float. The full
-                Pokenic rebrand is baked frame-by-frame into the asset: the banner wordmark, the
-                placard ("pokenic claw.") and the base url ("pokenic.com"). Packs without an animated
-                source fall back to the static rebranded webp. */}
             <Image
               key={active.id}
               src={claw.anim ?? claw.webp}
@@ -170,61 +177,32 @@ export default function PackDetailClient({
               className="z-10 object-contain"
             />
           </div>
+        ) : (
+          /* Uploaded pack photo — compact product shot on the dark surface
+             (catalog idiom): rounded so a white-background photo reads as a
+             deliberate product card, short enough on phones that the buy
+             panel stays in reach. */
+          <div className="relative flex items-center justify-center rounded-2xl border border-white/10 bg-neutral-900 py-6 sm:py-10">
+            {active.boost && (
+              <span className="absolute left-4 top-4 z-20 rounded-md bg-buyback px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                +{active.buybackPercent ?? FLAT_BUYBACK_PERCENT}% Buyback Boost
+              </span>
+            )}
+            <Image
+              key={active.id}
+              src={claw.webp}
+              alt={active.name}
+              width={205}
+              height={360}
+              priority
+              unoptimized
+              className="h-44 w-auto max-w-[80%] rounded-lg object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.5)] sm:h-64"
+            />
+          </div>
+        )}
 
-          {/* Top Hits — admin-ordered (1 = leftmost). Hidden entirely when the
-              admin picked none: an un-curated pack must not fake a curated
-              section (the old fallback showed the 5 highest-value cards). */}
-          {topHits.length > 0 && (
-            <Reveal as="section">
-              <div className="mb-1 flex items-center gap-2">
-                <Flame className="h-4 w-4 text-chase" aria-hidden />
-                <h2 className="font-heading text-lg font-bold tracking-tight text-white">
-                  Top Hits
-                </h2>
-              </div>
-              <p className="mb-3 text-[13px] text-white/70">
-                The top items available in this pack.
-              </p>
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                {topHits.map((c) => (
-                  <CardTile
-                    key={c.id}
-                    card={c}
-                    onOpen={(card) => setOpenCard(toSeed(card))}
-                  />
-                ))}
-              </div>
-            </Reveal>
-          )}
-
-          {/* All cards in this pack — the full public prize pool, value-sorted
-              (every card with its live price). */}
-          {pool.length > 0 && (
-            <Reveal as="section">
-              <h2 className="mb-1 font-heading text-lg font-bold tracking-tight text-white">
-                Cards in this pack
-              </h2>
-              <p className="mb-3 text-[13px] text-white/70">
-                Every card in the pool and its current market price.
-              </p>
-              {/* Mobile-first: 3-up like Top Hits — 2-up slabs filled the
-                  viewport and made the pool feel endless to scroll. */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-5">
-                {pool.map((c) => (
-                  <CardTile
-                    key={c.id}
-                    card={c}
-                    sizes="(max-width: 1024px) 30vw, 200px"
-                    onOpen={(card) => setOpenCard(toSeed(card))}
-                  />
-                ))}
-              </div>
-            </Reveal>
-          )}
-        </div>
-
-        {/* ---- RIGHT column: configurator ---- */}
-        <aside className="lg:sticky lg:top-20">
+        {/* ---- Configurator (mobile: right after the stage; lg: sticky right column) ---- */}
+        <aside className="lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           {/* The whole configurator fits without an internal scrollbar (like the
               live site): compact 3-col pack grid, no max-height clamp — on
               mobile the page itself scrolls, on desktop it fits the viewport. */}
@@ -435,6 +413,56 @@ export default function PackDetailClient({
             </div>
           </div>
         </aside>
+
+        {/* ---- Card sections (mobile: below the configurator; lg: under the stage) ----
+            min-w-0: the pool rails hold nowrap prices whose min-content width
+            would otherwise stretch this grid item past the viewport. */}
+        <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-start-2">
+          {/* Top Hits — admin-ordered (1 = leftmost). Hidden entirely when the
+              admin picked none: an un-curated pack must not fake a curated
+              section (the old fallback showed the 5 highest-value cards). */}
+          {topHits.length > 0 && (
+            <Reveal as="section">
+              <div className="mb-1 flex items-center gap-2">
+                <Flame className="h-4 w-4 text-chase" aria-hidden />
+                <h2 className="font-heading text-lg font-bold tracking-tight text-white">
+                  Top Hits
+                </h2>
+              </div>
+              <p className="mb-3 text-[13px] text-white/70">
+                The top items available in this pack.
+              </p>
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                {topHits.map((c) => (
+                  <CardTile
+                    key={c.id}
+                    card={c}
+                    onOpen={(card) => setOpenCard(toSeed(card))}
+                  />
+                ))}
+              </div>
+            </Reveal>
+          )}
+
+          {/* All cards in this pack — the full public prize pool as rarity
+              shelves (rarest first, per-tier pull chance when published, each
+              tier one swipeable rail so big pools stay one row per tier). */}
+          {pool.length > 0 && (
+            <Reveal as="section">
+              <h2 className="mb-1 font-heading text-lg font-bold tracking-tight text-white">
+                Cards in this pack
+              </h2>
+              <p className="mb-3 text-[13px] text-white/70">
+                Every card and its current market price, rarest first.
+              </p>
+              <PoolByRarity
+                pool={pool}
+                tierChances={liveDetail?.publishedOdds?.tiers ?? null}
+                onOpen={(card) => setOpenCard(toSeed(card))}
+              />
+            </Reveal>
+          )}
+        </div>
       </div>
 
       {/* ===== Pull Odds + Recent Pulls (below the fold) =====
