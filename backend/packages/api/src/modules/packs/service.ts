@@ -79,6 +79,11 @@ import { foldRanges, type VoucherRange } from './voucher-ranges';
 import { getCardStockByHandle } from './card-stock';
 import type { MedusaContainer } from '@medusajs/framework/types';
 
+// plan-033 playthrough basis: the "post-1b deposited" ledger predicate. Shared
+// between creditSummary and walletSummary so the two SQL scans can't drift.
+const DEPOSITED_PT_FILTER =
+  "reason = 'topup' AND amount > 0 AND external_funded_cents IS NOT NULL";
+
 // Postgres unique-violation detector (SQLSTATE 23505) for the commission
 // idempotency index. See settleOpen's commission catch for the exact semantics
 // — a 23505 there rejects the whole duplicate open; it does NOT silently no-op.
@@ -551,6 +556,12 @@ class PacksModuleService extends MedusaService({
     topupTotal: number;
     spendTotal: number;
     externalFundedSpendTotal: number;
+    // Playthrough-basis deposited total (MYR): topups that carry a basis column
+    // (external_funded_cents IS NOT NULL), grandfathering pre-1b deposits out —
+    // the SAME filter walletSummary's deposited_cents uses (plan 033). This is
+    // NOT topupTotal (which counts every positive topup). walletSummary reuses
+    // this so the playthrough basis is defined in exactly one SQL query.
+    depositedPlaythroughTotal: number;
   }> {
     const em = (sharedContext.transactionManager ??
       sharedContext.manager) as unknown as LedgerSqlManager;
@@ -560,13 +571,15 @@ class PacksModuleService extends MedusaService({
         topup_cents: string | null;
         spend_cents: string | null;
         ext_spend_cents: string | null;
+        deposited_pt_cents: string | null;
       }[]
     >(
       'SELECT ' +
         '  COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
         "  COALESCE(SUM(CASE WHEN reason = 'topup' AND amount > 0 THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS topup_cents, " +
         '  COALESCE(SUM(CASE WHEN amount < 0 THEN ROUND(-amount * 100) ELSE 0 END), 0)::bigint AS spend_cents, ' +
-        "  COALESCE(SUM(CASE WHEN reason = 'pack_open' THEN -external_funded_cents ELSE 0 END), 0)::bigint AS ext_spend_cents " +
+        "  COALESCE(SUM(CASE WHEN reason = 'pack_open' THEN -external_funded_cents ELSE 0 END), 0)::bigint AS ext_spend_cents, " +
+        `  COALESCE(SUM(CASE WHEN ${DEPOSITED_PT_FILTER} THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS deposited_pt_cents ` +
         'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
       [customerId],
     );
@@ -576,6 +589,7 @@ class PacksModuleService extends MedusaService({
       topupTotal: Number(r?.topup_cents ?? 0) / 100,
       spendTotal: Number(r?.spend_cents ?? 0) / 100,
       externalFundedSpendTotal: Number(r?.ext_spend_cents ?? 0) / 100,
+      depositedPlaythroughTotal: Number(r?.deposited_pt_cents ?? 0) / 100,
     };
   }
 
@@ -2199,6 +2213,14 @@ class PacksModuleService extends MedusaService({
   @InjectManager()
   async walletSummary(
     customerId: string,
+    // Optional pre-computed inputs from a caller that already scanned this
+    // customer's ledger (credits/route.ts threads creditSummary's scalars) so
+    // the balance/deposited/used scan runs once per request instead of twice.
+    // Units: balance in MYR, depositedCents/usedCents in integer cents — the
+    // same units this method's own scan produces. Omitted → self-scan (direct
+    // callers and module specs are unchanged). lockedCommission/nextUnlock/
+    // isFrozen always query regardless (they're not in creditSummary).
+    precomputed?: { balance: number; depositedCents: number; usedCents: number },
     @MedusaContext() sharedContext: Context = {},
   ): Promise<{
     balance: number;
@@ -2219,22 +2241,34 @@ class PacksModuleService extends MedusaService({
     // deposit-funded spend only; commission/buyback/adjustment-funded opens
     // contribute 0, and a reversed open restores its basis via the mirror
     // row's −originalExt. Buyback / promo / commission rows touch neither sum.
-    const balRows = await em.execute<
-      {
-        balance_cents: string | null;
-        deposited_cents: string | null;
-        used_cents: string | null;
-      }[]
-    >(
-      'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
-        "COALESCE(SUM(ROUND(amount * 100)) FILTER (WHERE reason = 'topup' AND amount > 0), 0)::bigint AS deposited_cents, " +
-        "COALESCE(SUM(-external_funded_cents) FILTER (WHERE reason = 'pack_open'), 0)::bigint AS used_cents " +
-        'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
-      [customerId],
-    );
-    const balance = Number(balRows[0]?.balance_cents ?? 0) / 100;
-    const depositedCents = Number(balRows[0]?.deposited_cents ?? 0);
-    const usedCents = Number(balRows[0]?.used_cents ?? 0);
+    // Pre-1b topup rows (external_funded_cents IS NULL) are grandfathered out of
+    // deposited: they predate the basis column, so their opens' spend is equally
+    // invisible to used — counting them would lock those deposits forever.
+    let balance: number;
+    let depositedCents: number;
+    let usedCents: number;
+    if (precomputed) {
+      balance = precomputed.balance;
+      depositedCents = precomputed.depositedCents;
+      usedCents = precomputed.usedCents;
+    } else {
+      const balRows = await em.execute<
+        {
+          balance_cents: string | null;
+          deposited_cents: string | null;
+          used_cents: string | null;
+        }[]
+      >(
+        'SELECT COALESCE(SUM(ROUND(amount * 100)), 0)::bigint AS balance_cents, ' +
+          `COALESCE(SUM(ROUND(amount * 100)) FILTER (WHERE ${DEPOSITED_PT_FILTER}), 0)::bigint AS deposited_cents, ` +
+          "COALESCE(SUM(-external_funded_cents) FILTER (WHERE reason = 'pack_open'), 0)::bigint AS used_cents " +
+          'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
+        [customerId],
+      );
+      balance = Number(balRows[0]?.balance_cents ?? 0) / 100;
+      depositedCents = Number(balRows[0]?.deposited_cents ?? 0);
+      usedCents = Number(balRows[0]?.used_cents ?? 0);
+    }
 
     // Locked = positive commission credits that are pending-unmatured OR
     // suspended. Reversed/available commissions are excluded (mirroring

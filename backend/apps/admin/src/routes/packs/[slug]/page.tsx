@@ -601,6 +601,8 @@ const PackOddsEditorPage = () => {
                       <img
                         src={resolveImageUrl(c.slab_image || c.image)}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="h-9 w-7 shrink-0 rounded object-contain"
                       />
                       <div className="flex flex-1 flex-col">
