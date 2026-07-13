@@ -2,23 +2,25 @@
 
 import { useEffect } from 'react';
 
+// One source of truth for the dismiss timer AND the progress bar's
+// animation-duration (the inline style below overrides the class fallback).
+const TOAST_MS = 4000;
+
 // Transient top-of-screen confirmation (e.g. "Shipping order created
 // successfully!"). Slides in under the header, auto-dismisses after
-// `duration`, and the shrinking green bar shows the time remaining.
+// TOAST_MS, and the shrinking green bar shows the time remaining.
 // Distinct from the vault's inline `notice`, which persists in the page flow.
 export function SuccessToast({
   message,
   onClose,
-  duration = 4000,
 }: {
   message: string;
   onClose: () => void;
-  duration?: number;
 }) {
   useEffect(() => {
-    const t = setTimeout(onClose, duration);
+    const t = setTimeout(onClose, TOAST_MS);
     return () => clearTimeout(t);
-  }, [onClose, duration]);
+  }, [onClose]);
 
   return (
     <div
@@ -56,7 +58,7 @@ export function SuccessToast({
       <span
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-buyback-fg motion-safe:animate-[toastBar_4s_linear_forwards]"
-        style={{ animationDuration: `${duration}ms` }}
+        style={{ animationDuration: `${TOAST_MS}ms` }}
       />
     </div>
   );
