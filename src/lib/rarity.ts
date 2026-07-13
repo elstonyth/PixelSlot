@@ -15,7 +15,8 @@ export const RARITY_RGB: Record<Rarity, string> = {
   Common: '163, 163, 163', // neutral-400
 };
 
-/** Rarities high→low — drives filter-chip order. */
+/** Canonical rarity tiers, high→low — drives filter-chip order + display/iteration
+ *  order. Single source; `RARITIES` in `@/lib/packs-format` re-exports this. */
 export const RARITY_ORDER: readonly Rarity[] = [
   'Immortal',
   'Legendary',

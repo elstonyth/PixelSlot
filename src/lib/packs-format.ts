@@ -7,17 +7,12 @@
  * drift. Pure + isomorphic (no server-only imports), safe to import anywhere.
  */
 import type { Rarity } from '@/lib/packs-data';
+import { RARITY_ORDER } from '@/lib/rarity';
 import { money } from './format';
 
-/** Canonical rarity tiers, rarest-first (display + iteration order). */
-export const RARITIES: Rarity[] = [
-  'Immortal',
-  'Legendary',
-  'Mythical',
-  'Rare',
-  'Uncommon',
-  'Common',
-];
+/** Rarity tiers, rarest-first (display + iteration order).
+ *  Re-exported from `@/lib/rarity` (RARITY_ORDER is the canonical source). */
+export const RARITIES: readonly Rarity[] = RARITY_ORDER;
 
 const RARITY_SET = new Set<string>(RARITIES);
 
