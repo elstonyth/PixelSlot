@@ -135,8 +135,14 @@ One `it('ledger conserves across topup → open → buyback', ...)` that after
      (the HTTP view agrees with the ledger).
    - `walletSummary.available === balance − locked` when not frozen, and
      `withdrawable ≤ available`.
-4. External-basis conservation: `sumExt = Σ (row.external_funded_cents ?? 0)`
-   satisfies `0 ≤ sumExt ≤ Σ external over topup rows`, and
+4. External-basis conservation — **exact, not an inequality** (amended
+   2026-07-13 per CodeRabbit review of PR #143; the original
+   `0 ≤ sumExt ≤ Σ topup external` bound could pass if a buyback/other row
+   incorrectly carried external cents):
+   `sumExt = Σ (row.external_funded_cents ?? 0)` must EQUAL
+   `Σ external over topup rows + Σ external over pack_open rows`;
+   every row whose reason is neither `topup` nor `pack_open` must carry
+   `external_funded_cents` of 0 or NULL; and
    `creditSummary().externalFundedSpendTotal * 100 === Σ (−external) over pack_open rows`.
 
 The flow: (a) register + assert conserved (empty ledger, balance 0);
