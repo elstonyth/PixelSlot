@@ -5,16 +5,19 @@ import { connectTestRedisOrFail, unwrapResponse } from "./utils";
 
 jest.setTimeout(240 * 1000);
 
-// Limits sized for this harness. In-app opens are fast (~15ms warm), so a
-// short burst window still comfortably holds the 3 sequential opens the burst
-// test fires — and keeping it short means the "let the burst window drain"
-// wait below is ~1.5s instead of the 15s+ it used to cost every CI run. The
+// Limits sized for this harness. In-app opens are fast (~15ms warm), so the
+// 3 sequential opens the burst test fires span only ~150ms — but the window is
+// kept deliberately WIDER than that span (4s) so the burst assertion is NOT
+// coupled to per-request latency: a single slow open under CI load must not be
+// able to push the span past the window and stop the 4th open from tripping the
+// limit. It's still far below the old 15s, so the "let the burst window drain"
+// wait below is ~4.5s instead of the 15s+ it used to cost every CI run. The
 // sustained window stays long (120s) so all opens across the whole lifecycle
 // test remain inside it. BURST_WINDOW_MS is the single source of truth: the
 // env value, the drain sleep, and the retry-after bound all derive from it so
 // they can't drift.
 // The middleware reads these at boot (see src/api/utils/rate-limit.ts).
-const BURST_WINDOW_MS = 1000;
+const BURST_WINDOW_MS = 4000;
 const RATE_ENV = {
   PACK_OPEN_RATE_BURST_LIMIT: "3",
   PACK_OPEN_RATE_BURST_WINDOW_MS: String(BURST_WINDOW_MS),
