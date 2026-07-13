@@ -1,5 +1,16 @@
 # Plan 030: Dependency hygiene — fix the phantom lodash pin (backend) and drop the unused @base-ui/react (storefront)
 
+> **FINAL DISPOSITION (2026-07-13): the lodash half of this plan is REJECTED —
+> do not execute Steps 1–2.** Execution-time verification proved lodash
+> 4.17.23 / 4.18.0 / 4.18.1 are genuine upstream releases (registry.npmjs.org
+> publish dates 2026-01-21 / 03-31 / 04-01, matching lodash GitHub tags); the
+> "phantom version" premise was stale training-data knowledge. The `^4.18.1`
+> pin and `backend/yarn.lock` are legitimate as-is — do NOT modify
+> `backend/package.json` or regenerate the lock, and do NOT treat 4.18.1 /
+> 4.17.23 in the lock as failures. The only executed scope was Step 3
+> (the `@base-ui/react` removal), DONE in commit `a477a613`. Steps 1–2 below
+> are retained as the historical record of the original (refuted) finding.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
