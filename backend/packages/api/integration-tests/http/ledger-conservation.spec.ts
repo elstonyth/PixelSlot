@@ -210,9 +210,11 @@ medusaIntegrationTestRunner({
         }
         expect(wallet.withdrawable).toBeLessThanOrEqual(wallet.available + 1e-9);
 
-        // External-basis conservation, all in SEN. sumExt is bounded below by 0
-        // and above by the external added on topup rows — opens only ever spend
-        // it back down, buyback/adjustment never touch it.
+        // External-basis EXACT conservation, all in SEN — non-topup/non-open
+        // rows must carry zero external basis. (An inequality bound here would
+        // let a buyback/adjustment row that incorrectly carried positive
+        // external_funded_cents slip through inside the headroom —
+        // CodeRabbit, PR #143.)
         const sumExtSen = rows.reduce(
           (acc, r) => acc + (r.external_funded_cents ?? 0),
           0,
@@ -222,19 +224,27 @@ medusaIntegrationTestRunner({
             acc + (r.reason === "topup" ? r.external_funded_cents ?? 0 : 0),
           0,
         );
-        expect(sumExtSen).toBeGreaterThanOrEqual(0);
-        expect(sumExtSen).toBeLessThanOrEqual(topupExtSen);
+        // Negative: pack_open rows snapshot the consumed sen sign-flipped.
+        const packOpenExtSen = rows.reduce(
+          (acc, r) =>
+            acc + (r.reason === "pack_open" ? r.external_funded_cents ?? 0 : 0),
+          0,
+        );
+        expect(sumExtSen).toBeGreaterThanOrEqual(0); // cheap sanity floor
+        // Integer sen, so exact equality is safe (no float rounding).
+        expect(sumExtSen).toBe(topupExtSen + packOpenExtSen);
+        for (const r of rows) {
+          if (r.reason !== "topup" && r.reason !== "pack_open") {
+            expect(r.external_funded_cents ?? 0).toBe(0);
+          }
+        }
 
         // The aggregate externalFundedSpendTotal equals Σ(−external) over the
         // pack_open rows (the service SQL vs. the same rows folded in JS).
-        const packOpenSpendSen = rows.reduce(
-          (acc, r) =>
-            acc +
-            (r.reason === "pack_open" ? -(r.external_funded_cents ?? 0) : 0),
-          0,
-        );
         expect(Math.round(summary.externalFundedSpendTotal * 100)).toBe(
-          packOpenSpendSen,
+          // + 0 normalizes -0 → 0: with no pack_open rows yet the sum is +0,
+          // its negation is -0, and toBe (Object.is) treats -0 !== 0.
+          -packOpenExtSen + 0,
         );
       };
 
