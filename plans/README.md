@@ -739,19 +739,19 @@ profile URL (035).
 
 ### Round-5 plans
 
-| Plan | Title                                                                    | Priority | Effort | Depends on                       | Status |
-| ---- | ------------------------------------------------------------------------ | -------- | ------ | -------------------------------- | ------ |
-| 033  | Grandfather pre-1b deposits in the playthrough withdrawal gate           | P1       | S–M    | —                                | TODO   |
-| 034  | Verify + fence the Mercur seller-registration / vendor surface           | P1       | S+S    | —                                | TODO   |
-| 035  | Storefront honesty — leaderboard prizes, profile error state, pack-party | P2       | S–M    | —                                | TODO   |
-| 036  | Bound the daily-reward voucher amount server-side                        | P2       | S      | —                                | TODO   |
-| 037  | Docs & env truth round 3 — DESIGN brand, CLAUDE.md drift, env template   | P2       | S      | (coord. 034 on env vendor lines) | TODO   |
-| 038  | Fold the redundant second ledger scan out of /store/credits              | P2       | S      | 033                              | TODO   |
-| 039  | Test-suite hygiene — real-timer sleep, seed guard, orphan-id, a11y gate  | P2       | S–M    | —                                | TODO   |
-| 040  | WalletSchema graceful degrade + contract-test coverage                   | P2       | S      | —                                | TODO   |
-| 041  | Dedupe rarity arrays + lock the money-display mirror with a parity test  | P2       | S–M    | —                                | TODO   |
-| 042  | Lazy-load admin card images + fix stop-hook mojibake banner              | P3       | S      | —                                | TODO   |
-| 043  | Make reset-admin-password.ts recoverable (operator-applied; untracked)   | P3       | S      | —                                | TODO   |
+| Plan | Title                                                                    | Priority | Effort | Depends on                       | Status                                                                                                                                                                                                  |
+| ---- | ------------------------------------------------------------------------ | -------- | ------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 033  | Grandfather pre-1b deposits in the playthrough withdrawal gate           | P1       | S–M    | —                                | DONE (advisor/round5-execution; PR #144)                                                                                                                                                                |
+| 034  | Verify + fence the Mercur seller-registration / vendor surface           | P1       | S+S    | —                                | DONE — investigation downgraded severity: self-registration only yields a PENDING_APPROVAL stub (store visibility needs admin-gated OPEN); fence removes unaudited surface + restores framework default |
+| 035  | Storefront honesty — leaderboard prizes, profile error state, pack-party | P2       | S–M    | —                                | DONE (prize rail removed; profile error state; pack-party disclosed)                                                                                                                                    |
+| 036  | Bound the daily-reward voucher amount server-side                        | P2       | S      | —                                | DONE (MAX_VOUCHER_MYR=10_000)                                                                                                                                                                           |
+| 037  | Docs & env truth round 3 — DESIGN brand, CLAUDE.md drift, env template   | P2       | S      | (coord. 034 on env vendor lines) | DONE for DESIGN.md + env template; **CLAUDE.md edits are an operator follow-up** (gitignored — not committable from a worktree)                                                                         |
+| 038  | Fold the redundant second ledger scan out of /store/credits              | P2       | S      | 033                              | DONE (single scan; +revision to fix the credit-balance.unit shape assertions it regressed)                                                                                                              |
+| 039  | Test-suite hygiene — real-timer sleep, seed guard, orphan-id, a11y gate  | P2       | S–M    | —                                | DONE (sleep 103s→46s; seed guard; real-Pull reward-draw; a11y gate wired nightly)                                                                                                                       |
+| 040  | WalletSchema graceful degrade + contract-test coverage                   | P2       | S      | —                                | DONE                                                                                                                                                                                                    |
+| 041  | Dedupe rarity arrays + lock the money-display mirror with a parity test  | P2       | S–M    | —                                | DONE (+revision: usdToMyr now mirrors displayMarketPrice's negative-usd guard)                                                                                                                          |
+| 042  | Lazy-load admin card images + fix stop-hook mojibake banner              | P3       | S      | —                                | DONE for the lazy-load images; **stop-verify.js mojibake is an operator follow-up** (gitignored)                                                                                                        |
+| 043  | Make reset-admin-password.ts recoverable (operator-applied; untracked)   | P3       | S      | —                                | OPERATOR-APPLIED — untracked file, not worktree-dispatchable; fix handed to the operator                                                                                                                |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (reason)
 
