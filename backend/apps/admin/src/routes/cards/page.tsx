@@ -386,6 +386,8 @@ const GachaCardsPage = () => {
                       <img
                         src={resolveImageUrl(c.slab_image || c.image)}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="h-10 w-8 shrink-0 rounded object-contain"
                       />
                       <div className="flex flex-col">

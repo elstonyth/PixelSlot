@@ -989,6 +989,8 @@ const BoxesTab = ({ dirtyRef }: { dirtyRef: MutableRefObject<boolean> }) => {
                       <img
                         src={resolveImageUrl(c.image)}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="h-9 w-7 shrink-0 rounded object-contain"
                       />
                       <span className="flex-1 truncate text-sm font-medium">
