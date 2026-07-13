@@ -381,9 +381,11 @@ function PartyCard({
               Ended
             </button>
           ) : (
+            // Demo: no real party backend exists — the control is inert.
             <button
               type="button"
-              className="mt-auto w-full rounded-xl bg-neutral-200 py-2 text-xs font-semibold text-neutral-950 transition-colors duration-200 hover:bg-white"
+              disabled
+              className="mt-auto w-full cursor-not-allowed rounded-xl bg-neutral-200/60 py-2 text-xs font-semibold text-neutral-950/60"
             >
               Join Party
             </button>
@@ -449,12 +451,21 @@ export default function PackPartyClient() {
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-buyback" />
               = Entry &lt; Avg (great deal!)
             </Reveal>
+            <Reveal
+              as="p"
+              delay={200}
+              className="mt-4 text-[11px] text-white/55"
+            >
+              Demo preview — Pack Party isn&apos;t live yet. The parties below
+              are illustrative and the controls are inactive.
+            </Reveal>
           </div>
 
           <Reveal delay={120} className="shrink-0">
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-2xl bg-buyback px-6 py-3 text-sm font-semibold text-white shadow-lg transition-opacity duration-300 hover:opacity-90"
+              disabled
+              className="inline-flex cursor-not-allowed items-center justify-center rounded-2xl bg-buyback/60 px-6 py-3 text-sm font-semibold text-white/70 shadow-lg"
             >
               Create Party
             </button>
@@ -487,7 +498,8 @@ export default function PackPartyClient() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors duration-200 hover:border-white/20 hover:text-white"
+            disabled
+            className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/40"
           >
             Players Needed (Low to High)
             <ChevronDown className="h-3.5 w-3.5" aria-hidden />
@@ -496,14 +508,16 @@ export default function PackPartyClient() {
             <button
               type="button"
               aria-label="Grid view"
-              className="rounded-lg bg-white/10 p-1.5 text-white"
+              disabled
+              className="cursor-not-allowed rounded-lg bg-white/10 p-1.5 text-white"
             >
               <LayoutGrid className="h-4 w-4" aria-hidden />
             </button>
             <button
               type="button"
               aria-label="List view"
-              className="rounded-lg p-1.5 text-white/50 transition-colors duration-200 hover:text-white/80"
+              disabled
+              className="cursor-not-allowed rounded-lg p-1.5 text-white/40"
             >
               <List className="h-4 w-4" aria-hidden />
             </button>
@@ -542,7 +556,8 @@ export default function PackPartyClient() {
         <button
           type="button"
           aria-label="Next page"
-          className="flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[13px] font-medium text-white/80 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+          disabled
+          className="flex h-9 cursor-not-allowed items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-[13px] font-medium text-white/40"
         >
           Next
           <ChevronRight className="h-4 w-4" aria-hidden />
@@ -563,7 +578,8 @@ export default function PackPartyClient() {
         </p>
         <button
           type="button"
-          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-buyback px-8 py-3 text-sm font-semibold text-white shadow-lg transition-opacity duration-300 hover:opacity-90"
+          disabled
+          className="mt-6 inline-flex cursor-not-allowed items-center justify-center rounded-2xl bg-buyback/60 px-8 py-3 text-sm font-semibold text-white/70 shadow-lg"
         >
           Create Your Own Party
         </button>
