@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 // One source of truth for the dismiss timer AND the progress bar's
 // animation-duration (the inline style below overrides the class fallback).
@@ -17,10 +17,17 @@ export function SuccessToast({
   message: string;
   onClose: () => void;
 }) {
+  // Latest-ref so an unstable onClose (an inline arrow in the parent) can't
+  // restart the dismiss timer on re-render — the CSS progress bar wouldn't
+  // restart with it, and the two would desync.
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    const t = setTimeout(onClose, TOAST_MS);
+    onCloseRef.current = onClose;
+  });
+  useEffect(() => {
+    const t = setTimeout(() => onCloseRef.current(), TOAST_MS);
     return () => clearTimeout(t);
-  }, [onClose]);
+  }, []);
 
   return (
     <div
