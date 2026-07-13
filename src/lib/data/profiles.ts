@@ -22,7 +22,12 @@ import {
 } from '@/lib/data/schemas';
 
 export type ProfileRarity =
-  'Immortal' | 'Legendary' | 'Mythical' | 'Rare' | 'Uncommon' | 'Common';
+  | 'Immortal'
+  | 'Legendary'
+  | 'Mythical'
+  | 'Rare'
+  | 'Uncommon'
+  | 'Common';
 
 export interface PublicProfileCard {
   handle: string;
@@ -63,23 +68,40 @@ export interface PublicProfile {
 }
 
 /**
- * The public profile for a handle, or null when the handle is unknown (the
- * page then falls back to the mock pool) or the backend is unreachable.
- * `cache()`-wrapped so `generateMetadata` and the page share one round-trip.
+ * Result of a public-profile lookup. `notfound` (404 / unknown handle) and
+ * `error` (5xx, network, schema-invalid) are distinct on purpose: the page
+ * falls back to the deterministic mock pool for `notfound` (a legacy-handle
+ * product choice) but must NOT do so for `error` — a backend outage on a real
+ * handle would otherwise render a fabricated persona under the real user's name.
+ */
+export type ProfileResult =
+  | { status: 'ok'; profile: PublicProfile }
+  | { status: 'notfound' }
+  | { status: 'error' };
+
+/**
+ * The public profile for a handle. `cache()`-wrapped so `generateMetadata` and
+ * the page share one round-trip.
  */
 export const getPublicProfile = cache(
-  async (handle: string): Promise<PublicProfile | null> => {
+  async (handle: string): Promise<ProfileResult> => {
     try {
       const profile = await sdk.client.fetch<PublicProfile>(
         `/store/profiles/${encodeURIComponent(handle)}`,
       );
       const valid = parseOne(PublicProfileSchema, profile);
-      return valid ? (profile as PublicProfile) : null;
+      if (!valid) {
+        logger.error(`[profiles] schema validation failed for "${handle}"`);
+        return { status: 'error' };
+      }
+      return { status: 'ok', profile: profile as PublicProfile };
     } catch (error) {
       // 404 = not a collector handle (e.g. a mock-pool username) — expected.
-      if (error instanceof FetchError && error.status === 404) return null;
+      if (error instanceof FetchError && error.status === 404) {
+        return { status: 'notfound' };
+      }
       logger.error(`[profiles] failed to load profile "${handle}":`, error);
-      return null;
+      return { status: 'error' };
     }
   },
 );
