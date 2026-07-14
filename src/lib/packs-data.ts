@@ -131,12 +131,7 @@ export function priceNumber(price: string): number {
 // ---------------------------------------------------------------------------
 
 export type Rarity =
-  | 'Immortal'
-  | 'Legendary'
-  | 'Mythical'
-  | 'Rare'
-  | 'Uncommon'
-  | 'Common';
+  'Immortal' | 'Legendary' | 'Mythical' | 'Rare' | 'Uncommon' | 'Common';
 export type PackCard = {
   id: string;
   name: string;
