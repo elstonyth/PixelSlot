@@ -43,7 +43,7 @@ export default function AppHeader() {
               alt="Polycards"
               width={128}
               height={44}
-              className="h-7 w-auto object-contain lg:h-9"
+              className="h-6 w-auto object-contain lg:h-7"
             />
           </Link>
 
