@@ -46,7 +46,6 @@ export default function HeroBoard({
             mp4="/images/polycards/shop-night.mp4"
             webm="/images/polycards/shop-night.webm"
             poster="/images/polycards/shop-night-poster.webp"
-            label="The Polycards shop at night — customers browsing, a cashier at the counter"
             className="absolute inset-0 h-full w-full"
           />
         </div>

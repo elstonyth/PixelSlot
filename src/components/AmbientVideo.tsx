@@ -13,19 +13,21 @@ import { usePrefersReducedMotion } from '@/lib/use-reveal';
  * `prefers-reduced-motion` the clip never autoplays and the element just shows
  * the poster. `webm` (VP9) is offered first for smaller bytes; `mp4` (H.264) is
  * the universal fallback.
+ *
+ * It is `aria-hidden`: the motion is decoration whose meaning is always carried
+ * by the surrounding text (headings, pack title/price), so exposing it to
+ * assistive tech would only add noise.
  */
 export function AmbientVideo({
   mp4,
   webm,
   poster,
-  label,
   className,
   fit = 'cover',
 }: {
   mp4: string;
   webm?: string;
   poster: string;
-  label: string;
   className?: string;
   fit?: 'cover' | 'contain';
 }) {
@@ -56,7 +58,7 @@ export function AmbientVideo({
       loop
       playsInline
       preload="metadata"
-      aria-label={label}
+      aria-hidden
     >
       {webm ? <source src={webm} type="video/webm" /> : null}
       <source src={mp4} type="video/mp4" />
