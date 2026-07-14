@@ -24,12 +24,16 @@ export function AmbientVideo({
   poster,
   className,
   fit = 'cover',
+  testId,
 }: {
   mp4: string;
   webm?: string;
   poster: string;
   className?: string;
   fit?: 'cover' | 'contain';
+  /** Keeps a hero selector stable across the video and still-image branches
+   *  (both a <video> and an <img> expose `.currentSrc`). */
+  testId?: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const reduced = usePrefersReducedMotion();
@@ -50,6 +54,7 @@ export function AmbientVideo({
   return (
     <video
       ref={ref}
+      data-testid={testId}
       className={className}
       style={{ objectFit: fit }}
       poster={poster}

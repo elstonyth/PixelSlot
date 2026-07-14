@@ -176,6 +176,7 @@ export default function PackDetailClient({
                 mp4={heroVideo.mp4}
                 webm={heroVideo.webm}
                 poster={heroVideo.poster}
+                testId="pack-hero-image"
                 className="absolute inset-0 z-10 h-full w-full"
               />
             ) : (
