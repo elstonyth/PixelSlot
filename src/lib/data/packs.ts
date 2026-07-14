@@ -318,7 +318,7 @@ export interface RecentPull {
 }
 
 // Fallback pack label when a pull's pack_id isn't in the static catalog.
-const FALLBACK_PACK_ICON = '/images/claw/rookie-pack-icon.webp';
+const FALLBACK_PACK_ICON = '/images/polycards/bronze-pack.webp';
 
 /**
  * The most recent pulls across all packs, for the /claw/[slug] "Recent Pulls"

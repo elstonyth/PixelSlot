@@ -25,7 +25,6 @@ import {
   type ResolvedPack,
   type PackCard,
   FLAT_BUYBACK_PERCENT,
-  clawMachine,
   priceNumber,
 } from '@/lib/packs-data';
 import { Pill } from '@/components/ui/pill';
@@ -83,12 +82,6 @@ export default function PackDetailClient({
   // so anyone's pull shows up here without a reload.
   const recent = useLiveRecentPulls(recentPulls);
 
-  const claw = clawMachine(active);
-  // Baked packs get a full-bleed claw-machine render (light studio bg is part
-  // of the art); backend-created packs fall back to their uploaded pack photo,
-  // which must NOT sit in the light stage (white-bg photo pillarboxed in a
-  // light box reads as a broken cutout on the dark shell).
-  const hasMachineRender = claw.webp !== active.image;
   const priceNum = priceNumber(active.price);
 
   // Top Hits come from the backend prize pool (highest market_value) — the
@@ -181,29 +174,6 @@ export default function PackDetailClient({
               className="z-10 object-cover"
             />
           </div>
-        ) : hasMachineRender ? (
-          /* Baked claw-machine render — full-bleed scene, the light studio bg
-             is part of the art, so the light gradient stage blends with it.
-             ANIMATED AVIF (the claw slides left↔right INSIDE the file) in a
-             FIXED Image (unoptimized, to keep the animation); packs without an
-             animated source fall back to the static rebranded webp. */
-          <div className="relative flex aspect-[36/25] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-200 to-zinc-400">
-            {active.boost && (
-              <span className="absolute left-4 top-4 z-20 rounded-md bg-buyback px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-                +{active.buybackPercent ?? FLAT_BUYBACK_PERCENT}% Buyback Boost
-              </span>
-            )}
-            <Image
-              key={active.id}
-              src={claw.anim ?? claw.webp}
-              alt={`${active.name} claw machine`}
-              fill
-              priority
-              unoptimized
-              sizes="(max-width: 1024px) 100vw, 60vw"
-              className="z-10 object-contain"
-            />
-          </div>
         ) : (
           /* Uploaded pack photo — compact product shot on the dark surface
              (catalog idiom): rounded so a white-background photo reads as a
@@ -217,7 +187,7 @@ export default function PackDetailClient({
             )}
             <Image
               key={active.id}
-              src={claw.webp}
+              src={active.image}
               alt={active.name}
               width={205}
               height={360}

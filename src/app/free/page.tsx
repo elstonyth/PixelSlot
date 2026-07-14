@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 };
 
 const PACKS = [
-  '/images/claw/mythic-pack-icon.webp',
-  '/images/claw/legend-pack-icon.webp',
-  '/images/claw/elite-pack-icon.webp',
-  '/images/claw/platinum-pack-icon.webp',
-  '/images/claw/rookie-pack-icon.webp',
+  '/images/polycards/gold-pack.webp',
+  '/images/polycards/silver-pack.webp',
+  '/images/polycards/bronze-pack.webp',
+  '/images/polycards/platinum-pack.webp',
+  '/images/polycards/bronze-pack.webp',
 ];
 
 const STEPS = [
