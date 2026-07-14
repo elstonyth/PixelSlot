@@ -21,6 +21,13 @@ test.describe('customer workflow', () => {
   test('signup → top up → open → keep → vault → sell-back', async ({
     page,
   }) => {
+    // Pre-accept cookie consent (key: src/lib/consent.ts CONSENT_KEY): the
+    // fresh-context banner (z-50, bottom-anchored) overlays the vault's
+    // persistent action bar and intercepts the "Sell 1" pill click below.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('pokenic.cookie-consent', 'accepted');
+    });
+
     await test.step('create account via the auth modal', async () => {
       await sf.signup(page, PACK, username, email, password);
       // CTA flips from "Log in to open" to "Open Pack" once authenticated.

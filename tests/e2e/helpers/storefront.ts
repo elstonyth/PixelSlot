@@ -176,27 +176,29 @@ export async function gotoVault(page: Page): Promise<void> {
   await page.goto(`${BASE}/vault`, { waitUntil: 'domcontentloaded' });
 }
 
-// A vaulted card renders a "Sell for $X (90%)" button — wait for at least one.
+// Selection is always on (2026-07-14 redesign): each vaulted card is a
+// "Select <name>" tile button. (?!All\b) excludes the persistent bar's own
+// "Select All · N selected" button — wait for at least one tile.
 export async function expectVaultHasCard(page: Page): Promise<void> {
   await expect(
-    page.getByRole('button', { name: /^Sell .* \(90%\)/ }).first(),
+    page.getByRole('button', { name: /^Select (?!All\b).+/ }).first(),
   ).toBeVisible({ timeout: 20_000 });
 }
 
-// Sell the first vaulted card end-to-end: the grid "Sell for $X" button opens
-// the confirm dialog, then the dialog's own "Sell for $X" button fires the
-// buyback. Without the second click the modal never confirms and the buyback
-// endpoint is never hit (the gap that left the sell-back path untested).
+// Sell the first vaulted card end-to-end: select its tile, then the
+// persistent action bar's "Sell 1" pill opens the confirm dialog, then the
+// dialog's own "Sell for $X" button fires the buyback. Without the final
+// click the modal never confirms and the buyback endpoint is never hit (the
+// gap that left the sell-back path untested).
 export async function sellFirstCard(page: Page): Promise<void> {
   await page
-    .getByRole('button', { name: /^Sell .* \(90%\)/ })
+    .getByRole('button', { name: /^Select (?!All\b).+/ })
     .first()
     .click();
+  await page.getByRole('button', { name: /^Sell 1$/ }).click();
   // Scope to the modal (aria-label "Confirm sell-back") so the dialog's confirm
-  // button is unambiguous vs. the grid buttons behind it.
+  // button is unambiguous vs. the bar's pill behind it.
   const dialog = page.getByRole('dialog', { name: 'Confirm sell-back' });
-  // The grid button reads "Sell · RM X (90%)"; the dialog's confirm button reads
-  // "Sell for RM X" (no percent) — match it specifically.
   await dialog.getByRole('button', { name: /^Sell for RM/ }).click();
   await expect(dialog).toBeHidden({ timeout: 20_000 });
 }
