@@ -49,7 +49,10 @@ export default function HeroBoard({
               alt="The Polycards shop, glowing at night"
               width={2200}
               height={1458}
-              unoptimized
+              // Static webp — let next/image serve responsive sizes (the
+              // animated pack heroes need `unoptimized`; this one doesn't,
+              // and the full 2200px master is too heavy for phone LCP).
+              sizes="(min-width: 1024px) 34rem, 88vw"
               // The near-full-viewport hero is the page's LCP — load eagerly.
               priority
               className="h-auto max-h-[44svh] w-auto max-w-[min(88vw,24rem)] object-contain lg:max-h-[62svh] lg:max-w-[34rem]"
