@@ -4,8 +4,9 @@
 // Reveal orchestrator (flood → transform → review). Owns the shared sell
 // window, the all-cards-flip-together gesture, and the auto-vault-at-expiry
 // glide-out. Mounted by SlotMachineClient once the reel has settled.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { motion } from 'motion/react';
+import { SLAB_ASPECT } from '@/components/SlabImage';
 import type { WonCard } from '@/lib/actions/packs';
 import type { SellBackOffer, SellBackFn, RevealFn } from './useSellWindow';
 import SellConfirmModal from '@/components/SellConfirmModal';
@@ -163,12 +164,12 @@ export function RevealStage({
     // display fallback and a sell would be refused — never present the amount
     // as a firm, countdown-pressured offer. Keep stays available (it's a pure
     // client-side conclude; the card is already vaulted server-side).
+    // Keep + note only (no dead sell-shaped pill): the variant must fit the
+    // reserved 7rem footer slot below, or the card shifts on flip and a
+    // height-bound phone regains the scroll this redesign removed.
     if (!offer.firm) {
       return (
         <>
-          <p className="flex h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 text-sm font-bold text-white/50">
-            Sell-back temporarily unavailable
-          </p>
           <button
             type="button"
             onClick={() => keep(i)}
@@ -177,9 +178,10 @@ export function RevealStage({
           >
             Keep in vault
           </button>
-          <p className="text-center text-[11px] text-white/50">
-            Pricing is being refreshed — this card is safe in your vault and can
-            be sold once rates are back.
+          {/* copy must stay short: at the --slab-w width floor the batch-rail
+              footer is ~96px wide and long copy wraps past the 7rem slot */}
+          <p className="text-center text-[11px] leading-tight text-white/50">
+            Stored safely — sell when rates return.
           </p>
         </>
       );
@@ -245,7 +247,10 @@ export function RevealStage({
             must not shift when the flip stamps in the name + sell/keep buttons.
             The slot holds a fixed min-height and only fills once flipped, so the
             column height is identical before and after the flip. Pre-flip it
-            carries the tap-to-reveal hint (spec #42), active card only. */}
+            carries the tap-to-reveal hint (spec #42), active card only.
+            NOTE: this 7rem is baked into --slab-w's 250px chrome budget (root
+            of this component) — every footer variant must fit inside it, and
+            changing either side means updating the other. */}
         <div className="flex min-h-[7rem] w-full max-w-[300px] flex-col items-center gap-2">
           {flipped
             ? footer(i)
@@ -272,8 +277,24 @@ export function RevealStage({
   };
 
   return (
+    // m-auto (not parent justify-center): auto margins center when the column
+    // fits and keep the top edge reachable if the overlay ever has to scroll —
+    // justify-center would push the card's top past the scroll origin.
+    // --slab-w is THE card width, shared by SlabCard (the slab itself) and
+    // GalleryRail (its item step = slab + gutter, so the neighbor peek shows
+    // real card, not empty rail). Width- AND height-aware: 100cqh is the
+    // reveal overlay's height ([container-type:size] in SlotMachineClient);
+    // 250px is the fixed chrome around the card (info stamp 52 + footer 112 +
+    // clock 20 + gaps + rail counter). 64vw/300px are the phone/desktop caps;
+    // 96px floors pathologically short viewports (the overlay then scrolls as
+    // a last resort).
     <div
-      className="relative z-10 flex w-full flex-col items-center gap-4"
+      className="relative z-10 m-auto flex w-full flex-col items-center gap-3 sm:gap-4"
+      style={
+        {
+          '--slab-w': `max(96px, min(64vw, 300px, calc((100cqh - 250px) * ${SLAB_ASPECT})))`,
+        } as CSSProperties
+      }
       onPointerDown={phase === 'transform' ? onSkip : undefined}
     >
       {cards.length === 1 ? (
