@@ -145,15 +145,23 @@ const blockUnusedVendorSelfRegistration = (
 
 // Root landing (GET /). This is a headless Medusa/Mercur server with no page at
 // "/", so hitting the bare origin (admin.polycards.gg) returned Express's default
-// "Cannot GET /" 404. The only human-facing surface on this host is the admin
-// dashboard at /dashboard (itself 301→/dashboard/login when signed out), so bounce
-// the root there. This lives in middlewares (NOT a src/api/route.ts): a root-level
-// route file is not picked up by the build's route scan — verified in prod, a
-// src/api/route.ts at "/" never registered while sub-path routes did. Medusa applies
-// a `{ matcher:'/', method:'GET' }` entry as `app.get('/', …)` — an EXACT path match,
-// never a prefix — and the req.path==='/' guard is defensive so it can only ever
-// fire on the bare root. 302 (not 301): the target is an internal path we may
-// repoint, and a 301 would be cached past that change.
+// "Cannot GET /" 404. Bounce the root to the admin dashboard (/dashboard, itself
+// 301→/dashboard/login when signed out) — the only human-facing surface here.
+//
+// WHY matcher '/*' AND a req.path==='/' guard (not a plain matcher:'/'):
+// Medusa's RoutesSorter (routes-sorter.js) buckets every route/middleware by its
+// path SEGMENTS — `matcher.split('/').filter(s => s.length)`. For matcher '/'
+// that is an EMPTY array, so the loop that inserts the entry into the sort tree
+// never runs and the handler is silently DROPPED — it is never registered on
+// Express. (Verified in prod: both a src/api/route.ts at '/' and a matcher:'/'
+// middleware 404'd, while every sibling matcher with ≥1 segment worked.) The
+// smallest matcher that survives is '/*' (one wildcard segment) → registers as
+// app.get('/*', …). It matches EVERY GET, so the guard restricts the redirect to
+// the exact root and next()s everything else through untouched. Confirmed against
+// the app's express@4.22 / path-to-regexp@0.1: '/*' compiles and matches '/'.
+// Cost: this runs one string compare on every GET — negligible. 302 (not 301):
+// the target is an internal path we may repoint, and a 301 would be cached past
+// that change.
 const redirectRootToDashboard = (
   req: MedusaRequest,
   res: MedusaResponse,
@@ -170,8 +178,9 @@ export default defineMiddlewares({
   routes: [
     {
       // Root landing → admin dashboard (see redirectRootToDashboard above).
-      // Exact-match: Medusa applies method-scoped matchers as app.get('/', …).
-      matcher: '/',
+      // Matcher '/*' (NOT '/': the sorter drops a zero-segment matcher); the
+      // handler's req.path==='/' guard scopes the redirect to the bare root.
+      matcher: '/*',
       method: 'GET',
       middlewares: [redirectRootToDashboard],
     },
