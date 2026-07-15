@@ -13,7 +13,9 @@ import { pageAll } from '../../api/utils/page-all';
 // gives negligible bias over the basis-point weight pool (Σweight = 10000) and
 // preserves pickWonRow's fractional-weight handling + last-row fallback exactly
 // as the previous `Math.random()` did — same distribution shape, secure source.
-function secureUnitFloat(): number {
+// Exported for a direct range/distribution unit test — not called from any
+// route; production draws always use the default below.
+export function secureUnitFloat(): number {
   return randomBytes(6).readUIntBE(0, 6) / 2 ** 48;
 }
 

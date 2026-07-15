@@ -1,5 +1,10 @@
 import { MedusaError } from '@medusajs/framework/utils';
-import { rollOne, fetchPackData, drawFromData } from '../roll-pack';
+import {
+  rollOne,
+  fetchPackData,
+  drawFromData,
+  secureUnitFloat,
+} from '../roll-pack';
 
 // Stub shape matching the fields rollOne reads from PacksModuleService.
 // We drive rollOne directly (it's exported) — not the step wrapper — so
@@ -226,5 +231,32 @@ describe('rollOne', () => {
     await expect(rollOne(packs, 'test-pack')).rejects.toMatchObject({
       type: MedusaError.Types.NOT_FOUND,
     });
+  });
+});
+
+// The CSPRNG that backs the money-determining draw. A predictable RNG here would
+// let winning cards (and their FMV/buyback value) be forecast — so this locks in
+// that secureUnitFloat stays a well-formed uniform source in [0, 1).
+describe('secureUnitFloat', () => {
+  it('always returns a value in [0, 1)', () => {
+    for (let i = 0; i < 100_000; i++) {
+      const v = secureUnitFloat();
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThan(1);
+    }
+  });
+
+  it('is non-degenerate (not constant) and roughly uniform across quartiles', () => {
+    const N = 200_000;
+    const buckets = [0, 0, 0, 0]; // [0,.25) [.25,.5) [.5,.75) [.75,1)
+    for (let i = 0; i < N; i++) {
+      buckets[Math.min(3, Math.floor(secureUnitFloat() * 4))]++;
+    }
+    // Each quartile ~25%. A predictable/degenerate source (always 0, a stuck
+    // bit) would collapse a bucket; allow a generous ±3% band.
+    for (const count of buckets) {
+      expect(count / N).toBeGreaterThan(0.22);
+      expect(count / N).toBeLessThan(0.28);
+    }
   });
 });

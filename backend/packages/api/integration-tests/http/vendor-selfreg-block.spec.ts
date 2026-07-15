@@ -37,8 +37,14 @@ medusaIntegrationTestRunner({
             member: { name: 'A', email: 'attacker-member@example.com' },
           }),
         );
-        // 404 (repo block) or 401 (Mercur auth, no token) — never a 200/201
-        // that would mean a seller row was actually created.
+        // Defense-in-depth check. A tokenless request 401s at Mercur's own
+        // authenticate('member', { allowUnregistered: true }) — allowUnregistered
+        // permits a token whose actor isn't yet a registered seller, NOT an
+        // anonymous caller — so this path returns 401 whether or not the repo
+        // block exists. It asserts only "never a 200/201 that created a seller";
+        // the register→404 test above is what actually proves the block (an
+        // attacker can't obtain a member token to reach /vendor/sellers once
+        // /register is closed).
         expect(res.status).toBeGreaterThanOrEqual(400);
         expect([401, 403, 404]).toContain(res.status);
       });

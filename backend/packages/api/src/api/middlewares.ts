@@ -124,8 +124,14 @@ const mediaUploadMiddleware = (
 // genuinely closed (app middleware applies to plugin routes here, same as the
 // /auth/*/emailpass rate-limit entries below). The house seller is seeded
 // server-side (not via this HTTP route) and logs in via POST /auth/member/
-// emailpass (authenticate, NOT /register), so neither is affected. Re-open
-// deliberately — behind admin invite/approval — if P2P onboarding is ever built.
+// emailpass (authenticate, NOT /register), so neither is affected.
+//
+// NOTE: blocking /auth/member/emailpass/register also gates seller-STAFF
+// onboarding — invite-accept (POST /vendor/members/invites/accept) needs an
+// invitee to first mint a member auth identity via /register. That flow is
+// dormant here (single house seller, no staff invites) and intentionally
+// closed. When P2P/staff onboarding is built, re-open /register behind the
+// invite-gating rather than removing this block wholesale.
 const blockUnusedVendorSelfRegistration = (
   _req: MedusaRequest,
   _res: MedusaResponse,
