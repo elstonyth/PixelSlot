@@ -1,10 +1,5 @@
 import { MedusaError } from '@medusajs/framework/utils';
-import {
-  rollOne,
-  fetchPackData,
-  drawFromData,
-  secureUnitFloat,
-} from '../roll-pack';
+import { rollOne, fetchPackData, drawFromData, secureRoll } from '../roll-pack';
 
 // Stub shape matching the fields rollOne reads from PacksModuleService.
 // We drive rollOne directly (it's exported) — not the step wrapper — so
@@ -234,29 +229,39 @@ describe('rollOne', () => {
   });
 });
 
-// The CSPRNG that backs the money-determining draw. A predictable RNG here would
-// let winning cards (and their FMV/buyback value) be forecast — so this locks in
-// that secureUnitFloat stays a well-formed uniform source in [0, 1).
-describe('secureUnitFloat', () => {
-  it('always returns a value in [0, 1)', () => {
+// The CSPRNG that backs the money-determining draw. A predictable/biased RNG
+// here would let winning cards (and their FMV/buyback value) be forecast or
+// skewed — so this locks in that secureRoll stays an unbiased integer source in
+// [0, bound) (crypto.randomInt, no modulo/division bias).
+describe('secureRoll', () => {
+  it('always returns an integer in [0, bound)', () => {
     for (let i = 0; i < 100_000; i++) {
-      const v = secureUnitFloat();
+      const v = secureRoll(10_000);
+      expect(Number.isInteger(v)).toBe(true);
       expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThan(1);
+      expect(v).toBeLessThan(10_000);
     }
   });
 
   it('is non-degenerate (not constant) and roughly uniform across quartiles', () => {
     const N = 200_000;
-    const buckets = [0, 0, 0, 0]; // [0,.25) [.25,.5) [.5,.75) [.75,1)
+    const bound = 10_000;
+    const buckets = [0, 0, 0, 0]; // [0,2500) [2500,5000) [5000,7500) [7500,10000)
     for (let i = 0; i < N; i++) {
-      buckets[Math.min(3, Math.floor(secureUnitFloat() * 4))]++;
+      buckets[Math.min(3, Math.floor(secureRoll(bound) / (bound / 4)))]++;
     }
     // Each quartile ~25%. A predictable/degenerate source (always 0, a stuck
     // bit) would collapse a bucket; allow a generous ±3% band.
     for (const count of buckets) {
       expect(count / N).toBeGreaterThan(0.22);
       expect(count / N).toBeLessThan(0.28);
+    }
+  });
+
+  it('floors a fractional bound and never returns it (randomInt integer-max guard)', () => {
+    for (let i = 0; i < 10_000; i++) {
+      const v = secureRoll(3.9); // floored to 3 → values in {0,1,2}
+      expect([0, 1, 2]).toContain(v);
     }
   });
 });

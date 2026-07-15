@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 import { createStep, StepResponse } from '@medusajs/framework/workflows-sdk';
 import { MedusaError } from '@medusajs/framework/utils';
 import { PACKS_MODULE } from '../../modules/packs';
@@ -6,17 +6,21 @@ import type PacksModuleService from '../../modules/packs/service';
 import { pickWonRow } from '../../modules/packs/pick';
 import { pageAll } from '../../api/utils/page-all';
 
-// Cryptographically-secure uniform float in [0, 1). This is a money-determining
-// draw (it decides which card — and therefore its FMV/buyback value — the
-// customer wins), so it must use a CSPRNG, matching the reward-box draw
-// (crypto.randomInt) and pack-open ids (crypto.randomUUID). 48 bits of entropy
-// gives negligible bias over the basis-point weight pool (Σweight = 10000) and
-// preserves pickWonRow's fractional-weight handling + last-row fallback exactly
-// as the previous `Math.random()` did — same distribution shape, secure source.
+// Cryptographically-secure, UNBIASED integer roll in [0, bound). This is a
+// money-determining draw (it decides which card — and therefore its FMV/buyback
+// value — the customer wins), so it must use a CSPRNG, matching the reward-box
+// draw and pack-open ids. crypto.randomInt uses rejection sampling, so unlike
+// `randomBytes()/2**48` (division introduces modulo bias — CodeQL
+// js/biased-cryptographic-random) every value in [0, bound) is exactly equally
+// likely. Pack weights are normalized to integer basis points (Σweight = 10000),
+// so `bound` is an integer in practice; floor guards a legacy fractional total
+// (randomInt requires an integer max) and Math.max(1, …) guards the lower edge
+// (fetchPackData already throws on totalWeight <= 0). A roll in [0, bound) is
+// always < Σweight, so pickWonRow's last-row fallback is a pure safety net.
 // Exported for a direct range/distribution unit test — not called from any
 // route; production draws always use the default below.
-export function secureUnitFloat(): number {
-  return randomBytes(6).readUIntBE(0, 6) / 2 ** 48;
+export function secureRoll(bound: number): number {
+  return randomInt(Math.max(1, Math.floor(bound)));
 }
 
 type RollPackInput = {
@@ -118,7 +122,7 @@ export async function drawFromData(
   packs: PacksModuleService,
   odds: PackData['odds'],
   totalWeight: number,
-  roll: number = secureUnitFloat() * totalWeight,
+  roll: number = secureRoll(totalWeight),
 ): Promise<RolledCard> {
   const won = pickWonRow(odds, roll);
   const [card] = await packs.listCards({ handle: won.card_id }, { take: 1 });
