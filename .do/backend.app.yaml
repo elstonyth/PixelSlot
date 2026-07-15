@@ -25,6 +25,15 @@
 name: polycards-backend
 region: sgp
 
+# Custom domain — REQUIRED here: `doctl apps update` replaces the FULL spec, so
+# omitting this block would detach the domain. Serves the store API plus the
+# dashboards (admin.polycards.gg/dashboard, /seller). DNS is a grey-cloud
+# (DNS-only) CNAME in Cloudflare → pokenic-backend-tltfm.ondigitalocean.app.
+domains:
+  - domain: admin.polycards.gg
+    type: PRIMARY
+    zone: polycards.gg
+
 # App Platform alerts → email on failed deploys / failed custom-domain certs.
 alerts:
   - rule: DEPLOYMENT_FAILED
@@ -41,7 +50,7 @@ envs:
   # pointing at localhost:9000 -> blank/black dashboard.
   - key: MERCUR_BACKEND_URL
     scope: BUILD_TIME
-    value: https://pokenic-backend-tltfm.ondigitalocean.app
+    value: https://admin.polycards.gg
   # Storefront origin. BUILD: baked into the admin bundle (vite __STOREFRONT_URL__)
   # so the admin resolves storefront-relative asset paths against the real
   # storefront domain. RUN: read by the /cdn/cards redirect route. Also defaulted
@@ -81,22 +90,21 @@ envs:
     scope: RUN_TIME
     type: SECRET
     value: __SECRET__ADMIN_PASSWORD__
-  # CORS. NOTE: ${APP_URL} is NOT a valid App Platform bindable — it was stored
-  # literally; the DO console flags it on edit. ADMIN_CORS/VENDOR_CORS are left
-  # as-is (admin/vendor dashboards are same-origin on this app, so browser CORS
-  # never triggers). AUTH_CORS + STORE_CORS use explicit origins: the backend's
-  # own URL (admin auth) and the polycards.gg storefront origins (customer auth +
-  # store calls). Old ondigitalocean storefront origin kept through the domain
-  # transition. Comma-separated, no trailing slashes.
+  # CORS — explicit origins, comma-separated, no trailing slashes. The
+  # dashboards are same-origin when opened on admin.polycards.gg (their bundles
+  # call MERCUR_BACKEND_URL = that host), but the old ondigitalocean host still
+  # serves them too, so it stays listed for cross-origin visits during the
+  # transition. (The former `${APP_URL}` literal was never a valid App Platform
+  # bindable — it only "worked" because same-origin requests skip CORS.)
   - key: ADMIN_CORS
     scope: RUN_TIME
-    value: ${APP_URL}
+    value: https://admin.polycards.gg,https://pokenic-backend-tltfm.ondigitalocean.app
   - key: AUTH_CORS
     scope: RUN_TIME
-    value: https://pokenic-backend-tltfm.ondigitalocean.app,https://polycards.gg,https://www.polycards.gg
+    value: https://admin.polycards.gg,https://pokenic-backend-tltfm.ondigitalocean.app,https://polycards.gg,https://www.polycards.gg
   - key: VENDOR_CORS
     scope: RUN_TIME
-    value: ${APP_URL}
+    value: https://admin.polycards.gg,https://pokenic-backend-tltfm.ondigitalocean.app
   - key: STORE_CORS
     scope: RUN_TIME
     value: https://pokenic-storefront-ijfiu.ondigitalocean.app,https://polycards.gg,https://www.polycards.gg
