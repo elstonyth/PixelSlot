@@ -26,13 +26,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return failed('Google sign-in was cancelled. You can try again.');
   }
 
-  const result = await googleCallback({
-    code: searchParams.get('code') ?? undefined,
-    state: searchParams.get('state') ?? undefined,
-  });
+  // googleCallback is written to return an AuthResult rather than throw, but a
+  // try/catch here is cheap insurance: any unexpected throw still lands on the
+  // friendly failure page instead of a raw 500.
+  try {
+    const result = await googleCallback({
+      code: searchParams.get('code') ?? undefined,
+      state: searchParams.get('state') ?? undefined,
+    });
 
-  if (result.ok) {
-    return NextResponse.redirect(new URL('/me', request.url));
+    if (result.ok) {
+      return NextResponse.redirect(new URL('/me', request.url));
+    }
+    return failed(result.error);
+  } catch {
+    return failed('Google sign-in could not be completed. Please try again.');
   }
-  return failed(result.error);
 }

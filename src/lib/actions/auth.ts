@@ -22,6 +22,15 @@ import { friendlyError, type ErrorRule } from '@/lib/errors';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
+// Hosts allowed to originate the Google OAuth callback URL. Mirrors the
+// Authorised redirect URIs on the OAuth client — keep the two in sync. Guards
+// against Host/X-Forwarded-Host spoofing when building `callback_url`.
+const ALLOWED_CALLBACK_HOSTS = new Set([
+  'polycards.gg',
+  'www.polycards.gg',
+  'localhost:3000',
+]);
+
 export type AuthCustomer = {
   id: string;
   email: string;
@@ -56,7 +65,10 @@ const toAuthCustomer = (
 
 // Known backend errors → friendly copy (patterns local to auth; never raw).
 const AUTH_RULES: ErrorRule[] = [
-  [/already exists/i, 'An account with this email already exists.'],
+  [
+    /already exists/i,
+    'An account with this email already exists. Sign in with your password instead.',
+  ],
   [/invalid email or password/i, 'Incorrect email or password.'],
 ];
 
@@ -204,7 +216,13 @@ export async function googleLoginStart(): Promise<
   try {
     const h = await headers();
     const host = h.get('x-forwarded-host') ?? h.get('host');
-    if (!host) return { ok: false, error: 'Could not determine site origin.' };
+    // Host / X-Forwarded-Host are client-supplied. Only build the OAuth callback
+    // from a host we actually registered with Google — a spoofed one would be
+    // rejected by Google anyway, but validating here keeps attacker-controlled
+    // values out of the backend token exchange. This set mirrors the Authorised
+    // redirect URIs on the OAuth client (keep the two in sync).
+    if (!host || !ALLOWED_CALLBACK_HOSTS.has(host))
+      return { ok: false, error: 'Could not determine site origin.' };
     const proto =
       h.get('x-forwarded-proto') ??
       (process.env.NODE_ENV === 'production' ? 'https' : 'http');
@@ -243,7 +261,9 @@ export async function googleCallback(query: {
     let sessionToken = token;
     // Empty actor_id ⇒ first Google login: no customer record yet, create one.
     if (!payload.actor_id) {
-      const email = payload.user_metadata?.email;
+      // Normalize like login()/signup() so a mixed-case Google email can't
+      // create a duplicate of, or fail to collide with, an existing account.
+      const email = payload.user_metadata?.email?.trim().toLowerCase();
       if (!email) {
         // Email should ride in the token's user_metadata (the google provider
         // copies it from the verified id_token). If it's absent, log the payload
