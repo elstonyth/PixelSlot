@@ -80,4 +80,4 @@ services:
       # bucket. Host only, no protocol. Must rebuild the storefront to change it.
       - key: NEXT_PUBLIC_MEDIA_HOST
         scope: RUN_AND_BUILD_TIME
-        value: pokenic-media.sgp1.cdn.digitaloceanspaces.com
+        value: polycards-media.sgp1.cdn.digitaloceanspaces.com
