@@ -14,6 +14,16 @@
 name: polycards-storefront
 region: sgp
 
+# Custom domains — REQUIRED here: `doctl apps update` replaces the FULL spec,
+# so omitting this block would detach polycards.gg from the app. DNS lives in
+# Cloudflare as grey-cloud (DNS-only) CNAMEs to the default ondigitalocean host.
+domains:
+  - domain: polycards.gg
+    type: PRIMARY
+  - domain: www.polycards.gg
+    type: ALIAS
+    zone: polycards.gg
+
 # App Platform alerts → email on failed deploys / failed custom-domain certs.
 alerts:
   - rule: DEPLOYMENT_FAILED
