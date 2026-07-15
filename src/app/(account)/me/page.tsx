@@ -5,13 +5,11 @@ import {
   Bell,
   ChevronRight,
   Download,
-  Gift,
   LifeBuoy,
   MapPin,
   Package,
   Receipt,
   Settings,
-  Star,
   Ticket,
   type LucideIcon,
 } from 'lucide-react';
@@ -163,14 +161,21 @@ export default async function MePage() {
                   </p>
                 )}
               </div>
-              <Image
-                src="/images/app/vip-emblem.webp"
-                alt=""
-                aria-hidden
-                width={283}
-                height={320}
-                className="h-16 w-auto shrink-0 mix-blend-screen"
-              />
+              <span className="relative shrink-0">
+                {/* Soft amber halo behind the wordmark. */}
+                <span
+                  aria-hidden
+                  className="bg-chase/25 absolute left-1/2 top-1/2 h-12 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl"
+                />
+                <Image
+                  src="/images/app/vip-wordmark.webp"
+                  alt=""
+                  aria-hidden
+                  width={480}
+                  height={261}
+                  className="relative h-9 w-auto mix-blend-screen"
+                />
+              </span>
             </Link>
             {dailyResult.ok && (
               <p className="mt-2 border-t border-white/5 pt-2 text-[12px] text-neutral-400">
@@ -310,9 +315,14 @@ export default async function MePage() {
             href="/referrals"
             className="border-chase/30 bg-chase/10 hover:border-chase/60 rounded-2xl border p-4 transition-colors"
           >
-            <span className="bg-chase/20 flex h-10 w-10 items-center justify-center rounded-full">
-              <Gift className="text-chase h-5 w-5" aria-hidden />
-            </span>
+            <Image
+              src="/images/app/invite-gift.webp"
+              alt=""
+              aria-hidden
+              width={239}
+              height={240}
+              className="h-12 w-12 mix-blend-screen"
+            />
             <p className="mt-3 flex items-center gap-1 text-sm font-semibold text-white">
               Invite friends
               <ChevronRight
@@ -328,9 +338,14 @@ export default async function MePage() {
             href={handle ? `/profile/${handle}` : '/vault'}
             className="rounded-2xl border border-white/10 bg-neutral-900 p-4 transition-colors hover:border-white/25"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400/10">
-              <Star className="h-5 w-5 text-amber-300" aria-hidden />
-            </span>
+            <Image
+              src="/images/app/points-coin.webp"
+              alt=""
+              aria-hidden
+              width={212}
+              height={240}
+              className="h-12 w-auto mix-blend-screen"
+            />
             <p className="mt-3 flex items-center gap-1 text-sm font-semibold text-white">
               Points balance
               <ChevronRight

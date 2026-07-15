@@ -47,6 +47,13 @@ async function shoot(tag, viewport, routes) {
       timeout: 30000,
     });
     await page.waitForTimeout(2500);
+    // Dismiss the cookie banner so it doesn't cover mid-page sections.
+    await page
+      .locator('button:has-text("Reject")')
+      .first()
+      .click({ timeout: 1000 })
+      .catch(() => {});
+    await page.waitForTimeout(300);
     const file = `docs/research/me-redesign-${tag}${route.replace(/\W+/g, '_')}.png`;
     await page.screenshot({ path: file, fullPage: true });
     const ok = (resp?.status() ?? 0) < 400 && pageErrors.length === 0;
