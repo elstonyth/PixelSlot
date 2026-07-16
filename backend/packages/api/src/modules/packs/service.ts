@@ -1986,6 +1986,7 @@ class PacksModuleService extends MedusaService({
           let pct = 0;
           let commissionSen = 0;
           if (ladderRows.length === 0) {
+            // eslint-disable-next-line no-console
             console.warn(
               `settleOpen: vip_level ladder is empty — skipping commission for open '${input.sourceTransactionId}' (recruit '${input.customerId}', sponsor '${sponsorId}'). Seed vip_level.`,
             );

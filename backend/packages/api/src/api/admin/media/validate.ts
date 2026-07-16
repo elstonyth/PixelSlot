@@ -86,6 +86,11 @@ export const IMAGE_RULES = {
       minHeight: 840,
       targetRatio: 5 / 7,
       aspectTolerance: 0.03,
+      // A card photo is the composeSlab input, decoded at 32 MP (bake-slab.ts
+      // MAX_DECODE_PIXELS). 5500 per side (<=30.25 MP) keeps every UPLOADED card
+      // bakeable — without it the shared 8000 bound admits e.g. 5714x8000
+      // (45.7 MP), which validates fine and then silently fails to bake.
+      maxDimension: 5500,
     },
     pack: {
       minWidth: 512,
@@ -129,6 +134,10 @@ export const IMAGE_RULES = {
       minHeight: 640,
       targetRatio: 0.62,
       aspectTolerance: 0.08,
+      // Same alignment as 'card': the slab frame is a composeSlab input decoded
+      // at 32 MP, and the shared 8000 bound would admit e.g. 4960x8000 (39.7 MP)
+      // — a frame that passes validation then silently fails to bake.
+      maxDimension: 5500,
     },
     // Customer profile photo (store-side upload route): cropped to a circle
     // with object-cover on the storefront, so aspect is loose — reject only

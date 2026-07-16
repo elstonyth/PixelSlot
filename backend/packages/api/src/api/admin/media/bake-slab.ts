@@ -29,15 +29,24 @@ export const SLAB_WINDOW = {
 const CORNER_RX = 0.048; // of window width
 const CORNER_RY = 0.034; // of window height
 const MAX_FRAME_WIDTH = 1600;
+// Frames are downscaled to fit BOTH bounds. Height matters independently: a
+// frame narrower than MAX_FRAME_WIDTH skips the width cap entirely, so without
+// this a pathologically tall one would balloon the create canvas + composite
+// (fw×fh RGBA) below. 4000 leaves the width the binding constraint for real
+// slab-proportioned art (~0.62 ratio ⇒ 1600×2580) and bounds the canvas.
+const MAX_FRAME_HEIGHT = 4000;
 const FETCH_TIMEOUT_MS = 10_000;
 
-// Defense-in-depth pixel ceiling for every sharp DECODE of a fetched frame/card
-// image. fetchBytes caps bytes (20 MB) but NOT dimensions, so a low-entropy
-// megapixel image from an admin-set slab_frame_url / card.image would otherwise
-// drive a full-raster decode (same DoS primitive as the customer avatar route —
-// admin-only here). 32 MP clears legit frames (they downscale to <=1600px wide)
-// and refuses the 64 MP+ bomb class. Best-effort: an over-limit image just fails
-// its bake and logs a warning (bakeSlabImage's catch).
+// ADMIN-ONLY defense-in-depth — this is not an attacker-reachable path like the
+// customer avatar route; it is adequate for that threat model, not a hard bound
+// on every allocation. fetchBytes caps bytes (20 MB) but NOT dimensions, so a
+// low-entropy megapixel image from an admin-set slab_frame_url / card.image
+// would otherwise drive a full-raster decode. This ceiling bounds the decode
+// INPUT only; the composite canvas is bounded separately by MAX_FRAME_WIDTH /
+// MAX_FRAME_HEIGHT. 32 MP refuses the 64 MP+ bomb class, and the frame/card
+// validate profiles cap each side at 5500 (<=30.25 MP) so admin-UPLOADED art
+// always stays under it — validation and bake agree, no silent bake failure.
+// Best-effort: an over-limit image fails its bake and logs (bakeSlabImage catch).
 const MAX_DECODE_PIXELS = 32_000_000;
 
 export type BakedSlab = { url: string; key: string };
@@ -205,9 +214,13 @@ export async function composeSlab(
   let fh = frameMeta.height ?? 0;
   if (!fw || !fh) throw new Error('frame image has no dimensions');
   let frame = frameBytes;
-  if (fw > MAX_FRAME_WIDTH) {
-    fh = Math.round((fh * MAX_FRAME_WIDTH) / fw);
-    fw = MAX_FRAME_WIDTH;
+  // Scale to fit inside BOTH bounds, aspect preserved, and never upscale (a
+  // small frame stays untouched). Downscaling — rather than rejecting — keeps
+  // an oversized frame bakeable instead of failing it silently.
+  const scale = Math.min(1, MAX_FRAME_WIDTH / fw, MAX_FRAME_HEIGHT / fh);
+  if (scale < 1) {
+    fw = Math.max(1, Math.round(fw * scale));
+    fh = Math.max(1, Math.round(fh * scale));
     frame = await sharp(frameBytes, { limitInputPixels: MAX_DECODE_PIXELS })
       .resize({ width: fw, height: fh })
       .png()

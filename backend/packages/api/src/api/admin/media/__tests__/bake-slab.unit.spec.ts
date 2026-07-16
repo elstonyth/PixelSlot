@@ -173,4 +173,22 @@ describe('composeSlab', () => {
       composeSlab(await makeFrame(400, 669), await makeFrame(6000, 6000)),
     ).rejects.toThrow();
   });
+
+  // The old cap was width-only, so a frame narrower than MAX_FRAME_WIDTH but
+  // pathologically TALL skipped the resize entirely and ballooned the create
+  // canvas + composite (fw×fh RGBA). Bound the height too — downscaling to fit
+  // (aspect preserved), never a silent bake failure.
+  it('downscales a pathologically tall frame to bound the composite canvas', async () => {
+    const out = await composeSlab(await makeFrame(1000, 9000), await makePhoto());
+    const meta = await sharp(out).metadata();
+    expect(meta.height).toBe(4000); // capped
+    expect(meta.width).toBe(444); // aspect preserved (1000 × 4000/9000)
+  });
+
+  it('does not upscale a small frame', async () => {
+    const out = await composeSlab(await makeFrame(400, 669), await makePhoto());
+    const meta = await sharp(out).metadata();
+    expect(meta.width).toBe(400);
+    expect(meta.height).toBe(669);
+  });
 });
