@@ -109,11 +109,14 @@ medusaIntegrationTestRunner({
 
         const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
 
-        // The integration runner runs migrations but NOT the seed, so vip_level
-        // is empty by default. Establish the CANONICAL ladder unconditionally
-        // rather than "seed only when empty": the last case wipes the ladder,
-        // so a conditional seed would silently accept whatever a prior//future
-        // test happened to leave behind.
+        // The runner runs migrations but NOT the seed, AND its own beforeEach
+        // truncates every table — so vip_level is empty here and the canonical
+        // ladder must be (re)seeded for every test. Seed it unconditionally:
+        // the old "seed only when empty" predicate was always true anyway, and
+        // dropping the conditional keeps the fixture honest if that changes.
+        // (The delete below is a cheap self-sufficiency guard so this fixture
+        // doesn't lean on runner internals — NOT leakage protection; the
+        // truncate already rules that out.)
         const staleLadder = await packs.listVipLevels({}, { take: 1000 });
         if (staleLadder.length > 0) {
           await packs.deleteVipLevels(staleLadder.map((r) => r.id));

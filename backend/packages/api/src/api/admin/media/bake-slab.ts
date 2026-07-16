@@ -226,6 +226,13 @@ export async function composeSlab(
       .png()
       .toBuffer();
   }
+  // The clamps above keep a wildly-skewed frame (aspect outside ~[0.0004, 2500],
+  // only reachable via an un-validated admin-set URL) from scaling to 0px — but
+  // baking a 1px-tall slab would be a silent nonsense result. Fail it instead:
+  // bakeSlabImage catches and logs, leaving slab_image untouched.
+  if (fw < 2 || fh < 2) {
+    throw new Error(`frame aspect is degenerate after scaling (${fw}x${fh})`);
+  }
   const left = Math.round(fw * SLAB_WINDOW.left);
   const top = Math.round(fh * SLAB_WINDOW.top);
   const winW = fw - left - Math.round(fw * SLAB_WINDOW.right);

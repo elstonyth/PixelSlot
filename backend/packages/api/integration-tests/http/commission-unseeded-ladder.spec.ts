@@ -23,19 +23,11 @@ medusaIntegrationTestRunner({
   env: { COMMISSION_COOLDOWN_DAYS: '0' },
   testSuite: ({ getContainer }) => {
     describe('settleOpen with an unseeded vip_level ladder', () => {
-      // Both cases below deliberately leave vip_level non-canonical (empty /
-      // gapped). The runner truncates every table between tests, so that cannot
-      // leak today — restore the canonical ladder anyway so the fixture stays
-      // deterministic for anything added to this suite later.
-      afterEach(async () => {
-        const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
-        const stale = await packs.listVipLevels({}, { take: 1000 });
-        if (stale.length > 0) {
-          await packs.deleteVipLevels(stale.map((r) => r.id));
-        }
-        await packs.createVipLevels(VIP_LEVELS.map((r) => ({ ...r })));
-      });
-
+      // NOTE: both cases below deliberately leave vip_level non-canonical
+      // (empty / gapped) and deliberately do NOT restore it. Restoring would be
+      // dead code: the runner truncates every table in its own afterEach AND
+      // again in its beforeEach, so nothing here can survive to a later test —
+      // any test added to this suite must seed the ladder state it needs.
       it('charges the recruit and skips commission instead of throwing', async () => {
         const packs = getContainer().resolve<PacksModuleService>(PACKS_MODULE);
 

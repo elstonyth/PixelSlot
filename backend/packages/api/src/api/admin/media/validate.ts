@@ -125,6 +125,11 @@ export const IMAGE_RULES = {
       minHeight: 128,
       targetRatio: 5 / 7,
       aspectTolerance: 0.25,
+      // A PriceCharting-ingested photo becomes card.image and feeds composeSlab
+      // as the photo, so it needs the same 32 MP-safe cap as 'card'. Free in
+      // practice (PC serves ~240px art); without it the loose 0.25 tolerance
+      // admits up to 7142x8000 = 57 MP against a 32 MP decode ceiling.
+      maxDimension: 5500,
     },
     // Slab-frame overlay (site-settings): PSA-slab proportions (3.31" × 5.35"
     // ≈ 0.62), transparent card window. Tolerance admits hand-made frames a
