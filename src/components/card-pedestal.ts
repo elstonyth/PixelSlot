@@ -18,7 +18,7 @@ export const PEDESTAL_BG =
 
 /** Card-frame hover: lift + shadow (the border colour stays per-card). */
 export const PEDESTAL_FRAME_HOVER =
-  'transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40';
+  'transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40';
 
 /** Card art: contain + subtle zoom on frame hover (padding stays per-card). */
 export const PEDESTAL_IMAGE =
