@@ -257,7 +257,11 @@ export function ReelStrip({
     // Cells-until-the-winner-centers: falls to 0 as the winner lands on the line.
     // Each integer step down = one Pokémon crossing center → one tick, so the
     // ticks decelerate exactly with the reel and the last one IS the winner lock.
-    let remaining = Math.round((target - startPx) / pitch);
+    // floor (not round) so each step happens AS a cell reaches center — the tick
+    // lands on the crossing, not half a cell early. clamp at 0 so the settle
+    // overshoot (px dips past target → value goes slightly negative) can't
+    // floor to -1 and fire a phantom tick after the winner has already landed.
+    let remaining = Math.max(0, Math.floor((target - startPx) / pitch));
     let raf = 0;
     const frame = (now: number) => {
       const t = now - start;
@@ -266,7 +270,7 @@ export function ReelStrip({
       paint(px, (px - prevPx) / dt);
       prevPx = px;
       prevT = now;
-      const nextRemaining = Math.round((target - px) / pitch);
+      const nextRemaining = Math.max(0, Math.floor((target - px) / pitch));
       if (nextRemaining < remaining) {
         remaining = nextRemaining;
         onCellCrossRef.current?.();
