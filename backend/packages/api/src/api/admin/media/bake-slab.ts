@@ -31,6 +31,15 @@ const CORNER_RY = 0.034; // of window height
 const MAX_FRAME_WIDTH = 1600;
 const FETCH_TIMEOUT_MS = 10_000;
 
+// Defense-in-depth pixel ceiling for every sharp DECODE of a fetched frame/card
+// image. fetchBytes caps bytes (20 MB) but NOT dimensions, so a low-entropy
+// megapixel image from an admin-set slab_frame_url / card.image would otherwise
+// drive a full-raster decode (same DoS primitive as the customer avatar route —
+// admin-only here). 32 MP clears legit frames (they downscale to <=1600px wide)
+// and refuses the 64 MP+ bomb class. Best-effort: an over-limit image just fails
+// its bake and logs a warning (bakeSlabImage's catch).
+const MAX_DECODE_PIXELS = 32_000_000;
+
 export type BakedSlab = { url: string; key: string };
 
 type Logger = { info: (m: string) => void; warn: (m: string) => void };
@@ -189,7 +198,9 @@ export async function composeSlab(
   frameBytes: Buffer,
   photoBytes: Buffer,
 ): Promise<Buffer> {
-  const frameMeta = await sharp(frameBytes).metadata();
+  const frameMeta = await sharp(frameBytes, {
+    limitInputPixels: MAX_DECODE_PIXELS,
+  }).metadata();
   let fw = frameMeta.width ?? 0;
   let fh = frameMeta.height ?? 0;
   if (!fw || !fh) throw new Error('frame image has no dimensions');
@@ -197,7 +208,7 @@ export async function composeSlab(
   if (fw > MAX_FRAME_WIDTH) {
     fh = Math.round((fh * MAX_FRAME_WIDTH) / fw);
     fw = MAX_FRAME_WIDTH;
-    frame = await sharp(frameBytes)
+    frame = await sharp(frameBytes, { limitInputPixels: MAX_DECODE_PIXELS })
       .resize({ width: fw, height: fh })
       .png()
       .toBuffer();
@@ -211,7 +222,7 @@ export async function composeSlab(
   const mask = Buffer.from(
     `<svg width="${winW}" height="${winH}"><rect width="${winW}" height="${winH}" rx="${rx}" ry="${ry}" fill="#fff"/></svg>`,
   );
-  const photo = await sharp(photoBytes)
+  const photo = await sharp(photoBytes, { limitInputPixels: MAX_DECODE_PIXELS })
     .resize(winW, winH, { fit: 'cover' })
     .composite([{ input: mask, blend: 'dest-in' }])
     .png()
@@ -243,7 +254,9 @@ export async function bakeSlabImage(
   try {
     const photo = await fetchBytes(card.image);
     if (!photo) {
-      logger.warn(`bake-slab: photo unfetchable for '${card.handle}' (${card.image})`);
+      logger.warn(
+        `bake-slab: photo unfetchable for '${card.handle}' (${card.image})`,
+      );
       return null;
     }
     // A caller looping over many cards (rebakeAllGradedCards) resolves the
@@ -253,7 +266,9 @@ export async function bakeSlabImage(
     const frame = frameBytes ?? (await resolveFrameBytes(container));
     const out = await composeSlab(frame, photo);
     if (out.length > IMAGE_RULES.maxBytes) {
-      logger.warn(`bake-slab: composite exceeds size limit for '${card.handle}'`);
+      logger.warn(
+        `bake-slab: composite exceeds size limit for '${card.handle}'`,
+      );
       return null;
     }
     const hash = createHash('sha256').update(out).digest('hex').slice(0, 8);
@@ -314,10 +329,7 @@ export async function mirrorSlabToProduct(
 ): Promise<void> {
   try {
     const productModule = container.resolve(Modules.PRODUCT);
-    const [product] = await productModule.listProducts(
-      { handle },
-      { take: 1 },
-    );
+    const [product] = await productModule.listProducts({ handle }, { take: 1 });
     if (!product) return; // defensive-upsert cards may have no Product yet
     await updateProductsWorkflow(container).run({
       input: {

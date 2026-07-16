@@ -67,6 +67,14 @@ export interface ProfileRule {
   targetRatio: number;
   /** Allowed relative deviation from targetRatio. */
   aspectTolerance: number;
+  /**
+   * Optional per-profile upper dimension cap (px per side). Falls back to the
+   * shared IMAGE_RULES.maxDimension when unset. Set it tight on any profile
+   * whose route decodes the buffer with sharp on an attacker-reachable path, so
+   * a low-entropy megapixel upload can't drive a full-raster decode/re-encode
+   * DoS (the shared 8000 bomb guard is far too high for a small photo).
+   */
+  maxDimension?: number;
 }
 
 export const IMAGE_RULES = {
@@ -130,6 +138,11 @@ export const IMAGE_RULES = {
       minHeight: 64,
       targetRatio: 1,
       aspectTolerance: 0.5,
+      // Customer-reachable decode path (POST /store/profile/avatar re-encodes
+      // with sharp). Cap far below the shared 8000 bomb guard: a round ~256px
+      // avatar (2x DPR) never needs > 2048px, and this bounds the decode/encode
+      // cost so a 64 MP low-entropy upload can't CPU/OOM the backend.
+      maxDimension: 2048,
     },
     // Avatar-frame overlay (admin milestone frames, LV 10…100): a square ring
     // that layers over the round photo. Transparent PNG/WebP — or an AI render
@@ -205,18 +218,18 @@ export function validateImage(
     return fail('unreadable', 'Could not read the image dimensions.');
   }
 
-  // 6 — upper dimension guard.
-  if (
-    facts.width > IMAGE_RULES.maxDimension ||
-    facts.height > IMAGE_RULES.maxDimension
-  ) {
+  const profile: ProfileRule = IMAGE_RULES.profiles[kind];
+
+  // 6 — upper dimension guard. Per-profile cap when set (a customer-reachable
+  // decode path caps tight to bound sharp decode/re-encode cost), otherwise the
+  // shared decompression-bomb guard.
+  const maxDim = profile.maxDimension ?? IMAGE_RULES.maxDimension;
+  if (facts.width > maxDim || facts.height > maxDim) {
     return fail(
       'too_big_dimension',
-      `Image is too large — keep each side ≤ ${IMAGE_RULES.maxDimension}px.`,
+      `Image is too large — keep each side ≤ ${maxDim}px.`,
     );
   }
-
-  const profile = IMAGE_RULES.profiles[kind];
 
   // 7 — minimum resolution (no blurry upscaling on the storefront).
   if (facts.width < profile.minWidth || facts.height < profile.minHeight) {
@@ -228,12 +241,12 @@ export function validateImage(
           : kind === 'display'
             ? 'Display'
             : kind === 'avatar'
-            ? 'Profile photo'
-            : kind === 'avatar-frame' || kind === 'frame'
-              ? 'Frame'
-              : kind === 'delivery'
-                ? 'Delivery photo'
-                : 'Sprite';
+              ? 'Profile photo'
+              : kind === 'avatar-frame' || kind === 'frame'
+                ? 'Frame'
+                : kind === 'delivery'
+                  ? 'Delivery photo'
+                  : 'Sprite';
     return fail(
       'too_small',
       `${label} art must be at least ${profile.minWidth}×${profile.minHeight}px.`,
