@@ -3,7 +3,7 @@
 //   → adjust a customer's credits (support) → economy report.
 import { test, expect } from '@playwright/test';
 import { ADMIN, stamp } from './helpers/constants';
-import { adminToken, api, createCustomer } from './helpers/api';
+import { adminToken, api, createCustomer, openPack } from './helpers/api';
 import { ensureAdmin, createPack } from './helpers/admin';
 
 test.describe('admin workflow', () => {
@@ -92,6 +92,13 @@ test.describe('admin workflow', () => {
   });
 
   test('pulls ledger lists opened packs with status', async ({ page }) => {
+    // Self-contained: the ledger lists pulls, but the 2026-07 catalog cutover
+    // removed the seed's demo pulls and this spec can run before any
+    // pack-opening spec — so open one pack up front. An API open auto-vaults
+    // the pull, giving it the "In vault" status the ledger asserts below.
+    const cust = await createCustomer(100);
+    await openPack(cust.token, 'pokemon-rookie');
+
     await page.goto(`${ADMIN}/pulls`, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('table tbody tr').first()).toBeVisible({
       timeout: 20_000,
