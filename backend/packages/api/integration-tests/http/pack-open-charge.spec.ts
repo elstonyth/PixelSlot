@@ -326,6 +326,19 @@ medusaIntegrationTestRunner({
         expect(blocked.status).toBe(400);
         expect(blocked.data.message).toMatch(/not enough credits/i);
         expect(await pullCount()).toBe(COUNT);
+
+        // ...and the refusal took no money either — still the ONE pack_open row from
+        // the paid batch. Closes the other direction: the assertions above prove no
+        // pull without a debit; this proves no debit without a pull.
+        const after = await unwrapResponse(
+          api.get("/store/credits", { headers: authed(token) }),
+        );
+        expect(
+          after.data.transactions.filter(
+            (t: { reason?: string }) => t.reason === "pack_open",
+          ),
+        ).toHaveLength(1);
+        expect(after.data.balance).toBe(0);
       });
     });
   },
