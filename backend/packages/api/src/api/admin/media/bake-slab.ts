@@ -17,14 +17,14 @@ import { DEFAULT_SLAB_FRAME_B64 } from './slab-frame-default';
 // storefront renders this single image — no runtime two-layer stack.
 
 // Card-window insets as fractions of the frame box, and the storefront clip's
-// corner radii. Printed by scripts/process-slab-frame.mjs for the default
+// corner radii. Printed by scripts/process-slabframe-v2.mjs for the default
 // frame asset; admin-uploaded frames must keep this geometry (PR #81 contract,
 // mirrored in the admin Storefront page copy).
 export const SLAB_WINDOW = {
-  top: 0.2833,
-  left: 0.1047,
-  right: 0.1047,
-  bottom: 0.0666,
+  top: 0.2773,
+  left: 0.1144,
+  right: 0.1169,
+  bottom: 0.0764,
 } as const;
 const CORNER_RX = 0.048; // of window width
 const CORNER_RY = 0.034; // of window height

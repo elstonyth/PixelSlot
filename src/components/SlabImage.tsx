@@ -6,9 +6,9 @@ import { rarityRgb } from '@/lib/rarity';
 
 /**
  * Aspect ratio of the baked slab composite (= the frame asset it's baked
- * from — scripts/process-slab-frame.mjs prints it). Real PSA cases ≈ 0.62.
+ * from — scripts/process-slabframe-v2.mjs prints it). Real PSA cases ≈ 0.62.
  */
-export const SLAB_ASPECT = 1462 / 2446;
+export const SLAB_ASPECT = 1600 / 2867;
 
 /** Bare trading-card stock (63×88mm ≈ 5:7) — the raw-card fallback. */
 const CARD_ASPECT_RAW = 5 / 7;

@@ -130,7 +130,7 @@ describe('fetchBytes', () => {
 });
 
 // composeSlab geometry contract: output = frame-sized webp; the card photo
-// covers the window rect (insets 28.33% / 10.47% / 6.66%); frame layers on top.
+// covers the window rect (insets 27.73% / 11.44-11.69% / 7.64%); frame layers on top.
 describe('composeSlab', () => {
   const makeFrame = (w: number, h: number) =>
     sharp({
@@ -168,7 +168,7 @@ describe('composeSlab', () => {
       .toBuffer({ resolveWithObject: true });
     const px = (x: number, y: number) => (y * info.width + x) * info.channels;
     // window centre → the red photo shows through the transparent frame
-    const cy = Math.round(669 * 0.2833 + (669 * (1 - 0.2833 - 0.0666)) / 2);
+    const cy = Math.round(669 * 0.2773 + (669 * (1 - 0.2773 - 0.0764)) / 2);
     const c = px(200, cy);
     expect(data[c]).toBeGreaterThan(200); // R
     expect(data[c + 1]).toBeLessThan(50); // G
@@ -179,7 +179,7 @@ describe('composeSlab', () => {
 
   it('caps output at 1600px wide', async () => {
     const out = await composeSlab(
-      await makeFrame(3200, 5352),
+      await makeFrame(3200, 5734),
       await makePhoto(),
     );
     const meta = await sharp(out).metadata();
