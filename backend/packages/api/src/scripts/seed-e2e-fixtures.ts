@@ -145,19 +145,27 @@ export default async function seedE2eFixtures({
   // --- Odds (one weighted row per pack×card) -------------------------------
   // Pull chance = weight / Σ(weights in pack). RARITY_WEIGHT is the same table
   // the live odds engine uses, so fixture weights can't drift from the tiers.
+  // Idempotency is keyed per (pack, card), not per pack: a partial failure that
+  // created only some of a pack's odds rows must be backfilled on re-run, not
+  // skipped because the pack already has *an* odds row.
   const existingOdds = await packs.listPackOdds(
     { pack_id: packSlugs },
-    { select: ['pack_id'], take: packSlugs.length * CARDS.length + 1 },
+    { select: ['pack_id', 'card_id'], take: packSlugs.length * CARDS.length + 1 },
   );
-  const packHasOdds = new Set(existingOdds.map((o) => o.pack_id));
-  const oddsToCreate = PACKS.filter((p) => !packHasOdds.has(p.slug)).flatMap(
-    (pack) =>
-      CARDS.map((card) => ({
+  const oddsKey = (packId: string, cardId: string): string =>
+    `${packId}::${cardId}`;
+  const haveOdds = new Set(
+    existingOdds.map((o) => oddsKey(o.pack_id, o.card_id ?? '')),
+  );
+  const oddsToCreate = PACKS.flatMap((pack) =>
+    CARDS.filter((card) => !haveOdds.has(oddsKey(pack.slug, card.handle))).map(
+      (card) => ({
         pack_id: pack.slug,
         card_id: card.handle,
         rarity: card.rarity,
         weight: RARITY_WEIGHT[card.rarity],
-      })),
+      }),
+    ),
   );
   if (oddsToCreate.length > 0) {
     await packs.createPackOdds(oddsToCreate);

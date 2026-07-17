@@ -61,7 +61,12 @@ const POKEBALL_PLACEHOLDER =
   );
 
 type Phase =
-  'idle' | 'resolving' | 'spinning' | 'flood' | 'transform' | 'review';
+  | 'idle'
+  | 'resolving'
+  | 'spinning'
+  | 'flood'
+  | 'transform'
+  | 'review';
 
 /** Highest-rarity tier present in a batch, for the room flood color. */
 function topRarityOf(cards: WonCard[]): Rarity {
@@ -700,6 +705,7 @@ export default function SlotMachineClient({
             landscape phones); overflow-x is hard-locked — vertical overflow
             must never re-enable sideways panning. */}
         <div
+          data-testid="slot-stage"
           className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-fluid"
           aria-busy={phase === 'spinning'}
         >

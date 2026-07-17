@@ -58,28 +58,40 @@ test.describe('slot vault room', () => {
         .locator('..')
         .locator('.sr-only');
       await creditValue.waitFor({ state: 'visible' });
-      const before = (await creditValue.innerText()).trim();
+      // Parse to a number ("RM 200.00" → 200) so the guard can assert the
+      // balance DROPPED — a mere change would also pass on a top-up or an
+      // unrelated re-render, which a debit guard must not.
+      const rmToNumber = (s: string): number =>
+        Number(s.replace(/[^0-9.]/g, ''));
+      const before = rmToNumber((await creditValue.innerText()).trim());
 
       await spinBtn.click();
 
       // THE guard for PR #200: openBatch has already charged by the time it
-      // resolves, so the fix paints the server's post-charge balance at once —
-      // while the reel is still spinning (aria-busy=true) — not at settle ~5s
-      // later. Assert the credit meter changes WHILE the stage is still busy.
-      // Pre-fix the balance only moves once the reel settles (aria-busy already
-      // false), so the two are never true together and this times out: reverting
-      // the SlotMachineClient fix turns this red. A real page function (not an
-      // evaluate string), so no IIFE trap.
+      // resolves, so the fix paints the server's post-charge (LOWER) balance at
+      // once — while the reel is still spinning — not at settle ~5s later.
+      // Assert the credit meter DROPS below `before` WHILE the slot stage is
+      // still aria-busy. Pre-fix the balance only moves once the reel settles
+      // (stage no longer busy), so the two are never true together and this
+      // times out: reverting the SlotMachineClient fix turns this red. Busy is
+      // scoped to the slot stage (data-testid) so an unrelated [aria-busy]
+      // elsewhere can't false-positive. A real page function (not an evaluate
+      // string), so no IIFE trap.
       await page.waitForFunction(
         (prev) => {
           const label = Array.from(document.querySelectorAll('p')).find(
             (p) => p.textContent?.trim() === 'Credit',
           );
-          const now = label?.parentElement
+          const text = label?.parentElement
             ?.querySelector('.sr-only')
             ?.textContent?.trim();
-          const busy = document.querySelector('[aria-busy="true"]') != null;
-          return now != null && now !== prev && busy;
+          if (text == null) return false;
+          const now = Number(text.replace(/[^0-9.]/g, ''));
+          const spinning =
+            document
+              .querySelector('[data-testid="slot-stage"]')
+              ?.getAttribute('aria-busy') === 'true';
+          return Number.isFinite(now) && now < prev && spinning;
         },
         before,
         { timeout: 8000 },
