@@ -177,6 +177,15 @@ medusaIntegrationTestRunner({
           api.post(`/store/packs/${PACK_SLUG}/open`, {}, { headers }),
         );
 
+      const openBatch = (count: number, headers: Record<string, string>) =>
+        unwrapResponse(
+          api.post(
+            `/store/packs/${PACK_SLUG}/open-batch`,
+            { count },
+            { headers },
+          ),
+        );
+
       const topUp = (amount: number, headers: Record<string, string>) =>
         unwrapResponse(
           api.post(
@@ -265,6 +274,93 @@ medusaIntegrationTestRunner({
         expect(buyback.status).toBe(200);
         expect(buyback.data.amount).toBe(INSTANT_AMOUNT);
         expect(buyback.data.balance).toBe(INSTANT_AMOUNT);
+      });
+
+      // Both open routes enrich the response with a buyback quote AFTER the
+      // workflow has already debited the customer and written the pull — and
+      // nothing there can roll that back. A throw in that enrichment used to
+      // fail the whole request, so a player who had just paid saw a generic
+      // error instead of their reveal (the storefront's !res.ok branch), even
+      // though the card was in their vault the whole time: a lost charge, as
+      // far as they could tell. The enrichment is now non-fatal — the PAID roll
+      // still comes back, with only the quote degraded to null.
+      //
+      // quoteBuyback is spied because it is called ONLY in post-commit route
+      // enrichment (the workflow never calls it), so a throw there provably
+      // exercises the charged-then-failed path and nothing earlier.
+      const throwOnQuote = () =>
+        jest
+          .spyOn(
+            getContainer().resolve<PacksModuleService>(PACKS_MODULE),
+            "quoteBuyback",
+          )
+          .mockRejectedValue(new Error("quote path exploded"));
+
+      it("serves the PAID pull with a null buyback when the quote throws", async () => {
+        const token = await registerCustomer("poc-customer-c@test.dev");
+        expect((await topUp(PACK_PRICE, authed(token))).status).toBe(200);
+
+        const quoteSpy = throwOnQuote();
+        let pullId: string;
+        try {
+          const opened = await open(authed(token));
+
+          // Served, not 500'd — the reveal still gets its card and pull id.
+          expect(opened.status).toBe(200);
+          expect(opened.data.card.handle).toBe(CARD_HANDLE);
+          expect(opened.data.pull.id).toEqual(expect.any(String));
+          // The debit is real and the response says so — this is what proves
+          // "paid, and served anyway" rather than "silently not charged".
+          expect(opened.data.price).toBe(PACK_PRICE);
+          expect(opened.data.balance).toBe(0);
+          expect(await pullCount()).toBe(1);
+          // Only the quote degrades; the storefront maps this to buyback: null.
+          expect(opened.data.buyback).toBeNull();
+          expect(quoteSpy).toHaveBeenCalled();
+          pullId = opened.data.pull.id;
+        } finally {
+          quoteSpy.mockRestore();
+        }
+
+        // Nothing was lost: once quoting recovers the same pull sells for the
+        // full instant amount, so the degraded reveal cost the player nothing.
+        const buyback = await unwrapResponse(
+          api.post(
+            `/store/vault/${pullId}/buyback`,
+            {},
+            { headers: authed(token) },
+          ),
+        );
+        expect(buyback.status).toBe(200);
+        expect(buyback.data.amount).toBe(INSTANT_AMOUNT);
+      });
+
+      it("serves PAID batch rolls with null buybacks when the quote throws", async () => {
+        const token = await registerCustomer("poc-customer-d@test.dev");
+        const COUNT = 2;
+        expect((await topUp(PACK_PRICE * COUNT, authed(token))).status).toBe(
+          200,
+        );
+
+        const quoteSpy = throwOnQuote();
+        try {
+          const opened = await openBatch(COUNT, authed(token));
+
+          expect(opened.status).toBe(200);
+          // Every paid roll is surfaced — not one of them is dropped.
+          expect(opened.data.rolls).toHaveLength(COUNT);
+          for (const roll of opened.data.rolls) {
+            expect(roll.card.handle).toBe(CARD_HANDLE);
+            expect(roll.pull.id).toEqual(expect.any(String));
+            expect(roll.buyback).toBeNull();
+          }
+          // ...and the batch debit is reported, not hidden behind an error.
+          expect(opened.data.total_charged).toBe(PACK_PRICE * COUNT);
+          expect(opened.data.balance).toBe(0);
+          expect(await pullCount()).toBe(COUNT);
+        } finally {
+          quoteSpy.mockRestore();
+        }
       });
     });
   },
