@@ -41,8 +41,67 @@ test.describe('slot vault room', () => {
     const cust = await createCustomer(200);
     await sf.login(page, PACK, cust.email, PASSWORD);
 
-    await test.step('spin and let the reel settle on the face-down slab', async () => {
-      await spinAndSettle(page);
+    await test.step('the bet debits on spin press, before the reel settles (PR #200 guard)', async () => {
+      await page.goto(`${BASE}/slots/${PACK}/spin?count=1`, {
+        waitUntil: 'domcontentloaded',
+      });
+      const spinBtn = page.getByRole('button', { name: 'Spin', exact: true });
+      // Spin is gated on canAfford, so an enabled button means the balance has
+      // loaded — otherwise `before` would capture a placeholder and the later
+      // change would just be the initial load, not the debit.
+      await expect(spinBtn).toBeEnabled();
+      // The credit meter's sr-only span carries the real balance; the visible
+      // odometer digits are aria-hidden AND animated, so never read those.
+      // waitFor (retrying) — isVisible() is non-retrying and races hydration.
+      const creditValue = page
+        .getByText('Credit', { exact: true })
+        .locator('..')
+        .locator('.sr-only');
+      await creditValue.waitFor({ state: 'visible' });
+      // Parse to a number ("RM 200.00" → 200) so the guard can assert the
+      // balance DROPPED — a mere change would also pass on a top-up or an
+      // unrelated re-render, which a debit guard must not.
+      const rmToNumber = (s: string): number =>
+        Number(s.replace(/[^0-9.]/g, ''));
+      const before = rmToNumber((await creditValue.innerText()).trim());
+
+      await spinBtn.click();
+
+      // THE guard for PR #200: openBatch has already charged by the time it
+      // resolves, so the fix paints the server's post-charge (LOWER) balance at
+      // once — while the reel is still spinning — not at settle ~5s later.
+      // Assert the credit meter DROPS below `before` WHILE the slot stage is
+      // still aria-busy. Pre-fix the balance only moves once the reel settles
+      // (stage no longer busy), so the two are never true together and this
+      // times out: reverting the SlotMachineClient fix turns this red. Busy is
+      // scoped to the slot stage (data-testid) so an unrelated [aria-busy]
+      // elsewhere can't false-positive. A real page function (not an evaluate
+      // string), so no IIFE trap.
+      await page.waitForFunction(
+        (prev) => {
+          const label = Array.from(document.querySelectorAll('p')).find(
+            (p) => p.textContent?.trim() === 'Credit',
+          );
+          const text = label?.parentElement
+            ?.querySelector('.sr-only')
+            ?.textContent?.trim();
+          if (text == null) return false;
+          const now = Number(text.replace(/[^0-9.]/g, ''));
+          const spinning =
+            document
+              .querySelector('[data-testid="slot-stage"]')
+              ?.getAttribute('aria-busy') === 'true';
+          return Number.isFinite(now) && now < prev && spinning;
+        },
+        before,
+        { timeout: 8000 },
+      );
+
+      // Let the reel settle — the flip button enabling is the real "ready to
+      // flip" signal (it renders disabled during 'transform').
+      await expect(page.getByRole('button', FLIP_BUTTON)).toBeEnabled({
+        timeout: 30_000,
+      });
     });
 
     await test.step('no sell button before the flip', async () => {
@@ -84,9 +143,7 @@ test.describe('slot vault room', () => {
     });
   });
 
-  test('unsold flipped card auto-vaults at window expiry', async ({
-    page,
-  }) => {
+  test('unsold flipped card auto-vaults at window expiry', async ({ page }) => {
     test.setTimeout(120_000);
     const cust = await createCustomer(200);
     await sf.login(page, PACK, cust.email, PASSWORD);

@@ -5,10 +5,13 @@
 # was invisible precisely because nothing ran these specs in CI).
 #
 # Stack recipe (mirrors tests/e2e/README.md):
-#   deploy:init          -> db:migrate + seed (packs incl. pokemon-rookie/-elite,
+#   deploy:init          -> db:migrate + seed (5 EMPTY DRAFT packs post-cutover,
 #                           the "Webshop" publishable key) + print-publishable-key
 #   deploy:migrate-user  -> idempotent create-admin (ADMIN_EMAIL/ADMIN_PASSWORD)
 #                           + seed-vip-achievements
+#   seed:e2e             -> E2E-only fixture: the ACTIVE, populated pokemon-rookie
+#                           /-elite packs the specs hardcode (prod seed no longer
+#                           creates them). Never run against prod.
 #   backend :9000 (medusa start) · storefront :4000 (standalone) · admin :7000 (vite)
 # The publishable key is parsed from deploy:init's output, baked into the
 # storefront build (NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY) and passed to the suite
@@ -125,6 +128,11 @@ jobs:
           set -euo pipefail
           corepack yarn deploy:init 2>&1 | tee seed.log
           corepack yarn deploy:migrate-user
+          # E2E-only fixture: the prod seed (deploy:init) ships packs as empty
+          # DRAFTS, so nothing is openable on a fresh DB. seed:e2e recreates the
+          # two ACTIVE, populated packs the specs hardcode (pokemon-rookie/-elite)
+          # — cards + weighted odds. NEVER folded into deploy:init (prod path).
+          corepack yarn seed:e2e
           PK=$(grep -oE 'token=pk_[A-Za-z0-9]+' seed.log | head -1 | cut -d= -f2 || true)
           if [ -z "$PK" ]; then
             echo '::error::No publishable key in deploy:init output — /store calls would 401'

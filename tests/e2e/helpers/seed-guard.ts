@@ -8,8 +8,11 @@ import { BACKEND, PK } from './constants';
 // Keep in sync with the slugs the specs open (see PACK constants in the specs).
 const REQUIRED_PACK_SLUGS = ['pokemon-rookie', 'pokemon-elite'];
 
+// These two active, populated packs are created by the E2E-only fixture
+// (seed:e2e), NOT the prod catalog seed — which since the 2026-07 cutover ships
+// packs as empty drafts. So the fix for a missing pack is seed:e2e, not seed.
 const RESEED_HINT =
-  'reseed with `corepack yarn seed` from backend/packages/api';
+  'reseed with `corepack yarn seed:e2e` from backend/packages/api';
 
 export async function assertSeedPacks(): Promise<void> {
   let res: Response;

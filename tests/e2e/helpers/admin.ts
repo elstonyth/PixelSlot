@@ -52,11 +52,13 @@ export async function createPack(
 ): Promise<void> {
   await page.goto(`${ADMIN}/packs`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: 'New pack' }).click();
-  // Slug + image-url have unique placeholders; title via label-scoped container.
+  // Slug placeholder is unique; the image field is targeted by id because the
+  // per-pack display-image field (#pack-display-image, PR #163) shares the same
+  // "Image URL or /storefront/path.webp" placeholder — getByPlaceholder now
+  // matches both. #pack-image is the required main image; display image is
+  // optional and left blank here.
   await page.getByPlaceholder('legend-pack').fill(pack.slug);
-  await page
-    .getByPlaceholder('Image URL or /storefront/path.webp')
-    .fill(pack.imageUrl);
+  await page.locator('#pack-image').fill(pack.imageUrl);
   await fieldByLabel(page, 'Title').getByRole('textbox').fill(pack.title);
   // "Price (RM)" since the MYR localization — the suite predates it and this
   // drift went uncaught while nothing ran these specs in CI.
