@@ -77,9 +77,12 @@ export default async function passwordResetHandler({
   const notificationModuleService: INotificationModuleService =
     container.resolve(Modules.NOTIFICATION);
 
-  // Left to throw on failure: the event bus retries a rejected subscriber, which is
-  // what a transient Resend outage wants. The provider itself swallows send errors
-  // (logging the template name only), so nothing here can put the token in a log.
+  // Deliberately unguarded: the provider throws on a transient send failure, which
+  // rejects this handler so the event bus redelivers (a retried event replays the
+  // same token, so a duplicate email carries an identical link). A try/catch here
+  // would restore the silent-loss behaviour the throw exists to remove. The thrown
+  // message names the template and Resend's error only, so nothing on this path can
+  // put the token in a log — see modules/resend/service.ts.
   await notificationModuleService.createNotifications({
     to: data.entity_id,
     channel: 'email',

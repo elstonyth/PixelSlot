@@ -56,6 +56,9 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     );
 
     if (!rendered) {
+      // PERMANENT failure: an unknown template or a malformed payload will fail
+      // identically on every redelivery, so this returns instead of throwing —
+      // throwing would put the event into a retry loop that can never succeed.
       // Names the template only — see the SECURITY note on the error path below.
       this.logger.error(
         `[resend] no renderable email template named "${notification.template}"`,
@@ -73,18 +76,28 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     });
 
     if (error || !data) {
-      // SECURITY (CWE-532, same invariant as subscribers/password-reset.ts): log the
-      // template name and Resend's error ONLY. Never log `notification`, or
-      // `notification.data` — the password-reset payload carries the single-use reset
-      // link, and this path runs in PRODUCTION, which is exactly where the
-      // subscriber's dev/test gate exists to keep that token out of the logs.
-      // Anyone with log access could otherwise complete an account takeover.
-      this.logger.error(
-        `[resend] failed to send "${notification.template}": ${
-          error?.message ?? 'unknown error'
-        }`,
-      );
-      return {};
+      // SECURITY (CWE-532, same invariant as subscribers/password-reset.ts): the
+      // message carries the template name and Resend's error ONLY. Never include
+      // `notification` or `notification.data` — the password-reset payload holds the
+      // single-use reset link, this path runs in PRODUCTION, and the message below is
+      // both logged and wrapped into the thrown MedusaError. That is exactly what the
+      // subscriber's dev/test gate exists to keep out of the logs; anyone with log
+      // access could otherwise complete an account takeover.
+      const message = `[resend] failed to send "${notification.template}": ${
+        error?.message ?? 'unknown error'
+      }`;
+      this.logger.error(message);
+
+      // TRANSIENT failure (rate limit, 5xx, network): throw so the caller records
+      // status FAILURE and the event bus redelivers. Returning here instead would be
+      // silently lossy — @medusajs/notification only runs its failure branch when the
+      // provider THROWS (notification-module-service.js:95); a plain return falls
+      // through to `status = SUCCESS` with an undefined external_id, so a Resend
+      // outage would look like a delivered email and never retry.
+      //
+      // Redelivery is safe: the retried event replays the SAME token, so the customer
+      // can receive a duplicate of an identical link, never a conflicting one.
+      throw new MedusaError(MedusaError.Types.UNEXPECTED_STATE, message);
     }
 
     return { id: data.id };

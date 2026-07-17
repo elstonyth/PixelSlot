@@ -145,9 +145,8 @@ describe('ResendNotificationProviderService.send', () => {
       });
       const { service, logger } = buildService();
 
-      const result = await service.send(notification());
+      await expect(service.send(notification())).rejects.toThrow();
 
-      expect(result).toEqual({});
       expect(logger.error).toHaveBeenCalled();
       assertNoLeak(logger);
     });
@@ -156,9 +155,26 @@ describe('ResendNotificationProviderService.send', () => {
       send.mockResolvedValue({ data: null, error: null });
       const { service, logger } = buildService();
 
-      await service.send(notification());
+      await expect(service.send(notification())).rejects.toThrow();
 
       assertNoLeak(logger);
+    });
+
+    // The thrown message is a second sink: @medusajs/notification wraps `e.message`
+    // into its own MedusaError, which propagates out of the subscriber and gets
+    // logged by the framework's error handler.
+    it('in the message it throws on a Resend API error', async () => {
+      send.mockResolvedValue({
+        data: null,
+        error: { message: 'rate limited' },
+      });
+      const { service } = buildService();
+
+      await expect(service.send(notification())).rejects.toThrow(
+        expect.objectContaining({
+          message: expect.not.stringContaining(TOKEN) as unknown as string,
+        }),
+      );
     });
 
     it('on an unrenderable template payload', async () => {
