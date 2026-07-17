@@ -643,7 +643,7 @@ export async function rebakeAllGradedCards(
           logger.info(`bake-slab: cleared stale composite for ${card.handle}`);
         } catch (e) {
           logger.warn(
-            `bake-slab: failed to clear non-PSA composite for '${card.handle}': ${e instanceof Error ? e.message : String(e)}`,
+            `bake-slab: failed to clear stale composite for '${card.handle}': ${e instanceof Error ? e.message : String(e)}`,
           );
           failed++;
           continue;
