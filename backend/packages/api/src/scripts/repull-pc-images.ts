@@ -145,12 +145,23 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
       set: string;
       label_year?: string | null;
       label_note?: string | null;
+      slab_image?: string | null;
       slab_image_key?: string | null;
     },
     stored: string,
   ) => {
-    if (card.grader.trim() === '') return;
-    frameBytes ??= await resolveFrameBytes(container);
+    // Raw cards with nothing to clear skip out. A raw card can still hold an
+    // orphaned composite (grader since cleared) — flow it through so the null
+    // bake below clears DB + mirror + old file, same as non-PSA graded cards
+    // and rebakeAllGradedCards' clear branch.
+    if (card.grader.trim() === '' && !card.slab_image && !card.slab_image_key) {
+      return;
+    }
+    // Only a PSA card actually bakes — don't fetch the frame for a clear-only
+    // pass (bakeSlabImage returns null before touching it).
+    if (card.grader.trim() === 'PSA') {
+      frameBytes ??= await resolveFrameBytes(container);
+    }
     const baked = await bakeSlabImage(
       container,
       {
@@ -163,7 +174,7 @@ export default async function repullPcImages({ container, args }: ExecArgs) {
         label_year: card.label_year ?? null,
         label_note: card.label_note ?? null,
       },
-      frameBytes,
+      frameBytes ?? undefined,
     );
     const oldKey = card.slab_image_key ?? null;
     await packs.updateCards([
