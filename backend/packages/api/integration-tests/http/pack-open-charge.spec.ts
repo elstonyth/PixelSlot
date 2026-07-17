@@ -177,6 +177,15 @@ medusaIntegrationTestRunner({
           api.post(`/store/packs/${PACK_SLUG}/open`, {}, { headers }),
         );
 
+      const openBatch = (count: number, headers: Record<string, string>) =>
+        unwrapResponse(
+          api.post(
+            `/store/packs/${PACK_SLUG}/open-batch`,
+            { count },
+            { headers },
+          ),
+        );
+
       const topUp = (amount: number, headers: Record<string, string>) =>
         unwrapResponse(
           api.post(
@@ -265,6 +274,51 @@ medusaIntegrationTestRunner({
         expect(buyback.status).toBe(200);
         expect(buyback.data.amount).toBe(INSTANT_AMOUNT);
         expect(buyback.data.balance).toBe(INSTANT_AMOUNT);
+      });
+
+      // The slot spin (count = reels) rides open-batch, and the reel animation
+      // only starts once this response lands — so a debit already in the ledger
+      // by then is one the player cannot dodge by leaving mid-spin. A batch is
+      // ONE charge row, not one per reel (spec §9).
+      it("debits count×price as a single charge row on open-batch; an unfunded batch records no pull", async () => {
+        const token = await registerCustomer("poc-customer-c@test.dev");
+        const COUNT = 2;
+        const TOTAL = PACK_PRICE * COUNT;
+
+        expect((await topUp(TOTAL, authed(token))).status).toBe(200);
+
+        const opened = await openBatch(COUNT, authed(token));
+        expect(opened.status).toBe(200);
+        expect(opened.data.price).toBe(PACK_PRICE);
+        expect(opened.data.total_charged).toBe(TOTAL);
+        // The response itself carries the POST-charge balance.
+        expect(opened.data.balance).toBe(0);
+        expect(opened.data.rolls).toHaveLength(COUNT);
+
+        // Paid AND recorded by response time — never one without the other.
+        expect(await pullCount()).toBe(COUNT);
+
+        // Re-read the ledger: ONE pack_open row of -TOTAL for the whole batch.
+        // Filtered by reason rather than asserting a total row count, so an
+        // unrelated future credit (a VIP ladder grant, say) can't turn this into
+        // a confusing failure — the balance assertion still catches stray money.
+        const credits = await unwrapResponse(
+          api.get("/store/credits", { headers: authed(token) }),
+        );
+        expect(credits.data.balance).toBe(0);
+        const opens = credits.data.transactions.filter(
+          (t: { reason?: string }) => t.reason === "pack_open",
+        );
+        expect(opens).toHaveLength(1);
+        expect(opens[0]).toMatchObject({ amount: -TOTAL });
+
+        // Broke now: the next batch is refused and records NO pull. This is the
+        // assertion with teeth on ordering — the charge precedes the pulls in the
+        // saga, so an unaffordable spin can never leave a reward behind.
+        const blocked = await openBatch(COUNT, authed(token));
+        expect(blocked.status).toBe(400);
+        expect(blocked.data.message).toMatch(/not enough credits/i);
+        expect(await pullCount()).toBe(COUNT);
       });
     });
   },
