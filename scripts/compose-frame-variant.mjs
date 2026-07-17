@@ -66,7 +66,7 @@ const VARIANTS = args.filter(
 // canvas (a gpt-image aspect) → attach as a geometry reference so the model
 // paints style into the true band instead of inventing its own thickness.
 if (args.includes('--guide')) {
-  const GW = 2000; // 2:3 canvas (the 1600×2740 frame box outgrew 1600×2400)
+  const GW = 2000; // 2:3 canvas (the 1600×2590 frame box outgrew 1600×2400)
   const GH = 3000;
   const gx = Math.round((GW - VB_W) / 2);
   const gy = Math.round((GH - VB_H) / 2);

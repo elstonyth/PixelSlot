@@ -322,8 +322,8 @@ async function cleanScan(bytes: Buffer): Promise<Buffer> {
 // Pure composite: photo width-fitted at natural aspect into the frame's card
 // window (nothing cropped, full die-cut corner curves visible), frame layered
 // on top, then the per-card PSA label text (photo → frame → label, spec §6).
-// No label fields → today's two-layer behaviour (used by geometry tests and
-// any raw composite).
+// No label fields → today's three-layer behaviour (plate + photo + frame,
+// used by geometry tests and any raw composite).
 export async function composeSlab(
   frameBytes: Buffer,
   photoBytes: Buffer,
@@ -368,6 +368,22 @@ export async function composeSlab(
   const inset = Math.max(2, Math.round(winW * 0.0063)); // recess gap (~8px @1600)
   const cardW = winW - inset * 2;
   const cardH = Math.round((chh * cardW) / cw);
+  const cardTop = top + inset;
+  // Degenerate narrow-tall scan (e.g. 100x320,000) passes the ≤20MB/≤32MP
+  // input guards but blows cardH up to millions of px BEFORE any containment
+  // check — an OOM-sized resize allocation below (line ~389), escaping
+  // per-card fault isolation. Bound against the FRAME canvas (fh), not the
+  // nominal window height: under the shipped user-1600 geometry a real PSA
+  // card (~0.713 aspect) width-fitted into the window overflows winH by a
+  // few px (the bottom recess margin absorbs it) while still fitting inside
+  // the frame — so winH would false-positive on legitimate bakes. fh is the
+  // same bound sharp's composite() enforces below, just checked before the
+  // expensive resize instead of after it.
+  if (cardTop + cardH > fh) {
+    throw new Error(
+      `card scan too tall for frame: fitted ${cardW}x${cardH} at top ${cardTop} exceeds frame height ${fh} (source ${cw}x${chh})`,
+    );
+  }
   const cardLeft = left + inset;
   // TOP-aligned: a real holder grips the card snug under the label rail, with
   // the spare recess space at the BOTTOM. Verified against a high-res eBay
@@ -375,7 +391,6 @@ export async function composeSlab(
   // sourced via the card's own PriceCharting sales table): gap label→card
   // ≈ 0.07 of slab height, card top ≈ 0.25. A bottom-anchored variant (from
   // the low-res 380px PSA cert photo — a misleading reference) was rejected.
-  const cardTop = top + inset;
   const photo = await sharp(cleaned).resize(cardW, cardH).png().toBuffer();
   // Glassy SHADOWED-RECESS plate across the WHOLE window, behind the card:
   // closes the pocket above the card and makes the thin recess gap + die-cut

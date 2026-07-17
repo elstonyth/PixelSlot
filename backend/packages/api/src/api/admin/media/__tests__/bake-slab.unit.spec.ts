@@ -222,6 +222,20 @@ describe('composeSlab', () => {
     expect(meta.height).toBe(669);
   });
 
+  // A narrow-tall scan passes the input guards (≤20MB, ≤32MP) but width-fitting
+  // it balloons cardH into the resize allocation below, overflowing the frame
+  // canvas — reject it before that allocation instead of letting the worker OOM.
+  it('rejects a degenerate narrow-tall card scan', async () => {
+    const tallPhoto = sharp({
+      create: { width: 40, height: 4000, channels: 3, background: { r: 0, g: 128, b: 0 } },
+    })
+      .png()
+      .toBuffer();
+    await expect(
+      composeSlab(await makeFrame(400, 669), await tallPhoto),
+    ).rejects.toThrow(/too tall/);
+  });
+
   it('renders the label text layer when label fields are passed', async () => {
     const { LABEL_BOX } = await import('../label.js');
     const out = await composeSlab(await makeFrame(400, 669), await makePhoto(), {
