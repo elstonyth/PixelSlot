@@ -6,7 +6,7 @@ import { Label, Select } from '@medusajs/ui';
 // Qualifier half-grades (2.5–9.5) deliberately excluded (§3a): the catalog
 // doesn't carry them, and 9.5 is a PriceCharting tier, never a PSA grade.
 // 1.5 stays — PSA's base FR grade.
-export const PSA_GRADES = [
+const PSA_GRADES = [
   '10',
   '9',
   '8',

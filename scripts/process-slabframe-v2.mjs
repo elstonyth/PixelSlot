@@ -36,7 +36,13 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(here, '..', 'package.json'));
 const sharp = require(process.env.SHARP_PATH ?? 'sharp');
 
-const SRC = path.join(here, '..', 'docs', 'research', 'slabframe-user-1600.png');
+const SRC = path.join(
+  here,
+  '..',
+  'docs',
+  'research',
+  'slabframe-user-1600.png',
+);
 const OUT = path.join(here, '..', 'public', 'images', 'slab-frame.webp');
 const TARGET_W = 1600; // = MAX_FRAME_WIDTH in bake-slab.ts
 const TARGET_H = 2700;
@@ -64,7 +70,9 @@ for (const [cx, cy] of [
   [W - 1, H - 1],
 ]) {
   if (A(cx, cy) > 8) {
-    throw new Error(`corner (${cx},${cy}) is not transparent (alpha ${A(cx, cy)})`);
+    throw new Error(
+      `corner (${cx},${cy}) is not transparent (alpha ${A(cx, cy)})`,
+    );
   }
 }
 // border-connected flood at alpha<=8 must find a real transparent region —
@@ -113,14 +121,20 @@ if (substantialFrac < 0.85) {
   );
 }
 if (opaqueGt240 < W * H * 0.05) {
-  throw new Error(`opaque label region missing: only ${opaqueGt240} px at alpha>240`);
+  throw new Error(
+    `opaque label region missing: only ${opaqueGt240} px at alpha>240`,
+  );
 }
 console.log('alpha histogram (16-wide buckets, 0-255):');
 {
   const hist = new Array(17).fill(0);
   for (let p = 0; p < W * H; p++) hist[Math.floor(data[p * CH + 3] / 16)]++;
   hist.forEach((c, i) =>
-    console.log(`  [${i * 16}-${i * 16 + 15}]`, c, `${((c / (W * H)) * 100).toFixed(2)}%`),
+    console.log(
+      `  [${i * 16}-${i * 16 + 15}]`,
+      c,
+      `${((c / (W * H)) * 100).toFixed(2)}%`,
+    ),
   );
 }
 console.log(
