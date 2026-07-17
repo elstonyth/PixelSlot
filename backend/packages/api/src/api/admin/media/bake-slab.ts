@@ -23,10 +23,10 @@ import { ensureLabelFont } from './label-font';
 // frame asset; admin-uploaded frames must keep this geometry (PR #81 contract,
 // mirrored in the admin Storefront page copy).
 export const SLAB_WINDOW = {
-  top: 0.2773,
-  left: 0.1144,
-  right: 0.1169,
-  bottom: 0.0764,
+  top: 0.2626,
+  left: 0.0956,
+  right: 0.0944,
+  bottom: 0.0741,
 } as const;
 const MAX_FRAME_WIDTH = 1600;
 // Frames are downscaled to fit BOTH bounds. Height matters independently: a
@@ -381,18 +381,29 @@ export async function composeSlab(
   // closes the pocket above the card and makes the thin recess gap + die-cut
   // corner cutouts read as the holder's molded interior instead of raw page
   // background ("tiny black bars/tips" over a dark page — operator,
-  // 2026-07-16). Tone 148 renders the recess ~25% darker than the case front
-  // (pixel targets over a dark page: recess/pocket ~87, case ~115) — matching
-  // the real slab, where the pocket around the card reads as shadowed
-  // interior, visibly darker than the case (measured on cert 152108321;
-  // a case-bright plate made the cut look wrong-sized). The lip line marks
-  // the recess step just BELOW the card (the spare space sits at the bottom).
-  // EXCEPTION — the card's four die-cut corner cutouts read as SLAB PLASTIC
-  // (case tone 197), not shadow (operator, 2026-07-16): even-odd HOLES are
-  // punched in the shadow rect and filled with case-tone patches. One layer
-  // per region — stacking two 55%-alpha rects would brighten and de-glass the
-  // tips (measured 147 vs the 115 target when naively stacked).
-  // Pixel targets over a dark page: corner tips ~115, gap/pocket ~87, case ~115.
+  // 2026-07-16). Tone 148 renders the recess ~25% darker than the OLD glassy
+  // case front (pixel targets over a dark page: recess/pocket ~87, case
+  // ~115) — matching the real slab, where the pocket around the card reads
+  // as shadowed interior, visibly darker than the case (measured on cert
+  // 152108321; a case-bright plate made the cut look wrong-sized). The lip
+  // line marks the recess step just BELOW the card (the spare space sits at
+  // the bottom). Left AS-IS for Task 2R (still reads correctly as a shadowed
+  // interior against the new textured case; only the corner patches below
+  // needed retuning).
+  //
+  // EXCEPTION — the card's four die-cut corner cutouts read as SLAB PLASTIC,
+  // not shadow (operator, 2026-07-16): even-odd HOLES are punched in the
+  // shadow rect and filled with case-tone patches. One layer per region —
+  // stacking two alpha rects would brighten and de-glass the tips.
+  // Task 2R (2026-07-17, operator case swap to slabframe-user-1600): the new
+  // textured case reads MUCH brighter than the old glassy one — measured
+  // ~206 (avg of 30 samples along the band) on a proof composited over
+  // rgb(23,23,23), vs. the old ~115 the fill(197)/alpha(0.55) pair was tuned
+  // against. That pair rendered corner patches at ~115-118, visibly darker
+  // than the new case (clash flagged by Step 6's bake-proof check) — bumped
+  // to fill(225,225,228)/alpha(0.85), which composites to ~196 over the same
+  // background, matching the measured case tone. Pixel targets over a dark
+  // page (NEW case, Task 2R): corner tips ~196, gap/pocket ~91, case ~206.
   const lipY = inset + cardH + Math.round(fw * 0.0025);
   const lipH = Math.max(2, Math.round(fw * 0.003));
   const pr = Math.round(cardW * 0.0476) + 6; // die-cut radius + margin
@@ -408,7 +419,7 @@ export async function composeSlab(
   const patches = pcs
     .map(
       ([x, y]) =>
-        `<rect x="${x}" y="${y}" width="${pr}" height="${pr}" fill="rgb(197,197,201)" fill-opacity="0.55"/>`,
+        `<rect x="${x}" y="${y}" width="${pr}" height="${pr}" fill="rgb(225,225,228)" fill-opacity="0.85"/>`,
     )
     .join('');
   const plate = Buffer.from(

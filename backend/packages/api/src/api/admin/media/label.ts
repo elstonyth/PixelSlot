@@ -123,15 +123,15 @@ export type SlabLabelFields = {
 };
 
 // White-sticker box as fractions of the FRAME — printed by
-// scripts/process-slabframe-v2.mjs for the shipped frame (Task 2). Uses the
-// SHIPPED frame's measured values (controller override, 2026-07-17): the
-// brief's inline numbers were measured against a pre-Task-2 asset. HOLO/logo
-// top = 0.770 of sticker — baseline 3 at 0.723 stays above it (§13 holds).
+// scripts/process-slabframe-v2.mjs for the shipped frame. Re-measured
+// 2026-07-17 (Task 2R, operator case swap to slabframe-user-1600 — the
+// textured/frosted case picked in the tier-frame session, PR #196). HOLO/logo
+// top = 0.756 of sticker — baseline 3 at 0.723 stays above it (§13 holds).
 export const LABEL_BOX = {
-  top: 0.0617,
-  left: 0.0975,
-  right: 0.1037,
-  height: 0.12,
+  top: 0.0593,
+  left: 0.1,
+  right: 0.095,
+  height: 0.117,
 } as const;
 
 const BASELINES = [0.298, 0.509, 0.723] as const; // of sticker height (4-cert mean)
