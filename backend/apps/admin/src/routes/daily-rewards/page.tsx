@@ -47,6 +47,7 @@ import { validateImageFile } from '../../lib/image-validation';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { snapshotOf } from './box-snapshot';
 import { LEVELS, foldRangesLocal } from './voucher-ranges';
+import { VipLevelsTab } from './vip-levels-tab';
 
 const TIERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'Z'] as const;
 
@@ -93,13 +94,13 @@ const rowFromPrize = (p: DailyBoxPrizeDTO): EditRow => ({
 });
 
 const DailyRewardsPage = () => {
-  const [tab, setTab] = useState<'boxes' | 'vouchers' | 'frames' | 'settings'>(
-    'boxes',
-  );
+  const [tab, setTab] = useState<
+    'levels' | 'boxes' | 'vouchers' | 'frames' | 'settings'
+  >('levels');
   const boxesDirty = useRef(false);
   const prompt = usePrompt();
   const switchTab = async (
-    next: 'boxes' | 'vouchers' | 'frames' | 'settings',
+    next: 'levels' | 'boxes' | 'vouchers' | 'frames' | 'settings',
   ) => {
     if (tab === 'boxes' && next !== 'boxes' && boxesDirty.current) {
       const confirmed = await prompt({
@@ -116,7 +117,9 @@ const DailyRewardsPage = () => {
       <Tabs
         value={tab}
         onValueChange={(v) =>
-          switchTab(v as 'boxes' | 'vouchers' | 'frames' | 'settings')
+          switchTab(
+            v as 'levels' | 'boxes' | 'vouchers' | 'frames' | 'settings',
+          )
         }
         activationMode="manual"
       >
@@ -130,12 +133,16 @@ const DailyRewardsPage = () => {
             </Text>
           </div>
           <Tabs.List>
+            <Tabs.Trigger value="levels">Levels</Tabs.Trigger>
             <Tabs.Trigger value="boxes">Boxes</Tabs.Trigger>
             <Tabs.Trigger value="vouchers">Vouchers</Tabs.Trigger>
             <Tabs.Trigger value="frames">Frames</Tabs.Trigger>
             <Tabs.Trigger value="settings">Engine settings</Tabs.Trigger>
           </Tabs.List>
         </div>
+        <Tabs.Content value="levels">
+          <VipLevelsTab />
+        </Tabs.Content>
         <Tabs.Content value="boxes">
           <BoxesTab dirtyRef={boxesDirty} />
         </Tabs.Content>
