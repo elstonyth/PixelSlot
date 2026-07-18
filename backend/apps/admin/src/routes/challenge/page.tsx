@@ -271,8 +271,17 @@ const PayoutTab = () => {
   if (!form) return <LoadingSkeleton />;
 
   const dirty = JSON.stringify(form) !== JSON.stringify(seededFrom);
+  // Mirror the server's checks (challenge-validate.ts) so out-of-range values
+  // show inline instead of round-tripping to a generic server-error toast.
+  const errors: string[] = [];
+  if (!Number.isInteger(form.reset_day) || form.reset_day < 0 || form.reset_day > 6)
+    errors.push('Reset day must be an integer between 0 and 6.');
+  if (!Number.isInteger(form.reset_hour) || form.reset_hour < 0 || form.reset_hour > 23)
+    errors.push('Reset hour must be an integer between 0 and 23.');
+  if (!(form.payout_credits >= 0))
+    errors.push('Payout credits must be ≥ 0.');
   const reasonValid = reason.trim().length > 0;
-  const canSave = !save.isPending && dirty && reasonValid;
+  const canSave = !save.isPending && dirty && errors.length === 0 && reasonValid;
   const set = (patch: Partial<ChallengeSettingsDTO>) => setForm((f) => (f ? { ...f, ...patch } : f));
 
   async function onSave() {
@@ -300,6 +309,13 @@ const PayoutTab = () => {
         Fixed-weekly cadence anchored at a timezone + reset day/hour, plus the
         flat top-10 payout (inert config).
       </Text>
+      {errors.length > 0 && (
+        <div className="rounded-lg border border-ui-border-error p-3">
+          {errors.map((e) => (
+            <Text key={e} className="text-ui-fg-error" size="small">{e}</Text>
+          ))}
+        </div>
+      )}
       <div>
         <Text size="small" weight="plus">Cadence</Text>
         <Text className="text-ui-fg-subtle" size="small">fixed_weekly (only supported value)</Text>
@@ -315,15 +331,15 @@ const PayoutTab = () => {
       </div>
       <div>
         <Text size="small" weight="plus">Reset day (0 = Sunday … 6 = Saturday)</Text>
-        <Input value={String(form.reset_day)} onChange={(e) => set({ reset_day: Number(e.target.value) })} />
+        <Input type="number" min={0} max={6} value={String(form.reset_day)} onChange={(e) => set({ reset_day: Number(e.target.value) })} />
       </div>
       <div>
         <Text size="small" weight="plus">Reset hour (0–23)</Text>
-        <Input value={String(form.reset_hour)} onChange={(e) => set({ reset_hour: Number(e.target.value) })} />
+        <Input type="number" min={0} max={23} value={String(form.reset_hour)} onChange={(e) => set({ reset_hour: Number(e.target.value) })} />
       </div>
       <div>
         <Text size="small" weight="plus">Top-10 payout credits (RM)</Text>
-        <Input value={String(form.payout_credits)} onChange={(e) => set({ payout_credits: Number(e.target.value) })} />
+        <Input type="number" min={0} value={String(form.payout_credits)} onChange={(e) => set({ payout_credits: Number(e.target.value) })} />
       </div>
       <div>
         <Text size="small" weight="plus">Top-10 featured cards</Text>
