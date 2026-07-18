@@ -22,7 +22,12 @@ import {
 } from '@/lib/data/schemas';
 
 export type ProfileRarity =
-  'Immortal' | 'Legendary' | 'Mythical' | 'Rare' | 'Uncommon' | 'Common';
+  | 'Immortal'
+  | 'Legendary'
+  | 'Mythical'
+  | 'Rare'
+  | 'Uncommon'
+  | 'Common';
 
 export interface PublicProfileCard {
   handle: string;
@@ -55,7 +60,6 @@ export interface PublicProfile {
   stats: {
     pulls: number;
     volume: number;
-    points: number;
     by_rarity: Record<ProfileRarity, number>;
   };
   collection?: PublicProfileCard[]; // showcased-only; optional: absent = empty (pre-migration compat)
