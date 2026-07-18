@@ -64,6 +64,19 @@ payout (idempotency-critical), and any storefront challenge UI.
   components; React Query hooks in `admin/src/lib/queries.ts`; REST helpers in
   `admin/src/lib/admin-rest.ts`; `LoadingSkeleton`; `toast` + `usePrompt` for
   save/confirm flows.
+- **Sidebar organization — the two systems get separate top-level homes** (decided
+  2026-07-19, operator-friendliness). `RouteConfig` supports `nested` (parent menu
+  path) and `rank` (ordering). **Neither system lives under Promotions:**
+  - **VIP system → two adjacent top-level entries:** the new **"VIP Levels"** page
+    and the existing daily-rewards page — renamed **"Daily Rewards" → "VIP Daily
+    Rewards"** and **un-nested from `/promotions`** — sit side by side via `rank`
+    (config-only changes to the existing page; route, page body and APIs
+    untouched). Custom-route nesting (one custom page under another) is unproven
+    in this SDK, so adjacency-by-rank, not nesting, groups the family.
+  - **Milestone system → its own top-level entry:** the challenge page appears as
+    a top-level sidebar item **"Weekly Challenge"**, ranked after the VIP pair,
+    keeping the community-milestone system visually separate from the per-user
+    VIP system (the two must never be conflated).
 
 ---
 
@@ -128,7 +141,8 @@ follow-up**, not part of this project.
 
 ### 3.3 Frontend
 
-`backend/apps/admin/src/routes/vip-levels/page.tsx` — sidebar entry "VIP Levels":
+`backend/apps/admin/src/routes/vip-levels/page.tsx` — top-level sidebar entry
+"VIP Levels", ranked beside the renamed "VIP Daily Rewards" (see §2):
 
 - `@medusajs/ui` `Table` of editable rows (level, threshold RM, voucher RM, box tier
   select from live `reward_box` tiers, frame toggle, referral %).
@@ -202,27 +216,36 @@ Both registered in `PacksModuleService`'s `MedusaService({...})` model list.
 - Settings: `cadence` ∈ `{'fixed_weekly'}`; timezone validated via
   `Intl.supportedValuesOf('timeZone')` / `Intl.DateTimeFormat` probe; day/hour ranges;
   `payout_card_ids` same card-existence check.
+- **Empty stage list is valid** and means "challenge unconfigured/disabled" — D must
+  treat zero stages as challenge-off. (Contrast: the VIP ladder requires N ≥ 1
+  because `levelForSpend` throws on an empty ladder.)
+- **`GET /admin/challenge/settings` before first save returns the §4.1 defaults**
+  (create-on-first-edit; never 404s).
+- Card existence is checked **at save time only**; a featured card deleted *later*
+  leaves a dangling id. D must skip missing ids at render (documented in §4.4).
 
 ### 4.3 Frontend
 
-`backend/apps/admin/src/routes/challenge/page.tsx` — sidebar entry "Challenge", two
-`@medusajs/ui` `Tabs`:
+`backend/apps/admin/src/routes/challenge/page.tsx` — **top-level** sidebar entry
+"Weekly Challenge" (see §2 sidebar organization), two `@medusajs/ui` `Tabs`:
 
-- **Stages** — editable table (stage #, threshold RM, credits RM, featured-card picker
-  reusing the existing card-search pattern from the daily-box prize editor);
-  add/remove stage rows (client renumbers).
-- **Settings** — week cadence (read-only `fixed_weekly` for now), timezone select,
-  reset day/hour, and the flat top-10 reward (credits + featured cards).
+- **Milestone Stages** — editable table (stage #, threshold RM, credits RM,
+  featured-card picker reusing the existing card-search pattern from the daily-box
+  prize editor); add/remove stage rows (client renumbers).
+- **Week & Payout** — week cadence (read-only `fixed_weekly` for now), timezone
+  select, reset day/hour, and the flat top-10 reward (credits + featured cards).
 
 Both tabs save independently with required reason; same query-hook/REST conventions.
 
 ### 4.4 Contract note for D
 
 These tables are **inert** until D consumes them. D's spec must treat them as the
-config contract: variable stage count (render N, don't assume 4), flat top-10 reward,
-fixed-weekly cadence anchored at (`timezone`, `reset_day`, `reset_hour`). If D's
-settlement design needs a different shape (e.g. per-rank payouts), it amends this
-schema in its own migration — this project does not pre-build for that.
+config contract: variable stage count (render N, don't assume 4; **zero stages =
+challenge disabled**), flat top-10 reward, fixed-weekly cadence anchored at
+(`timezone`, `reset_day`, `reset_hour`), and **skip `reward_card_ids` /
+`payout_card_ids` entries whose card no longer exists**. If D's settlement design
+needs a different shape (e.g. per-rank payouts), it amends this schema in its own
+migration — this project does not pre-build for that.
 
 ---
 
@@ -266,8 +289,10 @@ schema in its own migration — this project does not pre-build for that.
 - All of sub-project D's runtime (snapshot column, re-rank, pool, weekly buckets,
   settlement, payout, Task-hub UI).
 - Editing `vip_level.prizes` (unused JSON, null throughout the seed).
-- The daily-rewards admin page and the avatar-frames validator — fully unchanged
-  (frame milestones stay fixed per §3.2; ladder-driven frames are a documented
-  follow-up).
+- The daily-rewards admin page and the avatar-frames validator — unchanged except
+  the daily-rewards page's **`RouteConfig` block** (label → "VIP Daily Rewards",
+  `nested: '/promotions'` removed, `rank` added; §2 — config-only, no
+  route/page-body/API changes). Frame milestones stay fixed per
+  §3.2; ladder-driven frames are a documented follow-up.
 - Seed-file changes (`vip-levels.data.ts`) and the workbook pin test.
 - Optimistic-concurrency/versioning on admin writes (documented trade-off, §5).
