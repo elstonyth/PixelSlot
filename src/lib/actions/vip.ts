@@ -28,15 +28,52 @@ export type VipNext = {
   reward: VipReward;
 };
 
+export type VipLevel = {
+  level: number;
+  threshold: number;
+  reward: {
+    voucherAmount: number;
+    boxTier: string;
+    frameUnlock: boolean;
+    directReferralPct: number;
+  };
+};
+
+type RawVipLevel = {
+  level: number;
+  threshold: number;
+  reward: {
+    voucher_amount: number;
+    box_tier: string;
+    frame_unlock: boolean;
+    direct_referral_pct: number;
+  };
+};
+
+export function mapVipLevels(raw: RawVipLevel[]): VipLevel[] {
+  return raw.map((r) => ({
+    level: r.level,
+    threshold: r.threshold,
+    reward: {
+      voucherAmount: r.reward.voucher_amount,
+      boxTier: r.reward.box_tier,
+      frameUnlock: r.reward.frame_unlock,
+      directReferralPct: r.reward.direct_referral_pct,
+    },
+  }));
+}
+
 export type Vip = {
   level: number;
   highestLevelEver: number;
   spend: number;
   next: VipNext | null;
+  levels: VipLevel[];
 };
 
 export type VipResult =
-  { ok: true; vip: Vip } | { ok: false; error: string; needsAuth?: boolean };
+  | { ok: true; vip: Vip }
+  | { ok: false; error: string; needsAuth?: boolean };
 
 const VIP_RULES: ErrorRule[] = [
   [
@@ -92,6 +129,7 @@ export async function getVip(): Promise<VipResult> {
               },
             }
           : null,
+        levels: mapVipLevels((v.levels ?? []) as RawVipLevel[]),
       },
     };
   } catch (error) {
