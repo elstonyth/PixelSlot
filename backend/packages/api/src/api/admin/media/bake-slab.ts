@@ -26,6 +26,10 @@ export const SLAB_WINDOW = {
   top: 0.2707,
   left: 0.1094,
   right: 0.1087,
+  // Documentation-only anchor: composeSlab is top-aligned (spare recess at the
+  // bottom), so it reads top/left/right but NOT bottom. Kept as the measured
+  // fourth inset of the geometry contract (PR #81), so a re-measure records all
+  // four sides in one place.
   bottom: 0.0822,
 } as const;
 const MAX_FRAME_WIDTH = 1600;

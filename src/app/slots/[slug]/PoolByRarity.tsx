@@ -58,7 +58,9 @@ export function PoolByRarity({
                 hidden scrollbar matches the catalog rails. overflow-x-auto
                 forces overflow-y to compute to `auto` (CSS coupling), which
                 clips each slab's tier halo (box-shadow) on ALL four sides (the
-                glow is an offset-0 shadow, ~44px each way). overflow clips at
+                glow is an offset-0 shadow, ~44px each way — the radius lives in
+                glowStyle() in src/components/SlabImage.tsx; keep this padding in
+                sync with it). overflow clips at
                 the PADDING edge, so the halo room lives in the padding: py-12/
                 px-10 give it. -my-12 fully cancels the vertical padding (no
                 layout shift). -mx-4 is capped at the px-fluid gutter so the
