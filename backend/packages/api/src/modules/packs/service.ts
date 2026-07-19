@@ -230,6 +230,14 @@ type LedgerSqlManager = {
   execute<T = unknown>(query: string, params?: unknown[]): Promise<T>;
 };
 
+// Pulled value of one pull row in USD: the draw-time snapshot when stamped,
+// live card FMV × multiplier for pre-backfill rows. Shared by the three
+// pulled-value aggregates (leaderboardTop wins CTE, challengeWeekPool,
+// challengeWeekTop) so the expression can't drift between boards. Requires
+// aliases `pull pu` / `card c` and binds ONE `?` (DEFAULT_MARKET_MULTIPLIER).
+const PULLED_VALUE_USD_SQL =
+  'COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))';
+
 // ---- Daily Rewards (Task 5): getDailyState / drawDailyBox + admin authoring ----
 // Types match the task-5 brief verbatim — later tasks (routes, storefront) depend
 // on these exact shapes.
@@ -2423,7 +2431,9 @@ class PacksModuleService extends MedusaService({
         '   HAVING ROUND(SUM(-amount) * 100) > 0 ' +
         '), wins AS ( ' +
         '  SELECT pu.customer_id, COUNT(*) AS pulls, ' +
-        '         SUM(COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))) AS volume_usd ' +
+        '         SUM(' +
+        PULLED_VALUE_USD_SQL +
+        ') AS volume_usd ' +
         '    FROM pull pu ' +
         '    LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
         "   WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
@@ -4673,7 +4683,9 @@ class PacksModuleService extends MedusaService({
         '), anchor AS (SELECT start_local AT TIME ZONE ? AS start_utc FROM wkfix) ' +
         'SELECT ' +
         "  to_char((SELECT start_utc FROM anchor) AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS week_start, " +
-        '  ROUND(COALESCE(SUM(COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))), 0) * ? * 100) / 100 AS pooled_myr ' +
+        '  ROUND(COALESCE(SUM(' +
+        PULLED_VALUE_USD_SQL +
+        '), 0) * ? * 100) / 100 AS pooled_myr ' +
         '  FROM pull pu ' +
         '  LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
         " WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
@@ -4725,7 +4737,9 @@ class PacksModuleService extends MedusaService({
         '    FROM wk ' +
         '), anchor AS (SELECT start_local AT TIME ZONE ? AS start_utc FROM wkfix) ' +
         'SELECT pu.customer_id, COUNT(*) AS pulls, ' +
-        '       ROUND(SUM(COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))) * ? * 100) / 100 AS volume_myr ' +
+        '       ROUND(SUM(' +
+        PULLED_VALUE_USD_SQL +
+        ') * ? * 100) / 100 AS volume_myr ' +
         '  FROM pull pu ' +
         '  LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
         " WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
