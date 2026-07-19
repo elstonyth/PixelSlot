@@ -90,7 +90,8 @@ The operator supplied the "Weekly Pulled Value Challenge" standard. Alignment:
 - **Weekly leaderboard = pull value** (operator decision, weekly tab only):
   GET /store/leaderboard?period=weekly now ranks by pulled value over the
   challenge-anchored week via the new `challengeWeekTop` aggregate — the SAME
-  board as /task's top-10, so the two surfaces can never disagree. All-time
+  board as /task's top-10. Both routes carry an independent 30s per-process
+  cache, so they converge within one cache window (not instantaneously). All-time
   stays spend-ranked ("points"). LeaderboardClient renders per-tab: weekly's
   big figure/your-rank value is pulled value; all-time keeps points.
 - **Flagged follow-up (not in scope):** true "Recorded Pull Value" needs a
