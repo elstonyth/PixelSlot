@@ -290,6 +290,39 @@ export type DrawDailyBoxResult = {
 // is belt-and-suspenders against a corrupted edge so COUNT(*) can never loop.
 const DOWNSTREAM_DEPTH_CAP = 100;
 
+// The (timezone, reset-day, reset-hour) anchor a challenge-week query filters on.
+type ChallengeWeekAnchor = {
+  timezone: string;
+  resetDay: number;
+  resetHour: number;
+};
+
+// Shared CTE that resolves the CURRENT challenge week's UTC start from a
+// ChallengeWeekAnchor. Downstream queries append their SELECT and filter
+// `pu.rolled_at >= (SELECT start_utc FROM anchor)`. Kept in ONE place so the
+// community pool and the pull-value ranking can never drift onto different week
+// boundaries. Anchor computed via AT TIME ZONE (DST-correct); EXTRACT(DOW) uses
+// 0=Sunday…6=Saturday, matching challenge_settings. wkfix: if today IS the reset
+// day but before the reset hour, the naive anchor lands in the future — step
+// back one week. Takes 4 params (timezone, resetDay, resetHour, timezone).
+const CHALLENGE_WEEK_ANCHOR_CTE =
+  'WITH nowtz AS (SELECT now() AT TIME ZONE ? AS t), ' +
+  'wk AS ( ' +
+  "  SELECT date_trunc('day', t) " +
+  "         - ((EXTRACT(DOW FROM t)::int - ? + 7) % 7) * interval '1 day' " +
+  "         + ? * interval '1 hour' AS start_local, t " +
+  '    FROM nowtz ' +
+  '), wkfix AS ( ' +
+  '  SELECT CASE WHEN start_local > t ' +
+  "         THEN start_local - interval '7 days' ELSE start_local END AS start_local " +
+  '    FROM wk ' +
+  '), anchor AS (SELECT start_local AT TIME ZONE ? AS start_utc FROM wkfix) ';
+// resetDay/resetHour stay NUMBERS — they feed integer arithmetic in the CTE
+// (`EXTRACT(DOW) - ?`), so a string would change the query's typing.
+const challengeWeekAnchorParams = (
+  w: ChallengeWeekAnchor,
+): (string | number)[] => [w.timezone, w.resetDay, w.resetHour, w.timezone];
+
 class PacksModuleService extends MedusaService({
   Pack,
   Card,
@@ -4637,6 +4670,72 @@ class PacksModuleService extends MedusaService({
       sharedContext,
     );
     return after;
+  }
+
+  // Community pool for the CURRENT challenge week: Σ pulled value across all
+  // customers (card FMV × multiplier × FX → MYR) since the week anchor (shared
+  // CHALLENGE_WEEK_ANCHOR_CTE). Mirrors leaderboardTop's wins CTE
+  // (source <> 'reward'); read-only, so the pool is REAL ledger data even while
+  // the reward settlement engine is inert.
+  @InjectManager()
+  async challengeWeekPool(
+    opts: ChallengeWeekAnchor,
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<number> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const fxRate = await resolveFxRate(this);
+    const [row] = await em.execute<{ pooled_myr: string | null }[]>(
+      CHALLENGE_WEEK_ANCHOR_CTE +
+        'SELECT ' +
+        '  ROUND(COALESCE(SUM(c.market_value * COALESCE(c.market_multiplier, ?)), 0) * ? * 100) / 100 AS pooled_myr ' +
+        '  FROM pull pu ' +
+        '  LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
+        " WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
+        '   AND pu.rolled_at >= (SELECT start_utc FROM anchor)',
+      [...challengeWeekAnchorParams(opts), DEFAULT_MARKET_MULTIPLIER, fxRate],
+    );
+    return Number(row?.pooled_myr ?? 0);
+  }
+
+  // Weekly Pull Value top-10 for the challenge: customers ranked by pulled
+  // value (NOT spend — that's the main leaderboard's ranking) inside the SAME
+  // challenge-week window as challengeWeekPool (shared CHALLENGE_WEEK_ANCHOR_CTE).
+  // Standard §"Weekly Pulled Value Challenge": end-of-week top-10 receive the
+  // unlocked cumulative rewards.
+  @InjectManager()
+  async challengeWeekTop(
+    opts: ChallengeWeekAnchor & { limit: number },
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<{ customer_id: string; pulls: number; volumeMyr: number }[]> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const fxRate = await resolveFxRate(this);
+    const rows = await em.execute<
+      { customer_id: string; pulls: string; volume_myr: string | null }[]
+    >(
+      CHALLENGE_WEEK_ANCHOR_CTE +
+        'SELECT pu.customer_id, COUNT(*) AS pulls, ' +
+        '       ROUND(SUM(c.market_value * COALESCE(c.market_multiplier, ?)) * ? * 100) / 100 AS volume_myr ' +
+        '  FROM pull pu ' +
+        '  LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
+        " WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
+        '   AND pu.rolled_at >= (SELECT start_utc FROM anchor) ' +
+        ' GROUP BY pu.customer_id ' +
+        ' ORDER BY volume_myr DESC NULLS LAST, pu.customer_id ASC ' +
+        ' LIMIT ?',
+      [
+        ...challengeWeekAnchorParams(opts),
+        DEFAULT_MARKET_MULTIPLIER,
+        fxRate,
+        opts.limit,
+      ],
+    );
+    return rows.map((r) => ({
+      customer_id: r.customer_id,
+      pulls: Number(r.pulls ?? 0),
+      volumeMyr: Number(r.volume_myr ?? 0),
+    }));
   }
 
   // Challenge singleton read — first row or the §4.1 defaults (never 404s).

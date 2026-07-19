@@ -2,7 +2,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http';
 import { Modules } from '@medusajs/framework/utils';
 import PacksModuleService from '../../../modules/packs/service';
 import { PACKS_MODULE } from '../../../modules/packs';
-import { HANDLE_RE, seedOf } from '../../../utils/profile-handle';
+import { publicProfileFields, seedOf } from '../../../utils/profile-handle';
 
 // GET /store/leaderboard?period=weekly|alltime — public leaderboard. A plain
 // publishable-key store route (read-only, no workflow).
@@ -11,11 +11,15 @@ import { HANDLE_RE, seedOf } from '../../../utils/profile-handle';
 // entry carries only a display name (first_name, else an anonymous "Collector
 // ####" handle) and a stable `seed` integer the storefront hashes into an avatar.
 //
-// Ranking is REAL spend: points = Σ(pack_open ledger debits, RM) × 100 — see
-// PacksModuleService.leaderboardTop. `volume` = Σ won-card MYR display value;
-// `pulls` = pull count (reward-box draws excluded).
+// Rankings (Weekly Pulled Value Challenge standard, 2026-07-19):
+// - weekly  = the Weekly Pull Value board: ranked by pulled value over the
+//   challenge-anchored week (challengeWeekTop) — the SAME board /task's top-10
+//   shows, so the challenge payout and the leaderboard can never disagree.
+// - alltime = REAL spend: points = Σ(pack_open ledger debits, RM) × 100 — see
+//   PacksModuleService.leaderboardTop.
+// `volume` = Σ won-card MYR display value; `pulls` = pull count (reward-box
+// draws excluded on both paths).
 const TOP_N = 10;
-const WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Avatar seed = the shared `seedOf` (utils/profile-handle) so the leaderboard
 // and the public profile page render the SAME avatar for the same customer.
@@ -45,12 +49,33 @@ export async function GET(
     res.json(cached.body);
     return;
   }
-  const sinceMs = period === 'weekly' ? Date.now() - WEEKLY_MS : null;
-
   // Ranked top-N is aggregated in the DB (GROUP BY + ORDER BY + LIMIT) so it's
-  // correct at any pull volume — no more in-memory ranking of an unordered 20k
-  // slice (#7). `ranked` is already points-desc, top-N, with a stable tie-break.
-  const ranked = await packs.leaderboardTop({ sinceMs, limit: TOP_N });
+  // correct at any pull volume. weekly = pulled value over the challenge week;
+  // alltime = spend. Weekly rows mirror `volume` into `points` only because the
+  // wire shape requires a finite points field — the weekly UI renders volume.
+  let ranked: {
+    customer_id: string;
+    pulls: number;
+    points: number;
+    volume: number;
+  }[];
+  if (period === 'weekly') {
+    const s = await packs.challengeSettings();
+    const rows = await packs.challengeWeekTop({
+      timezone: s.timezone,
+      resetDay: s.reset_day,
+      resetHour: s.reset_hour,
+      limit: TOP_N,
+    });
+    ranked = rows.map((r) => ({
+      customer_id: r.customer_id,
+      pulls: r.pulls,
+      volume: r.volumeMyr,
+      points: r.volumeMyr,
+    }));
+  } else {
+    ranked = await packs.leaderboardTop({ sinceMs: null, limit: TOP_N });
+  }
   if (ranked.length === 0) {
     const body = { period, entries: [] };
     boardCache.set(period, { expires: Date.now() + CACHE_TTL_MS, body });
@@ -58,52 +83,35 @@ export async function GET(
     return;
   }
 
-  // Names for the ranked customers only — first_name ONLY (never email).
-  // The public profile handle (customer metadata.handle, PII-safe by design)
-  // rides along so the storefront can link each row to /profile/<handle>.
-  // Customers that predate handle assignment return null — NO mutation here
-  // (handles are assigned by the ensure-profile-handle workflow, not a GET).
+  // PII-safe display fields (name / handle / avatar) come from the shared
+  // publicProfileFields helper — first_name or an anonymous "Collector ####",
+  // never email/id; the handle links each row to /profile/<handle>. Customers
+  // that predate handle assignment return null (handles are assigned by the
+  // ensure-profile-handle workflow, not a GET). equipped_frame_level is
+  // leaderboard-specific, so it stays inline.
   const ids = ranked.map((r) => r.customer_id);
   const customers = ids.length
     ? await customerService.listCustomers({ id: ids }, { take: ids.length })
     : [];
-  const firstNameById = new Map(
-    customers.map((c) => [c.id, (c.first_name || '').trim()]),
-  );
-  const handleById = new Map(
-    customers.map((c) => {
-      const handle = (c.metadata ?? {})['handle'];
-      return [
-        c.id,
-        typeof handle === 'string' && HANDLE_RE.test(handle) ? handle : null,
-      ];
-    }),
-  );
-  const metaById = new Map(
-    customers.map((c) => [c.id, (c.metadata ?? {}) as Record<string, unknown>]),
-  );
+  const byId = new Map(customers.map((c) => [c.id, c]));
 
   const entries = ranked.map((r, i) => {
-    const first = firstNameById.get(r.customer_id);
     const seed = seedOf(r.customer_id);
+    const c = byId.get(r.customer_id);
+    const p = publicProfileFields(c, seed);
+    const meta = (c?.metadata ?? {}) as Record<string, unknown>;
     return {
       rank: i + 1,
-      name:
-        first && first.length > 0
-          ? first
-          : `Collector ${String(seed).slice(0, 4)}`,
-      handle: handleById.get(r.customer_id) ?? null,
+      name: p.name,
+      handle: p.handle,
       volume: r.volume,
       pulls: r.pulls,
       points: r.points,
       seed,
-      avatar_url:
-        typeof metaById.get(r.customer_id)?.avatar_url === 'string'
-          ? (metaById.get(r.customer_id)!.avatar_url as string)
-          : null,
+      avatar_url: p.avatarUrl,
       equipped_frame_level:
-        typeof metaById.get(r.customer_id)?.equipped_frame_level === 'number'
-          ? (metaById.get(r.customer_id)!.equipped_frame_level as number)
+        typeof meta['equipped_frame_level'] === 'number'
+          ? (meta['equipped_frame_level'] as number)
           : null,
     };
   });
