@@ -25,7 +25,7 @@ page shows the challenge **structure** (what's up for grabs), never fabricated l
 1. **`GET /store/challenge`** (new; mirrors `GET /store/leaderboard` — plain publishable-key
    store route, read-only, resolves `PACKS_MODULE`). Returns:
 
-   ```
+   ```javascript
    { active,                                   // stages.length > 0 (admin's "0 stages = off")
      settings: { timezone, resetDay, resetHour, payoutCredits, payoutCardIds },
      stages:   [{ stageNumber, thresholdMyr, rewardCredits, rewardCardIds }],

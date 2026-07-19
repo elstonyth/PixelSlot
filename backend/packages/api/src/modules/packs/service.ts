@@ -4788,35 +4788,54 @@ class PacksModuleService extends MedusaService({
   // (excluded from every pulled-value board). raw_ twin written alongside so
   // the ORM's bigNumber hydration matches workflow-stamped rows. Idempotent
   // (IS NULL guard). Run via src/scripts/backfill-recorded-pull-value.ts.
-  // ponytail: single unbatched UPDATE (row-locks every null pull for the
-  // statement) — switch to id-batched chunks if the pull table ever grows
-  // enough for a concurrent buyback to feel the lock.
+  //
+  // Chunked so a large historical pull table isn't pinned under one long
+  // UPDATE competing with live pack-open/buyback writes. Each batch is its own
+  // statement (autocommit when the method runs outside a transaction, as the
+  // medusa-exec script does), so row locks release between chunks. The batch
+  // CTE JOINs card, so it only selects rows that WILL update (missing/deleted-
+  // card pulls stay NULL, same as the aggregates' fallback); every selected
+  // row flips non-null, so the loop makes progress and stops on a short batch.
+  // A mid-run crash resumes on re-run (each batch independently IS-NULL-guarded).
   @InjectManager()
   async backfillRecordedPullValues(
     @MedusaContext() sharedContext: Context = {},
   ): Promise<number> {
     const em = (sharedContext.transactionManager ??
       sharedContext.manager) as unknown as LedgerSqlManager;
-    const rows = await em.execute<unknown[]>(
-      'UPDATE pull pu ' +
-        '   SET recorded_value_usd = ' +
-        LIVE_VALUE_USD_SQL +
-        ', ' +
-        '       raw_recorded_value_usd = jsonb_build_object(' +
-        "'value', (" +
-        LIVE_VALUE_USD_SQL +
-        ")::text, 'precision', ?) " +
-        '  FROM card c ' +
-        ' WHERE c.handle = pu.card_id AND c.deleted_at IS NULL ' +
-        "   AND pu.recorded_value_usd IS NULL AND pu.source <> 'reward' " +
-        ' RETURNING 1',
-      [
-        DEFAULT_MARKET_MULTIPLIER,
-        DEFAULT_MARKET_MULTIPLIER,
-        BIG_NUMBER_RAW_PRECISION,
-      ],
-    );
-    return rows.length;
+    const BATCH = 5_000;
+    let total = 0;
+    for (;;) {
+      const rows = await em.execute<unknown[]>(
+        'WITH batch AS ( ' +
+          '  SELECT pu.id FROM pull pu ' +
+          '    JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
+          "   WHERE pu.recorded_value_usd IS NULL AND pu.source <> 'reward' " +
+          '   LIMIT ? ' +
+          ') ' +
+          'UPDATE pull pu ' +
+          '   SET recorded_value_usd = ' +
+          LIVE_VALUE_USD_SQL +
+          ', ' +
+          '       raw_recorded_value_usd = jsonb_build_object(' +
+          "'value', (" +
+          LIVE_VALUE_USD_SQL +
+          ")::text, 'precision', ?) " +
+          '  FROM card c, batch b ' +
+          ' WHERE pu.id = b.id ' +
+          '   AND c.handle = pu.card_id AND c.deleted_at IS NULL ' +
+          ' RETURNING 1',
+        [
+          BATCH,
+          DEFAULT_MARKET_MULTIPLIER,
+          DEFAULT_MARKET_MULTIPLIER,
+          BIG_NUMBER_RAW_PRECISION,
+        ],
+      );
+      total += rows.length;
+      if (rows.length < BATCH) break;
+    }
+    return total;
   }
 
   // Challenge singleton read — first row or the §4.1 defaults (never 404s).
