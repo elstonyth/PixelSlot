@@ -81,15 +81,22 @@ const PackOddsEditorPage = () => {
     }
   };
 
-  // Seed (and reseed) the editable buffer from the server snapshot, during render
-  // (not an effect) per react.dev "you might not need an effect". React Query keeps
-  // a stable `data` reference until the content changes, so this reseeds only on
-  // initial load and after our explicit post-save-members invalidation — never
-  // clobbering in-progress edits.
+  // Seed the editable buffer from the server snapshot, during render (not an
+  // effect) per react.dev "you might not need an effect". Seed once per slug
+  // only — `data` gets a new object identity on every React Query refetch
+  // (e.g. refetchOnWindowFocus), so comparing `data !== seededFrom` re-seeds —
+  // and silently wipes unsaved edits — on every background refetch.
+  // saveMembers resets seededFrom so a pool save still reseeds.
+  //
+  // The `!== slug` clause reseeds on a genuine pack switch: the router reuses
+  // this route component across `:slug` changes (no remount). It cannot loop —
+  // usePackOdds sets no keepPreviousData, so `data` is either undefined or the
+  // requested slug's payload, and the route echoes the exact slug back; once
+  // seeded, `seededFrom.pack.slug === slug`, so the clause goes quiet.
   const [seededFrom, setSeededFrom] = useState<PackOddsResponse | undefined>(
     undefined,
   );
-  if (data && data !== seededFrom) {
+  if (data && (seededFrom === undefined || seededFrom.pack.slug !== slug)) {
     setSeededFrom(data);
     setRows(mapOddsToRows(data.odds));
   }
@@ -173,7 +180,11 @@ const PackOddsEditorPage = () => {
         t('packs.pool.saved', { added: res.added, removed: res.removed }),
       );
       setPoolOpen(false);
-      // Invalidation (in the hook) refetches the odds → the seeding effect reseeds.
+      // The hook's onSuccess returns the packOdds invalidation promise, so
+      // mutateAsync resolves only after the refetch — the cache is fresh
+      // here. Reset the seed so the render-time seeding reseeds the rows
+      // from the new membership.
+      setSeededFrom(undefined);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
     }

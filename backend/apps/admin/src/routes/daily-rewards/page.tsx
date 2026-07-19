@@ -171,7 +171,12 @@ const BoxesTab = ({ dirtyRef }: { dirtyRef: MutableRefObject<boolean> }) => {
   const [rows, setRows] = useState<EditRow[]>([]);
   const [reason, setReason] = useState('');
   const [serverSnap, setServerSnap] = useState('');
-  if (data && data !== seededFrom) {
+  // Seed once per mount only — `data` gets a new object identity on every
+  // React Query refetch (e.g. refetchOnWindowFocus), so comparing
+  // `data !== seededFrom` re-seeds — and silently wipes unsaved edits — on
+  // every background refetch. handleTierChange resets seededFrom to undefined
+  // so a tier switch still reseeds from the next tier's snapshot.
+  if (data && seededFrom === undefined) {
     setSeededFrom(data);
     setName(data.box.name);
     setEnabled(data.box.enabled);
@@ -318,7 +323,7 @@ const BoxesTab = ({ dirtyRef }: { dirtyRef: MutableRefObject<boolean> }) => {
   async function save() {
     if (!canSave) return;
     try {
-      await saveBox.mutateAsync({
+      const saved = await saveBox.mutateAsync({
         tier,
         body: {
           name,
@@ -341,9 +346,25 @@ const BoxesTab = ({ dirtyRef }: { dirtyRef: MutableRefObject<boolean> }) => {
           })),
         },
       });
+      // Seed-once means the post-save invalidation refetch no longer reseeds
+      // the buffer, so reseed it here from the save response — the
+      // server-canonical form (real prize ids, any normalized values) — and
+      // record that as the server snapshot so hasUnsavedEdits reads false.
+      // Mirrors VipLevelsTab.onSave.
+      const savedRows = saved.prizes.map(rowFromPrize);
+      setName(saved.box.name);
+      setEnabled(saved.box.enabled);
+      setDrawsPerDay(String(saved.box.draws_per_day));
+      setRows(savedRows);
+      setServerSnap(
+        snapshotOf({
+          name: saved.box.name,
+          enabled: saved.box.enabled,
+          drawsPerDay: String(saved.box.draws_per_day),
+          rows: savedRows,
+        }),
+      );
       setReason('');
-      // useSaveDailyBox invalidates qk.dailyBoxes + qk.dailyBox(tier) → the
-      // buffer reseeds from the refetch above.
     } catch {
       // useSaveDailyBox.onError already toasts the backend message.
     }
