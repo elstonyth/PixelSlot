@@ -2372,10 +2372,11 @@ class PacksModuleService extends MedusaService({
   // whenever a pack was repriced or deleted. points = spend(MYR) × 100 (the
   // display convention the storefront always used).
   //
-  // volume ("winnings") = Σ won-card VALUE in MYR — market_value(USD) × the
-  // card's own multiplier, × the live FX rate — the same displayMarketPrice
-  // seam as the vault/open/Top Hits, so the board matches every other surface.
-  // Reward-box pulls stay excluded from winnings (source <> 'reward').
+  // volume ("winnings") = Σ won-card VALUE in MYR — the pull's RECORDED
+  // draw-time USD value (recorded_value_usd, stamped by the open workflows so a
+  // mid-week price sync can't rewrite history), falling back to live
+  // market_value(USD) × the card's multiplier for pre-backfill rows — × the
+  // live FX rate. Reward-box pulls stay excluded (source <> 'reward').
   //
   // sinceMs = null → all-time; a timestamp → weekly window.
   @InjectManager()
@@ -2422,7 +2423,7 @@ class PacksModuleService extends MedusaService({
         '   HAVING ROUND(SUM(-amount) * 100) > 0 ' +
         '), wins AS ( ' +
         '  SELECT pu.customer_id, COUNT(*) AS pulls, ' +
-        '         SUM(c.market_value * COALESCE(c.market_multiplier, ?)) AS volume_usd ' +
+        '         SUM(COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))) AS volume_usd ' +
         '    FROM pull pu ' +
         '    LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
         "   WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
@@ -4640,7 +4641,8 @@ class PacksModuleService extends MedusaService({
   }
 
   // Community pool for the CURRENT challenge week: Σ pulled value across all
-  // customers (card FMV × multiplier × FX → MYR) since the week anchor. The
+  // customers (recorded draw-time USD value, live FMV × multiplier fallback
+  // for pre-backfill rows, × FX → MYR) since the week anchor. The
   // anchor is computed in SQL via AT TIME ZONE (DST-correct); EXTRACT(DOW)
   // uses 0=Sunday…6=Saturday — the same convention as challenge_settings.
   // Mirrors leaderboardTop's wins CTE (source <> 'reward'); read-only, so the
@@ -4671,7 +4673,7 @@ class PacksModuleService extends MedusaService({
         '), anchor AS (SELECT start_local AT TIME ZONE ? AS start_utc FROM wkfix) ' +
         'SELECT ' +
         "  to_char((SELECT start_utc FROM anchor) AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS week_start, " +
-        '  ROUND(COALESCE(SUM(c.market_value * COALESCE(c.market_multiplier, ?)), 0) * ? * 100) / 100 AS pooled_myr ' +
+        '  ROUND(COALESCE(SUM(COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))), 0) * ? * 100) / 100 AS pooled_myr ' +
         '  FROM pull pu ' +
         '  LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
         " WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
@@ -4723,7 +4725,7 @@ class PacksModuleService extends MedusaService({
         '    FROM wk ' +
         '), anchor AS (SELECT start_local AT TIME ZONE ? AS start_utc FROM wkfix) ' +
         'SELECT pu.customer_id, COUNT(*) AS pulls, ' +
-        '       ROUND(SUM(c.market_value * COALESCE(c.market_multiplier, ?)) * ? * 100) / 100 AS volume_myr ' +
+        '       ROUND(SUM(COALESCE(pu.recorded_value_usd, c.market_value * COALESCE(c.market_multiplier, ?))) * ? * 100) / 100 AS volume_myr ' +
         '  FROM pull pu ' +
         '  LEFT JOIN card c ON c.handle = pu.card_id AND c.deleted_at IS NULL ' +
         " WHERE pu.deleted_at IS NULL AND pu.customer_id IS NOT NULL AND pu.source <> 'reward' " +
@@ -4746,6 +4748,35 @@ class PacksModuleService extends MedusaService({
       pulls: Number(r.pulls ?? 0),
       volumeMyr: Number(r.volume_myr ?? 0),
     }));
+  }
+
+  // One-shot backfill for the recorded-pull-value follow-up (spec 2026-07-19
+  // Iteration 3): stamp recorded_value_usd on pre-existing rows from the
+  // CURRENT card values — the same expression the aggregates' COALESCE
+  // fallback computes, so backfilling is observation-neutral at run time and
+  // only pins the value against FUTURE price syncs. Reward pulls stay null
+  // (excluded from every pulled-value board). raw_ twin written alongside so
+  // the ORM's bigNumber hydration matches workflow-stamped rows. Idempotent
+  // (IS NULL guard). Run via src/scripts/backfill-recorded-pull-value.ts.
+  @InjectManager()
+  async backfillRecordedPullValues(
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<number> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ id: string }[]>(
+      'UPDATE pull pu ' +
+        '   SET recorded_value_usd = c.market_value * COALESCE(c.market_multiplier, ?), ' +
+        '       raw_recorded_value_usd = jsonb_build_object(' +
+        "'value', (c.market_value * COALESCE(c.market_multiplier, ?))::text, " +
+        "'precision', 20) " +
+        '  FROM card c ' +
+        ' WHERE c.handle = pu.card_id AND c.deleted_at IS NULL ' +
+        "   AND pu.recorded_value_usd IS NULL AND pu.source <> 'reward' " +
+        ' RETURNING pu.id',
+      [DEFAULT_MARKET_MULTIPLIER, DEFAULT_MARKET_MULTIPLIER],
+    );
+    return rows.length;
   }
 
   // Challenge singleton read — first row or the §4.1 defaults (never 404s).
