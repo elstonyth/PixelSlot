@@ -12,7 +12,6 @@ export const SITE_URL = (
 export const ROUTES: string[] = [
   '/',
   '/slots',
-  '/task',
   '/leaderboard',
   '/how-it-works',
   '/fairness',
