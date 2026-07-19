@@ -147,9 +147,14 @@ export async function drawFromData(
     market_value: Number(card.market_value),
     // Same value expression the boards used to compute live at query time —
     // snapshotting it here (default multiplier baked in) is what pins it.
+    // Rounded to 6dp so IEEE-double dust (19.99 × 1.2 = 23.987999…) can't make
+    // workflow-stamped rows differ from the backfill's exact numeric math.
     recorded_value_usd:
-      Number(card.market_value) *
-      Number(card.market_multiplier ?? DEFAULT_MARKET_MULTIPLIER),
+      Math.round(
+        Number(card.market_value) *
+          Number(card.market_multiplier ?? DEFAULT_MARKET_MULTIPLIER) *
+          1e6,
+      ) / 1e6,
     image: card.image,
     pokemon_dex: card.pokemon_dex ?? null,
     sprite_image: card.sprite_image ?? null,

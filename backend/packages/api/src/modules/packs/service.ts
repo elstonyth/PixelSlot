@@ -2467,7 +2467,10 @@ class PacksModuleService extends MedusaService({
   //  - capped to the NEWEST 20k pulls (the route's documented MAX_PULLS
   //    aggregation cap — now the LIMIT in the `capped` CTE),
   //  - volume = Σ per-card MYR display value with PER-CARD rounding, exactly
-  //    displayMarketPrice(fmv, fx, multiplier): ROUND(fmv × mult × fx, 2),
+  //    displayMarketPrice(fmv, fx, multiplier): ROUND(fmv × mult × fx, 2) —
+  //    deliberately LIVE-priced (vault/display semantics), NOT the
+  //    recorded_value_usd snapshot the leaderboard/challenge boards read, so
+  //    profile volume tracks current prices and may diverge from board volume,
   //    degenerate inputs (fmv < 0 or multiplier ≤ 0) → 0, missing/deleted
   //    card → 0 (the pull still counts). Per-card rounding keeps the
   //    documented cents-level drift vs the leaderboard's sum-level round.
@@ -4772,6 +4775,9 @@ class PacksModuleService extends MedusaService({
   // (excluded from every pulled-value board). raw_ twin written alongside so
   // the ORM's bigNumber hydration matches workflow-stamped rows. Idempotent
   // (IS NULL guard). Run via src/scripts/backfill-recorded-pull-value.ts.
+  // ponytail: single unbatched UPDATE (row-locks every null pull for the
+  // statement) — switch to id-batched chunks if the pull table ever grows
+  // enough for a concurrent buyback to feel the lock.
   @InjectManager()
   async backfillRecordedPullValues(
     @MedusaContext() sharedContext: Context = {},

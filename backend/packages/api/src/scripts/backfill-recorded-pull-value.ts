@@ -15,6 +15,10 @@
  * RUN (backend must be up):
  *   corepack yarn medusa exec ./src/scripts/backfill-recorded-pull-value.ts
  *
+ * Run this in the SAME window as the deploy that ships the stamping code:
+ * historical rows get pinned at whatever the cards are worth WHEN THIS RUNS,
+ * so any price sync landing in the gap bakes post-sync prices into history.
+ *
  * Idempotent: only rows with recorded_value_usd IS NULL are touched.
  */
 import { ExecArgs } from '@medusajs/framework/types';
