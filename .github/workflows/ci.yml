@@ -134,6 +134,23 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
+      # node_modules materialization (unpack + link a ~1GB tree) is ~71s even
+      # with the berry global cache warm — it's the fixed per-shard overhead
+      # that caps how far sharding helps. Caching node_modules keyed on the
+      # lockfile turns the --immutable install below into a fast verify.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install (today's behavior) -> a fresh cache is saved.
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+          key: bnm-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
+
       - name: Install backend dependencies
         working-directory: backend
         run: corepack yarn install --immutable
@@ -187,6 +204,23 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-
+
+      # node_modules materialization (unpack + link a ~1GB tree) is ~71s even
+      # with the berry global cache warm — it's the fixed per-shard overhead
+      # that caps how far sharding helps. Caching node_modules keyed on the
+      # lockfile turns the --immutable install below into a fast verify.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install (today's behavior) -> a fresh cache is saved.
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+          key: bnm-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
 
       - name: Install backend dependencies
         working-directory: backend
@@ -294,6 +328,23 @@ jobs:
           key: yarn-${{ runner.os }}-${{ hashFiles('backend/yarn.lock') }}
           restore-keys: yarn-${{ runner.os }}-
 
+      # node_modules materialization (unpack + link a ~1GB tree) is ~71s even
+      # with the berry global cache warm — it's the fixed per-shard overhead
+      # that caps how far sharding helps. Caching node_modules keyed on the
+      # lockfile turns the --immutable install below into a fast verify.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install (today's behavior) -> a fresh cache is saved.
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+          key: bnm-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
+
       - name: Install backend dependencies
         working-directory: backend
         run: corepack yarn install --immutable
@@ -393,6 +444,23 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-
+
+      # node_modules materialization (unpack + link a ~1GB tree) is ~71s even
+      # with the berry global cache warm — it's the fixed per-shard overhead
+      # that caps how far sharding helps. Caching node_modules keyed on the
+      # lockfile turns the --immutable install below into a fast verify.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install (today's behavior) -> a fresh cache is saved.
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+          key: bnm-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
 
       - name: Install backend dependencies
         working-directory: backend
