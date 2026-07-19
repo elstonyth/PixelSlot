@@ -134,6 +134,28 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
+      # The ~71s install is pure node_modules materialization (unpack + link a
+      # ~450MB tree) — the fixed per-shard overhead that caps how far sharding
+      # helps. Cache node_modules + Yarn Berry's install-state.gz, keyed on the
+      # lockfile, so the --immutable install below is a fast verify. The
+      # install-state is essential: WITHOUT it the node-modules linker rebuilds
+      # its state from scratch (~37s even with node_modules present), which is
+      # what makes the state file — not just node_modules — the thing that pays.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install -> a fresh cache is saved. (Key is v2: actions/cache never
+      # overwrites an existing key, so adding install-state needs a new key.)
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+            backend/.yarn/install-state.gz
+          key: bnm2-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
+
       - name: Install backend dependencies
         working-directory: backend
         run: corepack yarn install --immutable
@@ -188,6 +210,28 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
+      # The ~71s install is pure node_modules materialization (unpack + link a
+      # ~450MB tree) — the fixed per-shard overhead that caps how far sharding
+      # helps. Cache node_modules + Yarn Berry's install-state.gz, keyed on the
+      # lockfile, so the --immutable install below is a fast verify. The
+      # install-state is essential: WITHOUT it the node-modules linker rebuilds
+      # its state from scratch (~37s even with node_modules present), which is
+      # what makes the state file — not just node_modules — the thing that pays.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install -> a fresh cache is saved. (Key is v2: actions/cache never
+      # overwrites an existing key, so adding install-state needs a new key.)
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+            backend/.yarn/install-state.gz
+          key: bnm2-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
+
       - name: Install backend dependencies
         working-directory: backend
         run: corepack yarn install --immutable
@@ -206,13 +250,21 @@ jobs:
         working-directory: backend
         run: corepack yarn turbo run test
 
-  # Backend HTTP integration gate. Not previously in CI — which is how the FX
-  # `reason`-requirement change silently broke these suites. Uses service
-  # containers; medusa's test runner creates/drops its own per-suite test DBs.
+  # Backend HTTP integration gate — the long pole of the whole workflow. Not
+  # previously in CI, which is how the FX `reason`-requirement change silently
+  # broke these suites. Uses service containers; medusa's test runner
+  # creates/drops its own per-suite test DBs.
   #
-  # The 3 jest shards exist to reset the node heap (run-http-shards.mjs); they
-  # were sequential locally (~20 min). In CI each shard gets its own job +
-  # postgres, so wall-clock = install + slowest shard (~8-10 min).
+  # jest shards natively at the file level (--shard=N/M). In CI each shard gets
+  # its OWN job + postgres, so wall-clock = per-shard overhead + slowest shard's
+  # tests, and adding shards divides the ~20 test-minutes across more runners.
+  # 84 suites over 8 shards ≈ 10-11/shard. The per-shard overhead floor is now
+  # ~1m25s (container init + node setup + the node_modules-cached ~50s install),
+  # so wall ≈ 1m25s + 20min/N; past ~8 shards the fixed floor dominates and more
+  # shards stop paying off. postgres data is on tmpfs (below) so the per-suite
+  # migration DDL isn't fsync-bound; backend/node_modules is cached (above).
+  #
+  # NOTE: matrix length and the /N divisor in the run step MUST match.
   integration-http:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
@@ -221,7 +273,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     services:
       postgres:
         image: postgres:16
@@ -231,11 +283,14 @@ jobs:
           POSTGRES_DB: medusa-test
         ports:
           - 5432:5432
+        # Ephemeral CI DB — put the data dir on tmpfs so the full per-suite
+        # migration DDL (hundreds of CREATE TABLEs × 84 suites) isn't fsync-bound.
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --tmpfs /var/lib/postgresql/data
       redis:
         image: redis:7
         ports:
@@ -283,6 +338,28 @@ jobs:
           key: yarn-${{ runner.os }}-${{ hashFiles('backend/yarn.lock') }}
           restore-keys: yarn-${{ runner.os }}-
 
+      # The ~71s install is pure node_modules materialization (unpack + link a
+      # ~450MB tree) — the fixed per-shard overhead that caps how far sharding
+      # helps. Cache node_modules + Yarn Berry's install-state.gz, keyed on the
+      # lockfile, so the --immutable install below is a fast verify. The
+      # install-state is essential: WITHOUT it the node-modules linker rebuilds
+      # its state from scratch (~37s even with node_modules present), which is
+      # what makes the state file — not just node_modules — the thing that pays.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install -> a fresh cache is saved. (Key is v2: actions/cache never
+      # overwrites an existing key, so adding install-state needs a new key.)
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+            backend/.yarn/install-state.gz
+          key: bnm2-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
+
       - name: Install backend dependencies
         working-directory: backend
         run: corepack yarn install --immutable
@@ -295,12 +372,12 @@ jobs:
         run: corepack yarn build --filter="@acme/api^..."
 
       # The wrapper forwards extra args to jest, so --shard reaches jest
-      # directly and this job runs exactly one of the three heap-bounded shards.
-      - name: HTTP integration tests (shard ${{ matrix.shard }}/3)
+      # directly and this job runs exactly one of the eight heap-bounded shards.
+      - name: HTTP integration tests (shard ${{ matrix.shard }}/8)
         working-directory: backend/packages/api
         run: |
           set -o pipefail
-          corepack yarn test:integration:http --shard=${{ matrix.shard }}/3 2>&1 | tee http-tests.log
+          corepack yarn test:integration:http --shard=${{ matrix.shard }}/8 2>&1 | tee http-tests.log
 
       - name: Upload test log on failure
         if: failure()
@@ -327,11 +404,14 @@ jobs:
           POSTGRES_DB: medusa-test
         ports:
           - 5432:5432
+        # Ephemeral CI DB — put the data dir on tmpfs so the full per-suite
+        # migration DDL (hundreds of CREATE TABLEs × 84 suites) isn't fsync-bound.
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --tmpfs /var/lib/postgresql/data
       redis:
         image: redis:7
         ports:
@@ -379,6 +459,28 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-
+
+      # The ~71s install is pure node_modules materialization (unpack + link a
+      # ~450MB tree) — the fixed per-shard overhead that caps how far sharding
+      # helps. Cache node_modules + Yarn Berry's install-state.gz, keyed on the
+      # lockfile, so the --immutable install below is a fast verify. The
+      # install-state is essential: WITHOUT it the node-modules linker rebuilds
+      # its state from scratch (~37s even with node_modules present), which is
+      # what makes the state file — not just node_modules — the thing that pays.
+      # Exact key, NO restore-keys on purpose: a partial restore that mismatched
+      # the lockfile would make `yarn install --immutable` FAIL (it refuses to
+      # mutate node_modules). On a lockfile change the key misses -> full
+      # install -> a fresh cache is saved. (Key is v2: actions/cache never
+      # overwrites an existing key, so adding install-state needs a new key.)
+      - name: Cache backend node_modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            backend/node_modules
+            backend/apps/*/node_modules
+            backend/packages/*/node_modules
+            backend/.yarn/install-state.gz
+          key: bnm2-${{ runner.os }}-node22-${{ hashFiles('backend/yarn.lock') }}
 
       - name: Install backend dependencies
         working-directory: backend
