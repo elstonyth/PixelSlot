@@ -5,6 +5,9 @@ import type PacksModuleService from '../../modules/packs/service';
 export type RecordPullsBatchInput = {
   customer_id: string;
   pack_id: string; // = Pack.slug
+  // The batch's open_id (uuid) — the SAME id the count×price charge row stores
+  // in source_transaction_id, stamped on every pull so money↔card links.
+  open_id: string;
   // One entry per won card: Card.handle + the draw-time USD value snapshot.
   cards: { card_id: string; recorded_value_usd: number }[];
 };
@@ -44,7 +47,7 @@ export const recordPullsBatchStep = createStep<
   async (input: RecordPullsBatchInput, { container }) => {
     const packs = container.resolve<PacksModuleService>(PACKS_MODULE);
 
-    const pulls = await packs.createPulls(
+    const pulls = (await packs.createPulls(
       input.cards.map((c) => ({
         customer_id: input.customer_id,
         pack_id: input.pack_id,
@@ -52,8 +55,9 @@ export const recordPullsBatchStep = createStep<
         order_id: null,
         rolled_at: new Date(),
         recorded_value_usd: c.recorded_value_usd,
+        open_id: input.open_id,
       })),
-    ) as PullRecord[];
+    )) as PullRecord[];
 
     return new StepResponse(pulls, {
       pullIds: pulls.map((p) => p.id),

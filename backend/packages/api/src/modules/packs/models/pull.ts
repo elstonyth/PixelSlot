@@ -50,6 +50,14 @@ export const Pull = model
     // Model-owned CHECK (pull_source_check) emitted by db:generate — do NOT
     // hand-write a separate CHECK (would collide → 42710).
     source: model.enum(['pack', 'reward']).default('pack'),
+    // The open's stable id (same uuid the pack_open charge row stores in
+    // credit_transaction.source_transaction_id) — the money↔card audit link.
+    // A count=N batch open shares ONE open_id across its N pulls (one charge
+    // row paid them all). NULL on reward pulls (no charge; reward_draw carries
+    // their provenance) and on pre-migration rows (forward-only, never
+    // back-filled). ponytail: no index — audit/dispute reads are rare; add one
+    // if a hot path ever filters on it.
+    open_id: model.text().nullable(),
   })
   .indexes([
     // vault + public profile + admin gacha: filter customer_id, order rolled_at.
