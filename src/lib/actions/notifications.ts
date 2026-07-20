@@ -28,6 +28,7 @@ import {
   NotificationSchema,
   NotificationsEnvelopeSchema,
   MarkReadSchema,
+  MarkAllReadSchema,
 } from '@/lib/data/schemas';
 
 export type Notification = {
@@ -54,6 +55,10 @@ const PAGE_SIZE = 20;
 
 export type MarkReadResult =
   | { ok: true; id: string; readAt: string }
+  | { ok: false; error: string; needsAuth?: boolean };
+
+export type MarkAllReadResult =
+  | { ok: true; marked: number; readAt: string }
   | { ok: false; error: string; needsAuth?: boolean };
 
 const NOTIF_RULES: ErrorRule[] = [
@@ -190,5 +195,47 @@ export async function getUnreadCount(): Promise<number> {
   } catch (error) {
     logger.error('[notifications] unread count failed:', error);
     return 0;
+  }
+}
+
+/**
+ * Marks every unread feed notification read in one request.
+ *
+ * The per-id endpoint is rate-limited at 20/10s, so clearing a 50-row feed
+ * client-side would 429 — this is the only viable way to zero the badge.
+ */
+export async function markAllRead(): Promise<MarkAllReadResult> {
+  const token = await getAuthToken();
+  if (!token) {
+    return { ok: false, error: 'Please log in first.', needsAuth: true };
+  }
+
+  try {
+    const raw = await sdk.client.fetch('/store/notifications/read-all', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: {},
+    });
+
+    const parsed = parseOne(MarkAllReadSchema, raw);
+    if (!parsed) {
+      return {
+        ok: false,
+        error: 'Got an unexpected response. Please try again.',
+      };
+    }
+
+    return {
+      ok: true,
+      marked: parsed.marked,
+      readAt: coerceReadAt(parsed.read_at) ?? new Date().toISOString(),
+    };
+  } catch (error) {
+    logger.error('[notifications] markAllRead failed:', error);
+    return {
+      ok: false,
+      error: friendlyError(error, NOTIF_RULES, NOTIF_FALLBACK),
+      needsAuth: isAuthError(error),
+    };
   }
 }
