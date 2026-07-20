@@ -1890,7 +1890,16 @@ export const NOTIFICATION_COPY: Record<string, NotificationCopy> = {
       const title = strOf(data, 'title');
       const amount = numOf(data, 'amount_myr');
       if (title) return `You won ${title}.`;
-      if (amount && amount > 0) return `You won ${rm(amount)} in credit.`;
+      if (amount && amount > 0) {
+        // A voucher is a grant, not money: nothing reaches the balance until
+        // it is claimed on /vip (at which point voucher_claimed fires). Saying
+        // "in credit" here would claim a payment that has not happened, and
+        // could leave the grant sitting unclaimed. PrizeReveal already draws
+        // this distinction — the feed row must not contradict it.
+        return strOf(data, 'prize_kind') === 'voucher'
+          ? `You won a ${rm(amount)} voucher — claim it on the VIP page.`
+          : `You won ${rm(amount)} in credit.`;
+      }
       return null;
     },
     href: '/rewards',

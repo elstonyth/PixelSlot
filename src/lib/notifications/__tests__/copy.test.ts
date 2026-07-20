@@ -93,6 +93,24 @@ describe('body rendering', () => {
     );
   });
 
+  it('reward_won never calls a voucher win "credit"', () => {
+    const body = copyFor('reward_won').body;
+    // The draw builds a voucher prize as { kind: 'voucher', amount_myr } with
+    // NO title, so this used to fall through to the amount branch and announce
+    // a payment that never happened — nothing reaches the balance until the
+    // grant is claimed on /vip.
+    expect(body({ prize_kind: 'voucher', amount_myr: 5, title: '' })).toBe(
+      'You won a RM 5.00 voucher — claim it on the VIP page.',
+    );
+    expect(body({ prize_kind: 'credit', amount_myr: 5, title: '' })).toBe(
+      'You won RM 5.00 in credit.',
+    );
+    // A titled prize (product) still wins over both.
+    expect(
+      body({ prize_kind: 'product', title: 'Charizard PSA 10', amount_myr: 0 }),
+    ).toBe('You won Charizard PSA 10.');
+  });
+
   it('survives null, empty and malformed data without throwing', () => {
     for (const t of TEMPLATES) {
       const body = copyFor(t).body;
