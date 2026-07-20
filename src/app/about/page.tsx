@@ -69,7 +69,7 @@ const FEATURES: Feature[] = [
     icon: Globe,
     stat: '24/7',
     label: 'Always open',
-    body: '24/7 marketplace accessible worldwide. Trade across borders without shipping delays.',
+    body: 'Open around the clock, worldwide. Rip a pack or sell one back any hour, no waiting on a buyer.',
   },
 ];
 

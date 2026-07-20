@@ -80,7 +80,7 @@ const STEPS: Step[] = [
   {
     num: '3',
     title: 'Keep, ship, or sell for 90% cash back',
-    body: "Hold your card in the vault, flip it on the marketplace, trade with collectors, or redeem and we'll ship the physical slab to your door.",
+    body: "Hold your card in the vault, sell it back instantly for 90% cash, or redeem and we'll ship the physical slab to your door.",
     pill: 'Ships worldwide',
     pillSub: 'Fully tracked and insured to your door',
     pillVariant: 'ships',

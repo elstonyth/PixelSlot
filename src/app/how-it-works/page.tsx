@@ -90,8 +90,8 @@ const TESTIMONIALS: Testimonial[] = [
 ];
 
 type Capability = { icon: LucideIcon; title: string; body: string };
-// Marketplace/games cards only show while their feature flags are on — the
-// page must not advertise features the deploy has gated off.
+// Only what the storefront actually ships — the marketplace and games cards
+// were removed with their routes. Don't advertise what isn't there.
 const CAPABILITIES: Capability[] = [
   {
     icon: Layers,
