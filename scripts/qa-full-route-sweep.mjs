@@ -167,9 +167,7 @@ try {
   const probeCtx = await browser.newContext();
   const probe = await probeCtx.newPage();
   const derived = [];
-  for (const [route, prefix] of [
-    ['/leaderboard', '/profile/'],
-  ]) {
+  for (const [route, prefix] of [['/leaderboard', '/profile/']]) {
     try {
       await probe.goto(`${FRONT}${route}`, {
         waitUntil: 'domcontentloaded',
