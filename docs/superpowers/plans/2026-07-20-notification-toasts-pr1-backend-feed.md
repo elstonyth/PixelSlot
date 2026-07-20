@@ -36,6 +36,7 @@ Every task's requirements implicitly include this section.
   Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
   ```
 - **Never commit `.env` files.** A `guard-secrets` hook blocks shell reads of secret files; use PowerShell `Test-Path` / `Copy-Item` when you need to check for or move one.
+- **`noUncheckedIndexedAccess` is enabled.** Indexing a `Record<string, T>` — by bracket **or** by dot — yields `T | undefined`, so any property access off a lookup is a type error. Go through an accessor that returns a guaranteed value (e.g. `copyFor(t)` rather than `NOTIFICATION_COPY[t]`). Never paper over it with `!`. Note vitest does not type-check, so this class of error passes the test run and only fails `tsc`.
 - **Notification `data` payloads are primitives only** — no HTML, no free-text interpolation of user input (spec §13). Numbers, booleans, strings, and arrays of those.
 - **Every producer is non-fatal.** A notification failure must never roll back or fail a committed mutation. Wrap in `try { … } catch { /* non-fatal */ }`.
 
@@ -1638,7 +1639,9 @@ describe('NOTIFICATION_COPY', () => {
 
   it('gives every entry a non-empty title and a valid variant and policy', () => {
     for (const t of TEMPLATES) {
-      const c = NOTIFICATION_COPY[t];
+      // Read through copyFor, not the raw index: the repo enables
+      // noUncheckedIndexedAccess, and copyFor is what consumers call anyway.
+      const c = copyFor(t);
       expect(c.title.length).toBeGreaterThan(0);
       expect(['success', 'info', 'reward']).toContain(c.variant);
       expect(['always', 'never']).toContain(c.policy);
@@ -1647,9 +1650,7 @@ describe('NOTIFICATION_COPY', () => {
   });
 
   it('toasts exactly the three templates nothing else announces', () => {
-    const always = TEMPLATES.filter(
-      (t) => NOTIFICATION_COPY[t].policy === 'always',
-    );
+    const always = TEMPLATES.filter((t) => copyFor(t).policy === 'always');
     // voucher_claimed / topup_credited have their own client toast;
     // reward_won has PrizeReveal. Toasting them would double up.
     expect(always.sort()).toEqual(
@@ -1659,7 +1660,7 @@ describe('NOTIFICATION_COPY', () => {
 
   it('pairs an action label with every href and neither without the other', () => {
     for (const t of TEMPLATES) {
-      const c = NOTIFICATION_COPY[t];
+      const c = copyFor(t);
       expect(Boolean(c.href)).toBe(Boolean(c.action));
     }
   });
@@ -1667,7 +1668,7 @@ describe('NOTIFICATION_COPY', () => {
 
 describe('body rendering', () => {
   it('vip_level_up reads naturally for one and for several levels', () => {
-    const body = NOTIFICATION_COPY.vip_level_up.body;
+    const body = copyFor('vip_level_up').body;
     expect(body({ levels: [23] })).toBe('You reached level 23.');
     expect(body({ levels: [22, 23] })).toBe('You reached levels 22 and 23.');
     expect(body({ levels: [21, 22, 23] })).toBe(
@@ -1676,7 +1677,7 @@ describe('body rendering', () => {
   });
 
   it('commission_matured branches on the frozen flag', () => {
-    const body = NOTIFICATION_COPY.commission_matured.body;
+    const body = copyFor('commission_matured').body;
     expect(body({ frozen: false })).toBe(
       'Your commission is now available to spend.',
     );
@@ -1686,7 +1687,7 @@ describe('body rendering', () => {
   });
 
   it('delivery_status describes each notifiable status', () => {
-    const body = NOTIFICATION_COPY.delivery_status.body;
+    const body = copyFor('delivery_status').body;
     expect(body({ status: 'shipped', tracking_number: 'TRK1' })).toBe(
       'Your order is on its way. Tracking: TRK1',
     );
@@ -1700,17 +1701,17 @@ describe('body rendering', () => {
   });
 
   it('money bodies format as RM', () => {
-    expect(NOTIFICATION_COPY.topup_credited.body({ amount_myr: 50 })).toBe(
+    expect(copyFor('topup_credited').body({ amount_myr: 50 })).toBe(
       'RM 50.00 added to your balance.',
     );
-    expect(
-      NOTIFICATION_COPY.voucher_claimed.body({ amount_myr: 5, level: 3 }),
-    ).toBe('RM 5.00 credited from your Level 3 voucher.');
+    expect(copyFor('voucher_claimed').body({ amount_myr: 5, level: 3 })).toBe(
+      'RM 5.00 credited from your Level 3 voucher.',
+    );
   });
 
   it('survives null, empty and malformed data without throwing', () => {
     for (const t of TEMPLATES) {
-      const body = NOTIFICATION_COPY[t].body;
+      const body = copyFor(t).body;
       expect(() => body(null)).not.toThrow();
       expect(() => body({})).not.toThrow();
       expect(() => body({ levels: 'nope', amount_myr: 'x' })).not.toThrow();
