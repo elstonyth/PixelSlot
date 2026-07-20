@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils';
 export const metadata: Metadata = {
   title: 'Task',
   description: 'Daily and weekly tasks on Polycards.',
+  // Out of the sitemap and out of the index while it's a placeholder — the tab
+  // bar still links here, so intent has to be enforced, not just implied.
+  robots: { index: false, follow: true },
 };
 
 // Placeholder. The Weekly Pulled Value Challenge moved to the Ranks tab

@@ -34,6 +34,11 @@ export default async function LeaderboardPage() {
 
   return (
     <>
+      {/* The page owns the h1 — the tab is "Ranks", and the page is both the
+          challenge and the standings, neither of which can claim the other's
+          heading. Visually the challenge hero (or LEADERBOARD when the
+          challenge is off) already titles the page. */}
+      <h1 className="sr-only">Ranks</h1>
       {challenge && <WeeklyChallenge challenge={challenge} />}
       <LeaderboardClient
         weekly={weekly}
@@ -41,6 +46,8 @@ export default async function LeaderboardPage() {
         ownHandle={ownHandle}
       />
       {challenge && <ChallengeRules />}
+      {/* Clearance so the fixed your-rank card never covers the last block. */}
+      {ownHandle != null && <div aria-hidden className="h-24" />}
     </>
   );
 }

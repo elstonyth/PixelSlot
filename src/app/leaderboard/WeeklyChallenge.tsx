@@ -22,10 +22,10 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
   const { pool, summary } = challenge;
 
   return (
-    // Wider than the standings on tablets on purpose: StageCarousel sizes its
-    // rail items from the viewport (--slab-w: 82vw), so a max-w-md container
-    // would clip the prize grid.
-    <div className="px-fluid mx-auto w-full max-w-2xl pt-10 lg:max-w-3xl">
+    // Same width as the standings below — one column down the page. The stage
+    // rail sizes items from the viewport (--slab-w: min(82vw,360px)), which
+    // still fits this container at every breakpoint (measured).
+    <div className="px-fluid mx-auto w-full max-w-md pt-10 lg:max-w-3xl">
       {/* Hero — generated gold trophy emblem (public/images/task, alpha webp) */}
       <header className="text-center">
         <span className="from-chase/15 mx-auto flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-b to-transparent">
@@ -226,9 +226,7 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
 export function ChallengeRules() {
   return (
     <section
-      // pb clears the logged-in "your rank" card, which floats fixed above the
-      // tab bar and would otherwise sit on the last rules.
-      className="px-fluid mx-auto mt-8 w-full max-w-2xl pb-28 lg:max-w-3xl lg:pb-12"
+      className="px-fluid mx-auto mt-8 w-full max-w-md lg:max-w-3xl"
       aria-label="How it works"
     >
       <h2 className="font-heading text-lg text-white">How it works</h2>
