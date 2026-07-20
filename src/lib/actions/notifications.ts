@@ -17,7 +17,6 @@
  * `getUnreadCount()` returns 0 when the user is logged out (used in nav badge)
  * so it never throws and never requires auth.
  */
-import { revalidatePath } from 'next/cache';
 import { sdk } from '@/lib/medusa';
 import { logger } from '@/lib/logger';
 import { getAuthToken } from '@/lib/data/customer';
@@ -141,14 +140,6 @@ export async function markRead(id: string): Promise<MarkReadResult> {
       };
     }
 
-    // The feed rows are LINKS: marking one read unmounts the page and
-    // navigates away, so the optimistic state dies with the component. Without
-    // this, returning to /notifications serves the RSC payload rendered BEFORE
-    // the click and the row reappears unread even though the write committed.
-    // `cache: 'no-store'` does not cover it — that governs the fetch, not the
-    // router cache.
-    revalidatePath('/notifications');
-
     return {
       ok: true,
       id: parsed.id,
@@ -211,10 +202,6 @@ export async function markAllRead(): Promise<MarkAllReadResult> {
         error: 'Got an unexpected response. Please try again.',
       };
     }
-
-    // Same reason as markRead: bust the route cache so a later return to
-    // /notifications cannot render the pre-clear snapshot.
-    revalidatePath('/notifications');
 
     return {
       ok: true,
