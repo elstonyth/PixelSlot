@@ -44,7 +44,9 @@ export async function GET(
 
   const rows = await notif.listNotifications(
     { receiver_id: receiverId, channel: 'feed' },
-    { take: limit + 1, skip: offset, order: { created_at: 'DESC' } },
+    // id tiebreaker: batch creates land sibling rows in the same instant, and
+    // created_at alone gives no stable order across offset pages.
+    { take: limit + 1, skip: offset, order: { created_at: 'DESC', id: 'DESC' } },
   );
   const hasMore = rows.length > limit;
   const notifications = rows.slice(0, limit);

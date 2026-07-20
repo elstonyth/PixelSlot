@@ -34,7 +34,9 @@ export async function GET(
     packs.creditSummary(customerId),
     packs.listCreditTransactions(
       { customer_id: customerId },
-      { order: { created_at: "DESC" }, take: limit + 1, skip: offset }
+      // id tiebreaker: batch buybacks land sibling rows in the same instant,
+      // and created_at alone gives no stable order across offset pages.
+      { order: { created_at: "DESC", id: "DESC" }, take: limit + 1, skip: offset }
     ),
   ]);
   const hasMore = txnRows.length > limit;
