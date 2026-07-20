@@ -136,12 +136,26 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
-  // The claw experience was retired in the mobile redesign — old links and
-  // bookmarks land on the slots catalog/detail instead of a 404.
+  // Retired sections keep their inbound links alive instead of 404ing: the claw
+  // experience (removed in the mobile redesign) and the orphan routes deleted
+  // 2026-07-20. /marketplace and /pack-party are deliberately absent — both
+  // already 404'd in production behind their feature flags, so there is no
+  // crawled URL or bookmark to preserve.
   async redirects() {
     return [
       { source: '/claw', destination: '/slots', permanent: true },
       { source: '/claw/:slug', destination: '/slots/:slug', permanent: true },
+      { source: '/30th', destination: '/slots', permanent: true },
+      { source: '/activity', destination: '/leaderboard', permanent: true },
+      { source: '/airdrop', destination: '/slots', permanent: true },
+      { source: '/merchants', destination: '/about', permanent: true },
+      { source: '/repacks', destination: '/slots', permanent: true },
+      { source: '/series', destination: '/slots', permanent: true },
+      {
+        source: '/pokemon/generation/:gen',
+        destination: '/slots',
+        permanent: true,
+      },
     ];
   },
 };

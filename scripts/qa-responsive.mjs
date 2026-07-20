@@ -55,7 +55,9 @@ const PUBLIC = [
 ];
 
 // Rendered against a freshly registered customer, so these are EMPTY-STATE
-// layouts only — no orders, cards, transactions or vault items.
+// layouts only — no orders, cards, transactions or vault items. /rewards is
+// omitted: it redirects to /vip (the arrival assertion caught it being counted
+// as checked while actually measuring /vip).
 const AUTHED = [
   '/me',
   '/vault',
@@ -63,7 +65,6 @@ const AUTHED = [
   '/orders',
   '/transactions',
   '/referrals',
-  '/rewards',
   '/settings',
   '/addresses',
   '/notifications',
@@ -302,6 +303,15 @@ for (const d of DEVICES) {
       console.log(`skip ${String(status).padStart(3)} ${path} @${d.w}`);
       continue;
     }
+    // An account page bounces logged-out visitors to /?auth=login — which is a
+    // 200. Without this, a dud auth token silently measures the home page for
+    // all 13 authed routes and reports them clean. Status is not arrival.
+    const landed = new URL(page.url()).pathname.replace(/(.)\/$/, '$1');
+    if (landed !== path.replace(/(.)\/$/, '$1')) {
+      rows.push({ path, device: d.key, status, landed, redirected: true });
+      console.log(`REDIRECT ${path} -> ${landed} @${d.w}`);
+      continue;
+    }
     await page
       .getByRole('button', { name: /reject/i })
       .click({ timeout: 1500 })
@@ -331,7 +341,7 @@ await writeFile(
   JSON.stringify(rows, null, 2),
 );
 
-const checked = rows.filter((r) => !r.skipped);
+const checked = rows.filter((r) => !r.skipped && !r.redirected);
 const failed = checked.filter((r) => r.fail);
 const advisory = (key) => [
   ...new Set(checked.filter((r) => r[key]?.length).map((r) => r.path)),
@@ -352,10 +362,20 @@ console.log(
 console.log(
   `advisory — measure >80ch:           ${advisory('longMeasure').join(', ') || 'none'}`,
 );
+// A route that was never reached is not a pass. Both buckets fail the run,
+// so "all clean" can never be an artefact of coverage silently shrinking.
 const skipped = [
   ...new Set(
     rows.filter((r) => r.skipped).map((r) => `${r.path} (${r.status})`),
   ),
 ];
+const redirected = [
+  ...new Set(
+    rows.filter((r) => r.redirected).map((r) => `${r.path} -> ${r.landed}`),
+  ),
+];
 console.log(`\nnot checked (non-200): ${skipped.join(', ') || 'none'}`);
-process.exit(failed.length === 0 ? 0 : 1);
+console.log(`never reached (redirected): ${redirected.join(', ') || 'none'}`);
+const clean =
+  failed.length === 0 && skipped.length === 0 && redirected.length === 0;
+process.exit(clean ? 0 : 1);

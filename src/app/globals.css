@@ -570,8 +570,13 @@
    pin the floor once here rather than in eight copies of the same input class
    string. Deliberately unlayered: an @layer base rule loses to Tailwind's
    text-sm utility, while unlayered CSS wins the cascade against every layer.
-   max() leaves any deliberately larger field alone. */
-input:not([type='checkbox']):not([type='radio']),
+   Note max() compares against 1em — the PARENT's size — so it raises a small
+   field but would also clobber a deliberately larger one; nothing in the app
+   styles a field above base today. Range and file inputs opt out: their
+   font-size is cosmetic and 16px inflates the control. */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ),
 textarea,
 select {
   font-size: max(16px, 1em);

@@ -12,9 +12,9 @@ type QtyStepperProps = {
 };
 
 /**
- * Controlled quantity stepper — `− [n] + MAX`. Shared by the /repacks and /claw
- * pack cards (the live site shows it on both). The caller owns the qty state;
- * this component just clamps to [1, max] and reports the new value.
+ * Controlled quantity stepper — `− [n] + MAX`. Used by the /slots catalog pack
+ * cards (the /repacks and /claw routes that also carried it are gone). The
+ * caller owns the qty state; this clamps to [1, max] and reports the new value.
  */
 export default function QtyStepper({
   qty,
@@ -25,11 +25,7 @@ export default function QtyStepper({
   return (
     <div
       className={cn(
-        // flex-wrap: the +/- buttons hold 28px now (shrink-0, for tap size), so
-        // on a 320px screen the row's min-content exceeded a repack card and
-        // pushed the page into horizontal scroll. Wrapping "Max" onto its own
-        // line costs a few pixels of height and nothing else.
-        'flex flex-wrap items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1',
+        'flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1',
         className,
       )}
     >
