@@ -20,7 +20,23 @@ describe('resolveDbPoolMax', () => {
     ['zero', '0'],
     ['negative', '-4'],
   ])('rejects a %s DB_POOL_MAX rather than capping the pool at 0', (_l, v) => {
-    expect(resolveDbPoolMax({ DB_POOL_MAX: v })).toBeGreaterThan(0);
+    expect(resolveDbPoolMax({ DB_POOL_MAX: v })).toBe(DEFAULT_DB_POOL_MAX);
+  });
+
+  // parseInt stops at the first non-digit. '1e3' written for 1000 would become
+  // 1 — a pool of one serializes every query in the process. Falling back to
+  // the default is always safe; silently honouring a prefix is not.
+  it.each([
+    ['decimal', '5.9'],
+    ['exponent', '1e3'],
+    ['trailing garbage', '5foo'],
+    ['leading garbage', 'x5'],
+  ])('rejects a %s DB_POOL_MAX instead of honouring its prefix', (_l, v) => {
+    expect(resolveDbPoolMax({ DB_POOL_MAX: v })).toBe(DEFAULT_DB_POOL_MAX);
+  });
+
+  it('tolerates surrounding whitespace on an otherwise valid value', () => {
+    expect(resolveDbPoolMax({ DB_POOL_MAX: ' 8 ' })).toBe(8);
   });
 
   it('honours a usable override', () => {

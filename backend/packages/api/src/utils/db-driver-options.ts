@@ -36,20 +36,29 @@ export type ProductionDatabaseDriverOptions = {
 /**
  * Resolve the pool ceiling from the environment.
  *
- * The guard is not stylistic. A DigitalOcean env var that is DECLARED BUT BLANK
- * — the common case when adding a per-component variable — makes
- * `Number(env.DB_POOL_MAX ?? 5)` evaluate `Number('')`, which is 0. A `max` of 0
- * hangs every acquire until knex's 60s acquireConnectionTimeout: a total,
- * self-inflicted outage on the very deploy that adds the cap. A non-numeric
- * value gives NaN, equally broken. `|| DEFAULT` rejects both — and the
- * Math.max floor rejects a negative, which is truthy and would otherwise sail
- * straight through into knex.
+ * Every rejected input below is a silent outage, not a style preference:
+ *
+ * - **Blank.** A DigitalOcean variable that is DECLARED BUT BLANK — the common
+ *   case when adding a per-component variable — makes `Number('')` evaluate to
+ *   0, and a `max` of 0 hangs every acquire for knex's full 60s
+ *   acquireConnectionTimeout. A self-inflicted outage on the very deploy that
+ *   adds the cap.
+ * - **Negative.** Truthy, so `|| DEFAULT` alone would let it through to knex.
+ * - **Partially numeric.** `Number.parseInt` stops at the first non-digit, so
+ *   `'5.9'` silently becomes 5 and — the dangerous one — `'1e3'` written for
+ *   1000 becomes **1**, serializing every query in the process behind a
+ *   single connection.
+ *
+ * Hence a strict digits-only match rather than a lenient parse: anything that
+ * isn't unambiguously a positive integer falls back to the default, which is
+ * always safe.
  */
-export const resolveDbPoolMax = (env: NodeJS.ProcessEnv): number =>
-  Math.max(
-    1,
-    Number.parseInt(env.DB_POOL_MAX ?? '', 10) || DEFAULT_DB_POOL_MAX,
-  );
+export const resolveDbPoolMax = (env: NodeJS.ProcessEnv): number => {
+  const raw = (env.DB_POOL_MAX ?? '').trim();
+  return /^\d+$/.test(raw) && Number(raw) > 0
+    ? Number(raw)
+    : DEFAULT_DB_POOL_MAX;
+};
 
 /**
  * The `databaseDriverOptions` block for production.

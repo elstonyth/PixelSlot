@@ -1,13 +1,23 @@
 # Postgres audit — implementation plan
 
-Scope: `backend/packages/api` (Medusa v2 custom module `packs`), plus `medusa-config.ts` and `.do/backend.app.yaml`. Read-only audit; nothing below has been applied.
+Scope: `backend/packages/api` (Medusa v2 custom module `packs`), plus `medusa-config.ts` and `.do/backend.app.yaml`. Produced by a read-only audit.
 
-**Standard verification loop** (all model-layer items). From `C:/Users/PC/Desktop/Projects/PixelSlot/backend/packages/api`:
+## Status
 
-```
+| Item                                              | State                                                                                                                                                                  |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C1** — pool cap                                 | **Applied** in PR #228 (`src/utils/db-driver-options.ts`). Merged ≠ live: still needs the post-deploy `SHOW max_connections` + connection-count watch described below. |
+| **C2(a)** — `idle_in_transaction_session_timeout` | **Applied** in the same commit.                                                                                                                                        |
+| **C2(b)** — `statement_timeout` / `lock_timeout`  | Not applied. Belongs on the runtime `DATABASE_URL`, which is a deploy secret outside this repo.                                                                        |
+| Everything else (A1–A3, B1–B8, D1–D3)             | Not applied.                                                                                                                                                           |
+
+**Standard verification loop** (all model-layer items). From `backend/packages/api`:
+
+```bash
 corepack yarn medusa db:generate packs      # inspect the emitted migration BEFORE applying
 corepack yarn medusa db:migrate
 corepack yarn check-types                   # = node node_modules/typescript/bin/tsc --noEmit
+# local Postgres container, per CLAUDE.md § Running services
 docker exec pokenic-postgres psql -U medusa -d medusa -c "\d <table>"   # confirm index landed
 ```
 
@@ -60,7 +70,7 @@ Notes the executor must not skip:
 
 Today: `createCreditTransactions` (line 135) auto-commits its own transaction; `transitionPullStatus` (line 163) is a second, separate `@InjectTransactionManager` transaction. On failure of step 2 the code hand-rolls an undo whose own failure is only logged (`"UNDO FAILED — credit txn '...' exists but pull '...' was not flipped; repair manually"`, line 176).
 
-This is **not** a concurrency race — `transitionPullStatus` is a guarded `UPDATE ... WHERE id IN (...) AND status = ?` (service.ts:3199-3212) so a concurrent duplicate loses cleanly. It is a crash window: process kill / DB failover / pool timeout between line 157 and line 163 leaves the customer **credited** with a pull still `'vaulted'`. That pull is still deliverable (`validateDeliveryRequest` accepts any owned vaulted pull, `request-delivery.ts:95-100`) — paid for the card *and* can ship it. It does not self-heal: retry hits `IDX_credit_transaction_pull_id_unique` → `probeDuplicate` → "This card was already sold back." Permanently stuck until manual repair. No reconciliation job exists (`src/jobs` = `mature-commissions.ts`, `sync-market-prices.ts` only).
+This is **not** a concurrency race — `transitionPullStatus` is a guarded `UPDATE ... WHERE id IN (...) AND status = ?` (service.ts:3199-3212) so a concurrent duplicate loses cleanly. It is a crash window: process kill / DB failover / pool timeout between line 157 and line 163 leaves the customer **credited** with a pull still `'vaulted'`. That pull is still deliverable (`validateDeliveryRequest` accepts any owned vaulted pull, `request-delivery.ts:95-100`) — paid for the card _and_ can ship it. It does not self-heal: retry hits `IDX_credit_transaction_pull_id_unique` → `probeDuplicate` → "This card was already sold back." Permanently stuck until manual repair. No reconciliation job exists (`src/jobs` = `mature-commissions.ts`, `sync-market-prices.ts` only).
 
 The in-repo correct pattern is `recordRewardWithdrawal` (service.ts:1450-1548), which even comments at 1524-1527 that it does this "unlike requestDeliveryStep, which has no surrounding transaction".
 
@@ -103,8 +113,8 @@ async settleBuyback(
 
 Three things the executor must preserve:
 
-1. **Do not delete `maybeAutoUnfreezeForCustomer` behaviour** (currently `buyback-pull.ts:224-232`). That method takes the credit lock *and then* re-reads the balance and calls the private `maybeAutoUnfreeze` (service.ts:1113-1136) to lift an AUTO freeze the credit repays (the F1 fix). Either keep lines 224-232 as-is, or inline it as above — `maybeAutoUnfreeze` is a private sibling in the same class, so the direct call is legal.
-2. **Keep `insertOrMapDuplicate`** (`workflows/steps/duplicate-race.ts`) wrapped around the *call* to `settleBuyback`, not inside it — otherwise a 23505 on `IDX_credit_transaction_pull_id_unique` escapes as a 500. By then the txn has rolled back, so `probeDuplicate`'s SELECT runs in a fresh txn, which is correct.
+1. **Do not delete `maybeAutoUnfreezeForCustomer` behaviour** (currently `buyback-pull.ts:224-232`). That method takes the credit lock _and then_ re-reads the balance and calls the private `maybeAutoUnfreeze` (service.ts:1113-1136) to lift an AUTO freeze the credit repays (the F1 fix). Either keep lines 224-232 as-is, or inline it as above — `maybeAutoUnfreeze` is a private sibling in the same class, so the direct call is legal.
+2. **Keep `insertOrMapDuplicate`** (`workflows/steps/duplicate-race.ts`) wrapped around the _call_ to `settleBuyback`, not inside it — otherwise a 23505 on `IDX_credit_transaction_pull_id_unique` escapes as a 500. By then the txn has rolled back, so `probeDuplicate`'s SELECT runs in a fresh txn, which is correct.
 3. **Error copy changes** for the narrow concurrent-flip loser: flip-first throws "One or more cards changed state — refresh and try again." (service.ts:3208-3211) where today it throws "This card was already sold back." The early precheck at `buyback-pull.ts:70-77` still catches the common case. Map the `NOT_ALLOWED` through `probeDuplicate` if the copy matters.
 
 Stock restore (`:184-214`, best-effort by design) and `creditBalance` (`:217`, must read post-commit) stay outside the transaction. The `StepResponse` compensation still needs the returned txn id.
@@ -156,7 +166,7 @@ async recordDeliveryRequest(
 Four corrections to the obvious naive version:
 
 1. **The defect is the missing transaction, not a missing lock.** Do NOT add `pg_advisory_xact_lock('credit:'+customerId)` here. `recordRewardWithdrawal` needs it for its daily-cap COUNT-then-INSERT; the regular delivery path has no read-modify-write, and `transitionPullStatus`'s conditional UPDATE is already the concurrency enforcer. Adding the lock is superfluous contention with spin/buyback on the same customer.
-2. **Keep the compensation body at `request-delivery.ts:186-194` exactly as it is.** `delivery_order_item` has **no FK** to `delivery_order` (`pg_constraint` shows PK only), so reducing compensation to `deleteDeliveryOrders` orphans item rows and strands pulls at `'delivering'`. Compensation undoes a *committed* transaction; rollback cannot do that for it.
+2. **Keep the compensation body at `request-delivery.ts:186-194` exactly as it is.** `delivery_order_item` has **no FK** to `delivery_order` (`pg_constraint` shows PK only), so reducing compensation to `deleteDeliveryOrders` orphans item rows and strands pulls at `'delivering'`. Compensation undoes a _committed_ transaction; rollback cannot do that for it.
 3. The method must return `itemIds` — `CompensateData` (`request-delivery.ts:26-28`) requires them and compensation calls `deleteDeliveryOrderItems(data.itemIds)`. Once item creation moves into the service, the step no longer has them. (Alternative: re-list items by order id, the way `update-delivery-order.ts:91-100` does.)
 4. `request-delivery.ts` keeps validation + address resolution, calls this once, deletes both try/catch undo blocks (130-172).
 
@@ -256,7 +266,7 @@ Declares only `(customer_id, rolled_at)` and `(rolled_at)`. `src/workflows/steps
    ]);
 ```
 
-**Do not use** a `status IN ('vaulted','delivering')` predicate. Two reasons: (a) all 27 `where:` strings in `models/*.ts` are either bare `deleted_at IS NULL` or a *single* equality — there is no IN-list precedent, so generator behaviour is unproven; (b) a value predicate must be *proven* implied by the query, and a prepared statement that flips to a generic plan at execution 6 (`Filter: status = $1`) can no longer prove it, silently dropping the partial index. `deleted_at IS NULL` is parameter-free and always proves. At 86 rows, excluding history rows saves nothing anyway.
+**Do not use** a `status IN ('vaulted','delivering')` predicate. Two reasons: (a) all 27 `where:` strings in `models/*.ts` are either bare `deleted_at IS NULL` or a _single_ equality — there is no IN-list precedent, so generator behaviour is unproven; (b) a value predicate must be _proven_ implied by the query, and a prepared statement that flips to a generic plan at execution 6 (`Filter: status = $1`) can no longer prove it, silently dropping the partial index. `deleted_at IS NULL` is parameter-free and always proves. At 86 rows, excluding history rows saves nothing anyway.
 
 **Why here:** model DSL. **Verify:** standard loop + `\d pull`.
 
@@ -304,7 +314,7 @@ These are **not** duplicates of each other; neither can serve the other's query 
 
 **(a) `source_transaction_id` lookup.** `reverseOpen` (service.ts:945-955, 995) and `reverseCommission` (1232, 1242) page rows sharing an open_id with **no** `reason`/`amount` predicate, so neither existing partial idempotency index applies. Unforced plan is `Seq Scan on credit_transaction, Filter: (deleted_at IS NULL AND source_transaction_id = 'x')`. Cold compensation path on a table that grows forever (1030 rows / 680 kB today, 492 with a non-null anchor).
 
-**(b) `UQ_credit_txn_idem_anchor`.** Four sibling money invariants on this exact table carry a DB backstop (pull buyback, pack_open debit, commission payout, charge reversal); the topup and voucher_claim credit-minting anchors carry none — dedupe is check-then-insert under `pg_advisory_xact_lock('credit:'+customerId)` only (service.ts:698-737, comment: *"no DB unique required"*). Latent, not exploitable today (no writer bypasses `mutateCreditAtomic`), but a future PSP webhook or backfill inserting outside that lock double-credits spendable RM silently. 74 rows carry `topup-idem:%`; a group-by-having over the anchored rows found zero existing violators.
+**(b) `UQ_credit_txn_idem_anchor`.** Four sibling money invariants on this exact table carry a DB backstop (pull buyback, pack*open debit, commission payout, charge reversal); the topup and voucher_claim credit-minting anchors carry none — dedupe is check-then-insert under `pg_advisory_xact_lock('credit:'+customerId)` only (service.ts:698-737, comment: *"no DB unique required"\_). Latent, not exploitable today (no writer bypasses `mutateCreditAtomic`), but a future PSP webhook or backfill inserting outside that lock double-credits spendable RM silently. 74 rows carry `topup-idem:%`; a group-by-having over the anchored rows found zero existing violators.
 
 ```diff
    .indexes([
@@ -336,7 +346,7 @@ These are **not** duplicates of each other; neither can serve the other's query 
 Design notes:
 
 - (a) is single-column on purpose — the `created_at ASC, id ASC` sort covers only the handful of rows sharing one open_id. `source_transaction_id = 'x'` implies the `IS NOT NULL` predicate by standard strict-operator implication, so the index is usable.
-- (b) uses `reason IN (...)`, a plain column predicate, **not** a `LIKE 'topup-idem:%'` pattern — the pattern form is the expression case `db:generate` can't emit, and a reason predicate also survives an anchor-prefix rename. Precedent for a partial *unique* with a `where`: `vip-reward-grant.ts:21-26` and `pack-odds.ts:65-70`, both live in the DB.
+- (b) uses `reason IN (...)`, a plain column predicate, **not** a `LIKE 'topup-idem:%'` pattern — the pattern form is the expression case `db:generate` can't emit, and a reason predicate also survives an anchor-prefix rename. Precedent for a partial _unique_ with a `where`: `vip-reward-grant.ts:21-26` and `pack-odds.ts:65-70`, both live in the DB.
 - (b) cannot collide with commission rows (which legitimately share `(customer_id, source_transaction_id)` across generations) or pack_open rows — `reason` excludes both. NULL anchors coexist (indexes are NULLS DISTINCT, and the predicate excludes them anyway).
 - **No `CONCURRENTLY`.** Medusa wraps migrations in a transaction, where `CONCURRENTLY` errors — documented in this repo at `Migration20260622161000.ts:12-15`. At 1030 rows the brief ACCESS EXCLUSIVE lock is what every peer index on this table already took.
 - If the loud-failure behaviour is wanted, handle 23505 where the anchored insert happens — `mutateCreditAtomic` in `service.ts` (~line 814) — **not** by reusing `settleOpen`'s catch at 2211-2223, which is scoped to open settlement and would not see it.
@@ -357,7 +367,7 @@ Two things on one table, one `db:generate`:
 
 **(a)** No index on `vault_pull_id`, but `store/vault/route.ts:84-87` and `service.ts:4089-4094` (rewards summary `ship_prizes`) both do `listRewardDraws({ vault_pull_id: [...] })`. Forced plan is a full traversal of `UQ_reward_draw_customer_day_ordinal` with `Filter: vault_pull_id = ANY(...)`.
 
-**(b)** `UQ_reward_draw_customer_day_ordinal` exists in the live DB but only in a hand-written migration (`Migration20260625000100.ts`), not in the model — so anyone regenerating or reasoning about this table from the model doesn't see it. Its stated justification (*"db:generate cannot emit partial-expression unique indexes"*) is **false**: its predicate is pure `deleted_at IS NULL`, structurally identical to the already-model-declared `IDX_reward_draw_customer_day` on the same table, and `notification-read.ts:13-19` + `Migration20260623212927.ts:3-4` prove the generator emits partial uniques correctly.
+**(b)** `UQ_reward_draw_customer_day_ordinal` exists in the live DB but only in a hand-written migration (`Migration20260625000100.ts`), not in the model — so anyone regenerating or reasoning about this table from the model doesn't see it. Its stated justification (_"db:generate cannot emit partial-expression unique indexes"_) is **false**: its predicate is pure `deleted_at IS NULL`, structurally identical to the already-model-declared `IDX_reward_draw_customer_day` on the same table, and `notification-read.ts:13-19` + `Migration20260623212927.ts:3-4` prove the generator emits partial uniques correctly.
 
 ```diff
    .indexes([
@@ -388,9 +398,9 @@ Two things on one table, one `db:generate`:
 
 Also fix the false comment at `reward-draw.ts:4-7` (and the matching claims in `Migration20260625000100.ts:2-4`, `Migration20260622161000.ts:11`, `Migration20260623100000.ts:6`).
 
-**Do not** use `where: 'vault_pull_id IS NOT NULL AND deleted_at IS NULL'` for (a). The compound predicate is not a planner risk, but its *emittability* is unproven: the only compound-predicate index in this module (`vip-reward-grant.ts:25`) landed in `Migration20260704070016.ts:13` with **unquoted** column names — the hand-written signature — versus the generated `("customer_id","level","kind")` style. Skipping `IS NOT NULL` costs only index entries for NULL rows on a table that is currently empty.
+**Do not** use `where: 'vault_pull_id IS NOT NULL AND deleted_at IS NULL'` for (a). The compound predicate is not a planner risk, but its _emittability_ is unproven: the only compound-predicate index in this module (`vip-reward-grant.ts:25`) landed in `Migration20260704070016.ts:13` with **unquoted** column names — the hand-written signature — versus the generated `("customer_id","level","kind")` style. Skipping `IS NOT NULL` costs only index entries for NULL rows on a table that is currently empty.
 
-**Why here:** model DSL, and (b) is specifically about moving schema ownership *back* to the model.
+**Why here:** model DSL, and (b) is specifically about moving schema ownership _back_ to the model.
 
 **Verify:** standard loop + `\d reward_draw`. For (b), the ideal outcome is that `db:generate` emits **nothing** for `UQ_reward_draw_customer_day_ordinal` (model now matches DB) and only creates the new `vault_pull_id` index. If it emits a drop+recreate, that's still safe here — `reward_draw` is 0 rows.
 
@@ -507,11 +517,11 @@ Verified out-of-band via read-only `doctl databases list`: `polycards-pg` is `db
 
 Non-negotiable details:
 
-- **The parse guard is not stylistic.** `Number(process.env.DB_POOL_MAX ?? 5)` yields `Number('') === 0` for a DO env var that is *declared but blank* — the common case when adding a per-component var — and `max: 0` means every acquire hangs to the 60s timeout. A total, self-inflicted outage on the very deploy that adds the cap. Non-numeric gives NaN, also broken.
+- **The parse guard is not stylistic.** `Number(process.env.DB_POOL_MAX ?? 5)` yields `Number('') === 0` for a DO env var that is _declared but blank_ — the common case when adding a per-component var — and `max: 0` means every acquire hangs to the 60s timeout. A total, self-inflicted outage on the very deploy that adds the cap. Non-numeric gives NaN, also broken.
 - **`pool` must be a SIBLING of `connection`, not nested inside it.** `pg-connection-loader.js:20-28` reads `driverOptions.pool` at the top level and `delete`s it before forwarding the rest.
 - `min: 0` propagates intact (`?? 2` not `||` at loader:24; `pool?.min ?? 1` then a spread in `create-pg-connection.js`; lodash `defaults` only fills `undefined`). Idle-connection-vs-cold-connect tradeoff only — the `max` cap is the actual fix.
 - Sizing: `max = floor((usable - reserved) / (instances + 1 for the overlapping migrate job))`. Divisor is **3**, not 2. `max 5` per component → 15 peak, leaving room for an admin psql. Set `DB_POOL_MAX` per component in `.do/backend.app.yaml` so the worker can run leaner. (`deploy:migrate-user` chains three Medusa boots — `db:migrate` + two `medusa exec` — but sequentially, so it contributes one pool at a time.)
-- **Real mitigation:** attach DO's managed connection pool (**transaction mode**) and repoint `DATABASE_URL` at port 25061. Safe *here specifically* because the locking module is Redis-backed (`medusa-config.ts:106-118` registers `@medusajs/medusa/locking` + `locking-redis`) — no session-scoped PG state that transaction pooling would break. State that precondition; it is not portable.
+- **Real mitigation:** attach DO's managed connection pool (**transaction mode**) and repoint `DATABASE_URL` at port 25061. Safe _here specifically_ because the locking module is Redis-backed (`medusa-config.ts:106-118` registers `@medusajs/medusa/locking` + `locking-redis`) — no session-scoped PG state that transaction pooling would break. State that precondition; it is not portable.
 
 **Why here:** `projectConfig`, not the model layer. No models/migrations involved.
 
@@ -525,19 +535,21 @@ Non-negotiable details:
 
 **Files:** `backend/packages/api/medusa-config.ts:159-165` (part a); prod `DATABASE_URL` / cluster role (part b).
 
-`create-pg-connection.js:22-33` builds the knex `connection` as a literal object containing exactly `{connectionString, ssl, idle_in_transaction_session_timeout, connectionTimeoutMillis, keepAlive, keepAliveInitialDelayMillis}`. So `statement_timeout` and `lock_timeout` set in `databaseDriverOptions` are **silently dropped**; only `idle_in_transaction_session_timeout` is a real passthrough. `medusa-config.ts` sets none; repo-wide grep for `statement_timeout|lock_timeout|idle_in_transaction|ALTER ROLE|ALTER DATABASE|options=-c` returns **zero** matches outside node_modules. Prod therefore inherits Postgres's default 0 for all three unless an untracked cluster override exists.
+`create-pg-connection.js:22-33` builds the knex `connection` as a literal object containing exactly `{connectionString, ssl, idle_in_transaction_session_timeout, connectionTimeoutMillis, keepAlive, keepAliveInitialDelayMillis}`. So `statement_timeout` and `lock_timeout` set in `databaseDriverOptions` are **silently dropped**; only `idle_in_transaction_session_timeout` is a real passthrough. `medusa-config.ts` sets none; repo-wide grep for `statement_timeout|lock_timeout|idle_in_transaction|ALTER ROLE|ALTER DATABASE|options=-c` returns **zero** matches outside node_modules.
+
+That establishes only that none of the three is configured **in this repository**. The effective production values are unknown: a cluster-level `ALTER ROLE`/`ALTER DATABASE` override would leave no trace here. Postgres's own default is 0 (disabled) for all three, so 0 is the likely case and the one worth planning against — but confirm with `SHOW statement_timeout; SHOW lock_timeout; SHOW idle_in_transaction_session_timeout;` on prod before and after, rather than treating it as established.
 
 **(a) `idle_in_transaction_session_timeout` — config, one line.** Already folded into the C1 snippet above (it's the same `databaseDriverOptions` edit — do not make two separate edits). 30s is safe: every `@InjectTransactionManager` method in `service.ts` (501, 543, 681, 865, 932, 1146, 1204, …) is DB-only; `fetch`/axios live exclusively in non-transactional routes and jobs (`api/admin/*`, `modules/packs/pricing.ts`, `jobs/sync-market-prices.ts`).
 
 **(b) `statement_timeout` / `lock_timeout` — raw, app-scoped.** Medusa forwards neither and the model DSL has no concept of a server GUC, so this cannot live in a model file. Prefer the **app-only URL path**, which `pg` honours (`connection-parameters.js:83,139):
 
-```
+```dotenv
 DATABASE_URL=...?options=-c%20statement_timeout%3D60000%20-c%20lock_timeout%3D5000
 ```
 
 set on the **runtime** components only, leaving the `migrate` job's URL without it.
 
-**Do NOT use** `ALTER ROLE <app_user> IN DATABASE <db> SET statement_timeout='60s'` as a first choice. It binds to the *role*, so it also applies to the PRE_DEPLOY `db:migrate` connection; Medusa's migrator never issues `SET statement_timeout = 0` for itself and emits plain non-`CONCURRENT` `CREATE INDEX`, which statement_timeout kills. A latent deploy-failure trap (largest table is 1030 rows today, so not imminent — but the trap is structural). If a role-level setting is unavoidable, pair it with an explicit `SET statement_timeout = 0` in the migrate step and document it.
+**Do NOT use** `ALTER ROLE <app_user> IN DATABASE <db> SET statement_timeout='60s'` as a first choice. It binds to the _role_, so it also applies to the PRE_DEPLOY `db:migrate` connection; Medusa's migrator never issues `SET statement_timeout = 0` for itself and emits plain non-`CONCURRENT` `CREATE INDEX`, which statement_timeout kills. A latent deploy-failure trap (largest table is 1030 rows today, so not imminent — but the trap is structural). If a role-level setting is unavoidable, pair it with an explicit `SET statement_timeout = 0` in the migrate step and document it.
 
 `lock_timeout = 5s` is safe either way and is the point: a blocked DDL fails the deploy loudly instead of queueing behind a long query and wedging prod.
 
@@ -569,7 +581,7 @@ Also fix the stale comment at `service.ts:929-931` — it claims "no DB unique o
 
 86 rows today, admin-only, display-only, one operator. **Defer** — the SQL rewrite is the right long-term shape but is not worth the semantic risk now. If touched, three things must be preserved and the naive SQL gets them wrong:
 
-1. `topCards.rarity` is the rarity a card was most often **pulled** at (`cardRarityCounts` increments per pull). A standalone `SELECT ... FROM pack_odds GROUP BY rarity ORDER BY count(*)` counts *odds rows* and flips the answer for a card listed Common in three packs but usually pulled from the one listing it Rare. Derive it from the `pull ⋈ pack_odds` join grouped by `(card_id, rarity)`.
+1. `topCards.rarity` is the rarity a card was most often **pulled** at (`cardRarityCounts` increments per pull). A standalone `SELECT ... FROM pack_odds GROUP BY rarity ORDER BY count(*)` counts _odds rows_ and flips the answer for a card listed Common in three packs but usually pulled from the one listing it Rare. Derive it from the `pull ⋈ pack_odds` join grouped by `(card_id, rarity)`.
 2. `route.ts:69` **skips** pulls whose rarity is null; `pack_odds.rarity` is nullable. Use `WHERE o.rarity IS NOT NULL`, not `COALESCE(o.rarity,'Common')`, which would inflate the Common bucket.
 3. Rarity is keyed on the `(pack_id, card_id)` **pair** (`route.ts:55-59`) — join on both columns.
 
@@ -581,7 +593,7 @@ Cheapest defensible action today: leave the route alone and document the cap in 
 
 Checked and clean. Largest module table is `credit_transaction` at 1030 rows / 680 kB; largest table in the DB is `pixel_pokemon` at 736 kB. Growth from the only two schedulers: `sync-market-prices.ts:95` (`0 3 * * *`, ~1.1k `card_price_history` rows/yr against 3 cards) and `mature-commissions.ts:57` (`0 * * * *`, updates not appends). No `feed_event`/`audit_log` table exists.
 
-Revisit triggers are volume-based: `credit_transaction` past ~10⁷ rows → `ALTER TABLE credit_transaction SET (autovacuum_vacuum_scale_factor = 0.02)`; any table past ~10 GB → partition by `created_at`. Both are per-table storage parameters outside `model.define(...).indexes([...])`, so raw SQL would be correct *then*.
+Revisit triggers are volume-based: `credit_transaction` past ~10⁷ rows → `ALTER TABLE credit_transaction SET (autovacuum_vacuum_scale_factor = 0.02)`; any table past ~10 GB → partition by `created_at`. Both are per-table storage parameters outside `model.define(...).indexes([...])`, so raw SQL would be correct _then_.
 
 ---
 
