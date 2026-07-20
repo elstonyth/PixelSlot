@@ -27,8 +27,10 @@ const PK = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
 const SHOTS = process.env.QA_SHOTS === '1';
 
 // Public routes plus one representative of each dynamic segment. Omitted on
-// purpose: /marketplace + /pack-party (feature-flagged off — they 404),
-// /daily (redirect to /vip), /slots/[slug]/spin (mid-flow, needs credits).
+// purpose: /daily (redirects to /vip) and /slots/[slug]/spin (mid-flow, needs
+// credits). The nine orphan routes (/30th, /activity, /airdrop, /marketplace,
+// /merchants, /pack-party, /pokemon, /repacks, /series) were deleted — the
+// storefront never routed to them.
 // The card handle below is a real catalog row (select handle from card); a
 // stale one 404s and the run skips it rather than silently passing.
 const PUBLIC = [
@@ -41,18 +43,11 @@ const PUBLIC = [
   '/fairness',
   '/about',
   '/contact',
-  '/series',
   '/social',
-  '/activity',
-  '/airdrop',
   '/free',
-  '/repacks',
-  '/merchants',
   '/download',
-  '/30th',
   '/roulette',
   '/reset-password',
-  '/pokemon/generation/1',
   '/auth/google/failed',
   '/profile/ProfessorOak',
   '/invite/ProfessorOak',

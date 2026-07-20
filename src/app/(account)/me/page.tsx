@@ -51,7 +51,6 @@ const ABOUT_LINKS: { label: string; href: string }[] = [
   { label: 'Fairness', href: '/fairness' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Activity', href: '/activity' },
 ];
 
 export default async function MePage() {
