@@ -375,7 +375,7 @@ export default function HowItWorksPage() {
         <Reveal>
           <SectionHeading
             title="What You Can Do"
-            sub="Everything you need to collect, compete, and trade"
+            sub="Everything you need to collect, compete, and cash out"
           />
         </Reveal>
         {/* Discrete feature cards, 2-up and width-capped with the icon set

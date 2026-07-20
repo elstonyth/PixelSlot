@@ -16,7 +16,9 @@
 //
 // Usage:
 //   node scripts/qa-responsive.mjs                  # everything
-//   QA_PATHS=/,/slots node scripts/qa-responsive.mjs
+//   QA_PATHS=/,/slots node scripts/qa-responsive.mjs   # public paths only:
+//       QA_PATHS mints no customer, so an account path reads as a redirect
+//       to /?auth=login and fails the run
 //   QA_SHOTS=1 node scripts/qa-responsive.mjs       # also write screenshots
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -32,7 +34,8 @@ const SHOTS = process.env.QA_SHOTS === '1';
 // /merchants, /pack-party, /pokemon, /repacks, /series) were deleted — the
 // storefront never routed to them.
 // The card handle below is a real catalog row (select handle from card); a
-// stale one 404s and the run skips it rather than silently passing.
+// stale one 404s, and any unreached route fails the run rather than quietly
+// shrinking the denominator.
 const PUBLIC = [
   '/',
   '/slots',
@@ -306,7 +309,13 @@ for (const d of DEVICES) {
     // An account page bounces logged-out visitors to /?auth=login — which is a
     // 200. Without this, a dud auth token silently measures the home page for
     // all 13 authed routes and reports them clean. Status is not arrival.
-    const landed = new URL(page.url()).pathname.replace(/(.)\/$/, '$1');
+    // decodeURIComponent: URL.pathname is percent-encoded while the route
+    // lists above are not, so a handle carrying a space or a non-ASCII
+    // character would otherwise report a phantom redirect.
+    const landed = decodeURIComponent(new URL(page.url()).pathname).replace(
+      /(.)\/$/,
+      '$1',
+    );
     if (landed !== path.replace(/(.)\/$/, '$1')) {
       rows.push({ path, device: d.key, status, landed, redirected: true });
       console.log(`REDIRECT ${path} -> ${landed} @${d.w}`);

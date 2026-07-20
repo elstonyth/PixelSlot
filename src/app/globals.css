@@ -165,16 +165,6 @@
   }
 }
 
-/* Spinning 3D coin on the Marketplace Activity hero (parent sets perspective). */
-@keyframes coinSpin {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(360deg);
-  }
-}
-
 /* Leaderboard podium pedestals growing up from the baseline (clipped by the
    fixed-height box, so the layout below never shifts) */
 @keyframes podiumRise {
