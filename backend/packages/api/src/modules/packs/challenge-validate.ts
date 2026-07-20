@@ -1,4 +1,9 @@
 import { MedusaError } from '@medusajs/framework/utils';
+import { MAX_VOUCHER_MYR } from './voucher-ranges';
+
+// threshold_myr is a community-pool rung, not a payout — prod already renders
+// RM 1.5M pools, so the cap only needs to reject absurd values (RM 100M).
+const MAX_THRESHOLD_MYR = 100_000_000;
 
 export interface ChallengeStageInput {
   stage_number: number;
@@ -58,12 +63,21 @@ export function validateChallengeStages(raw: unknown): ChallengeStageInput[] {
     const t = r.threshold_myr;
     if (typeof t !== 'number' || !Number.isFinite(t) || t < 0)
       bad(`stage ${n}: threshold_myr must be >= 0.`);
+    if ((t as number) > MAX_THRESHOLD_MYR)
+      bad(`stage ${n}: threshold_myr must be <= ${MAX_THRESHOLD_MYR}.`);
     if (i > 0 && !((t as number) > prevThreshold))
       bad(`stage ${n}: threshold_myr must exceed stage ${n - 1}'s.`);
     prevThreshold = t as number;
     const credits = r.reward_credits;
-    if (typeof credits !== 'number' || !Number.isFinite(credits) || credits < 0)
-      bad(`stage ${n}: reward_credits must be >= 0.`);
+    if (
+      typeof credits !== 'number' ||
+      !Number.isFinite(credits) ||
+      credits < 0 ||
+      credits > MAX_VOUCHER_MYR
+    )
+      bad(
+        `stage ${n}: reward_credits must be between 0 and ${MAX_VOUCHER_MYR}.`,
+      );
     const cardIds = validateCardIds(
       r.reward_card_ids,
       `stage ${n}: reward_card_ids`,
@@ -115,8 +129,13 @@ export function validateChallengeSettingsPatch(
   }
   if (b.payout_credits !== undefined) {
     const v = b.payout_credits;
-    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0)
-      bad('payout_credits must be >= 0.');
+    if (
+      typeof v !== 'number' ||
+      !Number.isFinite(v) ||
+      v < 0 ||
+      v > MAX_VOUCHER_MYR
+    )
+      bad(`payout_credits must be between 0 and ${MAX_VOUCHER_MYR}.`);
     out.payout_credits = v as number;
   }
   if (b.payout_card_ids !== undefined) {

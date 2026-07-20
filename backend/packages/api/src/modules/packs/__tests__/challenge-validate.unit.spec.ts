@@ -2,6 +2,7 @@ import {
   validateChallengeStages,
   validateChallengeSettingsPatch,
 } from '../challenge-validate';
+import { MAX_VOUCHER_MYR } from '../voucher-ranges';
 
 const stage = (over: Partial<Record<string, unknown>> = {}) => ({
   stage_number: 1,
@@ -41,8 +42,32 @@ describe('validateChallengeStages', () => {
 
   it('rejects negative reward_credits', () => {
     expect(() => validateChallengeStages({ stages: [stage({ reward_credits: -1 })] })).toThrow(
-      /reward_credits must be >= 0/,
+      /reward_credits must be between 0 and/,
     );
+  });
+
+  it('accepts reward_credits at the cap but rejects one above it', () => {
+    expect(
+      validateChallengeStages({
+        stages: [stage({ reward_credits: MAX_VOUCHER_MYR })],
+      }),
+    ).toHaveLength(1);
+    expect(() =>
+      validateChallengeStages({
+        stages: [stage({ reward_credits: MAX_VOUCHER_MYR + 1 })],
+      }),
+    ).toThrow(/reward_credits must be between 0 and/);
+  });
+
+  it('accepts a large legal threshold_myr but rejects one above the ceiling', () => {
+    expect(
+      validateChallengeStages({ stages: [stage({ threshold_myr: 2_000_000 })] }),
+    ).toHaveLength(1);
+    expect(() =>
+      validateChallengeStages({
+        stages: [stage({ threshold_myr: 100_000_001 })],
+      }),
+    ).toThrow(/threshold_myr must be <=/);
   });
 
   it('rejects a malformed reward_card_ids array', () => {
@@ -91,10 +116,18 @@ describe('validateChallengeSettingsPatch', () => {
 
   it('rejects negative payout_credits and an empty patch', () => {
     expect(() => validateChallengeSettingsPatch({ patch: { payout_credits: -1 } })).toThrow(
-      /payout_credits must be >= 0/,
+      /payout_credits must be between 0 and/,
     );
     expect(() => validateChallengeSettingsPatch({ patch: {} })).toThrow(
       /No valid settings/,
     );
+  });
+
+  it('rejects payout_credits above the cap', () => {
+    expect(() =>
+      validateChallengeSettingsPatch({
+        patch: { payout_credits: MAX_VOUCHER_MYR + 1 },
+      }),
+    ).toThrow(/payout_credits must be between 0 and/);
   });
 });
