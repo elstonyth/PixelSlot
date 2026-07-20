@@ -7,6 +7,9 @@ type RecordPullInput = {
   pack_id: string; // = Pack.slug
   card_id: string; // = Card.handle (the won card)
   recorded_value_usd: number; // draw-time USD pulled value snapshot (roll-pack)
+  // The open_id (uuid) the charge row stored in source_transaction_id — the
+  // money<->card audit link stamped on the pull.
+  open_id: string;
 };
 
 // record-pull — the one mutation in the open-pack workflow: append a row to the
@@ -28,6 +31,7 @@ export const recordPullStep = createStep(
         order_id: null,
         rolled_at: new Date(),
         recorded_value_usd: input.recorded_value_usd,
+        open_id: input.open_id,
       },
     ]);
 

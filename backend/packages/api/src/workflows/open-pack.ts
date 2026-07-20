@@ -51,11 +51,12 @@ export const openPackWorkflow = createWorkflow(
     const charge = chargePackOpenStep(charged);
 
     // 2. Record the pull (compensated by delete on failure).
-    const recordInput = transform({ input, card }, (d) => ({
+    const recordInput = transform({ input, card, charged }, (d) => ({
       customer_id: d.input.customer_id,
       pack_id: d.input.pack_id,
       card_id: d.card.handle,
       recorded_value_usd: d.card.recorded_value_usd,
+      open_id: d.charged.open_id,
     }));
     const pull = recordPullStep(recordInput);
 

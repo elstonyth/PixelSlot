@@ -62,9 +62,10 @@ export const openBatchWorkflow = createWorkflow(
     // 2. Build recordPullsBatchStep's input: customer_id + pack_id from the
     //    workflow input, per-card handle + draw-time value snapshot from the
     //    rolled cards.
-    const recordInput = transform({ input, cards }, (d) => ({
+    const recordInput = transform({ input, cards, charged }, (d) => ({
       customer_id: d.input.customer_id,
       pack_id: d.input.pack_id,
+      open_id: d.charged.open_id,
       cards: d.cards.map((c) => ({
         card_id: c.handle,
         recorded_value_usd: c.recorded_value_usd,
