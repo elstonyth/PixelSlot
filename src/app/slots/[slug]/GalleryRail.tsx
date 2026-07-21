@@ -121,7 +121,13 @@ export function GalleryRail({
                   }}
                   animate={{
                     scale: isActive ? 1 : 0.9,
-                    opacity: isActive ? 1 : 0.55,
+                    // 0.75, not 0.55: the peek neighbours are real text (not
+                    // aria-hidden), and the dim multiplies into their contrast.
+                    // Measured on /leaderboard: 0.55 -> as low as 1.93:1,
+                    // 0.7 -> 4.15:1, both under the 4.5:1 floor for the 10-12px
+                    // copy; 0.75 clears it. Scale + rotateY still carry the
+                    // "this one is background" read.
+                    opacity: isActive ? 1 : 0.75,
                     rotateY: reduced ? 0 : (i - activeIndex) * -14,
                   }}
                   transition={
