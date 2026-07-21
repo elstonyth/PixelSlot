@@ -25,7 +25,6 @@ import {
   type ResolvedPack,
   type PackCard,
   FLAT_BUYBACK_PERCENT,
-  priceNumber,
   factoryVideo,
 } from '@/lib/packs-data';
 import { AmbientVideo } from '@/components/AmbientVideo';
@@ -84,7 +83,8 @@ export default function PackDetailClient({
   // so anyone's pull shows up here without a reload.
   const recent = useLiveRecentPulls(recentPulls);
 
-  const priceNum = priceNumber(active.price);
+  // Real backend price, never re-parsed from the rounded display string.
+  const priceNum = active.priceValue;
   // Baked Polycards tiers animate their factory stage (still poster otherwise).
   const heroVideo = factoryVideo(active.displayImage);
 
@@ -354,7 +354,8 @@ export default function PackDetailClient({
                   type="button"
                   aria-label="Increase quantity"
                   onClick={() => setQ(qty + 1)}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                  disabled={qty >= maxQty}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
                 >
                   <Plus className="h-4 w-4" aria-hidden />
                 </button>
@@ -598,7 +599,8 @@ export default function PackDetailClient({
               type="button"
               aria-label="Increase quantity"
               onClick={() => setQ(qty + 1)}
-              className="flex h-11 w-10 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+              disabled={qty >= maxQty}
+              className="flex h-11 w-10 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white disabled:opacity-40"
             >
               <Plus className="h-4 w-4" aria-hidden />
             </button>

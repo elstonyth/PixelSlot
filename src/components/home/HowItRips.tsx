@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Reveal from '@/components/Reveal';
+import { BUYBACK_RATE_LABEL } from '@/lib/buyback-copy';
 
 const STEPS = [
   {
@@ -19,7 +20,10 @@ const STEPS = [
     copy: (
       <>
         Every pull is a real graded slab — vault it, ship it, or sell back{' '}
-        <span className="text-buyback-fg font-semibold">up to 90%</span>.
+        <span className="text-buyback-fg font-semibold">
+          {BUYBACK_RATE_LABEL}
+        </span>
+        .
       </>
     ),
   },

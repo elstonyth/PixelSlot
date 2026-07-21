@@ -1063,3 +1063,23 @@ Ordered by leverage. Confidence is the advisor's after re-reading the code.
   `scripts/` file bodies (classified by name/pattern — plan 055 opens them);
   i18n depth; `.claude/` hook scripts.
 - The ~570 test files outside the delta (scanned, not line-read).
+
+---
+
+## Round 7 — storefront design / UX audit, 2026-07-22
+
+Base commit `a15f88e1`. Four parallel read-only audits (global tokens + app
+shell, home/marketing, conversion funnel, account cluster). Scope was
+deliberately disjoint from rounds 1-6: design system, shipped UI, and
+user-facing copy truth only — no money, security, or backend correctness.
+
+Output is a single ranked findings doc, not per-item plans:
+
+| Doc | Title | Items | Status |
+| --- | ----- | ----- | ------ |
+| 057 | Storefront design / UX audit (round 7) | 42 (6 tier-1) | TODO — unscheduled |
+
+Tier 1: dead `--font-geist-sans` var (body font not loading), buyback rate
+stated three ways, VRF vs commit-reveal contradiction, spin-screen freeze on
+Server Action transport rejection, fabricated live status on /contact,
+referrals dead-end for handle-less users.

@@ -25,7 +25,6 @@ import {
   type Rarity,
   FLAT_BUYBACK_PERCENT,
   ODDS,
-  priceNumber,
 } from '@/lib/packs-data';
 import type { RecentPull } from '@/lib/data/packs';
 import { demoDraw } from '@/lib/demo-spin';
@@ -131,7 +130,8 @@ export default function SlotMachineClient({
   // "demo" spin whose result the settle identity-guard then silently drops.
   const modeUndecided = demoPool !== null && !customer && authLoading;
 
-  const cost = priceNumber(pack.price);
+  // Real backend price, never re-parsed from the rounded display string.
+  const cost = pack.priceValue;
   // Reel count — prop is the initial value (already clamped from ?count=); the
   // player adds/removes reels in-machine. cost * reels is the batch price.
   const [reels, setReels] = useState(count);
@@ -363,7 +363,23 @@ export default function SlotMachineClient({
     setPhase('resolving');
     sfx('ratchet');
 
-    const res = await openBatch(pack.id, reels);
+    // openBatch handles BACKEND failures itself ({ok:false}); what escapes here
+    // is the Server Action RPC itself rejecting (offline, action endpoint 5xx,
+    // deployment-ID mismatch). Unhandled, phase stays 'resolving' forever and
+    // the Spin button never re-enables (spinGuarded). Whether the charge landed
+    // is genuinely unknown at this point, so the copy must claim NEITHER a free
+    // spin nor a charge — it points the player at their balance instead.
+    let res: Awaited<ReturnType<typeof openBatch>>;
+    try {
+      res = await openBatch(pack.id, reels);
+    } catch (err) {
+      logger.error('[slots] openBatch transport failure', err);
+      setError(
+        "Couldn't reach the machine. Check your balance before spinning again.",
+      );
+      setPhase('idle');
+      return;
+    }
     if (!res.ok) {
       if (res.needsAuth) openAuth('login');
       else {
@@ -624,8 +640,11 @@ export default function SlotMachineClient({
 
   // Reel-stop clacks: the stack owns its per-column settle internally, so fire a
   // mechanical clack at each column's stop time from here (cleared on teardown).
+  // Reduced motion has no reel travel to punctuate (ReelStrip finishes on a 0ms
+  // timeout and the reveal beats collapse to 0), so these would clack seconds
+  // later over an already-landed card — same guard as the tension effect below.
   useEffect(() => {
-    if (phase !== 'spinning') return;
+    if (phase !== 'spinning' || reduced) return;
     const ids: number[] = [];
     for (let i = 0; i < reels; i++) {
       ids.push(
@@ -641,7 +660,7 @@ export default function SlotMachineClient({
       );
     }
     return () => ids.forEach((id) => clearTimeout(id));
-  }, [phase, spin?.nonce, reels, sfx, play]);
+  }, [phase, spin?.nonce, reels, reduced, sfx, play]);
 
   // Rising tension during the final strip's crawl (spec §7d).
   useEffect(() => {
@@ -719,11 +738,14 @@ export default function SlotMachineClient({
             to the viewport width and the reveal card sizes itself from stage
             height. overflow-y-auto stays as a last-resort fallback (extreme
             landscape phones); overflow-x is hard-locked — vertical overflow
-            must never re-enable sideways panning. */}
+            must never re-enable sideways panning.
+            aria-busy covers 'resolving' too: that's the pre-spin server
+            round-trip, where nothing moves yet but the machine IS busy and the
+            Spin button is already locked. */}
         <div
           data-testid="slot-stage"
           className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-fluid"
-          aria-busy={phase === 'spinning'}
+          aria-busy={phase === 'spinning' || phase === 'resolving'}
         >
           {/* my-auto on the machine (not justify-center here) — same safe
               centering as RevealStage: identical when content fits, but if the
