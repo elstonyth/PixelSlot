@@ -1,11 +1,12 @@
 // src/app/leaderboard/RankRewardSheet.tsx
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import type { ChallengeRankReward } from '@/lib/data/challenge';
 import { useModalA11y } from '@/lib/use-modal-a11y';
+import { SlabImage } from '@/components/SlabImage';
 
 /** The per-rank prize rows themselves — one row per CONFIGURED rank, with its
  *  card and/or credits. Split out of the sheet (same reason as OddsSheet's
@@ -36,13 +37,20 @@ export function RankRewardList({
           <span className="font-heading w-10 shrink-0 text-base leading-none text-white/70 italic">
             #{r.rank}
           </span>
-          {/* Plain <img>, matching the podium tiles: the challenge payload
-              ships one already-composited art URL per card (slab_image ??
-              image) with no slab/rarity flag, so there is nothing to drive
-              SlabImage's framed path — and its raw-card letterbox would
-              mis-crop a baked slab. Swap both together when the prism frame
-              and an enriched card payload land (plan 057 note, feat/prism-slab-frame). */}
-          {r.card ? (
+          {/* Graded slabs wear the prism frame, same as the podium tiles;
+              raw card art has the wrong aspect for the band and stays a plain
+              <img>; a credits-only rank shows the coin stack. */}
+          {r.card?.slabImage ? (
+            <SlabImage
+              src={r.card.image}
+              slabSrc={r.card.slabImage}
+              alt=""
+              frameVariant="prism"
+              glowScale={0.18}
+              sizes="128px"
+              className="h-14 shrink-0"
+            />
+          ) : r.card ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={r.card.image}
@@ -97,12 +105,10 @@ export function RankRewardSheet({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   useModalA11y(panelRef, open, onClose);
-  // Portal target only exists client-side; render nothing until mounted so the
-  // server and first client pass agree.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!open || !mounted) return null;
+  // Portal target only exists client-side. No mounted-state effect is needed:
+  // the sheet can only be opened by a user interaction, so `open` is always
+  // false during SSR and the first client pass agrees by construction.
+  if (!open || typeof document === 'undefined') return null;
 
   // PORTAL, not an in-place render. The trigger lives inside GalleryRail, whose
   // ancestors carry a 3D transform (neighbour peek) AND overflow-hidden (rail

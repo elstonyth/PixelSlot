@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { Check, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SlabImage } from '@/components/SlabImage';
 import type {
   ChallengeCard,
   ChallengeRankReward,
@@ -131,14 +132,30 @@ function StageCard({
             className="flex flex-col rounded-xl border border-white/5 bg-white/[0.04] p-2.5"
           >
             <RankNumeral rank={RANKS[r.rank - 1]!} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={r.card.image}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="mx-auto mt-2 h-20 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]"
-            />
+            {/* Graded prizes wear the prism frame (the challenge own cosmetic
+                frame); raw card art has the wrong aspect for the band, so it
+                stays a plain <img>. Halo scaled right down — at this size the
+                full 44px glow is wider than the card. */}
+            {r.card.slabImage ? (
+              <SlabImage
+                src={r.card.image}
+                slabSrc={r.card.slabImage}
+                alt=""
+                frameVariant="prism"
+                glowScale={0.25}
+                sizes="256px"
+                className="mx-auto mt-2 h-20"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={r.card.image}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="mx-auto mt-2 h-20 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]"
+              />
+            )}
             <p className="mt-2 line-clamp-2 text-[10px] leading-tight font-semibold tracking-wide text-neutral-300 uppercase">
               {r.card.name}
             </p>
@@ -163,7 +180,12 @@ function StageCard({
           />
           <p className="mt-2 text-[10px] leading-tight font-semibold tracking-wide text-neutral-300 uppercase">
             {rest.length > 0 ? `${rest.length} more prizes` : 'Credits'}
-            <span className="text-chase block text-xs">{stage.reward}</span>
+            {/* stage.reward is the SUM across ranks 4-10, not one winner's
+                prize — ranks can now be configured individually, so a single
+                figure cannot mean "what you get". Labelled as a total. */}
+            <span className="text-chase block text-xs">
+              {stage.reward} total
+            </span>
           </p>
         </button>
       </div>

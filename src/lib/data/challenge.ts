@@ -22,6 +22,9 @@ import { parseOne, ChallengeSchema } from '@/lib/data/schemas';
 export interface ChallengeCard {
   name: string;
   image: string;
+  /** The graded-slab composite, when the card has one. Only a real slab gets
+   *  the prism frame — raw card art has the wrong aspect for the band. */
+  slabImage: string | null;
 }
 /** One configured prize rank (1–10) of a stage. `rank` is carried EXPLICITLY —
  *  never a list index — so an unresolvable card id can never shift a lower rank
@@ -141,9 +144,11 @@ export async function getChallenge(): Promise<Challenge | null> {
     const resolveCards = (ids: string[]): ChallengeCard[] =>
       ids.flatMap((id) => {
         const c = data.cards[id];
-        return c ? [{ name: c.name, image: c.image }] : [];
+        return c
+          ? [{ name: c.name, image: c.image, slabImage: c.slab_image ?? null }]
+          : [];
       });
-    // Resolver for a stage's per-rank prize table. `rank` comes from the row
+    // Resolver for a stage per-rank prize table. `rank` comes from the row
     // itself, so an unresolvable card id can never shift a lower rank under the
     // wrong numeral (the row keeps its rank and survives on its credits; with
     // no credits it drops out entirely rather than rendering empty).
@@ -160,7 +165,15 @@ export async function getChallenge(): Promise<Challenge | null> {
           return [
             {
               rank: r.rank,
-              card: c ? { name: c.name, image: c.image } : null,
+              // slabImage drives the prism frame: only a real graded slab is
+              // framed, raw card art has the wrong aspect for the band.
+              card: c
+                ? {
+                    name: c.name,
+                    image: c.image,
+                    slabImage: c.slab_image ?? null,
+                  }
+                : null,
               credits,
               creditsLabel: credits > 0 ? rm0(credits) : null,
             },
