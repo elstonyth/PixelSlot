@@ -70,6 +70,19 @@ describe('validateChallengeStages', () => {
     ).toThrow(/threshold_myr must be <=/);
   });
 
+  it('rejects non-finite thresholds and credits', () => {
+    // NaN/Infinity survive a bare `typeof === number` and every `<`/`>`
+    // range comparison, so only the Number.isFinite guards catch them.
+    for (const bad of [NaN, Infinity, -Infinity]) {
+      expect(() =>
+        validateChallengeStages({ stages: [stage({ threshold_myr: bad })] }),
+      ).toThrow(/threshold_myr must be >= 0/);
+      expect(() =>
+        validateChallengeStages({ stages: [stage({ reward_credits: bad })] }),
+      ).toThrow(/reward_credits must be between 0 and/);
+    }
+  });
+
   it('rejects a malformed reward_card_ids array', () => {
     expect(() => validateChallengeStages({ stages: [stage({ reward_card_ids: [1] })] })).toThrow(
       /card id strings/,
