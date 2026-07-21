@@ -47,8 +47,10 @@ const eslintConfig = defineConfig([
   // partial backend payloads. Without ignoreRestSiblings each omitted key is a
   // phantom unused-var warning, so the codebase would have to litter disables
   // for a deliberate pattern. `^_` also covers intentionally-unused bindings.
+  // Scoped to test files on purpose: in product code an unused binding is a
+  // signal worth keeping, and only the tests use the omit idiom.
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/__tests__/**/*.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
