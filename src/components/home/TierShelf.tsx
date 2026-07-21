@@ -81,7 +81,7 @@ function LadderRow({
           individually — never the status label, which must stay legible
           (DESIGN.md contrast floor) since it's what explains the inert row. */}
       <div
-        className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/[0.04] before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.14),transparent_68%)] ${
+        className={`flex shrink-0 items-center justify-center rounded-xl bg-white/[0.04] ${
           lead ? 'h-24 w-24 lg:h-32 lg:w-32' : 'h-24 w-24'
         } ${soldOut ? 'opacity-50' : ''}`}
       >
@@ -94,7 +94,7 @@ function LadderRow({
           // next.config remotePatterns) — bypass the optimizer like the detail
           // hero does, else /_next/image 400s and the thumbnail breaks.
           unoptimized
-          className="relative h-[85%] w-auto object-contain"
+          className="h-[85%] w-auto object-contain"
         />
       </div>
 
@@ -121,24 +121,22 @@ function LadderRow({
         )}
       </div>
 
-      {/* Price, right-aligned in Nekst — the ladder's rung value. The arrow is
-          the row's only affordance now: "Rip it" repeated once per rung was
-          seven identical low-contrast labels down the ladder. */}
-      <div className="flex shrink-0 items-center gap-3">
+      {/* Price, right-aligned in Nekst — the ladder's rung value. The price
+          steps down on phones so the pack name stops truncating to
+          "Diamond Pa…" at 390px; the `Rip it →` affordance is spec'd
+          (DESIGN.md §5 "Tier ladder") and stays at every width. */}
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
         <span
           className={`font-heading whitespace-nowrap text-white ${
-            lead ? 'text-xl lg:text-4xl' : 'text-lg lg:text-2xl'
+            lead ? 'text-xl lg:text-3xl' : 'text-lg lg:text-2xl'
           } ${soldOut ? 'opacity-50' : ''}`}
         >
           {pack.price}
         </span>
         {!soldOut && (
-          <ArrowRight
-            // Phone rows are tap targets end to end; the arrow only costs the
-            // pack name the width it needs to stop truncating.
-            className="hidden h-4 w-4 shrink-0 text-neutral-600 transition-colors group-hover:text-white lg:block"
-            aria-hidden
-          />
+          <span className="flex items-center gap-1 text-[11px] font-semibold text-neutral-400">
+            Rip it <ArrowRight className="h-3 w-3" aria-hidden />
+          </span>
         )}
       </div>
     </>
@@ -146,21 +144,21 @@ function LadderRow({
 
   // h-full: grid cells stretch equal-height; the row must fill its cell so
   // 2-up card bottoms stay aligned if one card ever gains an extra line.
-  // The crown rung gets a lit left edge so the ladder has a visible top, not
-  // just a wider box: at 7 near-identical dark rows, width alone read as noise.
-  const rowClass = `group flex h-full w-full items-center gap-4 rounded-2xl border p-3 ${
-    lead
-      ? 'border-white/15 bg-gradient-to-r from-neutral-800 via-neutral-900 to-neutral-900'
-      : 'border-white/10 bg-neutral-900'
+  // The crown rung reads as the ladder's top through a brighter hairline, not a
+  // tinted surface: in-flow cards stay matte charcoal (DESIGN.md §6).
+  const rowClass = `flex h-full w-full items-center gap-4 rounded-2xl border bg-neutral-900 p-3 ${
+    lead ? 'border-white/15' : 'border-white/10'
   }`;
 
   if (soldOut) {
     return <div className={rowClass}>{body}</div>;
   }
   return (
+    // Tailwind v4 emits `translate`/`scale`, not `transform` — naming
+    // `transform` here would transition the border and snap the lift.
     <Link
       href="/slots"
-      className={`${rowClass} transition-[transform,border-color] hover:border-white/30 hover:-translate-y-0.5 active:scale-[0.99] motion-reduce:transition-colors motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100`}
+      className={`${rowClass} transition-[translate,scale,border-color] hover:-translate-y-0.5 hover:border-white/30 active:scale-[0.99] motion-reduce:transition-colors motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100`}
     >
       {body}
     </Link>
