@@ -25,6 +25,7 @@ import {
   BalanceSchema,
   AmountBalanceSchema,
   BuybackResultSchema,
+  DepositStartSchema,
   CreditsSchema,
   CreditTransactionSchema,
 } from '@/lib/data/schemas';
@@ -132,6 +133,61 @@ export type TopUpActionResult =
       replayed?: boolean;
     }
   | { ok: false; error: string; needsAuth?: boolean };
+
+export type StartDepositResult =
+  | { ok: true; url: string; amount: number }
+  | { ok: false; error: string; needsAuth?: boolean };
+
+/**
+ * Start a REAL top-up through the GlobePay365 gateway.
+ *
+ * Unlike `topUpCredits` this credits nothing and returns no balance: it hands
+ * back the gateway's cashier URL, the customer pays there, and credit only
+ * lands when their signed callback settles the deposit. So there is no
+ * Idempotency-Key here — the backend mints a fresh reference per attempt and a
+ * re-clicked button costs nothing but an abandoned deposit row.
+ *
+ * Which gateway the UI uses is decided by NEXT_PUBLIC_PAYMENTS_PROVIDER; this
+ * action is only called when it is 'globepay'.
+ */
+export async function startDeposit(
+  amount: number,
+): Promise<StartDepositResult> {
+  // Validate at the boundary — a server action is a public endpoint.
+  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+    return { ok: false, error: 'Enter a valid amount.' };
+  }
+
+  const token = await getAuthToken();
+  if (!token) {
+    return { ok: false, error: 'Please log in first.', needsAuth: true };
+  }
+
+  try {
+    const parsed = parseOne(
+      DepositStartSchema,
+      await sdk.client.fetch('/store/credits/deposit', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: { amount },
+      }),
+    );
+    if (!parsed) {
+      return {
+        ok: false,
+        error: 'Got an unexpected response. Please try again.',
+      };
+    }
+    return { ok: true, url: parsed.url, amount: parsed.amount };
+  } catch (error) {
+    logger.error('[vault] deposit start failed:', error);
+    return {
+      ok: false,
+      error: friendlyError(error, VAULT_RULES, VAULT_FALLBACK),
+      needsAuth: isAuthError(error),
+    };
+  }
+}
 
 // Buy site credit through the mock gateway (demo — no real payment). The fake
 // card fields never leave the browser; only the amount is posted, and the

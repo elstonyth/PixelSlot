@@ -34,6 +34,16 @@ salt=aesKey, 1000 iters, 32 bytes)`, `AES-256-CBC` + PKCS7, random 16-byte IV
 | `GLOBEPAY_PUBLIC_KEY`           | their RSA public key (base64 SPKI)           |
 | `GLOBEPAY_AES_KEY`              | their AES key                                |
 | `GLOBEPAY_API_BASE`             | `https://mapi.GlobePay365stg.com` on staging |
+| `GLOBEPAY_ENABLED`              | `true` to arm the real gateway (fails closed) |
+| `GLOBEPAY_NOTIFY_URL`           | public callback URL — their POST target |
+| `GLOBEPAY_RETURN_URL`           | where the customer lands after paying |
+
+Storefront (public, not a secret): `NEXT_PUBLIC_PAYMENTS_PROVIDER=globepay`
+switches the top-up sheet from the mock gateway to the redirect flow; anything
+else keeps the mock. `GLOBEPAY_NOTIFY_URL` and `GLOBEPAY_RETURN_URL` are
+explicit rather than derived — production names its storefront var
+`MERCUR_STOREFRONT_URL`, so deriving would silently fall back to a localhost
+default and the gateway would call an address that does not exist.
 
 Merchant keypair was generated **locally with openssl**, not on devglan.com or
 any other web tool — that private key signs withdrawal/payout requests, so a key

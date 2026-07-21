@@ -4,12 +4,27 @@ import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { rm, rm0 } from '@/lib/format';
-import { topUpCredits } from '@/lib/actions/vault';
+import { startDeposit, topUpCredits } from '@/lib/actions/vault';
 import { Pill } from '@/components/ui/pill';
 import { useModalA11y } from '@/lib/use-modal-a11y';
 import { useLiquidGlass, GLASS_SUBTLE } from '@/lib/use-liquid-glass';
 
-const PRESETS = [10, 25, 50, 100];
+// Which gateway backs the sheet. 'globepay' sends the customer to the
+// provider's cashier page and credits nothing here — the balance updates later,
+// when their signed callback settles the deposit. Anything else keeps the mock
+// gateway, which credits synchronously and stays the local/dev path.
+const USE_GATEWAY = process.env.NEXT_PUBLIC_PAYMENTS_PROVIDER === 'globepay';
+
+// The gateway's own floor is higher than the mock's, and it rejects everything
+// below with a generic "Invalid Transaction Amount" that tells the customer
+// nothing. Catch it in the sheet so they get a real message instead.
+// Confirmed live on staging: 25 rejected, 30 accepted (docs/payments).
+const GATEWAY_MIN_RM = 30;
+
+// The mock's 10/25 rungs are below the gateway's floor, so offering them would
+// guarantee a rejection on the real path.
+const PRESETS = USE_GATEWAY ? [30, 50, 100, 200] : [10, 25, 50, 100];
+const DEFAULT_AMOUNT = USE_GATEWAY ? '50' : '25';
 
 /**
  * Global top-up bottom sheet (90scard's profile top-up flow, dark skin).
@@ -28,7 +43,7 @@ export default function TopUpSheet({
   onClose: () => void;
   onToppedUp: (balance: number, amount: number) => void;
 }) {
-  const [amountText, setAmountText] = useState('25');
+  const [amountText, setAmountText] = useState(DEFAULT_AMOUNT);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{
@@ -71,6 +86,24 @@ export default function TopUpSheet({
     setError(null);
     setSubmitting(true);
     try {
+      if (USE_GATEWAY) {
+        if (amount < GATEWAY_MIN_RM) {
+          setError(`Minimum top-up is RM ${GATEWAY_MIN_RM}.`);
+          return;
+        }
+        const res = await startDeposit(amount);
+        if (!res.ok) {
+          setError(res.error);
+          return;
+        }
+        // Leave for the cashier page. Deliberately a full navigation, not a new
+        // tab: popup blockers eat a window.open() that follows an await, and
+        // the customer must land back on our return URL afterwards. Nothing was
+        // credited — the balance updates when their callback settles.
+        window.location.assign(res.url);
+        return;
+      }
+
       attemptKey.current ??= crypto.randomUUID();
       const res = await topUpCredits(amount, attemptKey.current);
       if (!res.ok) {
