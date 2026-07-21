@@ -2,7 +2,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { preload } from 'react-dom';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -178,7 +178,7 @@ export default function SlotMachineClient({
   // the morph, plus the art visibly popping in). The spin gives us ~3s of
   // otherwise-idle network to spend instead.
   useEffect(() => {
-    if (phase === 'spinning') ReactDOM.preload(CARD_BACK_SRC, { as: 'image' });
+    if (phase === 'spinning') preload(CARD_BACK_SRC, { as: 'image' });
   }, [phase]);
   // Commit the stage scale only while idle: cellSize is a ReelStrip engine
   // dependency (pitch/travel/target), so resizing the window mid-spin would
