@@ -11,7 +11,7 @@ import {
   Tabs,
   FocusModal,
 } from '@medusajs/ui';
-import { Trophy } from '@medusajs/icons';
+import { Trophy, TriangleDownMini, TriangleRightMini } from '@medusajs/icons';
 import type { RouteConfig } from '@mercurjs/dashboard-sdk';
 import {
   useCards,
@@ -24,6 +24,8 @@ import {
 } from '../../lib/queries';
 import { resolveImageUrl } from '../../lib/image-url';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { RowActions } from '../../components/RowActions';
+import { StickySaveBar } from '../../components/StickySaveBar';
 
 let nextId = 0;
 
@@ -116,6 +118,12 @@ const creditsValid = (v: string): boolean => {
 // A rank pays only if it carries a card and/or a positive credit amount.
 const rankPays = (r: RankRow): boolean =>
   r.cardId !== null || (creditsValid(r.creditsInput) && parseCredits(r.creditsInput) > 0);
+// Broader than rankPays: what the editor shows when a stage is expanded. A rank
+// the operator has touched at all (card, "0", even a typo) stays visible so it
+// can be fixed; only never-configured ranks are hidden behind "Show all".
+const rankConfigured = (r: RankRow): boolean =>
+  r.cardId !== null || r.creditsInput.trim() !== '';
+const ALL_RANKS = Array.from({ length: MAX_REWARD_RANK }, (_, i) => i + 1);
 
 const emptyRanks = (): RankRow[] =>
   Array.from({ length: MAX_REWARD_RANK }, () => ({
@@ -158,6 +166,11 @@ const StagesTab = () => {
   const [savedSnapshot, setSavedSnapshot] = useState('');
   const [pickerFor, setPickerFor] = useState<{ stageId: string; rank: number } | null>(null);
   const [reason, setReason] = useState('');
+  // Which stages are expanded, and which rank rows that stage shows. Key absent
+  // = collapsed (the rank table unmounts; edits live in `rows`, not the DOM).
+  // The visible-rank list is frozen when the stage opens so a row never
+  // disappears mid-edit (e.g. clearing a credits field to retype it).
+  const [openRanks, setOpenRanks] = useState<Record<string, number[]>>({});
 
   // Seed once per mount only — `data` gets a new object identity on every
   // React Query refetch (e.g. refetchOnWindowFocus), so comparing
@@ -211,6 +224,19 @@ const StagesTab = () => {
           : r,
       ),
     );
+  const toggleStage = (row: StageRow) =>
+    setOpenRanks((p) => {
+      if (p[row.localId]) {
+        const next = { ...p };
+        delete next[row.localId];
+        return next;
+      }
+      const configured = ALL_RANKS.filter((n) => rankConfigured(row.ranks[n - 1]));
+      // Nothing configured yet => nothing to hide, open the full table.
+      return { ...p, [row.localId]: configured.length > 0 ? configured : ALL_RANKS };
+    });
+  const showAllRanks = (localId: string) =>
+    setOpenRanks((p) => ({ ...p, [localId]: ALL_RANKS }));
   const insertAt = (index: number) =>
     setRows((p) => {
       const next = p.slice();
@@ -249,12 +275,10 @@ const StagesTab = () => {
   }
 
   return (
-    <div className="flex flex-col gap-y-4 px-6 py-4">
+    <div className="pc-admin flex flex-col gap-y-4 px-6 py-4">
       <Text className="text-ui-fg-subtle" size="small">
-        Community-pool milestone stages (inert config). Stage number is the row
-        order; thresholds must strictly increase. Zero stages = challenge off.
-        Each stage carries its own ranks 1–{MAX_REWARD_RANK} prize table: a rank
-        may award a card, credits, both, or nothing at all.
+        Thresholds must increase down the list. A rank can take a card,
+        credits, both, or nothing. No stages means no challenge.
       </Text>
       {errors.length > 0 && (
         <div className="rounded-lg border border-ui-border-error p-3">
@@ -263,35 +287,78 @@ const StagesTab = () => {
           ))}
         </div>
       )}
-      {rows.map((r, i) => (
-        <div key={r.localId} className="flex flex-col gap-y-3 rounded-lg border p-4">
-          <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-            <div>
-              <Label htmlFor={`threshold-${r.localId}`}>Stage {i + 1} threshold (RM)</Label>
+      {rows.map((r, i) => {
+        const visible = openRanks[r.localId];
+        const open = visible !== undefined;
+        const panelId = `stage-panel-${r.localId}`;
+        const paying = r.ranks.filter(rankPays).length;
+        const cardCount = r.ranks.filter((rk) => rk.cardId !== null).length;
+        // Guard the sum: an in-progress invalid entry must not render "RM NaN".
+        const creditTotal = r.ranks.reduce(
+          (sum, rk) => sum + (creditsValid(rk.creditsInput) ? parseCredits(rk.creditsInput) : 0),
+          0,
+        );
+        return (
+        <div key={r.localId} className="flex flex-col rounded-lg border">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-3">
+            <button
+              type="button"
+              data-pc-stage-toggle
+              aria-expanded={open}
+              aria-controls={panelId}
+              onClick={() => toggleStage(r)}
+              className="hover:bg-ui-bg-base-hover flex items-center gap-x-1 rounded-md px-1 py-1 text-left"
+            >
+              {open ? <TriangleDownMini /> : <TriangleRightMini />}
+              <Text size="small" weight="plus">Stage {i + 1}</Text>
+            </button>
+            <div className="flex items-center gap-x-2">
+              <Label htmlFor={`threshold-${r.localId}`} size="small" className="text-ui-fg-subtle">
+                Unlocks at RM
+              </Label>
               <Input
                 id={`threshold-${r.localId}`}
+                className="w-28"
+                inputMode="numeric"
                 value={r.thresholdInput}
                 onChange={(e) => setRow(r.localId, { thresholdInput: e.target.value })}
               />
             </div>
-            <div className="flex flex-1 justify-end gap-x-1">
-              <Button size="small" variant="secondary" onClick={() => insertAt(i)}>+ Above</Button>
-              <Button size="small" variant="secondary" onClick={() => insertAt(i + 1)}>+ Below</Button>
-              <Button size="small" variant="danger" onClick={() => removeAt(i)}>Delete stage</Button>
+            <Text className="text-ui-fg-subtle" size="small">
+              {paying === 0
+                ? 'Pays nothing'
+                : [
+                    `${paying} of ${MAX_REWARD_RANK} ranks pay`,
+                    cardCount > 0 ? `${cardCount} card${cardCount > 1 ? 's' : ''}` : null,
+                    creditTotal > 0 ? `RM ${creditTotal} credits` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+            </Text>
+            <div className="pc-row-actions flex-1">
+              <RowActions
+                subject={`stage ${i + 1}`}
+                actions={[
+                  { label: 'Insert stage above', onSelect: () => insertAt(i) },
+                  { label: 'Insert stage below', onSelect: () => insertAt(i + 1) },
+                  { label: 'Delete stage', danger: true, onSelect: () => removeAt(i) },
+                ]}
+              />
             </div>
           </div>
+          {open && (
+          <div id={panelId} className="flex max-w-[760px] flex-col gap-y-2 border-t p-3">
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>Rank</Table.HeaderCell>
+                <Table.HeaderCell className="w-16">Rank</Table.HeaderCell>
                 <Table.HeaderCell>Prize card</Table.HeaderCell>
-                <Table.HeaderCell>Credits (RM)</Table.HeaderCell>
-                <Table.HeaderCell>Pays</Table.HeaderCell>
+                <Table.HeaderCell className="w-40">Credits (RM)</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {r.ranks.map((rk, ri) => {
-                const rank = ri + 1;
+              {visible.map((rank) => {
+                const rk = r.ranks[rank - 1];
                 const card = rk.cardId === null ? undefined : cardById.get(rk.cardId);
                 return (
                   <Table.Row key={rank}>
@@ -335,43 +402,53 @@ const StagesTab = () => {
                     <Table.Cell>
                       <Input
                         aria-label={`Stage ${i + 1} rank ${rank} credits`}
+                        className="w-28"
+                        inputMode="numeric"
                         placeholder="0"
                         value={rk.creditsInput}
                         onChange={(e) => setRank(r.localId, rank, { creditsInput: e.target.value })}
                       />
-                    </Table.Cell>
-                    <Table.Cell>
-                      {rankPays(rk) ? (
-                        <Text size="small">
-                          {[
-                            rk.cardId !== null ? '1 card' : null,
-                            parseCredits(rk.creditsInput) > 0
-                              ? `RM ${parseCredits(rk.creditsInput)}`
-                              : null,
-                          ]
-                            .filter(Boolean)
-                            .join(' + ')}
-                        </Text>
-                      ) : (
-                        <Text className="text-ui-fg-muted" size="small">No prize</Text>
-                      )}
                     </Table.Cell>
                   </Table.Row>
                 );
               })}
             </Table.Body>
           </Table>
+          {visible.length < MAX_REWARD_RANK && (
+            <div>
+              <Button size="small" variant="secondary" onClick={() => showAllRanks(r.localId)}>
+                Show all {MAX_REWARD_RANK} ranks
+              </Button>
+            </div>
+          )}
+          </div>
+          )}
         </div>
-      ))}
+        );
+      })}
       <div className="flex items-center gap-x-3">
         <Button variant="secondary" onClick={() => setRows((p) => [...p, emptyStage()])}>
           Add stage
         </Button>
-        {dirty && <Text className="text-ui-fg-subtle" size="small">Unsaved changes</Text>}
       </div>
-      <div className="flex items-end gap-x-3">
-        <div className="flex-1">
-          <Label htmlFor="stages-reason">Reason (audit trail)</Label>
+      <StickySaveBar
+        dirty={dirty}
+        saving={save.isPending}
+        canSave={errors.length === 0 && reasonValid}
+        onSave={onSave}
+        label="Save stages"
+        message={
+          errors.length > 0
+            ? `${errors.length} validation issue${errors.length > 1 ? 's' : ''}`
+            : dirty && !reasonValid
+              ? 'Add a reason to save'
+              : undefined
+        }
+      >
+        <div className="min-w-64 flex-1">
+          <Label htmlFor="stages-reason" size="small">
+            Reason (audit trail)
+          </Label>
           <Input
             id="stages-reason"
             placeholder="e.g. Add a new milestone stage"
@@ -379,8 +456,7 @@ const StagesTab = () => {
             onChange={(e) => setReason(e.target.value)}
           />
         </div>
-        <Button variant="primary" onClick={onSave} isLoading={save.isPending} disabled={!canSave}>Save stages</Button>
-      </div>
+      </StickySaveBar>
       <CardPicker
         open={pickerFor !== null}
         onClose={() => setPickerFor(null)}
@@ -443,7 +519,7 @@ const PayoutTab = () => {
   }
 
   return (
-    <div className="flex max-w-[520px] flex-col gap-y-4 px-6 py-4">
+    <div className="pc-admin flex max-w-[520px] flex-col gap-y-4 px-6 py-4">
       <Text className="text-ui-fg-subtle" size="small">
         Fixed-weekly cadence anchored at a timezone + reset day/hour. The
         weekly prize pool is the CUMULATIVE unlocked stage rewards (Milestone
@@ -502,10 +578,9 @@ const ChallengePage = () => {
           <div>
             <Heading level="h2">Weekly Challenge</Heading>
             <Text className="text-ui-fg-subtle mt-1" size="small">
-              Cumulative milestone stages (each stage carries its own ranks
-              1–{MAX_REWARD_RANK} prize table — a card and/or credits per rank)
-              and the weekly reset. Inert config a future settlement engine will
-              read.
+              Weekly prizes for the top {MAX_REWARD_RANK} players. Stages
+              unlock as the community pool grows and their prizes stack.
+              Payouts are still settled by hand.
             </Text>
           </div>
           <Tabs.List>
