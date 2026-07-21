@@ -27,7 +27,10 @@ import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 
 let nextId = 0;
 
-// ── Featured-card picker (adapts the daily-box picker; emits card.id) ─────────
+// Mirrors MAX_REWARD_RANK in backend/packages/api/src/modules/packs/challenge-validate.ts.
+const MAX_REWARD_RANK = 10;
+
+// ── Prize-card picker (adapts the daily-box picker; emits card.id) ────────────
 const CardPicker = ({
   open,
   onClose,
@@ -49,7 +52,7 @@ const CardPicker = ({
         <FocusModal.Body className="flex flex-col items-center overflow-auto p-10">
           <div className="flex w-full max-w-[640px] flex-col gap-y-4">
             <FocusModal.Title asChild>
-              <Heading level="h2">Choose a featured card</Heading>
+              <Heading level="h2">Choose a prize card</Heading>
             </FocusModal.Title>
             {isError ? (
               <Text className="text-ui-fg-subtle">Failed to load cards.</Text>
@@ -89,28 +92,71 @@ const CardPicker = ({
 };
 
 // ── Milestone Stages tab ─────────────────────────────────────────────────────
+// A stage holds a DENSE ranks 1..MAX_REWARD_RANK array locally (so every rank
+// is always editable) but the API shape is SPARSE: a rank that pays nothing is
+// simply absent from `rank_rewards`.
+interface RankRow {
+  cardId: string | null;
+  creditsInput: string;
+}
 interface StageRow {
   localId: string;
   thresholdInput: string;
-  creditsInput: string;
-  cardIds: string[];
+  ranks: RankRow[];
 }
-const stageFromDTO = (s: ChallengeStageDTO): StageRow => ({
+
+// ONE parser drives validation, the pays-anything filter and serialization so
+// they can never disagree. Blank reads as 0; anything else non-finite or
+// negative is caught by `creditsValid` and blocks the save.
+const parseCredits = (v: string): number => (v.trim() === '' ? 0 : Number(v));
+const creditsValid = (v: string): boolean => {
+  const n = parseCredits(v);
+  return Number.isFinite(n) && n >= 0;
+};
+// A rank pays only if it carries a card and/or a positive credit amount.
+const rankPays = (r: RankRow): boolean =>
+  r.cardId !== null || (creditsValid(r.creditsInput) && parseCredits(r.creditsInput) > 0);
+
+const emptyRanks = (): RankRow[] =>
+  Array.from({ length: MAX_REWARD_RANK }, () => ({
+    cardId: null,
+    creditsInput: '',
+  }));
+
+const emptyStage = (): StageRow => ({
   localId: `st-${nextId++}`,
-  thresholdInput: String(s.threshold_myr),
-  creditsInput: String(s.reward_credits),
-  cardIds: s.reward_card_ids,
+  thresholdInput: '0',
+  ranks: emptyRanks(),
 });
+
+const stageFromDTO = (s: ChallengeStageDTO): StageRow => {
+  const ranks = emptyRanks();
+  for (const rr of s.rank_rewards ?? []) {
+    if (!Number.isInteger(rr.rank) || rr.rank < 1 || rr.rank > MAX_REWARD_RANK)
+      continue;
+    ranks[rr.rank - 1] = {
+      cardId: rr.card_id ?? null,
+      creditsInput: rr.credits ? String(rr.credits) : '',
+    };
+  }
+  return {
+    localId: `st-${nextId++}`,
+    thresholdInput: String(s.threshold_myr),
+    ranks,
+  };
+};
+
 const snapshotStages = (rows: StageRow[]) =>
-  JSON.stringify(rows.map((r) => [r.thresholdInput, r.creditsInput, r.cardIds]));
+  JSON.stringify(rows.map((r) => [r.thresholdInput, r.ranks]));
 
 const StagesTab = () => {
   const { data, isError } = useChallengeStages();
+  const { data: cards } = useCards();
   const save = useSaveChallengeStages();
   const [seededFrom, setSeededFrom] = useState<{ stages: ChallengeStageDTO[] } | undefined>();
   const [rows, setRows] = useState<StageRow[]>([]);
   const [savedSnapshot, setSavedSnapshot] = useState('');
-  const [pickerFor, setPickerFor] = useState<string | null>(null);
+  const [pickerFor, setPickerFor] = useState<{ stageId: string; rank: number } | null>(null);
   const [reason, setReason] = useState('');
 
   // Seed once per mount only — `data` gets a new object identity on every
@@ -126,9 +172,13 @@ const StagesTab = () => {
   if (isError) return <Text className="text-ui-fg-subtle p-6">Failed to load stages.</Text>;
   if (!data) return <LoadingSkeleton />;
 
+  const cardById = new Map((cards ?? []).map((c) => [c.id, c]));
   const dirty = snapshotStages(rows) !== savedSnapshot;
-  // Client pre-check: contiguity is automatic (index-derived); check monotonic
-  // thresholds + non-negatives inline. Empty list is valid (challenge off).
+  // Client pre-check mirroring challenge-validate.ts: contiguity is automatic
+  // (index-derived) and rank uniqueness/range are structural here, so only
+  // thresholds and per-rank credits can actually be wrong. Empty list is valid
+  // (challenge off); an all-empty rank table is valid (stage pays nothing).
+  // A per-rank reward cap (plan 044) would slot in beside the credits check.
   const errors: string[] = [];
   let prev = -1;
   rows.forEach((r, i) => {
@@ -140,29 +190,52 @@ const StagesTab = () => {
       if (i > 0 && !(t > prev)) errors.push(`Stage ${i + 1}: threshold must exceed stage ${i}'s.`);
       prev = t;
     }
-    const c = r.creditsInput.trim() === '' ? NaN : Number(r.creditsInput);
-    if (!Number.isFinite(c) || c < 0) errors.push(`Stage ${i + 1}: credits must be ≥ 0.`);
+    r.ranks.forEach((rk, ri) => {
+      if (!creditsValid(rk.creditsInput))
+        errors.push(`Stage ${i + 1}, rank ${ri + 1}: credits must be a number ≥ 0.`);
+    });
   });
   const reasonValid = reason.trim().length > 0;
   const canSave = !save.isPending && dirty && errors.length === 0 && reasonValid;
 
   const setRow = (id: string, patch: Partial<StageRow>) =>
     setRows((p) => p.map((r) => (r.localId === id ? { ...r, ...patch } : r)));
+  const setRank = (stageId: string, rank: number, patch: Partial<RankRow>) =>
+    setRows((p) =>
+      p.map((r) =>
+        r.localId === stageId
+          ? {
+              ...r,
+              ranks: r.ranks.map((rk, i) => (i === rank - 1 ? { ...rk, ...patch } : rk)),
+            }
+          : r,
+      ),
+    );
   const insertAt = (index: number) =>
     setRows((p) => {
       const next = p.slice();
-      next.splice(index, 0, { localId: `st-${nextId++}`, thresholdInput: '0', creditsInput: '0', cardIds: [] });
+      next.splice(index, 0, emptyStage());
       return next;
     });
   const removeAt = (index: number) => setRows((p) => p.filter((_, i) => i !== index));
 
   async function onSave() {
     if (!canSave) return;
+    // Dense → sparse: drop every rank that pays nothing.
     const stages: ChallengeStageDTO[] = rows.map((r, i) => ({
       stage_number: i + 1,
       threshold_myr: Number(r.thresholdInput) || 0,
-      reward_credits: Number(r.creditsInput) || 0,
-      reward_card_ids: r.cardIds,
+      rank_rewards: r.ranks.flatMap((rk, ri) =>
+        rankPays(rk)
+          ? [
+              {
+                rank: ri + 1,
+                card_id: rk.cardId,
+                credits: parseCredits(rk.creditsInput),
+              },
+            ]
+          : [],
+      ),
     }));
     try {
       const res = await save.mutateAsync({ stages, reason: reason.trim() });
@@ -180,6 +253,8 @@ const StagesTab = () => {
       <Text className="text-ui-fg-subtle" size="small">
         Community-pool milestone stages (inert config). Stage number is the row
         order; thresholds must strictly increase. Zero stages = challenge off.
+        Each stage carries its own ranks 1–{MAX_REWARD_RANK} prize table: a rank
+        may award a card, credits, both, or nothing at all.
       </Text>
       {errors.length > 0 && (
         <div className="rounded-lg border border-ui-border-error p-3">
@@ -188,50 +263,108 @@ const StagesTab = () => {
           ))}
         </div>
       )}
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Stage</Table.HeaderCell>
-            <Table.HeaderCell>Threshold (RM)</Table.HeaderCell>
-            <Table.HeaderCell>Credits (RM)</Table.HeaderCell>
-            <Table.HeaderCell>Featured cards</Table.HeaderCell>
-            <Table.HeaderCell>Rows</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {rows.map((r, i) => (
-            <Table.Row key={r.localId}>
-              <Table.Cell>{i + 1}</Table.Cell>
-              <Table.Cell>
-                <Input value={r.thresholdInput} onChange={(e) => setRow(r.localId, { thresholdInput: e.target.value })} />
-              </Table.Cell>
-              <Table.Cell>
-                <Input value={r.creditsInput} onChange={(e) => setRow(r.localId, { creditsInput: e.target.value })} />
-              </Table.Cell>
-              <Table.Cell>
-                <div className="flex items-center gap-x-2">
-                  <Text size="small">{r.cardIds.length} card(s)</Text>
-                  <Button size="small" variant="secondary" onClick={() => setPickerFor(r.localId)}>Add</Button>
-                  {r.cardIds.length > 0 && (
-                    <Button size="small" variant="transparent" onClick={() => setRow(r.localId, { cardIds: r.cardIds.slice(0, -1) })}>
-                      Remove last
-                    </Button>
-                  )}
-                </div>
-              </Table.Cell>
-              <Table.Cell>
-                <div className="flex gap-x-1">
-                  <Button size="small" variant="secondary" onClick={() => insertAt(i)}>+ Above</Button>
-                  <Button size="small" variant="secondary" onClick={() => insertAt(i + 1)}>+ Below</Button>
-                  <Button size="small" variant="danger" onClick={() => removeAt(i)}>Delete</Button>
-                </div>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+      {rows.map((r, i) => (
+        <div key={r.localId} className="flex flex-col gap-y-3 rounded-lg border p-4">
+          <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+            <div>
+              <Label htmlFor={`threshold-${r.localId}`}>Stage {i + 1} threshold (RM)</Label>
+              <Input
+                id={`threshold-${r.localId}`}
+                value={r.thresholdInput}
+                onChange={(e) => setRow(r.localId, { thresholdInput: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-1 justify-end gap-x-1">
+              <Button size="small" variant="secondary" onClick={() => insertAt(i)}>+ Above</Button>
+              <Button size="small" variant="secondary" onClick={() => insertAt(i + 1)}>+ Below</Button>
+              <Button size="small" variant="danger" onClick={() => removeAt(i)}>Delete stage</Button>
+            </div>
+          </div>
+          <Table>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>Rank</Table.HeaderCell>
+                <Table.HeaderCell>Prize card</Table.HeaderCell>
+                <Table.HeaderCell>Credits (RM)</Table.HeaderCell>
+                <Table.HeaderCell>Pays</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {r.ranks.map((rk, ri) => {
+                const rank = ri + 1;
+                const card = rk.cardId === null ? undefined : cardById.get(rk.cardId);
+                return (
+                  <Table.Row key={rank}>
+                    <Table.Cell>#{rank}</Table.Cell>
+                    <Table.Cell>
+                      <div className="flex items-center gap-x-2">
+                        {rk.cardId === null ? (
+                          <Text className="text-ui-fg-muted" size="small">No card</Text>
+                        ) : (
+                          <>
+                            {card && (
+                              <img
+                                src={resolveImageUrl(card.slab_image ?? card.image)}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                className="h-9 w-7 shrink-0 rounded object-contain"
+                              />
+                            )}
+                            <Text size="small">{card ? card.name : rk.cardId}</Text>
+                          </>
+                        )}
+                        <Button
+                          size="small"
+                          variant="secondary"
+                          onClick={() => setPickerFor({ stageId: r.localId, rank })}
+                        >
+                          {rk.cardId === null ? 'Choose' : 'Change'}
+                        </Button>
+                        {rk.cardId !== null && (
+                          <Button
+                            size="small"
+                            variant="transparent"
+                            onClick={() => setRank(r.localId, rank, { cardId: null })}
+                          >
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Input
+                        aria-label={`Stage ${i + 1} rank ${rank} credits`}
+                        placeholder="0"
+                        value={rk.creditsInput}
+                        onChange={(e) => setRank(r.localId, rank, { creditsInput: e.target.value })}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>
+                      {rankPays(rk) ? (
+                        <Text size="small">
+                          {[
+                            rk.cardId !== null ? '1 card' : null,
+                            parseCredits(rk.creditsInput) > 0
+                              ? `RM ${parseCredits(rk.creditsInput)}`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' + ')}
+                        </Text>
+                      ) : (
+                        <Text className="text-ui-fg-muted" size="small">No prize</Text>
+                      )}
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table>
+        </div>
+      ))}
       <div className="flex items-center gap-x-3">
-        <Button variant="secondary" onClick={() => setRows((p) => [...p, { localId: `st-${nextId++}`, thresholdInput: '0', creditsInput: '0', cardIds: [] }])}>
+        <Button variant="secondary" onClick={() => setRows((p) => [...p, emptyStage()])}>
           Add stage
         </Button>
         {dirty && <Text className="text-ui-fg-subtle" size="small">Unsaved changes</Text>}
@@ -252,7 +385,7 @@ const StagesTab = () => {
         open={pickerFor !== null}
         onClose={() => setPickerFor(null)}
         onPick={(id) => {
-          if (pickerFor) setRow(pickerFor, { cardIds: [...(rows.find((r) => r.localId === pickerFor)?.cardIds ?? []), id] });
+          if (pickerFor) setRank(pickerFor.stageId, pickerFor.rank, { cardId: id });
         }}
       />
     </div>
@@ -369,9 +502,10 @@ const ChallengePage = () => {
           <div>
             <Heading level="h2">Weekly Challenge</Heading>
             <Text className="text-ui-fg-subtle mt-1" size="small">
-              Cumulative milestone stages (the top-10 prize pool: cards → ranks
-              1-3, credits → ranks 4-10) and the weekly reset. Inert config a
-              future settlement engine will read.
+              Cumulative milestone stages (each stage carries its own ranks
+              1–{MAX_REWARD_RANK} prize table — a card and/or credits per rank)
+              and the weekly reset. Inert config a future settlement engine will
+              read.
             </Text>
           </div>
           <Tabs.List>
