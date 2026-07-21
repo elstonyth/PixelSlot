@@ -2,9 +2,10 @@
 // browser reports ANY CSP violation. Run after `npm run build && serve :4000`.
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { QA_ROUTES } from './qa-routes.mjs';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:4000';
-const ROUTES = ['/', '/claw', '/leaderboard', '/how-it-works', '/about'];
+const ROUTES = QA_ROUTES;
 const OUT_DIR = 'docs/research/csp';
 
 const browser = await chromium.launch();
@@ -20,12 +21,6 @@ const fail = async (...lines) => {
 const violations = [];
 page.on('console', (msg) => {
   const t = msg.text();
-  // Benign report-only-mode notice, NOT a violation: the browser logs this
-  // whenever `upgrade-insecure-requests` appears in a *report-only* policy (the
-  // directive is only meaningful in enforcing mode). Nothing is blocked, and it
-  // disappears once CSP_ENFORCE flips the header to enforcing — so don't fail on
-  // it, or the gate can never pass while we verify in report-only mode.
-  if (/upgrade-insecure-requests.*ignored.*report-only/i.test(t)) return;
   if (/Content Security Policy|Refused to|CSP-VIOLATION/i.test(t))
     violations.push(t);
 });
@@ -42,8 +37,9 @@ await mkdir(OUT_DIR, { recursive: true });
 for (const route of ROUTES) {
   violations.length = 0;
   const startedAt = Date.now();
-  // 'load' (not 'networkidle') + a bounded timeout: always-animating routes like
-  // /claw never go network-idle, so networkidle would hit the default timeout and
+  // 'load' (not 'networkidle') + a bounded timeout: the always-animating routes
+  // (marquee on /, stage carousel on /leaderboard) never go network-idle, so
+  // networkidle would hit the default timeout and
   // throw mid-scan. A 2s settle after load lets deferred scripts/styles fire so
   // late CSP violations still surface via the console + securitypolicyviolation
   // listeners below.

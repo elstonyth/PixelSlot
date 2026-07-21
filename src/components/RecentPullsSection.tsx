@@ -64,7 +64,7 @@ function PullCard({ pull }: { pull: RecentPull }) {
               <span className="text-xs font-medium text-white">
                 {pull.packName}
               </span>
-              <span className="text-[10px] font-medium text-neutral-400">
+              <span className="text-[10px] font-medium text-neutral-300">
                 Pulled by {pull.who}
               </span>
             </div>
