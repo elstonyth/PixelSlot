@@ -35,6 +35,30 @@ updates:
         update-types:
           - minor
           - patch
+    # The @medusajs/* packages in backend/packages/api are lockstep-pinned to one
+    # exact version (2.13.4 today). A minor bump of ONE of them is a version skew
+    # across the family, and 2.13->2.17 is known to break API route registration:
+    # it landed once as a grouped bump and was reverted (#93), then reproduced on
+    # all 8 integration-http shards in #235 ("Cannot read properties of undefined
+    # (reading 'def')" at @medusajs/medusa/src/loaders/api.ts). Per-PR
+    # `@dependabot ignore` comments only silence one package at a time — six more
+    # siblings can each open the same broken PR the following week (#234/#235 did
+    # exactly that after admin-sdk was ignored in #158).
+    #
+    # So: minor/major updates for these two families are ignored here. PATCH
+    # updates are still allowed (safe inside the pinned minor). The family moves
+    # via a deliberate coordinated upgrade — all @medusajs/* + @mercurjs/*
+    # together, with the integration suites as the gate — at which point remove
+    # or narrow these entries.
+    ignore:
+      - dependency-name: '@medusajs/*'
+        update-types:
+          - version-update:semver-minor
+          - version-update:semver-major
+      - dependency-name: '@mercurjs/*'
+        update-types:
+          - version-update:semver-minor
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
