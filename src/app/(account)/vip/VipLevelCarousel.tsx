@@ -5,6 +5,7 @@ import { useReducedMotion } from 'motion/react';
 import { Check, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { rm0 } from '@/lib/format';
+import { levelProgressPct } from '@/lib/actions/vip-map';
 import type { VipLevel } from '@/lib/actions/vip';
 import { GalleryRail } from '@/app/slots/[slug]/GalleryRail';
 
@@ -18,19 +19,20 @@ function stateFor(level: number, highestLevel: number): State {
 
 function LevelCard({
   level,
+  prevThreshold,
   highestLevel,
   spend,
 }: {
   level: VipLevel;
+  prevThreshold: number;
   highestLevel: number;
   spend: number;
 }) {
   const state = stateFor(level.level, highestLevel);
-  // Progress of lifetime spend toward THIS rung's threshold (100% once reached).
-  const pct =
-    level.threshold > 0
-      ? Math.min(100, Math.round((spend / level.threshold) * 100))
-      : 100;
+  // Progress toward THIS rung, restarting at the previous rung's threshold —
+  // reached rungs read 100%, the next rung shows real progress within its
+  // segment instead of lifetime spend / threshold (which is ~98% forever).
+  const pct = levelProgressPct(spend, prevThreshold, level.threshold);
   return (
     <div
       className={cn(
@@ -81,14 +83,11 @@ function LevelCard({
           />
         </div>
         <div className="mt-1 flex justify-between text-[10px] font-semibold text-neutral-500">
-          {/* Non-positive thresholds (e.g. the L1 base rung) have nothing to
-              progress toward, so show lifetime spend against a dash instead of
-              a confusing 0 / 0 under a full bar. */}
-          <span>
-            {rm0(
-              level.threshold > 0 ? Math.min(spend, level.threshold) : spend,
-            )}
-          </span>
+          {/* Labels are the segment bounds the bar spans (previous rung →
+              this rung), matching the restarting fill. Non-positive
+              thresholds (e.g. the L1 base rung) have nothing to progress
+              toward, so show lifetime spend against a dash instead. */}
+          <span>{rm0(level.threshold > 0 ? prevThreshold : spend)}</span>
           <span>{level.threshold > 0 ? rm0(level.threshold) : '—'}</span>
         </div>
       </div>
@@ -128,6 +127,7 @@ export function VipLevelCarousel({
             // count is levels.length, so this index is always in range
             // (same non-null pattern as RevealStage's cardAt).
             level={levels[i]!}
+            prevThreshold={i > 0 ? levels[i - 1]!.threshold : 0}
             highestLevel={highestLevel}
             spend={spend}
           />

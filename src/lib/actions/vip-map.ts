@@ -31,6 +31,24 @@ export type RawVipLevel = {
   };
 };
 
+/**
+ * Progress (0-100) through one level's spend segment [start, end] — the bar
+ * restarts at each level instead of filling with lifetime spend, so mid-level
+ * progress reads as ~50%, not ~98%. Degenerate segments (end <= start, e.g.
+ * the L1 base rung) count as complete.
+ */
+export function levelProgressPct(
+  spend: number,
+  start: number,
+  end: number,
+): number {
+  if (end <= start) return 100;
+  return Math.min(
+    100,
+    Math.max(0, Math.round(((spend - start) / (end - start)) * 100)),
+  );
+}
+
 export function mapVipLevels(raw: RawVipLevel[]): VipLevel[] {
   return raw.map((r) => ({
     level: r.level,
