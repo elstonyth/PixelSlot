@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { pillVariants } from '@/components/ui/pill';
 import { FramedAvatar } from '@/components/FramedAvatar';
+import { SlabImage } from '@/components/SlabImage';
 import type { LeaderboardEntry } from '@/lib/data/leaderboard';
+import type { ChallengeRankPrize } from '@/lib/data/challenge';
 
 const PERIODS = ['This Week', 'All Time'] as const;
 type Period = (typeof PERIODS)[number];
@@ -22,13 +24,21 @@ export default function LeaderboardClient({
   weekly,
   alltime,
   ownHandle,
+  weeklyPrizes = [],
 }: {
   weekly: LeaderboardEntry[];
   alltime: LeaderboardEntry[];
   ownHandle: string | null;
+  /** Sparse per-rank CURRENT challenge prizes (unlocked stages, cumulative) —
+   *  rendered on the This Week rows only, since that IS the challenge board. */
+  weeklyPrizes?: ChallengeRankPrize[];
 }) {
   const [period, setPeriod] = useState<Period>('This Week');
   const entries = period === 'All Time' ? alltime : weekly;
+  const prizeByRank = new Map(weeklyPrizes.map((p) => [p.rank, p]));
+  // When ANY row shows a prize, every row reserves the prize column (fixed
+  // width, empty spacer on prizeless rows) so the RM figures stay aligned.
+  const showPrizeCol = period === 'This Week' && weeklyPrizes.length > 0;
 
   const own =
     ownHandle == null
@@ -89,6 +99,10 @@ export default function LeaderboardClient({
             {entries.map((entry, i) => {
               const medal = medalStyle(entry.rank);
               const isOwn = own != null && entry.handle === ownHandle;
+              const prize =
+                period === 'This Week'
+                  ? prizeByRank.get(entry.rank)
+                  : undefined;
               return (
                 <li
                   key={`${entry.rank}-${entry.name}`}
@@ -141,6 +155,65 @@ export default function LeaderboardClient({
                   <span className="font-heading shrink-0 text-base tabular-nums text-white">
                     {period === 'This Week' ? entry.volume : entry.points}
                   </span>
+                  {/* Weekly board only: the CURRENT challenge prize for this
+                      rank, inline at the row's end (reference design's REWARD
+                      column) — card thumb and/or credits, from the unlocked
+                      stages' prize tables. Thumb height matches the avatar so
+                      the row keeps its one-line height; the fixed column width
+                      (with a spacer on prizeless rows) keeps the RM figures
+                      vertically aligned. */}
+                  {prize ? (
+                    <span
+                      className="flex min-w-14 shrink-0 items-center justify-end gap-1"
+                      aria-label={`Current prize: ${[
+                        prize.card?.name,
+                        prize.moreCards > 0
+                          ? `plus ${prize.moreCards} more card${prize.moreCards > 1 ? 's' : ''}`
+                          : null,
+                        prize.creditsLabel
+                          ? `${prize.creditsLabel} credits`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(', ')}`}
+                    >
+                      {/* Graded prizes wear the prism frame (same treatment
+                            as the stage podium); raw card art stays a plain
+                            <img> — wrong aspect for the band. */}
+                      {prize.card?.slabImage ? (
+                        <SlabImage
+                          src={prize.card.image}
+                          slabSrc={prize.card.slabImage}
+                          alt=""
+                          frameVariant="prism"
+                          glowScale={0.15}
+                          sizes="96px"
+                          className="h-10 shrink-0"
+                        />
+                      ) : prize.card ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={prize.card.image}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="h-10 w-7 shrink-0 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+                        />
+                      ) : null}
+                      {prize.moreCards > 0 && (
+                        <span className="text-[10px] font-semibold text-neutral-400">
+                          +{prize.moreCards}
+                        </span>
+                      )}
+                      {prize.creditsLabel && (
+                        <span className="text-chase text-xs font-semibold whitespace-nowrap">
+                          {prize.creditsLabel}
+                        </span>
+                      )}
+                    </span>
+                  ) : showPrizeCol ? (
+                    <span aria-hidden className="min-w-14 shrink-0" />
+                  ) : null}
                 </li>
               );
             })}

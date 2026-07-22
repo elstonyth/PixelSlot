@@ -44,6 +44,7 @@ export default async function LeaderboardPage() {
         weekly={weekly}
         alltime={alltime}
         ownHandle={ownHandle}
+        weeklyPrizes={challenge?.rankPrizes ?? []}
       />
       {challenge && <ChallengeRules />}
       {/* Clearance so the fixed your-rank card never covers the last block. */}

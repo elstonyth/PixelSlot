@@ -234,6 +234,61 @@ describe('getChallenge', () => {
     ]);
   });
 
+  it('builds rankPrizes from unlocked stages only', async () => {
+    // pool 750: only stage 1 (500) is unlocked.
+    fetchMock.mockResolvedValueOnce(active);
+    const c = await getChallenge();
+    expect(c!.rankPrizes).toEqual([
+      {
+        rank: 1,
+        card: {
+          name: 'Charizard',
+          image: 'http://x/charizard.webp',
+          slabImage: 'http://x/charizard-slab.webp',
+        },
+        moreCards: 0,
+        creditsLabel: null,
+      },
+      { rank: 4, card: null, moreCards: 0, creditsLabel: 'RM 50' },
+    ]);
+  });
+
+  it('accumulates rankPrizes across all unlocked stages', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ...active,
+      progress: { pooledMyr: 5000 },
+    });
+    const c = await getChallenge();
+    // Rank 1 wins stage 1's AND stage 2's card (same card, twice) — the
+    // headline is the highest stage's, the other collapses into moreCards.
+    // Rank 4's credits sum across the three stages: 50 + 100 + 200.
+    expect(c!.rankPrizes).toEqual([
+      {
+        rank: 1,
+        card: {
+          name: 'Charizard',
+          image: 'http://x/charizard.webp',
+          slabImage: 'http://x/charizard-slab.webp',
+        },
+        moreCards: 1,
+        creditsLabel: null,
+      },
+      { rank: 4, card: null, moreCards: 0, creditsLabel: 'RM 350' },
+    ]);
+  });
+
+  it('returns empty rankPrizes when nothing is unlocked or progress is absent', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ...active,
+      progress: { pooledMyr: 100 },
+    });
+    expect((await getChallenge())!.rankPrizes).toEqual([]);
+
+    const { progress: _p, ...rest } = active;
+    fetchMock.mockResolvedValueOnce(rest);
+    expect((await getChallenge())!.rankPrizes).toEqual([]);
+  });
+
   it('maps the Weekly Pull Value top list (avatar fallback + override)', async () => {
     fetchMock.mockResolvedValueOnce(active);
     const c = await getChallenge();
