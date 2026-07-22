@@ -15,7 +15,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { rm } from '@/lib/format';
+import { rm, affordable } from '@/lib/format';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { openAuth } from '@/components/AuthButton';
 import Reveal from '@/components/Reveal';
@@ -120,7 +120,7 @@ export default function PackDetailClient({
       openAuth('login');
       return;
     }
-    if (balance !== null && balance < priceNum * qty) {
+    if (balance !== null && !affordable(balance, priceNum * qty)) {
       setNeedsTopUp(true);
       setOpenError('Not enough credits to open.');
       return;

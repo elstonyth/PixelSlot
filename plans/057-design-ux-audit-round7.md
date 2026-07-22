@@ -8,7 +8,10 @@ Scope note: rounds 1-6 (plans 001-056) swept money, security, and backend
 correctness. This round deliberately covers only what those missed — the
 design system, the shipped UI, and user-facing copy truth. No overlap.
 
-Every item below is grounded at a file:line. Nothing here has been fixed.
+Every item below is grounded at a file:line, and describes the code as it
+stood at base commit `a15f88e1`. Some findings have since shipped or been
+retracted; see the "Review corrections" section at the end for the current
+state. Read that before treating any single finding as still-open work.
 
 ---
 
@@ -425,11 +428,16 @@ Your First Pack`). `TierShelf.tsx:28-37` names a _heading_ `RIP A PACK`,
 
 ## Suggested execution order
 
-Tier 1 items 1-6 are independent and small; ship them as one PR each or one
-bundle. Then #7 (boundaries) and #8 (tokens), because #8 unblocks #9/#10/#11
-and collapses the ad-hoc radius sprawl. Tier 3 is a grab-bag — the highest
-value/effort ratios in it are #18 (price string), #19 (money format), #25/#26
-(forms, which fold into #9), and #33 (404 on transient error).
+Tier 1 items 2-6 are independent and small (item 1 is retracted, see above);
+ship them as one PR each or one bundle. Then #7 (boundaries) and #8 (tokens),
+because #8 unblocks #9/#10/#11 and collapses the ad-hoc radius sprawl. Tier 3
+is a grab-bag; the highest value/effort ratios in it are #18 (price string),
+#19 (money format), #25/#26 (forms, which fold into #9), and #33 (404 on
+transient error).
+
+(Note: items 2-6, #7, #10, #12, #18, #19, #33 and the focus-ring work shipped
+in PRs on branch `fix/design-audit-round7`. This ordering is the original
+plan, kept for the record.)
 
 ---
 
@@ -439,11 +447,13 @@ Two independent reviewers (one broad, one adversarial on the money path) went
 over commit `65c94af1`. What they changed about this document:
 
 **Retracted outright:**
+
 - Finding #1 (body font not loading). False premise; see the note inline. The
   shipped change is harmless but fixed nothing user-visible.
 - Half of finding #12 (VaultRoom animations ungated). They were already gated.
 
 **Found by review, not by the audit** - a real regression the fix introduced:
+
 - The new transport catch in `SlotMachineClient` re-enabled Spin without
   refetching the balance. Since the failure it exists for is precisely the one
   where the server DID charge but the response never came back, the player
@@ -466,6 +476,7 @@ wedged state; the settle watchdog and account-switch guard are unaffected;
 dropped by the schema before they can reach arithmetic.
 
 **Still open after this pass:**
+
 - `required` reached 2 of the 4 address forms. The other two
   (`OrdersClient.EditAddressModal`, `RequestDeliveryModal`) are not wrapped in a
   `<form>`, so `required` would be inert there - the real fix is the single

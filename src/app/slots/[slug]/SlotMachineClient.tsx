@@ -15,7 +15,7 @@ import type { WonCard } from '@/lib/actions/packs';
 import { sellBackPull } from '@/lib/actions/vault';
 import { useTopUp } from '@/components/app-shell/TopUpProvider';
 import { useSound } from '@/lib/use-sound';
-import { rm } from '@/lib/format';
+import { rm, affordable } from '@/lib/format';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
@@ -260,7 +260,7 @@ export default function SlotMachineClient({
     [],
   );
 
-  const canAfford = balance !== null && balance >= cost * reels;
+  const canAfford = balance !== null && affordable(balance, cost * reels);
   // Spin + reel add/remove are locked for the ENTIRE non-idle flow — resolve,
   // spin, the reveal theater (flood/transform), AND the review/sell window
   // (spec #43). They only re-enable once every card is sold/kept and the reveal
@@ -351,7 +351,7 @@ export default function SlotMachineClient({
       openAuth('login');
       return;
     }
-    if (balance !== null && balance < cost * reels) {
+    if (balance !== null && !affordable(balance, cost * reels)) {
       setNeedsTopUp(true);
       setError('Not enough credits to spin.');
       return;
@@ -380,12 +380,23 @@ export default function SlotMachineClient({
       // not transport back). Telling the player to check their balance while
       // showing the STALE pre-charge figure invites a second, real charge, so
       // refetch before re-enabling Spin. Nothing spun, so hasSpun goes back.
-      await refetchBalance();
-      setHasSpun(false);
-      setError(
-        "Couldn't reach the machine. Check your balance before spinning again.",
-      );
-      setPhase('idle');
+      // BEST-EFFORT: this fires when the server is unreachable, so the refetch
+      // is likely to fail too — its rejection must NOT re-wedge phase on
+      // 'resolving'. Reset state unconditionally in finally.
+      try {
+        await refetchBalance();
+      } catch (refetchErr) {
+        logger.error(
+          '[slots] balance refetch after transport failure',
+          refetchErr,
+        );
+      } finally {
+        setHasSpun(false);
+        setError(
+          "Couldn't reach the machine. Check your balance before spinning again.",
+        );
+        setPhase('idle');
+      }
       return;
     }
     if (!res.ok) {
@@ -395,8 +406,18 @@ export default function SlotMachineClient({
         setNeedsTopUp(res.needsTopUp === true);
         // Same hazard, narrower: openBatch maps a post-charge enrichment
         // failure to {ok:false} ("try again"), so the debit can already be
-        // real here too. Never invite a retry over a stale balance.
-        if (res.needsTopUp !== true) await refetchBalance();
+        // real here too. Never invite a retry over a stale balance — but a
+        // failing refetch must not block the state reset below either.
+        if (res.needsTopUp !== true) {
+          try {
+            await refetchBalance();
+          } catch (refetchErr) {
+            logger.error(
+              '[slots] balance refetch after {ok:false}',
+              refetchErr,
+            );
+          }
+        }
       }
       setPhase('idle');
       return;

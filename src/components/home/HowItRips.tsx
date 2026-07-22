@@ -19,7 +19,7 @@ const STEPS = [
     title: "IT'S REAL",
     copy: (
       <>
-        Every pull is a real graded slab — vault it, ship it, or sell back{' '}
+        Every pull is a real graded slab: vault it, ship it, or sell back at{' '}
         <span className="text-buyback-fg font-semibold">
           {BUYBACK_RATE_LABEL}
         </span>
