@@ -159,12 +159,15 @@ export default function LeaderboardClient({
                       rank, inline at the row's end (reference design's REWARD
                       column) — card thumb and/or credits, from the unlocked
                       stages' prize tables. Thumb height matches the avatar so
-                      the row keeps its one-line height; the fixed column width
-                      (with a spacer on prizeless rows) keeps the RM figures
-                      vertically aligned. */}
+                      the row keeps its one-line height. min-w-16 is the shared
+                      column basis (with a spacer on prizeless rows) keeping the
+                      RM figures aligned — sized for the widest single-type
+                      prize (cumulative credits, e.g. "RM 18,500"). A rank
+                      paying card AND credits grows past it (that row's RM
+                      shifts left) — deliberate: money never clips. */}
                   {prize ? (
                     <span
-                      className="flex min-w-14 shrink-0 items-center justify-end gap-1"
+                      className="flex min-w-16 shrink-0 items-center justify-end gap-1"
                       aria-label={`Current prize: ${[
                         prize.card?.name,
                         prize.moreCards > 0
@@ -212,7 +215,7 @@ export default function LeaderboardClient({
                       )}
                     </span>
                   ) : showPrizeCol ? (
-                    <span aria-hidden className="min-w-14 shrink-0" />
+                    <span aria-hidden className="min-w-16 shrink-0" />
                   ) : null}
                 </li>
               );
