@@ -44,6 +44,7 @@ import PixelPokemon from './models/pixel-pokemon';
 import ChallengeStage from './models/challenge-stage';
 import ChallengeSettings from './models/challenge-settings';
 import GlobePayDeposit from './models/globepay-deposit';
+import GlobePayWithdrawal from './models/globepay-withdrawal';
 import { pageAll } from '../../api/utils/page-all';
 import {
   resolveBuybackRate,
@@ -377,6 +378,7 @@ class PacksModuleService extends MedusaService({
   ChallengeStage,
   ChallengeSettings,
   GlobePayDeposit,
+  GlobePayWithdrawal,
 }) {
   // Apply a pack-membership diff (add rows + delete rows + renormalize
   // survivor weights) as ONE transaction. The set-pack-members workflow step

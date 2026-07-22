@@ -593,6 +593,9 @@ export type Routes = {
             balance: typeof import("../../src/api/store/credits/balance/route");
             deposit: typeof import("../../src/api/store/credits/deposit/route");
             topup: typeof import("../../src/api/store/credits/topup/route");
+            withdraw: typeof import("../../src/api/store/credits/withdraw/route") & {
+                banks: typeof import("../../src/api/store/credits/withdraw/banks/route");
+            };
         };
         daily: typeof import("../../src/api/store/daily/route") & {
             draw: typeof import("../../src/api/store/daily/draw/route");
@@ -830,6 +833,8 @@ export type Routes = {
     hooks: {
         globepay: {
             deposit: typeof import("../../src/api/hooks/globepay/deposit/route");
+            payoutVerify: typeof import("../../src/api/hooks/globepay/payout-verify/route");
+            withdrawal: typeof import("../../src/api/hooks/globepay/withdrawal/route");
         };
     };
 };

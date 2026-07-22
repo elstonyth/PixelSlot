@@ -88,3 +88,50 @@ export type OutstandingDeposit = {
   customer_id: string;
   created_at: Date;
 };
+
+// ---------------------------------------------------------------------------
+// Withdrawal reconciliation. Same pure-decision shape, but the stakes are
+// inverted: the customer's balance was ALREADY debited at submit time, so an
+// outstanding withdrawal is the customer's money in limbo. The sweep never
+// gives up on one — it either settles, refunds, or keeps chasing loudly.
+
+export type WithdrawalReconcileAction =
+  /** Requery says paid: close the row; the debit already happened. */
+  | { kind: 'settle' }
+  /** Requery says failed — or the gateway never heard of it and it is too old
+   * for an in-flight submit: refund the debit (idempotent) and close. */
+  | { kind: 'refund' }
+  /** Still processing: leave it and look again next sweep. */
+  | { kind: 'wait' };
+
+/**
+ * Decide what to do with one outstanding withdrawal after requerying it.
+ * There is deliberately NO 'expire': expiring a deposit merely stops chasing
+ * unpaid intent, but "expiring" a withdrawal would confiscate a debit.
+ */
+export function withdrawalReconcileAction(
+  state: SettlementState,
+): WithdrawalReconcileAction {
+  if (state === 'success') return { kind: 'settle' };
+  if (state === 'failed') return { kind: 'refund' };
+  return { kind: 'wait' };
+}
+
+/**
+ * A withdrawal the gateway has never heard of: the process died between the
+ * ledger debit and SubmitWithdrawal (or the submit request was lost). Once it
+ * is old enough that an in-flight submit is impossible, the debit must go
+ * back — this is the crash-recovery path the submit ordering relies on.
+ */
+export function unknownWithdrawalAction(
+  createdAt: Date,
+  now: Date,
+): WithdrawalReconcileAction {
+  return now.getTime() - createdAt.getTime() > GLOBEPAY_STALE_AFTER_MS
+    ? { kind: 'refund' }
+    : { kind: 'wait' };
+}
+
+/** Past this age a still-processing payout warrants a loud log line every
+ * sweep — a payout stuck for a day is a support case, not background noise. */
+export const GLOBEPAY_WD_SLOW_AFTER_MS = 24 * 60 * 60 * 1000;

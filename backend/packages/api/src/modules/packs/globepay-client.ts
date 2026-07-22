@@ -1,4 +1,9 @@
-import { buildEnvelope, depositState, type SettlementState } from './globepay';
+import {
+  buildEnvelope,
+  depositState,
+  withdrawalState,
+  type SettlementState,
+} from './globepay';
 
 // GlobePay365 HTTP client. Thin: build envelope, POST JSON, unwrap their
 // { isSuccess, errorList, data } response shape. The wire format itself lives
@@ -229,6 +234,134 @@ export async function getDepositDetail(
     config,
   );
   return { ...detail, state: depositState(detail.statusId) };
+}
+
+export type SubmitWithdrawalInput = {
+  /** OUR reference. Must be unique — a repeat returns PMT10000. */
+  merchantTransactionId: string;
+  /** Our customer id, for their support/reconciliation views. */
+  merchantClientId: string;
+  /** MYR, 2dp. */
+  amount: number;
+  /** Destination bank, from GetSupportedBanks (never the doc appendix). */
+  destinationBankCode: string;
+  destinationAccountNumber: string;
+  destinationAccountHolderName: string;
+  /** Server-to-server result callback. Must be publicly reachable. */
+  notifyUrl: string;
+  /** Payout Verification URL (§1.7) — they POST here and only continue the
+   * payout on a literal "success". Inactive on staging, mandatory anyway. */
+  returnUrl: string;
+  /** The customer's IP, not ours. */
+  ipAddress: string;
+};
+
+export type SubmitWithdrawalResult = {
+  /** Their withdrawal id (W…). */
+  transactionId: string;
+};
+
+/**
+ * §1.5 SubmitWithdrawal. IMPORTANT ordering contract for callers: the ledger
+ * debit must already be committed before this is called — once this returns,
+ * real money is queued to leave the merchant balance.
+ */
+export function submitWithdrawal(
+  input: SubmitWithdrawalInput,
+  config: GlobePayConfig,
+): Promise<SubmitWithdrawalResult> {
+  return post<SubmitWithdrawalResult>(
+    '/api/Withdrawal/SubmitWithdrawal',
+    {
+      MerchantCode: config.merchantCode,
+      MerchantTransactionId: input.merchantTransactionId,
+      MerchantClientId: input.merchantClientId,
+      CurrencyCode: config.currencyCode,
+      Amount: input.amount.toFixed(2),
+      DestinationClientBankCode: input.destinationBankCode,
+      DestinationClientAccountNumber: input.destinationAccountNumber,
+      DestinationClientAccountHolderName: input.destinationAccountHolderName,
+      NotifyUrl: input.notifyUrl,
+      ReturnUrl: input.returnUrl,
+      IPAddress: input.ipAddress,
+      // MYR payouts are always WD (doc §"Withdrawal Method Appendix").
+      PaymentMethodCode: 'WD',
+    },
+    config,
+  );
+}
+
+export type WithdrawalDetail = {
+  transactionId: string;
+  merchantTransactionId: string;
+  statusId: number;
+  status: string;
+  amount: number;
+  netAmount: number;
+  paymentMethodCode: string;
+  bankReferenceNo?: string | null;
+  uniqueReferenceNo?: string | null;
+};
+
+/**
+ * §1.8 Withdrawal Requery — the authoritative read for payout reconciliation.
+ * A lost withdrawal callback must never strand a customer's money in limbo.
+ */
+export async function getWithdrawalDetail(
+  merchantTransactionId: string,
+  config: GlobePayConfig,
+): Promise<WithdrawalDetail & { state: SettlementState }> {
+  const detail = await post<WithdrawalDetail>(
+    '/api/Withdrawal/GetWithdrawalDetail',
+    {
+      MerchantCode: config.merchantCode,
+      MerchantTransactionId: merchantTransactionId,
+      CurrencyCode: config.currencyCode,
+    },
+    config,
+  );
+  return { ...detail, state: withdrawalState(detail.statusId) };
+}
+
+export type SupportedBank = {
+  bankCode: string;
+  bankName: string;
+};
+
+/**
+ * GetSupportedBanks — plain GET, no AES and no signature (verified live
+ * 2026-07-21, unlike every other endpoint). The doc's Bank Appendix is
+ * incomplete, so the payout bank picker must be driven from THIS.
+ */
+export async function getSupportedBanks(
+  config: GlobePayConfig,
+): Promise<SupportedBank[]> {
+  const url =
+    `${config.baseUrl}/api/Bank/GetSupportedBanks` +
+    `?MerchantCode=${encodeURIComponent(config.merchantCode)}` +
+    `&PaymentMethodCode=WD&CurrencyCode=${encodeURIComponent(config.currencyCode)}`;
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(20_000),
+  });
+  const text = await response.text();
+  let parsed: GlobePayResponse<SupportedBank[]>;
+  try {
+    parsed = JSON.parse(text) as GlobePayResponse<SupportedBank[]>;
+  } catch {
+    throw new GlobePayError(
+      `GlobePay365 GetSupportedBanks: non-JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`,
+      [],
+      response.status,
+    );
+  }
+  if (!parsed.isSuccess || !parsed.data) {
+    throw new GlobePayError(
+      `GlobePay365 GetSupportedBanks failed: ${parsed.errorMessage ?? 'unknown error'}`,
+      parsed.errorCode ? [parsed.errorCode] : [],
+      response.status,
+    );
+  }
+  return parsed.data;
 }
 
 export type MerchantBalance = {

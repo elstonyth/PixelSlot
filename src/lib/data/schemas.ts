@@ -286,6 +286,21 @@ export const DepositStartSchema = z.looseObject({
   amount: finite,
 });
 
+/** POST /store/credits/withdraw response. The debit already happened —
+ *  `balance` is the post-debit balance, and the payout completes (or refunds)
+ *  asynchronously via the gateway callback. */
+export const WithdrawStartSchema = z.looseObject({
+  merchantTransactionId: z.string(),
+  transactionId: z.string(),
+  amount: finite,
+  balance: finite,
+});
+
+/** GET /store/credits/withdraw/banks response — the payout bank picker. */
+export const WithdrawBanksSchema = z.looseObject({
+  banks: z.array(z.looseObject({ bankCode: z.string(), bankName: z.string() })),
+});
+
 /** POST /store/vault/:id/buyback response — finite amount + balance. `percent`
  *  rides along but is NOT rendered on the sell path (consumers read amount/
  *  balance), so it stays OPTIONAL: requiring it would false-fail an idempotent

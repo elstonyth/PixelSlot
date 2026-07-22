@@ -2,20 +2,25 @@ import type { Metadata } from 'next';
 import { AlertCircle, Landmark } from 'lucide-react';
 import AuthButton from '@/components/AuthButton';
 import { getCustomer } from '@/lib/data/customer';
+import { getCreditBalance } from '@/lib/actions/vault';
+import WithdrawForm from './WithdrawForm';
 
 export const metadata: Metadata = {
   title: 'Bank Withdrawal',
   description: 'Complete your withdrawal with a direct bank transfer.',
 };
 
-// Withdrawals are account-gated and the payout gateway isn't live yet, so this
-// page has two honest states: signed-out visitors get the auth wall, and
-// signed-in customers get a "not open yet" notice instead of a false
-// "Sign in to withdraw" dead end. No fabricated balance/history.
+// Three honest states: signed-out visitors get the auth wall; signed-in
+// customers get the real payout form once withdrawals are switched on
+// (NEXT_PUBLIC_WITHDRAWALS_ENABLED, mirrored by the backend's own fail-closed
+// GLOBEPAY_WITHDRAWALS_ENABLED), and the "not open yet" notice until then.
 export const dynamic = 'force-dynamic';
+
+const WITHDRAWALS_OPEN = process.env.NEXT_PUBLIC_WITHDRAWALS_ENABLED === 'true';
 
 export default async function BankWithdrawalPage() {
   const customer = await getCustomer();
+  const balance = customer ? await getCreditBalance() : null;
 
   return (
     <div className="w-full px-fluid py-10">
@@ -27,23 +32,27 @@ export default async function BankWithdrawalPage() {
       </p>
 
       {customer ? (
-        <>
-          <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/10 bg-neutral-900 px-4 py-3.5 text-sm text-white/80">
-            <Landmark
-              className="mt-0.5 h-4 w-4 shrink-0 text-white/60"
-              aria-hidden
-            />
-            <span>
-              Bank withdrawals aren&apos;t open yet — payouts go live with the
-              payment gateway. Your credit balance is safe and stays spendable
-              on packs in the meantime.
-            </span>
-          </div>
-          <p className="mt-4 text-[13px] text-white/60">
-            Want value out today? Sell-back credits from your vault apply
-            instantly to your balance.
-          </p>
-        </>
+        WITHDRAWALS_OPEN ? (
+          <WithdrawForm balance={balance} />
+        ) : (
+          <>
+            <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/10 bg-neutral-900 px-4 py-3.5 text-sm text-white/80">
+              <Landmark
+                className="mt-0.5 h-4 w-4 shrink-0 text-white/60"
+                aria-hidden
+              />
+              <span>
+                Bank withdrawals aren&apos;t open yet — payouts go live with the
+                payment gateway. Your credit balance is safe and stays spendable
+                on packs in the meantime.
+              </span>
+            </div>
+            <p className="mt-4 text-[13px] text-white/60">
+              Want value out today? Sell-back credits from your vault apply
+              instantly to your balance.
+            </p>
+          </>
+        )
       ) : (
         <>
           <div className="mt-6 flex items-center gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3.5 text-sm font-medium text-amber-300">
