@@ -130,10 +130,14 @@ export default async function MePage() {
                       role="progressbar"
                       aria-valuemin={levelStart}
                       aria-valuemax={vipResult.vip.next.threshold}
-                      aria-valuenow={
+                      // Clamped to the segment floor: ARIA requires
+                      // valuenow >= valuemin, and a state-row level can in
+                      // principle run ahead of settled spend.
+                      aria-valuenow={Math.max(
+                        levelStart,
                         vipResult.vip.next.threshold -
-                        vipResult.vip.next.remaining
-                      }
+                          vipResult.vip.next.remaining,
+                      )}
                       aria-label={`Progress to VIP level ${vipResult.vip.next.level}`}
                     >
                       <div
