@@ -106,8 +106,21 @@ export async function POST(
 
   // 3) Already resolved — a late duplicate must not flip a settled payout or
   // re-refund a failed one. The refund anchor below is the real guarantee;
-  // this keeps the row honest.
+  // this keeps the row honest. A FINAL status that CONTRADICTS the stored
+  // outcome (their "paid" landing on a row we refunded, or their "failed" on
+  // one we settled) is the smoking gun of a double payment — never acted on,
+  // always logged loudly.
   if (withdrawal.status !== 'pending') {
+    const contradicts =
+      (state === 'success' && withdrawal.status !== 'settled') ||
+      (state === 'failed' && withdrawal.status !== 'failed');
+    if (contradicts) {
+      req.scope
+        .resolve('logger')
+        .error(
+          `[globepay] withdrawal ${merchantTransactionId} callback says status ${data.Status} (${state}) but the row is already ${withdrawal.status} — possible double payment, investigate (gateway ${gatewayTransactionId})`,
+        );
+    }
     res.status(200).send('success');
     return;
   }

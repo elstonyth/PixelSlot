@@ -102,6 +102,13 @@ describe('payout verification', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('refuses a matching amount in the wrong currency', async () => {
+    const h = harness(pendingRow);
+    // 50 VND is not RM 50 — a currency-blind amount match would approve it.
+    const res = await run(h, body({ ...verification, CurrencyCode: 'VND' }));
+    expect(res.statusCode).toBe(400);
+  });
+
   it('refuses a payout whose row is no longer pending', async () => {
     const h = harness({ ...pendingRow, status: 'failed' });
     const res = await run(h, body(verification));

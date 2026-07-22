@@ -12,14 +12,16 @@ import { newMerchantTransactionId } from './globepay-deposit';
 // The submit half of the GlobePay365 payout loop (method WD), the inverse of
 // globepay-deposit.ts with the money ordering flipped:
 //
-//   DEBIT the ledger first (atomic, floor 0) -> write the pending row ->
-//   SubmitWithdrawal. If the gateway refuses, REFUND the debit immediately.
+//   write the pending row -> DEBIT the ledger (atomic, floor 0) ->
+//   SubmitWithdrawal. A DEFINITE gateway refusal refunds the debit
+//   immediately; an AMBIGUOUS submit error (timeout, reset — the payout may
+//   still execute) leaves the row pending for the sweep to resolve.
 //
-// The debit-first ordering is the security property: real money must never be
-// queued to leave the merchant balance while the customer's site balance still
-// shows it. The refund path shares the row's idempotency anchor, so a crash
-// between debit and refund is recoverable by the reconcile sweep, never a
-// double refund.
+// The debit-before-submit ordering is the security property: real money must
+// never be queued to leave the merchant balance while the customer's site
+// balance still shows it. The refund path shares the row's idempotency
+// anchor, so a crash between debit and refund is recoverable by the
+// reconcile sweep, never a double refund.
 
 /**
  * Per-transaction payout band. The provider has NOT confirmed payout-specific
@@ -121,8 +123,10 @@ export type StartWithdrawalInput = {
 
 export type StartWithdrawalResult = {
   merchantTransactionId: string;
-  /** Their withdrawal id (W…). */
-  transactionId: string;
+  /** Their withdrawal id (W…) — null when the submit outcome is ambiguous
+   * (the request may have been accepted with the response lost); the sweep
+   * resolves it either way. */
+  transactionId: string | null;
   amount: number;
   /** Ledger balance after the debit. */
   balance: number;
@@ -179,6 +183,35 @@ export async function startGlobePayWithdrawal(
 
   const config = globepayConfigFromEnv();
   const packs = scope.resolve<PacksModuleService>(PACKS_MODULE);
+
+  // 0) The withdrawal gate (withdrawable.ts's own invariant: "the cashout
+  // writer MUST route through this"). walletSummary folds THREE limits into
+  // one number: the freeze flag (frozen accounts withdraw nothing — it is
+  // the fraud-response tool), locked unmatured commissions, and the
+  // playthrough gate (deposits must be spent on packs before they can leave
+  // to a bank — the anti-laundering rule). floor 0 below still guards raw
+  // overdraft atomically; this check enforces the policy layer, and the
+  // small check-then-debit window can only move in the customer's favor.
+  const wallet = await packs.walletSummary(input.customerId);
+  if (amount > wallet.withdrawable) {
+    if (wallet.isFrozen) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        'Withdrawals are unavailable while your account is under review. Contact support.',
+      );
+    }
+    if (wallet.playthrough.remaining > 0) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        `RM ${wallet.playthrough.remaining.toFixed(2)} of your deposits must be spent on packs before you can withdraw.`,
+      );
+    }
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `You can withdraw up to RM ${wallet.withdrawable.toFixed(2)} right now.`,
+    );
+  }
+
   const merchantTransactionId = newMerchantTransactionId();
 
   // 1) Row first — the callback echoes MerchantTransactionId but not our
@@ -235,26 +268,42 @@ export async function startGlobePayWithdrawal(
       config,
     );
   } catch (error) {
-    // The gateway refused, so no payout exists on their side. Refund the debit
-    // (idempotent) and close the row.
-    await packs.mutateCreditAtomic({
-      customerId: input.customerId,
-      amount,
-      reason: 'cashout',
-      reference: merchantTransactionId,
-      idempotencyReference: withdrawalRefundReference(
-        input.customerId,
-        merchantTransactionId,
-      ),
-    });
-    await packs.updateGlobePayWithdrawals({ id: row.id, status: 'failed' });
-    if (error instanceof GlobePayError) {
+    if (error instanceof GlobePayError && error.definite) {
+      // The gateway PARSEABLY refused, so no payout exists on their side.
+      // Refund the debit (idempotent) and close the row.
+      await packs.mutateCreditAtomic({
+        customerId: input.customerId,
+        amount,
+        reason: 'cashout',
+        reference: merchantTransactionId,
+        idempotencyReference: withdrawalRefundReference(
+          input.customerId,
+          merchantTransactionId,
+        ),
+      });
+      await packs.updateGlobePayWithdrawals({ id: row.id, status: 'failed' });
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         'We could not start your withdrawal. Please check the bank details and try again.',
       );
     }
-    throw error;
+    // AMBIGUOUS (timeout, reset, WAF page): the request may have been
+    // accepted with only the response lost — the payout could still execute.
+    // Refunding here would double-pay, so the row stays pending and the
+    // reconcile sweep resolves it: requery success -> settle, failed ->
+    // refund, unknown-and-stale -> refund. The customer sees the same
+    // async-processing state a slow payout produces.
+    scope
+      .resolve<{ error: (msg: string) => void }>('logger')
+      .error(
+        `[globepay] withdrawal ${merchantTransactionId} submit outcome AMBIGUOUS (${(error as Error).message}) — left pending for the sweep`,
+      );
+    return {
+      merchantTransactionId,
+      transactionId: null,
+      amount,
+      balance: debit.balance,
+    };
   }
 
   await packs.updateGlobePayWithdrawals({

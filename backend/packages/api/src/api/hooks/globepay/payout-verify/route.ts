@@ -60,11 +60,13 @@ export async function POST(
   );
 
   // Only a payout we recorded, still in flight, for the exact amount we
-  // debited, is allowed to proceed. Everything else is rejected — rejecting a
-  // legitimate payout is recoverable (their fail callback refunds it);
-  // approving an illegitimate one is not.
+  // debited, IN OUR CURRENCY, is allowed to proceed. Everything else is
+  // rejected — rejecting a legitimate payout is recoverable (their fail
+  // callback refunds it); approving an illegitimate one is not.
   const amountMatches =
-    withdrawal && Number(data.Amount) === Number(withdrawal.amount);
+    withdrawal &&
+    Number(data.Amount) === Number(withdrawal.amount) &&
+    data.CurrencyCode === config.currencyCode;
   if (!withdrawal || withdrawal.status !== 'pending' || !amountMatches) {
     req.scope
       .resolve('logger')

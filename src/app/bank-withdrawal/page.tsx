@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AlertCircle, Landmark } from 'lucide-react';
 import AuthButton from '@/components/AuthButton';
 import { getCustomer } from '@/lib/data/customer';
-import { getCreditBalance } from '@/lib/actions/vault';
+import { getWallet } from '@/lib/actions/wallet';
 import WithdrawForm from './WithdrawForm';
 
 export const metadata: Metadata = {
@@ -20,7 +20,12 @@ const WITHDRAWALS_OPEN = process.env.NEXT_PUBLIC_WITHDRAWALS_ENABLED === 'true';
 
 export default async function BankWithdrawalPage() {
   const customer = await getCustomer();
-  const balance = customer ? await getCreditBalance() : null;
+  // withdrawable, not raw balance: the freeze/locked-commission/playthrough
+  // gate lives server-side, and the form must not promise money the server
+  // will refuse.
+  const walletResult = customer ? await getWallet() : null;
+  const withdrawable =
+    walletResult && walletResult.ok ? walletResult.wallet.withdrawable : null;
 
   return (
     <div className="w-full px-fluid py-10">
@@ -33,7 +38,7 @@ export default async function BankWithdrawalPage() {
 
       {customer ? (
         WITHDRAWALS_OPEN ? (
-          <WithdrawForm balance={balance} />
+          <WithdrawForm withdrawable={withdrawable} />
         ) : (
           <>
             <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/10 bg-neutral-900 px-4 py-3.5 text-sm text-white/80">

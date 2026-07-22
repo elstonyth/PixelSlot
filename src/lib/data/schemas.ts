@@ -288,10 +288,11 @@ export const DepositStartSchema = z.looseObject({
 
 /** POST /store/credits/withdraw response. The debit already happened —
  *  `balance` is the post-debit balance, and the payout completes (or refunds)
- *  asynchronously via the gateway callback. */
+ *  asynchronously via the gateway callback. `transactionId` is null when the
+ *  submit outcome was ambiguous (still resolves asynchronously). */
 export const WithdrawStartSchema = z.looseObject({
   merchantTransactionId: z.string(),
-  transactionId: z.string(),
+  transactionId: z.string().nullable(),
   amount: finite,
   balance: finite,
 });

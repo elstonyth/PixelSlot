@@ -21,7 +21,12 @@ const WD_MAX_RM = 1000;
  * bank transfer completes asynchronously and a failed payout refunds the
  * debit automatically.
  */
-export default function WithdrawForm({ balance }: { balance: number | null }) {
+export default function WithdrawForm({
+  withdrawable,
+}: {
+  /** The server's freeze/locked/playthrough-gated figure — NOT raw balance. */
+  withdrawable: number | null;
+}) {
   const [banks, setBanks] = useState<WithdrawBank[] | null>(null);
   const [bankCode, setBankCode] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
@@ -67,8 +72,8 @@ export default function WithdrawForm({ balance }: { balance: number | null }) {
       );
       return;
     }
-    if (balance != null && amount > balance) {
-      setError('That is more than your balance.');
+    if (withdrawable != null && amount > withdrawable) {
+      setError('That is more than you can withdraw right now.');
       return;
     }
     setSubmitting(true);
@@ -122,9 +127,9 @@ export default function WithdrawForm({ balance }: { balance: number | null }) {
     <div className="mt-6 max-w-md">
       <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm">
         <div className="flex items-center justify-between text-neutral-400">
-          <span>Available balance</span>
+          <span>Available to withdraw</span>
           <span className="font-semibold text-neutral-200">
-            {balance == null ? '—' : rm(balance)}
+            {withdrawable == null ? '—' : rm(withdrawable)}
           </span>
         </div>
       </div>

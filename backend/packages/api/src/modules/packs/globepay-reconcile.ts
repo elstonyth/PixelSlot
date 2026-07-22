@@ -118,15 +118,25 @@ export function withdrawalReconcileAction(
 }
 
 /**
- * A withdrawal the gateway has never heard of: the process died between the
- * ledger debit and SubmitWithdrawal (or the submit request was lost). Once it
- * is old enough that an in-flight submit is impossible, the debit must go
- * back — this is the crash-recovery path the submit ordering relies on.
+ * A withdrawal the gateway CLAIMS not to know (requery 400). Two very
+ * different situations produce that answer, and only one may refund:
+ *
+ * - No gateway id on our row: SubmitWithdrawal never returned, so either it
+ *   never took or its outcome is unknown. Once the row is old enough that an
+ *   in-flight submit is impossible, the debit goes back — this is the
+ *   crash-recovery path the submit ordering relies on.
+ * - A gateway id IS recorded: the payout PROVABLY exists on their side, so a
+ *   400 requery is our own config being broken (rotated key, wrong merchant
+ *   code), never non-existence. Refunding here would systematically double-
+ *   pay every in-flight payout while the banks still execute them — so this
+ *   path always waits, however old the row gets (the job logs it loudly).
  */
 export function unknownWithdrawalAction(
   createdAt: Date,
   now: Date,
+  hasGatewayTransactionId: boolean,
 ): WithdrawalReconcileAction {
+  if (hasGatewayTransactionId) return { kind: 'wait' };
   return now.getTime() - createdAt.getTime() > GLOBEPAY_STALE_AFTER_MS
     ? { kind: 'refund' }
     : { kind: 'wait' };

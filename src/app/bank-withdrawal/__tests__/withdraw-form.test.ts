@@ -36,7 +36,7 @@ beforeEach(async () => {
   document.body.appendChild(container);
   root = createRoot(container);
   await act(async () => {
-    root.render(createElement(WithdrawForm, { balance: 100 }));
+    root.render(createElement(WithdrawForm, { withdrawable: 100 }));
   });
 });
 
@@ -114,11 +114,11 @@ describe('WithdrawForm', () => {
     },
   );
 
-  it('rejects an amount above the balance without touching the backend', async () => {
+  it('rejects an amount above the withdrawable figure without touching the backend', async () => {
     fillValidForm('200');
     await submit();
     expect(container.querySelector('[role="alert"]')?.textContent).toBe(
-      'That is more than your balance.',
+      'That is more than you can withdraw right now.',
     );
     expect(startWithdrawal).not.toHaveBeenCalled();
   });

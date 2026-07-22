@@ -299,7 +299,9 @@ export async function startWithdrawal(input: {
       ok: true,
       amount: parsed.amount,
       balance: parsed.balance,
-      reference: parsed.transactionId,
+      // Their W… id when the submit confirmed; our reference when the
+      // outcome is still resolving asynchronously.
+      reference: parsed.transactionId ?? parsed.merchantTransactionId,
     };
   } catch (error) {
     logger.error('[vault] withdrawal start failed:', error);

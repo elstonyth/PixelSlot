@@ -4,6 +4,7 @@ import { PACKS_MODULE } from '../modules/packs';
 import type PacksModuleService from '../modules/packs/service';
 import {
   globepayWithdrawalsEnabled,
+  withdrawalIdempotencyReference,
   withdrawalRefundReference,
 } from '../modules/packs/globepay-withdrawal';
 import {
@@ -67,7 +68,18 @@ export default async function globepayWithdrawalReconcileJob(
           error instanceof GlobePayError &&
           (error.httpStatus === 400 || error.has('PMT10016'));
         if (!notFound) throw error;
-        action = unknownWithdrawalAction(new Date(withdrawal.created_at), now);
+        if (withdrawal.gateway_transaction_id) {
+          // The payout provably exists (their W… id is on our row) — a 400
+          // requery is OUR config being broken, never non-existence.
+          logger.error(
+            `[globepay-wd-reconcile] requery 400 for ${withdrawal.merchant_transaction_id} which HAS gateway id ${withdrawal.gateway_transaction_id} — refusing the unknown-refund path; check merchant credentials`,
+          );
+        }
+        action = unknownWithdrawalAction(
+          new Date(withdrawal.created_at),
+          now,
+          Boolean(withdrawal.gateway_transaction_id),
+        );
       }
 
       if (action.kind === 'wait') {
@@ -115,6 +127,31 @@ export default async function globepayWithdrawalReconcileJob(
       }
 
       // refund: gateway says failed, or it never heard of a stale row.
+      //
+      // Guard against refunding a debit that never landed: a crash between
+      // the row insert and mutateCreditAtomic leaves a pending row with NO
+      // debit, and "refunding" it would mint money. A refund is only owed if
+      // the wd: debit row exists.
+      const [debitRow] = await packs.listCreditTransactions(
+        {
+          customer_id: withdrawal.customer_id,
+          source_transaction_id: withdrawalIdempotencyReference(
+            withdrawal.customer_id,
+            withdrawal.merchant_transaction_id,
+          ),
+        },
+        { take: 1 },
+      );
+      if (!debitRow) {
+        await packs.updateGlobePayWithdrawals({
+          selector: { id: withdrawal.id, status: 'pending' },
+          data: { status: 'failed', gateway_status: gatewayStatus },
+        });
+        logger.warn(
+          `[globepay-wd-reconcile] closed ${withdrawal.merchant_transaction_id} without a refund — no debit ever landed for it`,
+        );
+        continue;
+      }
       const refund = await packs.mutateCreditAtomic({
         customerId: withdrawal.customer_id,
         amount: Number(withdrawal.amount),

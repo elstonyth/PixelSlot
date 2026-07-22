@@ -65,12 +65,27 @@ type GlobePayResponse<T> = {
 export class GlobePayError extends Error {
   readonly codes: string[];
   readonly httpStatus: number;
+  /**
+   * True only when the gateway PARSEABLY refused (a JSON body with
+   * isSuccess: false) — meaning no transaction exists on their side. False
+   * for timeouts, resets, WAF pages and other ambiguity, where the request
+   * may have been accepted and only the response was lost. Money-out callers
+   * MUST branch on this: refunding an ambiguous submit would double-pay if
+   * the payout later executes.
+   */
+  readonly definite: boolean;
 
-  constructor(message: string, codes: string[], httpStatus: number) {
+  constructor(
+    message: string,
+    codes: string[],
+    httpStatus: number,
+    definite = false,
+  ) {
     super(message);
     this.name = 'GlobePayError';
     this.codes = codes;
     this.httpStatus = httpStatus;
+    this.definite = definite;
   }
 
   has(code: string): boolean {
@@ -131,10 +146,12 @@ async function post<T>(
         .join('; ') ||
       parsed.errorMessage ||
       'unknown error';
+    // Parsed refusal — the gateway definitively rejected this request.
     throw new GlobePayError(
       `GlobePay365 ${path} failed: ${detail}`,
       codes,
       response.status,
+      true,
     );
   }
 

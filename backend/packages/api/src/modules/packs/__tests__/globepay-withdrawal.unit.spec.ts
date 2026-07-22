@@ -44,10 +44,25 @@ function harness() {
       replayed: false,
       reference: null,
     }),
+    // The policy gate: freeze + locked commissions + playthrough folded into
+    // one withdrawable figure. Defaults to fully open.
+    walletSummary: jest.fn().mockResolvedValue({
+      balance: 1000,
+      available: 1000,
+      locked: 0,
+      isFrozen: false,
+      nextUnlock: null,
+      withdrawable: 1000,
+      playthrough: { deposited: 0, used: 0, remaining: 0 },
+    }),
   };
+  const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
   return {
     packs,
-    scope: { resolve: () => packs } as never,
+    logger,
+    scope: {
+      resolve: (k: string) => (k === 'logger' ? logger : packs),
+    } as never,
   };
 }
 
@@ -169,9 +184,12 @@ describe('startGlobePayWithdrawal — money ordering', () => {
     );
   });
 
-  it('REFUNDS the debit and closes the row when the gateway refuses', async () => {
+  it('REFUNDS the debit and closes the row when the gateway DEFINITELY refuses', async () => {
     const h = harness();
-    submitMock.mockRejectedValue(new GlobePayError('nope', ['PMT10013'], 200));
+    // definite: a parsed isSuccess:false response — no payout exists there.
+    submitMock.mockRejectedValue(
+      new GlobePayError('nope', ['PMT10013'], 200, true),
+    );
     await expect(start(h)).rejects.toThrow(/could not start your withdrawal/i);
 
     // Second mutate call is the refund: positive amount, wd-refund: anchor.
@@ -188,6 +206,82 @@ describe('startGlobePayWithdrawal — money ordering', () => {
       id: 'gpw_1',
       status: 'failed',
     });
+  });
+
+  // The classic double-payout window: the request reached the gateway and
+  // only the RESPONSE was lost. Refunding here + the payout executing =
+  // customer paid twice. The row must stay pending for the sweep.
+  it.each([
+    ['a timeout', new Error('The operation was aborted due to timeout')],
+    ['a WAF/non-JSON page', new GlobePayError('non-JSON response', [], 503)],
+  ])(
+    'does NOT refund on %s — ambiguous outcome stays pending for the sweep',
+    async (_label, error) => {
+      const h = harness();
+      submitMock.mockRejectedValue(error);
+      const result = await start(h);
+      // Ambiguity is not an error to the caller: the debit stands and the
+      // sweep resolves the payout, exactly like a slow-processing one.
+      expect(result.transactionId).toBeNull();
+      // ONE ledger write (the debit) — no refund.
+      expect(h.packs.mutateCreditAtomic).toHaveBeenCalledTimes(1);
+      // The row is NOT closed — the sweep must still be able to claim it.
+      expect(h.packs.updateGlobePayWithdrawals).not.toHaveBeenCalled();
+      expect(h.logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('AMBIGUOUS'),
+      );
+    },
+  );
+
+  it('blocks a withdrawal above the withdrawable figure (playthrough gate)', async () => {
+    const h = harness();
+    h.packs.walletSummary.mockResolvedValue({
+      balance: 1000,
+      available: 1000,
+      locked: 0,
+      isFrozen: false,
+      nextUnlock: null,
+      withdrawable: 0,
+      playthrough: { deposited: 100, used: 40, remaining: 60 },
+    });
+    await expect(start(h)).rejects.toThrow(
+      /RM 60\.00 of your deposits must be spent on packs/,
+    );
+    expect(h.packs.createGlobePayWithdrawals).not.toHaveBeenCalled();
+    expect(h.packs.mutateCreditAtomic).not.toHaveBeenCalled();
+    expect(submitMock).not.toHaveBeenCalled();
+  });
+
+  it('blocks a frozen account entirely', async () => {
+    const h = harness();
+    h.packs.walletSummary.mockResolvedValue({
+      balance: 1000,
+      available: 0,
+      locked: 0,
+      isFrozen: true,
+      nextUnlock: null,
+      withdrawable: 0,
+      playthrough: { deposited: 0, used: 0, remaining: 0 },
+    });
+    await expect(start(h)).rejects.toThrow(/under review/i);
+    expect(h.packs.mutateCreditAtomic).not.toHaveBeenCalled();
+  });
+
+  it('caps at withdrawable when locked commissions shrink it below the balance', async () => {
+    const h = harness();
+    h.packs.walletSummary.mockResolvedValue({
+      balance: 1000,
+      available: 40,
+      locked: 960,
+      isFrozen: false,
+      nextUnlock: null,
+      withdrawable: 40,
+      playthrough: { deposited: 0, used: 0, remaining: 0 },
+    });
+    await expect(start(h)).rejects.toThrow(
+      /withdraw up to RM 40\.00 right now/,
+    );
+    expect(h.packs.mutateCreditAtomic).not.toHaveBeenCalled();
   });
 
   it('closes the row WITHOUT refunding when the debit itself fails (insufficient balance)', async () => {
@@ -255,10 +349,17 @@ describe('withdrawal reconcile decisions', () => {
   it('refunds an unknown payout only once it is too old for an in-flight submit', () => {
     const created = new Date('2026-07-22T10:00:00Z');
     expect(
-      unknownWithdrawalAction(created, new Date('2026-07-22T10:30:00Z')),
+      unknownWithdrawalAction(created, new Date('2026-07-22T10:30:00Z'), false),
     ).toEqual({ kind: 'wait' });
     expect(
-      unknownWithdrawalAction(created, new Date('2026-07-22T11:30:00Z')),
+      unknownWithdrawalAction(created, new Date('2026-07-22T11:30:00Z'), false),
     ).toEqual({ kind: 'refund' });
+  });
+
+  it('NEVER unknown-refunds a payout that has a gateway id, however stale — a 400 there is our config, not non-existence', () => {
+    const created = new Date('2026-07-22T10:00:00Z');
+    expect(
+      unknownWithdrawalAction(created, new Date('2026-07-29T10:00:00Z'), true),
+    ).toEqual({ kind: 'wait' });
   });
 });
