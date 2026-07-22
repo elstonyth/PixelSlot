@@ -157,6 +157,29 @@ describe('startGlobePayDeposit', () => {
     expect(h.packs.createGlobePayDeposits).not.toHaveBeenCalled();
   });
 
+  // Provider-confirmed band (RM 30–1000, 2026-07-22). Checked before the
+  // network call: their own refusal is a bare "Invalid Transaction Amount"
+  // that names no numbers, and a doomed request would still leave a failed row.
+  it.each([29, 1001, 5000])(
+    'rejects RM %s — outside the gateway band — without calling the gateway',
+    async (amount) => {
+      const h = harness();
+      await expect(start(h, { amount })).rejects.toThrow(
+        /between RM 30 and RM 1,000/,
+      );
+      expect(submitMock).not.toHaveBeenCalled();
+      expect(h.packs.createGlobePayDeposits).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([30, 1000])(
+    'accepts RM %s — the exact band edges',
+    async (amount) => {
+      const h = harness();
+      await expect(start(h, { amount })).resolves.toBeTruthy();
+    },
+  );
+
   it('rejects a payment method outside the MYR allow-list', async () => {
     const h = harness();
     // UPI is an INR method — asking for it here would depend on gateway-side
@@ -171,7 +194,9 @@ describe('startGlobePayDeposit', () => {
   it('accepts every documented MYR method', async () => {
     for (const method of ['FPX', 'DN', 'BQR', 'OB']) {
       const h = harness();
-      await expect(start(h, { paymentMethodCode: method })).resolves.toBeTruthy();
+      await expect(
+        start(h, { paymentMethodCode: method }),
+      ).resolves.toBeTruthy();
     }
   });
 

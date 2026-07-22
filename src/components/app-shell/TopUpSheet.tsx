@@ -15,11 +15,13 @@ import { useLiquidGlass, GLASS_SUBTLE } from '@/lib/use-liquid-glass';
 // gateway, which credits synchronously and stays the local/dev path.
 const USE_GATEWAY = process.env.NEXT_PUBLIC_PAYMENTS_PROVIDER === 'globepay';
 
-// The gateway's own floor is higher than the mock's, and it rejects everything
-// below with a generic "Invalid Transaction Amount" that tells the customer
-// nothing. Catch it in the sheet so they get a real message instead.
-// Confirmed live on staging: 25 rejected, 30 accepted (docs/payments).
+// The gateway's band is narrower than the mock's on both ends, and it rejects
+// anything outside it with a generic "Invalid Transaction Amount" that names no
+// numbers. Catch it in the sheet so the customer gets a message they can act on.
+// Confirmed by the provider 2026-07-22 and verified live: 1000 accepted, 1001
+// rejected (docs/payments/globepay365-setup.md).
 const GATEWAY_MIN_RM = 30;
+const GATEWAY_MAX_RM = 1000;
 
 // The mock's 10/25 rungs are below the gateway's floor, so offering them would
 // guarantee a rejection on the real path.
@@ -87,8 +89,10 @@ export default function TopUpSheet({
     setSubmitting(true);
     try {
       if (USE_GATEWAY) {
-        if (amount < GATEWAY_MIN_RM) {
-          setError(`Minimum top-up is RM ${GATEWAY_MIN_RM}.`);
+        if (amount < GATEWAY_MIN_RM || amount > GATEWAY_MAX_RM) {
+          setError(
+            `Top-ups must be between ${rm0(GATEWAY_MIN_RM)} and ${rm0(GATEWAY_MAX_RM)}.`,
+          );
           return;
         }
         const res = await startDeposit(amount);

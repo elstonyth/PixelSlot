@@ -182,13 +182,41 @@ otherwise mean a customer paid and never got credit, permanently.
   old enough that an in-flight submit is impossible.
 - One failing deposit never aborts the sweep.
 
-### OPEN QUESTION — `Amount` vs `NetAmount`
+### `Amount` vs `NetAmount` — ANSWERED 2026-07-22
 
-The settled callback carries both. `Amount` is the deposit amount; `NetAmount`
-is documented only as "Net Amount submitted from client" (possibly net of
-fees). The route credits **`Amount`** and stores both. Confirm against the
-first genuinely settled callback before this goes near production — crediting
-the wrong field is a silent money error on every single top-up.
+Credit **`Amount`**. Confirmed by the provider: "请用 amount 上分 … net amount
+是减了费用" — `NetAmount` is the figure after their fees are deducted, so
+crediting it would silently short every customer by the fee. The route already
+credits `Amount`; no change was needed.
+
+### Provider answers, 2026-07-22
+
+| Question | Answer |
+| --- | --- |
+| Amount limits | Min **RM 30**, max **RM 1000** (Bryan) |
+| Which methods to use | "使用 OB 和 BQR 即可" (Sean) |
+| Which field to credit | `Amount`, not `NetAmount` (Mizuko) |
+
+Limits verified live: 1000 accepted, 1001 → `PMT10005`. They match the floor
+found by probing on 2026-07-21, and are now enforced in both the storefront
+sheet and `startGlobePayDeposit` so an impossible amount never reaches the
+gateway.
+
+**Still unanswered:** how to mark a staging deposit as paid so a callback fires.
+Asked twice. Without it no genuine callback can ever reach us.
+
+**OB does not work, despite being recommended.** Retested across the stated
+band after their reply:
+
+| OB amount | Result |
+| --- | --- |
+| 30 / 50 / 100 / 200 | `PMT10005 Invalid Transaction Amount` |
+| 300 / 400 / 500 / 1000 | `PMT10024 Invalid Payment Method Routing Amount` |
+
+`PMT10024` is a routing configuration gap on their side, not an amount problem —
+no amount in the whole band succeeds. **BQR remains the only method that
+returns a cashier page**, and its page still fails at QR generation. So nothing
+is payable yet.
 
 ### Live smoke test — PASSED 2026-07-21
 

@@ -165,10 +165,9 @@ export async function POST(
   // a customer can pay a different sum than the one the top-up sheet asked for,
   // and the ledger must reflect money actually received.
   //
-  // Amount vs NetAmount: `Amount` is the deposit amount, `NetAmount` is
-  // documented only as "Net Amount submitted from client". We credit `Amount`
-  // and record both, pending confirmation against the first genuinely settled
-  // callback — see docs/payments/globepay365-setup.md.
+  // Amount vs NetAmount: CONFIRMED by the provider 2026-07-22 — credit
+  // `Amount`; `NetAmount` is that figure minus their fees ("net amount 是减了
+  // 费用"). Crediting NetAmount would silently short every customer by the fee.
   // The ledger is Ringgit and credits 1:1. A settled callback in any other
   // currency would silently credit e.g. 500 VND as RM 500. CurrencyCode IS
   // signed, so this is not an attack surface — it is a guard against the

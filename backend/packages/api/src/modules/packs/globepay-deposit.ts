@@ -27,6 +27,18 @@ export const GLOBEPAY_DEFAULT_METHOD = 'BQR';
 export const GLOBEPAY_MYR_METHODS = ['FPX', 'DN', 'BQR', 'OB'] as const;
 
 /**
+ * Per-transaction limits, confirmed by the provider 2026-07-22 ("目前最低设置金额
+ * 是30 而目前最高金额设置是1000") and verified against the live gateway: 1000 is
+ * accepted, 1001 returns PMT10005.
+ *
+ * Enforced HERE as well as in the storefront so an amount that cannot possibly
+ * succeed never costs a network round-trip or leaves a failed row behind. Their
+ * own rejection is a bare "Invalid Transaction Amount" with no bounds in it.
+ */
+export const GLOBEPAY_MIN_RM = 30;
+export const GLOBEPAY_MAX_RM = 1000;
+
+/**
  * Is the real gateway switched on? Mirrors mockTopupAllowed's fail-closed
  * shape: absent config means "not configured", never a silent fallback that
  * mints free credit. Pure (env injected) so the policy is unit-testable.
@@ -100,6 +112,16 @@ export async function startGlobePayDeposit(
     throw new MedusaError(MedusaError.Types.INVALID_DATA, invalid);
   }
   const amount = input.amount as number;
+
+  // The site-wide ceiling (TOPUP_MAX_RM) is far above what this gateway
+  // accepts, so check its own band too — and say the numbers, because the
+  // gateway's refusal does not.
+  if (amount < GLOBEPAY_MIN_RM || amount > GLOBEPAY_MAX_RM) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `Top-ups must be between RM ${GLOBEPAY_MIN_RM} and RM ${GLOBEPAY_MAX_RM.toLocaleString('en-US')}.`,
+    );
+  }
 
   const paymentMethodCode = input.paymentMethodCode ?? GLOBEPAY_DEFAULT_METHOD;
   if (
