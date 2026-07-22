@@ -246,8 +246,15 @@ export async function getChallenge(): Promise<Challenge | null> {
                   ),
                 ),
               ]),
+              // Ranks 4-10 only, matching the stage tile (reward, below) and the
+              // "Total credits across ranks 4-10" summary label. Podium credits
+              // have no display surface (see StageCarousel), so counting them
+              // here would inflate a figure the operator can't see itemised.
               credits: rm0(
-                unlocked.reduce((sum, s) => sum + creditsOf(s.rankRewards), 0),
+                unlocked.reduce(
+                  (sum, s) => sum + creditsOf(s.rankRewards, 4),
+                  0,
+                ),
               ),
             },
       stages: ordered.map((s) => ({

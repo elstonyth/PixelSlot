@@ -74,6 +74,9 @@ function validateRankRewards(
       );
     if (seen.has(rank as number)) bad(`${label}: duplicate rank ${String(rank)}.`);
     seen.add(rank as number);
+    // NOTE: credits are floor-checked only. An UPPER cap (fat-finger / token
+    // guard, matching MAX_VOUCHER_MYR etc.) is owned by plan 044's per-rank cap
+    // and slots in right here; left out to avoid duplicating that in-flight work.
     const credits = r.credits ?? 0;
     if (typeof credits !== 'number' || !Number.isFinite(credits) || credits < 0)
       bad(`${label}: rank ${String(rank)} credits must be >= 0.`);

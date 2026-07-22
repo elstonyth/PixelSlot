@@ -128,3 +128,8 @@ primitive in `src/components/ui/`; sheets are hand-rolled against a shared hook:
   The frame and the `SlabImage` `frameVariant` prop already exist and ship on
   `/leaderboard` — the vault half is a one-line call-site change once provenance
   lands. See `feat/prism-slab-frame`.
+- **Migration multiplied per-stage credits by 7.** The backfill gave EACH of
+  ranks 4-10 the old shared `reward_credits` value, so a stage's total credit
+  payout is now 7× its old single figure (correct — that value was per-winner).
+  056's payout writer must SUM the per-rank table per winner, never reuse any
+  old single-value-per-stage assumption, or it pays out 7×.
