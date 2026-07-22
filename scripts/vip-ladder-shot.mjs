@@ -14,8 +14,13 @@ await page.goto(`${BASE}/dashboard/login`, { waitUntil: 'domcontentloaded' });
 await page.fill('input[name="email"]', 'admin@pokenic.app');
 await page.fill('input[name="password"]', 'PreviewOnly2026!');
 await page.click('button[type="submit"]');
-await page.waitForURL((u) => /dashboard/.test(String(u)) && !/login/.test(String(u)), { timeout: 30000 });
-await page.goto(`${BASE}/dashboard/daily-rewards`, { waitUntil: 'domcontentloaded' });
+await page.waitForURL(
+  (u) => /dashboard/.test(String(u)) && !/login/.test(String(u)),
+  { timeout: 30000 },
+);
+await page.goto(`${BASE}/dashboard/daily-rewards`, {
+  waitUntil: 'domcontentloaded',
+});
 await page.waitForTimeout(4000);
 
 const census = async () =>
@@ -30,7 +35,9 @@ const census = async () =>
       inputs: els.filter((e) => e.tagName === 'INPUT').length,
       pageHeight: document.documentElement.scrollHeight,
       scrollerHeight: Math.max(
-        ...Array.from(document.querySelectorAll('*')).map((e) => e.scrollHeight),
+        ...Array.from(document.querySelectorAll('*')).map(
+          (e) => e.scrollHeight,
+        ),
       ),
     };
   });

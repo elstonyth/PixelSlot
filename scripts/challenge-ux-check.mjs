@@ -92,10 +92,10 @@ const s2 = await page
   .innerText();
 ok('no RM NaN in summary', !/NaN/.test(s2));
 
-
 // Partially-configured stage: only configured ranks show, plus the escape hatch.
 await toggle.click();
-for (const r of [5, 6, 7, 8, 9, 10]) await page.getByLabel('Stage 1 rank ' + r + ' credits').fill('');
+for (const r of [5, 6, 7, 8, 9, 10])
+  await page.getByLabel('Stage 1 rank ' + r + ' credits').fill('');
 await page.getByLabel('Stage 1 rank 4 credits').fill('1000');
 await toggle.click();
 await page.waitForTimeout(200);
@@ -108,7 +108,10 @@ ok('show-all escape hatch present', (await showAll.count()) === 1);
 await page.screenshot({ path: 'docs/research/ch-after-partial.png' });
 await showAll.first().click();
 await page.waitForTimeout(300);
-ok('show-all reveals every rank', (await page.locator('#' + panelId + ' tbody tr').count()) === 10);
+ok(
+  'show-all reveals every rank',
+  (await page.locator('#' + panelId + ' tbody tr').count()) === 10,
+);
 
 console.log(out.join('\n'));
 await browser.close();

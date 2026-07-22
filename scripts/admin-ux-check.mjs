@@ -18,7 +18,12 @@ await page.goto(`${BASE}/dashboard/daily-rewards`, {
   waitUntil: 'domcontentloaded',
 });
 await page.waitForTimeout(3000);
-await page.waitForSelector('#vip-levels-reason', { timeout: 20000 }).catch(async () => { await page.screenshot({ path: 'docs/research/admin-check-fail.png' }); throw new Error('no reason input'); });
+await page
+  .waitForSelector('#vip-levels-reason', { timeout: 20000 })
+  .catch(async () => {
+    await page.screenshot({ path: 'docs/research/admin-check-fail.png' });
+    throw new Error('no reason input');
+  });
 
 const saveBtn = page.getByRole('button', { name: 'Save ladder' });
 assert.equal(await saveBtn.isDisabled(), true, 'clean form must disable save');
