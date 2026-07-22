@@ -81,6 +81,21 @@ export interface ChallengeSummary {
    *  credit pool unlocked so far, not a per-winner amount. */
   credits: string;
 }
+/** What a standings rank wins RIGHT NOW — the cumulative prize across every
+ *  UNLOCKED stage at that rank (rewards stack stage over stage, same rule as
+ *  the summary). The card shown is the highest unlocked stage's (the headline
+ *  prize); cards from earlier unlocked stages collapse into `moreCards`;
+ *  credits sum. Empty until a stage unlocks or when the backend sent no
+ *  progress — the standings then render without a prize column. */
+export interface ChallengeRankPrize {
+  rank: number;
+  /** Headline prize card; null when this rank currently pays credits only. */
+  card: ChallengeCard | null;
+  /** ADDITIONAL prize cards from other unlocked stages at this rank. */
+  moreCards: number;
+  /** Formatted credit sum, e.g. "RM 1,000"; null when no credits. */
+  creditsLabel: string | null;
+}
 export interface ChallengeTopEntry {
   rank: number;
   name: string;
@@ -99,6 +114,9 @@ export interface Challenge {
   summary: ChallengeSummary | null;
   /** Weekly Pull Value top-10; [] when the backend sent none. */
   top: ChallengeTopEntry[];
+  /** Per-rank CURRENT prize table (unlocked stages, cumulative), sparse and
+   *  ascending — feeds the weekly standings' prize column. */
+  rankPrizes: ChallengeRankPrize[];
 }
 
 const DAYS = [
@@ -205,6 +223,40 @@ export async function getChallenge(): Promise<Challenge | null> {
     const unlocked =
       pooled === null ? [] : ordered.filter((s) => pooled >= s.thresholdMyr);
 
+    // What each rank wins right now: rewards are cumulative, so a rank's prize
+    // is every unlocked stage's row at that rank. `unlocked` is ascending, so
+    // the LAST resolvable card is the highest unlocked stage's — the headline;
+    // earlier ones become a `+N` count and credits sum across stages.
+    const rankPrizes: ChallengeRankPrize[] = Array.from(
+      { length: 10 },
+      (_, i) => i + 1,
+    ).flatMap((rank) => {
+      const rows = unlocked.flatMap((s) =>
+        s.rankRewards.filter((r) => r.rank === rank),
+      );
+      const cards = rows.flatMap((r) => {
+        const c = r.cardId ? data.cards[r.cardId] : undefined;
+        return c ? [c] : [];
+      });
+      const credits = rows.reduce((sum, r) => sum + Math.max(0, r.credits), 0);
+      const headline = cards[cards.length - 1];
+      if (!headline && credits === 0) return [];
+      return [
+        {
+          rank,
+          card: headline
+            ? {
+                name: headline.name,
+                image: headline.image,
+                slabImage: headline.slab_image ?? null,
+              }
+            : null,
+          moreCards: Math.max(0, cards.length - 1),
+          creditsLabel: credits > 0 ? rm0(credits) : null,
+        },
+      ];
+    });
+
     return {
       resetLabel: formatReset(
         data.settings.resetDay,
@@ -279,6 +331,7 @@ export async function getChallenge(): Promise<Challenge | null> {
                 ? 'active'
                 : 'locked',
       })),
+      rankPrizes,
       top: (data.top ?? []).map((t) => ({
         rank: t.rank,
         name: t.name,
