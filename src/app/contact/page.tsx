@@ -10,14 +10,14 @@ export const metadata: Metadata = {
   description: 'How can we help? Our team typically responds within a day.',
 };
 
-// Published processing estimates, NOT a health feed. There is no vault status
-// endpoint, so this must never render live-status vocabulary (pulsing dot,
-// "Operational") for numbers that are hardcoded and can never change.
-const VAULTS = [
-  { name: 'Vault 1', note: '5-7 business days' },
-  { name: 'Vault 2', note: '5-7 business days' },
-  { name: 'Vault 3', note: '7-10 business days' },
-];
+// Prefilled subjects so a message lands as a sortable thread instead of a
+// blank "hi" — pure mailto, no form backend to build or maintain.
+const TOPICS = [
+  { label: 'Order or payment issue', subject: 'Order issue' },
+  { label: 'Shipping a card home', subject: 'Shipping request' },
+  { label: 'Selling back / buyback', subject: 'Buyback question' },
+  { label: 'Partnerships & brands', subject: 'Partnership' },
+] as const;
 
 const CHANNELS = [
   {
@@ -115,26 +115,29 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* 03 — processing times + FAQ */}
+      {/* 03 — topic picker + FAQ */}
       <div className="mt-8 grid gap-3 md:grid-cols-2">
         <Reveal className="h-full">
           <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-neutral-900 p-5">
             <h2 className="font-heading text-lg leading-snug text-white">
-              VAULT PROCESSING TIMES
+              CUT TO THE CHASE
             </h2>
             <p className="mt-1 text-[13px] text-neutral-400">
-              Typical turnaround once you request a shipment
+              Pick a topic and your message lands in the right thread
             </p>
-            <ul className="mt-4 divide-y divide-white/10">
-              {VAULTS.map((v) => (
-                <li
-                  key={v.name}
-                  className="flex items-center justify-between py-3"
-                >
-                  <span className="text-[13px] font-semibold text-white">
-                    {v.name}
-                  </span>
-                  <span className="text-[13px] text-neutral-400">{v.note}</span>
+            <ul className="mt-2 divide-y divide-white/10">
+              {TOPICS.map((t) => (
+                <li key={t.subject}>
+                  <a
+                    href={`mailto:hello@polycards.com?subject=${encodeURIComponent(t.subject)}`}
+                    className="group flex min-h-11 items-center justify-between gap-3 py-3 text-[13px] font-semibold text-white transition-colors hover:text-neutral-300"
+                  >
+                    {t.label}
+                    <ArrowRight
+                      className="h-3.5 w-3.5 shrink-0 text-neutral-500 transition-colors group-hover:text-white"
+                      aria-hidden
+                    />
+                  </a>
                 </li>
               ))}
             </ul>
@@ -143,7 +146,7 @@ export default function ContactPage() {
 
         <Reveal delay={90} className="h-full">
           {/* justify-center like TheGame's teaser card — this card is shorter
-              than the vault list beside it. */}
+              than the topic list beside it. */}
           <div className="flex h-full flex-col justify-center gap-3 rounded-2xl border border-white/10 bg-neutral-900 p-5">
             <div>
               <h2 className="font-heading text-lg leading-snug text-white">
