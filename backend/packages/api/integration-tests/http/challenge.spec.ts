@@ -421,8 +421,18 @@ medusaIntegrationTestRunner({
           rewardCardIds: [cxId],
         });
         expect(body.stages[1].rewardCardIds).toEqual([cxId, cyId]);
-        expect(body.cards[cxId]).toEqual({ name: 'X', image: '/x.webp' });
-        expect(body.cards[cyId]).toEqual({ name: 'Y', image: '/x.webp' });
+        // slab_image is emitted per card (null when the card has no graded
+        // slab, as here) so the storefront can pick the prism-framed path.
+        expect(body.cards[cxId]).toEqual({
+          name: 'X',
+          image: '/x.webp',
+          slab_image: null,
+        });
+        expect(body.cards[cyId]).toEqual({
+          name: 'Y',
+          image: '/x.webp',
+          slab_image: null,
+        });
       });
 
       it('reports inactive with no stages', async () => {
