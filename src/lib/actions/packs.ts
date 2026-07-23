@@ -294,12 +294,39 @@ export async function openBatch(
 }
 
 export type RevealResult =
-  { ok: true; instantDeadlineMs: number } | { ok: false };
+  | { ok: true; instantDeadlineMs: number }
+  | { ok: false };
 
 // Reveal ping — stamps revealed_at server-side so the 30s instant window counts
 // from when the card is shown. Best-effort: any failure returns { ok: false }
 // and the overlay falls back to the open response's deadline. The backend
 // derives the customer from the bearer token; ownership is enforced there.
+/**
+ * End the instant-buyback window for these pulls — called when the reveal
+ * concludes or the customer leaves it. From then the vault (and every later
+ * sell) quotes the flat rate, even inside the 30s (approach A: close-on-leave;
+ * the 30s deadline is only the hard-tab-kill backstop). Fire-and-forget: the
+ * backend is owner-scoped and close-only, so a lost or duplicate call is
+ * harmless, and the server still enforces the flat rate on any actual sell.
+ */
+export async function closeInstantWindow(pullIds: string[]): Promise<void> {
+  const ids = (pullIds ?? []).filter(
+    (x) => typeof x === 'string' && x.trim() !== '',
+  );
+  if (ids.length === 0) return;
+  const token = await getAuthToken();
+  if (!token) return;
+  try {
+    await sdk.client.fetch('/store/pulls/close-instant', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { pull_ids: ids },
+    });
+  } catch (error) {
+    logger.error('[packs] close-instant failed:', error);
+  }
+}
+
 export async function revealPull(pullId: string): Promise<RevealResult> {
   if (typeof pullId !== 'string' || pullId.trim() === '') return { ok: false };
   const token = await getAuthToken();

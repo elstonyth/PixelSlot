@@ -104,6 +104,10 @@ export const buybackPullStep = createStep(
     const { percent, rate_type } = resolveBuybackRate(pack, {
       rolled_at: pull.rolled_at,
       revealed_at: pull.revealed_at,
+      // Once the reveal has closed the window (left it / concluded), the credit
+      // is the flat vault rate even inside the 30s — the credit must match what
+      // the vault quoted.
+      instant_closed_at: pull.instant_closed_at,
     });
 
     // A money amount must never be computed from a corrupt FMV — refuse rather

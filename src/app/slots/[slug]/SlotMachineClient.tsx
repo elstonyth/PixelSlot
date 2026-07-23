@@ -10,7 +10,7 @@ import { useMediaQuery, usePrefersReducedMotion } from '@/lib/use-reveal';
 import { useChromeInert } from '@/lib/use-chrome-inert';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { openAuth } from '@/components/AuthButton';
-import { openBatch, revealPull } from '@/lib/actions/packs';
+import { openBatch, revealPull, closeInstantWindow } from '@/lib/actions/packs';
 import type { WonCard } from '@/lib/actions/packs';
 import { sellBackPull } from '@/lib/actions/vault';
 import { useTopUp } from '@/components/app-shell/TopUpProvider';
@@ -62,7 +62,12 @@ const POKEBALL_PLACEHOLDER =
   );
 
 type Phase =
-  'idle' | 'resolving' | 'spinning' | 'flood' | 'transform' | 'review';
+  | 'idle'
+  | 'resolving'
+  | 'spinning'
+  | 'flood'
+  | 'transform'
+  | 'review';
 
 /** Highest-rarity tier present in a batch, for the room flood color. */
 function topRarityOf(cards: WonCard[]): Rarity {
@@ -890,6 +895,7 @@ export default function SlotMachineClient({
                   onSignUp={isDemo ? () => openAuth('signup') : undefined}
                   onSkip={skipToCards}
                   onConclude={handleConclude}
+                  onCloseInstant={closeInstantWindow}
                   onSellBack={sellBackPull}
                   onReveal={revealPull}
                   onSold={refreshBalance}

@@ -32,6 +32,7 @@ export function RevealStage({
   onSignUp,
   onSkip,
   onConclude,
+  onCloseInstant,
   onSellBack,
   onReveal,
   onSold,
@@ -54,6 +55,10 @@ export function RevealStage({
   onSkip: () => void;
   /** Called once every card is sold/kept/expired — clears the stage (spec #27). */
   onConclude: () => void;
+  /** End the instant-buyback window server-side when the reveal ends (approach
+   *  A: close-on-leave → the vault quotes the flat rate). Fire-and-forget; the
+   *  30s deadline is the hard-tab-kill backstop. */
+  onCloseInstant?: (pullIds: string[]) => void;
   onSellBack: SellBackFn;
   onReveal?: RevealFn;
   onSold?: (balance: number) => void;
@@ -119,6 +124,26 @@ export function RevealStage({
     const id = window.setTimeout(onConclude, reduced ? 400 : 1400);
     return () => clearTimeout(id);
   }, [allConcluded, demo, onConclude, reduced]);
+
+  // Close the instant-buyback window when the reveal ends. This component
+  // unmounts on BOTH auto-conclude (phase→idle) and navigate-away, so its
+  // cleanup is the single "left the reveal" signal (approach A). The pull ids
+  // are captured ONCE at mount: handleConclude clears `offers` just before the
+  // unmount, so reading it inside the cleanup would find nothing. Demo reveals
+  // carry no real pulls. A hard tab-kill won't run this — the 30s deadline is
+  // the backstop.
+  const closePullIds = useRef<string[] | null>(null);
+  if (closePullIds.current === null) {
+    closePullIds.current = offers
+      .filter((o): o is SellBackOffer => o !== null)
+      .map((o) => o.pullId);
+  }
+  useEffect(() => {
+    return () => {
+      const ids = closePullIds.current ?? [];
+      if (!demo && ids.length > 0) onCloseInstant?.(ids);
+    };
+  }, [demo, onCloseInstant]);
 
   function flipAll() {
     if (flipped) return;

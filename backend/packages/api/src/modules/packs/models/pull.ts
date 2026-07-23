@@ -21,6 +21,14 @@ export const Pull = model
     // rolled_at + BUYBACK_REVEAL_GRACE_MS so a delayed ping can't extend it.
     // Null until the reveal ping stamps it (or for cards never revealed).
     revealed_at: model.dateTime().nullable(),
+    // Set the moment the reveal ends or the customer leaves it (POST
+    // /store/pulls/close-instant on reveal-conclude + page-hide). Once set, the
+    // instant buyback premium is over for good — every sell is the flat vault
+    // rate, even inside the 30s window. This is what makes the vault (only
+    // reachable by leaving the reveal) always quote 90%; the 30s deadline is
+    // just the backstop for a hard tab-kill that never stamps. Null while the
+    // reveal is still live.
+    instant_closed_at: model.dateTime().nullable(),
     // TRUE only when this pull actually decremented physical stock (pulls at 0
     // stock / untracked products don't). Buyback restores +1 ONLY when set —
     // otherwise repeated 0-stock pull→sell cycles would mint phantom units.
