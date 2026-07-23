@@ -84,6 +84,7 @@ import {
 import { foldRanges, type VoucherRange } from './voucher-ranges';
 import type { VipLevelInput } from './vip-levels-validate';
 import type {
+  ChallengeRankReward,
   ChallengeStageInput,
   ChallengeSettingsPatch,
   ChallengeSettingsView,
@@ -632,6 +633,9 @@ class PacksModuleService extends MedusaService({
     topupTotal: number;
     spendTotal: number;
     externalFundedSpendTotal: number;
+    // VIP turnover basis (MYR): net pack_open spend regardless of funding
+    // source — winnings-funded opens count (2026-07-22). Reversals net it down.
+    vipSpendTotal: number;
     // Playthrough-basis deposited total (MYR): topups that carry a basis column
     // (external_funded_cents IS NOT NULL), grandfathering pre-1b deposits out —
     // the SAME filter walletSummary's deposited_cents uses (plan 033). This is
@@ -647,6 +651,7 @@ class PacksModuleService extends MedusaService({
         topup_cents: string | null;
         spend_cents: string | null;
         ext_spend_cents: string | null;
+        vip_spend_cents: string | null;
         deposited_pt_cents: string | null;
       }[]
     >(
@@ -655,6 +660,7 @@ class PacksModuleService extends MedusaService({
         "  COALESCE(SUM(CASE WHEN reason = 'topup' AND amount > 0 THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS topup_cents, " +
         '  COALESCE(SUM(CASE WHEN amount < 0 THEN ROUND(-amount * 100) ELSE 0 END), 0)::bigint AS spend_cents, ' +
         "  COALESCE(SUM(CASE WHEN reason = 'pack_open' THEN -external_funded_cents ELSE 0 END), 0)::bigint AS ext_spend_cents, " +
+        "  COALESCE(SUM(CASE WHEN reason = 'pack_open' THEN ROUND(-amount * 100) ELSE 0 END), 0)::bigint AS vip_spend_cents, " +
         `  COALESCE(SUM(CASE WHEN ${DEPOSITED_PT_FILTER} THEN ROUND(amount * 100) ELSE 0 END), 0)::bigint AS deposited_pt_cents ` +
         'FROM credit_transaction WHERE customer_id = ? AND deleted_at IS NULL',
       [customerId],
@@ -665,6 +671,7 @@ class PacksModuleService extends MedusaService({
       topupTotal: Number(r?.topup_cents ?? 0) / 100,
       spendTotal: Number(r?.spend_cents ?? 0) / 100,
       externalFundedSpendTotal: Number(r?.ext_spend_cents ?? 0) / 100,
+      vipSpendTotal: Number(r?.vip_spend_cents ?? 0) / 100,
       depositedPlaythroughTotal: Number(r?.deposited_pt_cents ?? 0) / 100,
     };
   }
@@ -3412,9 +3419,12 @@ class PacksModuleService extends MedusaService({
     return after;
   }
 
-  // Monotonic lifetime external spend for a single customer, in SEN. Sums
-  // ORIGINAL pack_open debits (amount<0) only — reversals are amount>0 and
-  // thus excluded, so the counter never drops on a clawback (spec §3).
+  // Monotonic lifetime VIP turnover for a single customer, in SEN: full
+  // pack_open spend regardless of funding source (2026-07-22 turnover-VIP —
+  // winnings-funded opens count; commissions/playthrough gate still use the
+  // external-funded basis). Sums ORIGINAL pack_open debits (amount<0) only —
+  // reversals are amount>0 and thus excluded, so the counter never drops on a
+  // clawback (spec §3).
   // This mirrors the `lifetimeExternalSen` pure fold but runs in raw SQL for
   // efficiency (one scan vs. N ORM fetches). Uses @InjectManager so a caller
   // outside a transaction gets a fresh connection.
@@ -3426,7 +3436,7 @@ class PacksModuleService extends MedusaService({
     const em = (sharedContext.transactionManager ??
       sharedContext.manager) as unknown as LedgerSqlManager;
     const rows = await em.execute<{ sen: string | null }[]>(
-      `SELECT COALESCE(SUM(-external_funded_cents), 0)::bigint AS sen
+      `SELECT COALESCE(SUM(ROUND(-amount * 100)), 0)::bigint AS sen
          FROM credit_transaction
         WHERE customer_id = ? AND reason = 'pack_open' AND amount < 0 AND deleted_at IS NULL`,
       [customerId],
@@ -3488,7 +3498,7 @@ class PacksModuleService extends MedusaService({
   }
 
   // Shared VIP-state inputs read from the authoritative ledger: the monotonic
-  // lifetime counter (SEN), the net-basis external spend (MYR, the display axis),
+  // lifetime turnover counter (SEN), the net turnover spend (MYR, the display axis),
   // and the full ladder (threshold + reward columns). Both rebuildVipMemberState
   // and grantLevelUpRewards need exactly these, so they live in one place and can
   // never drift in what they read. Reads stay SEQUENTIAL: lifetimeExternalSenFor
@@ -3502,8 +3512,7 @@ class PacksModuleService extends MedusaService({
       customerId,
       sharedContext,
     );
-    const netBasisMyr = (await this.creditSummary(customerId))
-      .externalFundedSpendTotal;
+    const netBasisMyr = (await this.creditSummary(customerId)).vipSpendTotal;
     const ladderRows = await this.listVipLevels(
       {},
       {
@@ -3543,6 +3552,21 @@ class PacksModuleService extends MedusaService({
       },
       sharedContext,
     );
+  }
+
+  // Distinct customers that have ever touched the credit ledger — shared by
+  // rebuildAllVipMemberState and the turnover reconciliation script.
+  @InjectManager()
+  async listLedgerCustomerIds(
+    @MedusaContext() sharedContext: Context = {},
+  ): Promise<string[]> {
+    const em = (sharedContext.transactionManager ??
+      sharedContext.manager) as unknown as LedgerSqlManager;
+    const rows = await em.execute<{ customer_id: string }[]>(
+      `SELECT DISTINCT customer_id FROM credit_transaction WHERE deleted_at IS NULL`,
+      [],
+    );
+    return rows.map((r) => r.customer_id);
   }
 
   // Rebuild the vip_member_state projection for every customer that has ever
@@ -3677,7 +3701,7 @@ class PacksModuleService extends MedusaService({
   // origin discriminates ladder grants (this method) from box-won grants, which
   // are repeatable per (customer, level, kind) and fall outside this index.
   //
-  // currentLevel uses the NET basis (creditSummary.externalFundedSpendTotal) so
+  // currentLevel uses the NET turnover basis (creditSummary.vipSpendTotal) so
   // it may drop below highest_level_ever after a clawback — that's by design.
   @InjectManager()
   async grantLevelUpRewards(
@@ -4700,14 +4724,20 @@ class PacksModuleService extends MedusaService({
 
   // Audited whole-set replace of the challenge milestone stages. Diff-upsert
   // keyed on `stage_number`, hard-delete removed rows (soft would collide on
-  // the unique key). reward_card_ids EXISTENCE is checked here (service-level).
+  // the unique key). Prize-card EXISTENCE is checked here (service-level).
   @InjectTransactionManager()
   async saveChallengeStages(
     input: { stages: ChallengeStageInput[]; adminId: string; reason: string },
     @MedusaContext() sharedContext: Context = {},
   ): Promise<ChallengeStageInput[]> {
     const allCardIds = [
-      ...new Set(input.stages.flatMap((s) => s.reward_card_ids)),
+      ...new Set(
+        input.stages.flatMap((s) =>
+          s.rank_rewards
+            .map((r) => r.card_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ),
     ];
     if (allCardIds.length > 0) {
       const found = await this.listCards(
@@ -4727,13 +4757,7 @@ class PacksModuleService extends MedusaService({
     const existing = await this.listChallengeStages(
       {},
       {
-        select: [
-          'id',
-          'stage_number',
-          'threshold_myr',
-          'reward_credits',
-          'reward_card_ids',
-        ],
+        select: ['id', 'stage_number', 'threshold_myr', 'rank_rewards'],
         take: 1000,
       },
       sharedContext,
@@ -4745,23 +4769,19 @@ class PacksModuleService extends MedusaService({
       .map((r) => ({
         stage_number: r.stage_number,
         threshold_myr: Number(r.threshold_myr),
-        reward_credits: Number(r.reward_credits),
-        reward_card_ids: (r.reward_card_ids as unknown as string[]) ?? [],
+        rank_rewards:
+          (r.rank_rewards as unknown as ChallengeRankReward[]) ?? [],
       }));
 
     const inputStages = new Set(input.stages.map((s) => s.stage_number));
     for (const s of input.stages) {
       const data = {
         threshold_myr: s.threshold_myr,
-        reward_credits: s.reward_credits,
         // model.json() generates a Record<string, unknown> create/update input
-        // type — a plain string[] has no string index signature, so it needs
-        // the same double-cast update-pack.ts / seed-pixel-pokemon.ts use for
-        // their json columns; the DB just stores the array.
-        reward_card_ids: s.reward_card_ids as unknown as Record<
-          string,
-          unknown
-        >,
+        // type — a plain array has no string index signature, so it needs the
+        // same double-cast update-pack.ts / seed-pixel-pokemon.ts use for their
+        // json columns; the DB just stores the array.
+        rank_rewards: s.rank_rewards as unknown as Record<string, unknown>,
       };
       const row = byStage.get(s.stage_number);
       if (row) {
@@ -4949,13 +4969,11 @@ class PacksModuleService extends MedusaService({
       timezone: row?.timezone ?? 'Asia/Kuala_Lumpur',
       reset_day: row ? Number(row.reset_day) : 1,
       reset_hour: row ? Number(row.reset_hour) : 0,
-      payout_credits: row ? Number(row.payout_credits) : 0,
-      payout_card_ids: (row?.payout_card_ids as unknown as string[]) ?? [],
     };
   }
 
   // Audited singleton patch (create-on-first-edit; CHECK id='global' keeps the
-  // create race-safe). payout_card_ids EXISTENCE checked here.
+  // create race-safe).
   @InjectTransactionManager()
   async editChallengeSettings(
     input: {
@@ -4965,22 +4983,6 @@ class PacksModuleService extends MedusaService({
     },
     @MedusaContext() sharedContext: Context = {},
   ): Promise<ChallengeSettingsView> {
-    if (input.patch.payout_card_ids && input.patch.payout_card_ids.length > 0) {
-      const ids = input.patch.payout_card_ids;
-      const found = await this.listCards(
-        { id: ids },
-        { select: ['id'], take: ids.length },
-        sharedContext,
-      );
-      const foundIds = new Set(found.map((c) => c.id));
-      const missing = ids.filter((id) => !foundIds.has(id));
-      if (missing.length > 0)
-        throw new MedusaError(
-          MedusaError.Types.INVALID_DATA,
-          `Unknown payout card id(s): ${missing.join(', ')}.`,
-        );
-    }
-
     const [row] = await this.listChallengeSettings(
       {},
       { take: 1 },
@@ -4991,35 +4993,32 @@ class PacksModuleService extends MedusaService({
       timezone: row?.timezone ?? 'Asia/Kuala_Lumpur',
       reset_day: row ? Number(row.reset_day) : 1,
       reset_hour: row ? Number(row.reset_hour) : 0,
-      payout_credits: row ? Number(row.payout_credits) : 0,
-      payout_card_ids: (row?.payout_card_ids as unknown as string[]) ?? [],
     };
     const after: ChallengeSettingsView = {
       cadence: input.patch.cadence ?? before.cadence,
       timezone: input.patch.timezone ?? before.timezone,
       reset_day: input.patch.reset_day ?? before.reset_day,
       reset_hour: input.patch.reset_hour ?? before.reset_hour,
-      payout_credits: input.patch.payout_credits ?? before.payout_credits,
-      payout_card_ids: input.patch.payout_card_ids ?? before.payout_card_ids,
     };
-    // Same json double-cast as saveChallengeStages' reward_card_ids — the
-    // generated create/update input types payout_card_ids as
-    // Record<string, unknown> (json column), not string[].
-    const data = {
-      ...after,
-      payout_card_ids: after.payout_card_ids as unknown as Record<
-        string,
-        unknown
-      >,
-    };
+    const data = after;
     if (row) {
       await this.updateChallengeSettings(
         { selector: { id: row.id }, data },
         sharedContext,
       );
     } else {
+      // First-edit create. payout is retired (never patched here), but the
+      // model's payout_card_ids json column is non-nullable with no ORM-level
+      // default, so the insert must seed its cold default []. payout_credits
+      // has model .default(0). Same json double-cast as rank_rewards.
       await this.createChallengeSettings(
-        [{ id: 'global', ...data }],
+        [
+          {
+            id: 'global',
+            ...data,
+            payout_card_ids: [] as unknown as Record<string, unknown>,
+          },
+        ],
         sharedContext,
       );
     }
@@ -5030,10 +5029,9 @@ class PacksModuleService extends MedusaService({
           entity_type: 'challenge_settings',
           entity_id: row?.id ?? 'global',
           action: 'edit',
-          // Same json double-cast as the payout_card_ids write above — the
-          // `before`/`after` json columns type as Record<string, unknown> |
-          // null, and ChallengeSettingsView (a named interface with a
-          // string[] property) doesn't structurally satisfy that directly.
+          // The `before`/`after` audit json columns type as
+          // Record<string, unknown> | null, and ChallengeSettingsView (a named
+          // interface) doesn't structurally satisfy that directly.
           before: before as unknown as Record<string, unknown>,
           after: after as unknown as Record<string, unknown>,
           reason: input.reason,

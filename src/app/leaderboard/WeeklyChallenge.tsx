@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Trophy, Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SlabImage } from '@/components/SlabImage';
 import type { Challenge } from '@/lib/data/challenge';
 import { StageCarousel } from './StageCarousel';
 
@@ -40,7 +41,7 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
         <h2 className="font-heading mt-4 text-4xl text-white">
           WEEKLY PULLED VALUE CHALLENGE
         </h2>
-        <p className="mt-3 text-xs font-medium tracking-wide text-neutral-500 uppercase">
+        <p className="mt-3 text-xs font-medium tracking-wide text-neutral-400 uppercase">
           {challenge.resetLabel}
         </p>
       </header>
@@ -111,7 +112,7 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
                 <span
                   className={cn(
                     'mt-1 hidden text-[10px] font-semibold whitespace-nowrap sm:block',
-                    s.state === 'complete' ? 'text-chase' : 'text-neutral-500',
+                    s.state === 'complete' ? 'text-chase' : 'text-neutral-400',
                   )}
                 >
                   {s.thresholdCompact}
@@ -121,7 +122,7 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
           </div>
 
           {pool.next ? (
-            <p className="mt-3 text-center text-xs text-neutral-500">
+            <p className="mt-3 text-center text-xs text-neutral-400">
               Stage {pool.next.stageNumber} unlocks at{' '}
               <span className="font-semibold text-neutral-300">
                 {pool.next.threshold}
@@ -170,17 +171,32 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
                     Top 3 will receive
                   </p>
                   <div className="mt-4 flex flex-wrap items-end justify-center gap-4 sm:justify-start">
-                    {summary.cards.map((c, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={`${c.name}-${i}`}
-                        src={c.image}
-                        alt={c.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-32 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
-                      />
-                    ))}
+                    {summary.cards.map((c, i) =>
+                      // Same rule as the stage tiles: graded prizes wear the
+                      // prism frame, raw card art stays an unframed <img>.
+                      c.slabImage ? (
+                        <SlabImage
+                          key={`${c.name}-${i}`}
+                          src={c.image}
+                          slabSrc={c.slabImage}
+                          alt={c.name}
+                          frameVariant="prism"
+                          glowScale={0.4}
+                          sizes="384px"
+                          className="h-32"
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={`${c.name}-${i}`}
+                          src={c.image}
+                          alt={c.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-32 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
+                        />
+                      ),
+                    )}
                   </div>
                   <p className="mt-3 text-sm text-neutral-400">
                     Every featured card from stages 1–{summary.unlockedCount}
@@ -197,7 +213,8 @@ export function WeeklyChallenge({ challenge }: { challenge: Challenge }) {
                         {summary.credits}
                       </p>
                       <p className="text-sm text-neutral-400">
-                        Combined credits from stages 1–{summary.unlockedCount}
+                        Total credits across ranks 4–10, stages 1–
+                        {summary.unlockedCount}
                       </p>
                     </div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -16,6 +16,12 @@ import { isTopRarity } from '@/lib/rarity';
 import { SlabImage, SLAB_ASPECT } from '@/components/SlabImage';
 import { cn } from '@/lib/utils';
 
+/** The card back raster. Exported so the machine can warm it during the spin —
+ *  it is the FIRST thing the reveal shows, and mounting this component was also
+ *  the first thing that requested it (a fetch + decode landing right on the
+ *  transform beat, which stuttered the morph and popped the art in late). */
+export const CARD_BACK_SRC = '/images/app/polycards-slab-back.webp';
+
 export function SlabCard({
   card,
   rarityRgb,
@@ -131,8 +137,9 @@ export function SlabCard({
           },
         }}
       >
-        {/* BACK — the Polycards holo-foil card back (supersedes #34's etched
-            line art; asset: docs/research/polycards-card-back-v2.png cropped).
+        {/* BACK — the Polycards graded slab seen from behind: acrylic case,
+            branded label + QR, matte black card with the flat white monogram
+            inside (asset baked to SLAB_ASPECT from the SnapGen render).
             Opaque raster, so rarity color rides on the outer glow only. */}
         <span
           className={cn(
@@ -145,8 +152,12 @@ export function SlabCard({
             } as CSSProperties
           }
         >
+          {/* eslint-disable-next-line @next/next/no-img-element -- decorative
+              fixed local asset (one shared card back, already webp) layered
+              inside the flip/morph surface; next/image adds a wrapper + loader
+              to a purely presentational fill with no LCP or bandwidth win. */}
           <img
-            src="/images/app/polycards-card-back.webp"
+            src={CARD_BACK_SRC}
             alt=""
             aria-hidden
             className="absolute inset-0 h-full w-full object-fill transition-[filter] duration-300"

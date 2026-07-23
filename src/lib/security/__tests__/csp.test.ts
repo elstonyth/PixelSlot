@@ -1,15 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { buildCsp } from '../csp';
+import { buildCsp, cspEnforced } from '../csp';
 
 describe('buildCsp', () => {
   let prevBackend: string | undefined;
   let prevMediaHost: string | undefined;
+  let prevEnforce: string | undefined;
 
   beforeEach(() => {
     prevBackend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
     prevMediaHost = process.env.NEXT_PUBLIC_MEDIA_HOST;
+    prevEnforce = process.env.CSP_ENFORCE;
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = 'http://localhost:9000';
     delete process.env.NEXT_PUBLIC_MEDIA_HOST;
+    delete process.env.CSP_ENFORCE;
   });
 
   afterEach(() => {
@@ -18,6 +21,8 @@ describe('buildCsp', () => {
     else process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = prevBackend;
     if (prevMediaHost === undefined) delete process.env.NEXT_PUBLIC_MEDIA_HOST;
     else process.env.NEXT_PUBLIC_MEDIA_HOST = prevMediaHost;
+    if (prevEnforce === undefined) delete process.env.CSP_ENFORCE;
+    else process.env.CSP_ENFORCE = prevEnforce;
   });
 
   // The policy is intentionally nonce-free: most pages are statically
@@ -72,4 +77,36 @@ describe('buildCsp', () => {
     const csp = buildCsp();
     expect(csp).toMatch(/connect-src[^;]*'self'/);
   });
+
+  // `upgrade-insecure-requests` is ignored in a report-only policy and the
+  // browser logs a console error for it on every page load, so it is emitted
+  // only when next.config.ts ships the enforcing header (same CSP_ENFORCE flag).
+  it('omits upgrade-insecure-requests while the policy is report-only', () => {
+    expect(buildCsp()).not.toContain('upgrade-insecure-requests');
+  });
+
+  it('includes upgrade-insecure-requests when CSP_ENFORCE is true', () => {
+    process.env.CSP_ENFORCE = 'true';
+    expect(buildCsp()).toContain('upgrade-insecure-requests');
+  });
+
+  // The flag fails open, so a near-miss spelling would silently ship the whole
+  // policy report-only with nothing to notice. Accept the truthy spellings; keep
+  // rejecting values that plainly mean "off".
+  it.each(['TRUE', ' true ', '1'])(
+    'treats CSP_ENFORCE=%j as enforcing',
+    (value) => {
+      process.env.CSP_ENFORCE = value;
+      expect(cspEnforced()).toBe(true);
+    },
+  );
+
+  it.each(['false', '0', ''])(
+    'treats CSP_ENFORCE=%j as report-only',
+    (value) => {
+      process.env.CSP_ENFORCE = value;
+      expect(cspEnforced()).toBe(false);
+      expect(buildCsp()).not.toContain('upgrade-insecure-requests');
+    },
+  );
 });

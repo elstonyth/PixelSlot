@@ -76,8 +76,6 @@ medusaIntegrationTestRunner({
           timezone: 'Asia/Kuala_Lumpur',
           reset_day: 1,
           reset_hour: 0,
-          payout_credits: 0,
-          payout_card_ids: [],
         });
       });
 
@@ -105,14 +103,15 @@ medusaIntegrationTestRunner({
                 {
                   stage_number: 1,
                   threshold_myr: 100,
-                  reward_credits: 10,
-                  reward_card_ids: [cardId],
+                  rank_rewards: [
+                    { rank: 1, card_id: cardId, credits: 0 },
+                    { rank: 4, card_id: null, credits: 10 },
+                  ],
                 },
                 {
                   stage_number: 2,
                   threshold_myr: 200,
-                  reward_credits: 20,
-                  reward_card_ids: [],
+                  rank_rewards: [{ rank: 4, card_id: null, credits: 20 }],
                 },
               ],
               reason: 'configure stages',
@@ -143,8 +142,9 @@ medusaIntegrationTestRunner({
                 {
                   stage_number: 1,
                   threshold_myr: 100,
-                  reward_credits: 10,
-                  reward_card_ids: ['card_does_not_exist'],
+                  rank_rewards: [
+                    { rank: 1, card_id: 'card_does_not_exist', credits: 0 },
+                  ],
                 },
               ],
               reason: 'bad card',
@@ -164,20 +164,17 @@ medusaIntegrationTestRunner({
           {
             stage_number: 1,
             threshold_myr: 100,
-            reward_credits: 10,
-            reward_card_ids: [],
+            rank_rewards: [{ rank: 4, card_id: null, credits: 10 }],
           },
           {
             stage_number: 2,
             threshold_myr: 200,
-            reward_credits: 20,
-            reward_card_ids: [],
+            rank_rewards: [{ rank: 4, card_id: null, credits: 20 }],
           },
           {
             stage_number: 3,
             threshold_myr: 300,
-            reward_credits: 30,
-            reward_card_ids: [],
+            rank_rewards: [{ rank: 4, card_id: null, credits: 30 }],
           },
         ];
         const first = await unwrapResponse(
@@ -225,10 +222,8 @@ medusaIntegrationTestRunner({
               patch: {
                 reset_day: 3,
                 reset_hour: 6,
-                payout_credits: 500,
-                payout_card_ids: [cardId],
               },
-              reason: 'set payout',
+              reason: 'move reset',
             },
             { headers: adminHeaders() },
           ),
@@ -237,21 +232,36 @@ medusaIntegrationTestRunner({
         expect(res.data).toMatchObject({
           reset_day: 3,
           reset_hour: 6,
-          payout_credits: 500,
-          payout_card_ids: [cardId],
         });
 
         const get = await unwrapResponse(
           api.get('/admin/challenge/settings', { headers: adminHeaders() }),
         );
         expect(get.data.reset_day).toBe(3);
-        expect(get.data.payout_credits).toBe(500);
+        expect(get.data.reset_hour).toBe(6);
 
         const audits = await packs().listAdminActionAudits(
           { entity_type: 'challenge_settings', action: 'edit' },
           { take: 10 },
         );
         expect(audits).toHaveLength(1);
+      });
+
+      it('POST settings: retired payout-only patch → 400 (no valid fields)', async () => {
+        // payout fields are retired (stages are the prize pool) — a patch that
+        // carries only payout fields has nothing valid to update.
+        const res = await unwrapResponse(
+          api.post(
+            '/admin/challenge/settings',
+            {
+              patch: { payout_credits: 500, payout_card_ids: [cardId] },
+              reason: 'set payout',
+            },
+            { headers: adminHeaders() },
+          ),
+        );
+        expect(res.status).toBe(400);
+        expect(String(res.data.message)).toMatch(/No valid settings/);
       });
 
       it('POST settings: invalid timezone → 400', async () => {
@@ -359,14 +369,19 @@ medusaIntegrationTestRunner({
             {
               stage_number: 1,
               threshold_myr: 100,
-              reward_credits: 1000,
-              reward_card_ids: [cxId],
+              rank_rewards: [
+                { rank: 1, card_id: cxId, credits: 0 },
+                { rank: 4, card_id: null, credits: 1000 },
+              ],
             },
             {
               stage_number: 2,
               threshold_myr: 500,
-              reward_credits: 5000,
-              reward_card_ids: [cxId, cyId],
+              rank_rewards: [
+                { rank: 1, card_id: cxId, credits: 0 },
+                { rank: 2, card_id: cyId, credits: 0 },
+                { rank: 4, card_id: null, credits: 5000 },
+              ],
             },
           ],
           adminId: 'store-challenge-test',
@@ -408,12 +423,27 @@ medusaIntegrationTestRunner({
         expect(body.stages[0]).toMatchObject({
           stageNumber: 1,
           thresholdMyr: 100,
+          rankRewards: [
+            { rank: 1, cardId: cxId, credits: 0 },
+            { rank: 4, cardId: null, credits: 1000 },
+          ],
+          // legacy projection (plan 057 phase 2 removes it)
           rewardCredits: 1000,
           rewardCardIds: [cxId],
         });
         expect(body.stages[1].rewardCardIds).toEqual([cxId, cyId]);
-        expect(body.cards[cxId]).toEqual({ name: 'X', image: '/x.webp' });
-        expect(body.cards[cyId]).toEqual({ name: 'Y', image: '/x.webp' });
+        // slab_image is emitted per card (null when the card has no graded
+        // slab, as here) so the storefront can pick the prism-framed path.
+        expect(body.cards[cxId]).toEqual({
+          name: 'X',
+          image: '/x.webp',
+          slab_image: null,
+        });
+        expect(body.cards[cyId]).toEqual({
+          name: 'Y',
+          image: '/x.webp',
+          slab_image: null,
+        });
       });
 
       it('reports inactive with no stages', async () => {

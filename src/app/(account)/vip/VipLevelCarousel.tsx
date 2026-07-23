@@ -5,6 +5,7 @@ import { useReducedMotion } from 'motion/react';
 import { Check, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { rm0 } from '@/lib/format';
+import { levelProgressPct } from '@/lib/actions/vip-map';
 import type { VipLevel } from '@/lib/actions/vip';
 import { GalleryRail } from '@/app/slots/[slug]/GalleryRail';
 
@@ -18,19 +19,25 @@ function stateFor(level: number, highestLevel: number): State {
 
 function LevelCard({
   level,
+  prevThreshold,
   highestLevel,
   spend,
 }: {
   level: VipLevel;
+  prevThreshold: number;
   highestLevel: number;
   spend: number;
 }) {
   const state = stateFor(level.level, highestLevel);
-  // Progress of lifetime spend toward THIS rung's threshold (100% once reached).
+  // Progress toward THIS rung, restarting at the previous rung's threshold —
+  // reached rungs read 100%, the NEXT rung shows real progress within its
+  // segment. Deeper locked rungs stay empty: a part-filled gold bar on a
+  // locked card read as "nearly done" to real users (2026-07-22).
+  const isNext = level.level === highestLevel + 1;
   const pct =
-    level.threshold > 0
-      ? Math.min(100, Math.round((spend / level.threshold) * 100))
-      : 100;
+    state === 'locked' && !isNext
+      ? 0
+      : levelProgressPct(spend, prevThreshold, level.threshold);
   return (
     <div
       className={cn(
@@ -75,20 +82,22 @@ function LevelCard({
 
       <div className="mt-4">
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+          {/* Dimmed on locked cards so in-progress gold never reads as
+              "completed" next to reached rungs' full bars. */}
           <div
-            className="bg-chase h-full rounded-full"
+            className={cn(
+              'h-full rounded-full',
+              state === 'locked' ? 'bg-chase/40' : 'bg-chase',
+            )}
             style={{ width: `${pct}%` }}
           />
         </div>
         <div className="mt-1 flex justify-between text-[10px] font-semibold text-neutral-500">
-          {/* Non-positive thresholds (e.g. the L1 base rung) have nothing to
-              progress toward, so show lifetime spend against a dash instead of
-              a confusing 0 / 0 under a full bar. */}
-          <span>
-            {rm0(
-              level.threshold > 0 ? Math.min(spend, level.threshold) : spend,
-            )}
-          </span>
+          {/* Labels are the segment bounds the bar spans (previous rung →
+              this rung), matching the restarting fill. Non-positive
+              thresholds (e.g. the L1 base rung) have nothing to progress
+              toward, so show lifetime spend against a dash instead. */}
+          <span>{rm0(level.threshold > 0 ? prevThreshold : spend)}</span>
           <span>{level.threshold > 0 ? rm0(level.threshold) : '—'}</span>
         </div>
       </div>
@@ -128,6 +137,7 @@ export function VipLevelCarousel({
             // count is levels.length, so this index is always in range
             // (same non-null pattern as RevealStage's cardAt).
             level={levels[i]!}
+            prevThreshold={i > 0 ? levels[i - 1]!.threshold : 0}
             highestLevel={highestLevel}
             spend={spend}
           />

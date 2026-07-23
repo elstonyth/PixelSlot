@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Reveal from '@/components/Reveal';
+import { BUYBACK_RATE_LABEL } from '@/lib/buyback-copy';
 
 const STEPS = [
   {
@@ -18,8 +19,11 @@ const STEPS = [
     title: "IT'S REAL",
     copy: (
       <>
-        Every pull is a real graded slab — vault it, ship it, or sell back{' '}
-        <span className="text-buyback-fg font-semibold">up to 90%</span>.
+        Every pull is a real graded slab: vault it, ship it, or sell back at{' '}
+        <span className="text-buyback-fg font-semibold">
+          {BUYBACK_RATE_LABEL}
+        </span>
+        .
       </>
     ),
   },
@@ -47,7 +51,9 @@ export default function HowItRips() {
       <div className="mt-4 flex flex-col gap-3 lg:flex-row">
         {STEPS.map((step, i) => (
           <Reveal key={step.num} delay={i * 90} className="flex-1">
-            <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-neutral-900 p-4">
+            {/* h-full: the 3rd step's copy runs two lines — without it the
+                cards size to content and the row's bottoms stop aligning. */}
+            <div className="flex h-full items-start gap-4 rounded-2xl border border-white/10 bg-neutral-900 p-4">
               <span className="font-heading text-4xl leading-none text-neutral-700">
                 {step.num}
               </span>

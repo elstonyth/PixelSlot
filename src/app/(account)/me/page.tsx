@@ -19,6 +19,7 @@ import { pillVariants } from '@/components/ui/pill';
 import { getOwnProfileHandle, getPublicProfile } from '@/lib/data/profiles';
 import { getWallet } from '@/lib/actions/wallet';
 import { getVip } from '@/lib/actions/vip';
+import { levelProgressPct } from '@/lib/actions/vip-map';
 import { getDaily } from '@/lib/actions/daily';
 import { getAvatarFrames } from '@/lib/data/avatar-frames';
 import { rm, rm0 } from '@/lib/format';
@@ -84,10 +85,25 @@ export default async function MePage() {
   // null = "couldn't load", NOT "level 1" — a failed VIP read must never
   // render every frame as locked (2026-07-07 429-cascade incident).
   const highestLevel = vipResult.ok ? vipResult.vip.highestLevelEver : null;
+  // Level bar restarts at each level: fill measures spend inside the
+  // [current level threshold, next level threshold] segment, not lifetime
+  // spend / next threshold (which pins the bar near-full at high levels).
+  const levelStart =
+    vipResult.ok && vipResult.vip.next
+      ? (vipResult.vip.levels.find((l) => l.level === vipResult.vip.level)
+          ?.threshold ?? 0)
+      : 0;
 
   return (
     <EquippedFrameProvider initial={equippedLevel}>
       <div className="flex flex-col gap-4">
+        {/* Page label, not a heading: MeHeader's display name is already this
+            page's h1 (see MeAppearance.tsx), so an AccountHeader here would
+            give the page two competing h1s. Matches the uppercase section
+            labels below ("Showcase", "Quick access"). */}
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-neutral-400">
+          Me
+        </p>
         <MeHeader
           displayName={displayName}
           handle={handle}
@@ -112,30 +128,37 @@ export default async function MePage() {
                     <div
                       className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-800"
                       role="progressbar"
-                      aria-valuemin={0}
+                      aria-valuemin={levelStart}
                       aria-valuemax={vipResult.vip.next.threshold}
-                      aria-valuenow={
+                      // Clamped to the segment floor: ARIA requires
+                      // valuenow >= valuemin, and a state-row level can in
+                      // principle run ahead of settled spend.
+                      aria-valuenow={Math.max(
+                        levelStart,
                         vipResult.vip.next.threshold -
-                        vipResult.vip.next.remaining
-                      }
+                          vipResult.vip.next.remaining,
+                      )}
                       aria-label={`Progress to VIP level ${vipResult.vip.next.level}`}
                     >
                       <div
                         className="bg-chase h-full rounded-full"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(
-                              2,
-                              ((vipResult.vip.next.threshold -
-                                vipResult.vip.next.remaining) /
-                                vipResult.vip.next.threshold) *
-                                100,
+                          width: `${Math.max(
+                            2,
+                            levelProgressPct(
+                              vipResult.vip.next.threshold -
+                                vipResult.vip.next.remaining,
+                              levelStart,
+                              vipResult.vip.next.threshold,
                             ),
                           )}%`,
                         }}
                       />
                     </div>
+                    {/* Left = lifetime spend, right = next level's target —
+                        segment-bound labels read as "my spend" and confused
+                        real users (2026-07-22); the fill stays segment-
+                        relative. */}
                     <div className="mt-1 flex justify-between text-[10px] font-semibold text-neutral-500">
                       <span>
                         {rm0(
