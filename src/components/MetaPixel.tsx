@@ -4,7 +4,7 @@ import Script from 'next/script';
 import { useEffect, useState } from 'react';
 import { CONSENT_EVENT, getConsent } from '@/lib/consent';
 
-export const META_PIXEL_ID = '1867225397993589';
+const META_PIXEL_ID = '1867225397993589';
 
 // Loads the Meta Pixel only after the visitor accepts the cookie banner
 // (CookieConsent.tsx). Mounting after a mid-session "Accept" fires the
